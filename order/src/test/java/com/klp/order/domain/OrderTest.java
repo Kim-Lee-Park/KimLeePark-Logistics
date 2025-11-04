@@ -1,14 +1,12 @@
 package com.klp.order.domain;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 
 @DisplayName("Order 엔티티 테스트")
@@ -45,7 +43,7 @@ class OrderTest {
         assertThat(order.getOrderItems().get(0).getProductId()).isEqualTo(productId1);
         assertThat(order.getOrderItems().get(0).getQuantity()).isEqualTo(10);
         assertThat(order.getOrderItems().get(1).getQuantity()).isEqualTo(5);
-        assertThat(order.getOrderItems().get(1).getDeliveryId()).isEqualTo(null);
+        assertThat(order.getOrderItems().get(1).getDeliveryId()).isNull();
 
         // 양방향 관계 확인
         assertThat(order.getOrderItems().get(0).getOrder()).isEqualTo(order);
@@ -62,8 +60,8 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("공급 업체 ID는 필수입니다.");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("공급 업체 ID는 필수입니다.");
     }
 
     @Test
@@ -76,8 +74,8 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("수령 업체 ID는 필수입니다.");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("수령 업체 ID는 필수입니다.");
     }
 
     @Test
@@ -90,8 +88,8 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("주문 상품은 필수입니다.");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("주문 상품은 필수입니다.");
     }
 
     @Test
@@ -104,7 +102,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("주문 상품은 최소 1개 이상이어야 합니다.");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("주문 상품은 최소 1개 이상이어야 합니다.");
     }
 }
