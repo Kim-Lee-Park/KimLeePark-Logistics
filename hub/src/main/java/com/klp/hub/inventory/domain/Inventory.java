@@ -14,7 +14,7 @@ import java.util.UUID;
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(nullable = false)
+    @Column(name = "invevntory_id", nullable = false)
     private UUID id;
 
     @Comment("재고 수량")
