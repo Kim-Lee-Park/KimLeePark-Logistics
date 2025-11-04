@@ -10,3 +10,8 @@ services:
       TZ: Asia/Seoul
     ports:
       - "5432:5432"
+  redis:
+    image: redis
+    container_name: redis-klp
+    ports:
+      - "6379:6379"
