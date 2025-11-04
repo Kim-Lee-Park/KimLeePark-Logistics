@@ -21,13 +21,18 @@ public class Inventory {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @Comment("상품 ID")
+    @Column(name = "product_id", nullable = false)
+    private String productId;
+
     public Inventory() {
         this.quantity = 0;
     }
 
-    public Inventory(Integer quantity) {
+    public Inventory(Integer quantity, String productId) {
         validQuantity(quantity);
         this.quantity = quantity;
+        this.productId = productId;
     }
 
     public void increase(Integer quantity) {
@@ -43,7 +48,7 @@ public class Inventory {
     }
 
     private void validQuantity(Integer quantity) {
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null || quantity < 0) {
             throw new IllegalArgumentException("재고 수량은 필수이면서 음수일 수 없습니다.");
         }
     }

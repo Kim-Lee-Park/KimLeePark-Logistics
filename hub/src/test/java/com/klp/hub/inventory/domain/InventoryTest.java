@@ -10,19 +10,19 @@ class InventoryTest {
     @Test
     @DisplayName("재고 수량은 음수가 될 수 없다")
     void negativeQuantity() {
-        assertThrows(IllegalArgumentException.class, () -> new Inventory(-1));
+        assertThrows(IllegalArgumentException.class, () -> inventory(-1));
     }
 
     @Test
     @DisplayName("재고 수량은 null이 될 수 없다")
     void nullInventory() {
-        assertThrows(IllegalArgumentException.class, () -> new Inventory(null));
+        assertThrows(IllegalArgumentException.class, () -> inventory(null));
     }
 
     @Test
     @DisplayName("재고 증가시 인자가 음수가 될 수 없다")
     void increaseNegativeQuantity() {
-        Inventory inventory = new Inventory();
+        Inventory inventory = inventory(0);
         assertThrows(IllegalArgumentException.class, () -> {
             inventory.increase(-1);
         });
@@ -31,7 +31,7 @@ class InventoryTest {
     @Test
     @DisplayName("재고의 수량을 증가시킬 수 있다")
     void increaseQuantity() {
-        Inventory inventory = new Inventory(1);
+        Inventory inventory = inventory(1);
 
         inventory.increase(1);
 
@@ -41,7 +41,7 @@ class InventoryTest {
     @Test
     @DisplayName("재고 차감시 인자가 음수가 될 수 없다")
     void decreaseNegativeQuantity() {
-        Inventory inventory = new Inventory();
+        Inventory inventory = inventory(0);
         assertThrows(IllegalArgumentException.class, () -> {
             inventory.decrease(-1);
         });
@@ -50,10 +50,14 @@ class InventoryTest {
     @Test
     @DisplayName("재고의 수량을 차감시킬 수 있다")
     void decreaseQuantity() {
-        Inventory inventory = new Inventory(1);
+        Inventory inventory = inventory(1);
 
         inventory.decrease(1);
 
         assertEquals(0, inventory.getQuantity());
+    }
+
+    private Inventory inventory(Integer quantity) {
+        return new Inventory(quantity, "productId");
     }
 }
