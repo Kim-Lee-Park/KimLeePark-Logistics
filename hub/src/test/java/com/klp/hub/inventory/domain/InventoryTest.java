@@ -48,6 +48,15 @@ class InventoryTest {
     }
 
     @Test
+    @DisplayName("기존 재고 수량보다 더 많은 수량을 차감할 수 없다")
+    void betterThanQuantity() {
+        Inventory inventory = inventory(100);
+        assertThrows(IllegalArgumentException.class, () -> {
+            inventory.decrease(101);
+        });
+    }
+
+    @Test
     @DisplayName("재고의 수량을 차감시킬 수 있다")
     void decreaseQuantity() {
         Inventory inventory = inventory(1);

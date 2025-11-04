@@ -44,6 +44,10 @@ public class Inventory {
     public void decrease(Integer quantity) {
         validQuantity(quantity);
 
+        if (this.quantity - quantity < 0) {
+            throw new IllegalArgumentException("기존 재고 수량을 초과하여 차감하였습니다.");
+        }
+
         this.quantity -= quantity;
     }
 
