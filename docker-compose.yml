@@ -3,9 +3,12 @@ services:
     image: postgres:18
     container_name: postgres-klp
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: logistics
       TZ: Asia/Seoul
+    volumes:
+      - ./init-sql:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
   redis:

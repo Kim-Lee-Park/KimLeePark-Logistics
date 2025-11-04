@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/hub
-    username: admin
-    password: admin
+    url: jdbc:postgresql://localhost:5432/logistics
+    username: logistics
+    password: logistics
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
