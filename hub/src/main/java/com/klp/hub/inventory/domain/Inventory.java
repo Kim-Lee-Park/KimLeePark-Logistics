@@ -26,25 +26,25 @@ public class Inventory {
     }
 
     public Inventory(Integer quantity) {
-        if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException();
-        }
+        validQuantity(quantity);
         this.quantity = quantity;
     }
 
-    public void increase(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException();
-        }
+    public void increase(Integer quantity) {
+        validQuantity(quantity);
 
         this.quantity += quantity;
     }
 
-    public void decrease(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException();
-        }
+    public void decrease(Integer quantity) {
+        validQuantity(quantity);
 
         this.quantity -= quantity;
+    }
+
+    private void validQuantity(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("재고 수량은 필수이면서 음수일 수 없습니다.");
+        }
     }
 }
