@@ -31,8 +31,11 @@ class CompanyReaderTest {
     @DisplayName("업체 ID 를 통해 업체를 조회할 수 있다")
     void getCompanyById() {
         UUID companyId = UUID.randomUUID();
-        var company = new Company(CompanyType.SUPPLIER, "업체명", "업체주소");
+        var company = mock(Company.class);
         when(company.getId()).thenReturn(companyId);
+        when(company.getType()).thenReturn(CompanyType.SUPPLIER);
+        when(company.getName()).thenReturn("업체명");
+        when(company.getAddress()).thenReturn("업체주소");
         when(companyRepository.findById(companyId))
                 .thenReturn(Optional.of(company));
 

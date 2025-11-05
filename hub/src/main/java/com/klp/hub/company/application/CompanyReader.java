@@ -1,5 +1,6 @@
 package com.klp.hub.company.application;
 
+import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,13 @@ public class CompanyReader {
     private final CompanyRepository companyRepository;
 
     public CompanyResponse getByCompanyId(UUID companyId) {
-        return null;
+        Company company = companyRepository.findById(companyId).orElseThrow();
+
+        return new CompanyResponse(
+                company.getId(),
+                company.getType().name(),
+                company.getName(),
+                company.getAddress()
+        );
     }
 }
