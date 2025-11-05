@@ -10,6 +10,6 @@ public record RegisterHubRouteInfoRequest(
     Double distanceKm
 ) {
     public RegisterHubRouteInfoCommand toCommand(){
-        return new RegisterHubRouteInfoCommand(departureId, arrivalId, duration_min, distance_km);
+        return new RegisterHubRouteInfoCommand(departureId, arrivalId, durationMin, distanceKm);
     }
 }
