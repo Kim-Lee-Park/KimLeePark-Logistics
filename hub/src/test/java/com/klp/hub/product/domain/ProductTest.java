@@ -3,6 +3,8 @@ package com.klp.hub.product.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTest {
@@ -26,10 +28,10 @@ class ProductTest {
     }
 
     private Product createProductByName(String name) {
-        return new Product("companyId", name);
+        return new Product(UUID.randomUUID(), name);
     }
 
-    private Product createProductByCompanyId(String companyId) {
+    private Product createProductByCompanyId(UUID companyId) {
         return new Product(companyId, "상품명");
     }
 }

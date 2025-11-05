@@ -26,13 +26,13 @@ public class Inventory {
 
     @Comment("상품 ID")
     @Column(name = "product_id", nullable = false)
-    private String productId;
+    private UUID productId;
 
     public Inventory() {
         this.quantity = 0;
     }
 
-    public Inventory(Integer quantity, String productId) {
+    public Inventory(Integer quantity, UUID productId) {
         validQuantity(quantity);
         this.quantity = quantity;
         this.productId = productId;
