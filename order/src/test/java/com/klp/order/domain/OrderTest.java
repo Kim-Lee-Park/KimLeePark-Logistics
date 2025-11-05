@@ -1,33 +1,47 @@
 package com.klp.order.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 
 @DisplayName("Order 엔티티 테스트")
 class OrderTest {
 
-    @Test
-    @DisplayName("주문 생성 - 정상 (주문 아이템 포함)")
-    void createOrder_Success() {
-        // given
-        Long supplierId = 1L;
-        Long customerId = 2L;
-        String comment = "TDD 프로젝트 진행될 때까지 납품 요청";
+    // 이 선언하는 것을 너무 반복하고 있어서 필드에 선언한 후 사용 예정
+    private Long supplierId;
+    private Long customerId;
+    private String comment;
+    private UUID productId1;
+    private UUID productId2;
+    private List<OrderItem> orderItems;
 
-        UUID productId1 = UUID.randomUUID();
-        UUID productId2 = UUID.randomUUID();
+    // 미리 값 넣어서 사용 예장
+    @BeforeEach
+    void setUp() {
+        supplierId = 1L;
+        customerId = 2L;
+        comment = "TDD 프로젝트 진행될 때까지 납품 요청";
+        productId1 = UUID.randomUUID();
+        productId2 = UUID.randomUUID();
 
-        //우선은 deliveryId 같은 경우 후에 채워지기 때문에 초반에는 Null 존재
-        List<OrderItem> orderItems = new ArrayList<>();
+        orderItems = new ArrayList<>();
         orderItems.add(new OrderItem(productId1, 10));
         orderItems.add(new OrderItem(productId2, 5));
+    }
 
+    @Test
+    @DisplayName("주문 생성 - 정상 (주문 아이템 포함)")
+        // 지금 오류 나는 이유
+        // entity에 db에 저장될때 마다 생성하는 generationTupe.uuid를 사용해서
+        // db 저장 될때 마다 배정되는데 지금은 db에 저장안해놔서 orederId가 null이되며 오류 발생
+        // 하지만 제대로 하면 정상 작동
+    void createOrder_Success() {
         // when
         Order order = Order.create(supplierId, customerId, comment, orderItems);
 
@@ -54,12 +68,10 @@ class OrderTest {
     @DisplayName("주문 생성 - supplierId null이면 예외")
     void createOrder_Fail_Because_SupplierId_is_Null() {
         // given
-        Long supplierId = null;
-        Long customerId = 2L;
-        List<OrderItem> orderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+        supplierId = null;
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("공급 업체 ID는 필수입니다.");
     }
@@ -68,12 +80,10 @@ class OrderTest {
     @DisplayName("주문 생성 - customerId null이면 예외")
     void createOrder_Fail_because_CustomerId_is_Null() {
         // given
-        Long supplierId = 1L;
-        Long customerId = null;
-        List<OrderItem> orderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+        customerId = null;
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("수령 업체 ID는 필수입니다.");
     }
@@ -82,12 +92,10 @@ class OrderTest {
     @DisplayName("주문 생성 - orderItems가 null이면 예외")
     void createOrder_Fail_Because_OrderItems_is_Null() {
         // given
-        Long supplierId = 1L;
-        Long customerId = 2L;
-        List<OrderItem> orderItems = null;
+        orderItems = null;
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("주문 상품은 필수입니다.");
     }
@@ -96,13 +104,162 @@ class OrderTest {
     @DisplayName("주문 생성 - orderItems가 비어있으면 예외")
     void createOrder_Fail_Because_OrderItems_is_EmptyArray() {
         // given
-        Long supplierId = 1L;
-        Long customerId = 2L;
-        List<OrderItem> orderItems = new ArrayList<>();
+        orderItems = new ArrayList<>();
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, null, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("주문 상품은 최소 1개 이상이어야 합니다.");
+    }
+
+    @Test
+    @DisplayName("주문 수정 - 정상 수정")
+    void updateOrder_Success() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        String newComment = "수정된 요청사항";
+        List<OrderItem> newOrderItems = new ArrayList<>();
+        newOrderItems.add(new OrderItem(UUID.randomUUID(), 15));
+        newOrderItems.add(new OrderItem(UUID.randomUUID(), 20));
+
+        // when
+        order.updateOrder(newComment, newOrderItems);
+
+        // then
+        assertThat(order.getComment()).isEqualTo(newComment);
+        assertThat(order.getOrderItems()).hasSize(2);
+        assertThat(order.getOrderItems().get(0).getQuantity()).isEqualTo(15);
+        assertThat(order.getOrderItems().get(1).getQuantity()).isEqualTo(20);
+    }
+
+    @Test
+    @DisplayName("주문 수정 - 배송이 할당된 주문 수정 시도 - 실패")
+    void updateOrder_Fail_Because_Already_assign_Delivery() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
+        String newComment = "수정 시도";
+        List<OrderItem> newOrderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+
+        // when & then
+        assertThatThrownBy(() -> order.updateOrder(newComment, newOrderItems))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("배송이 할당된 주문은 수정할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주문 수정 - 취소된 주문 수정 시도 - 실패")
+    void updateOrder_Fail_Because_Already_cancel() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.cancel("취소", 100L, CancelType.USER_REQUEST);
+        String newComment = "수정 시도";
+        List<OrderItem> newOrderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+
+        // when & then
+        assertThatThrownBy(() -> order.updateOrder(newComment, newOrderItems))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("취소된 주문은 수정할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주문 수정 - 완료된 주문 수정 시도 - 실패")
+    void updateOrder_Fail_Because_Already_completed() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.changeStatus(OrderStatus.COMPLETE);
+        String newComment = "수정 시도";
+        List<OrderItem> newOrderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+
+        // when & then
+        assertThatThrownBy(() -> order.updateOrder(newComment, newOrderItems))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("완료된 주문은 수정할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주문 상태 변경 - 정상 변경")
+    void changeOrderStatus_Success() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+
+        // when
+        order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.DELIVERY_ASSIGNED);
+    }
+
+    @Test
+    @DisplayName("주문 상태 변경 - 실패 - 취소된 주문")
+    void changeOrderStatus_Fail_Because_Order_Status_is_Cancelled() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.cancel("취소", 100L, CancelType.USER_REQUEST);
+
+        // when & then
+        assertThatThrownBy(() -> order.changeStatus(OrderStatus.DELIVERY_ASSIGNED))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("취소된 주문은 상태를 변경할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주문 취소 - 정상")
+    void cancelOrder_Success() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        String cancelReason = "고객 요청으로 인한 취소";
+        Long cancelledBy = 3L;
+        CancelType cancelType = CancelType.USER_REQUEST;
+
+        // when
+        OrderCancellation cancellation = order.cancel(cancelReason, cancelledBy, cancelType);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(order.getCancellation()).isNotNull();
+        assertThat(cancellation.getCancelReason()).isEqualTo(cancelReason);
+        assertThat(cancellation.getCancelledBy()).isEqualTo(cancelledBy);
+        assertThat(cancellation.getCancelType()).isEqualTo(cancelType);
+        assertThat(cancellation.getCancelledAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("주문 취소 - 실패 - 이미 취소된 주문")
+    void cancelOrder_Fail_AlreadyCancelled() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.cancel("첫 번째 취소", 100L, CancelType.USER_REQUEST);
+
+        // when & then
+        assertThatThrownBy(() -> order.cancel("두 번째 취소", 100L, CancelType.ADMIN_CANCEL))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("이미 취소된 주문입니다.");
+    }
+
+    @Test
+    @DisplayName("주문 취소 - 실패 - 완료된 주문")
+    void cancelOrder_Fail_CompletedOrder() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.changeStatus(OrderStatus.COMPLETE);
+
+        // when & then
+        assertThatThrownBy(() -> order.cancel("취소 시도", 100L, CancelType.USER_REQUEST))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("완료된 주문은 취소할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주문 취소 - 실패 - 배송 할당된 주문")
+    void cancelOrder_Fail_DeliveryAssignedOrder() {
+        // given
+        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
+
+        // when & then
+        assertThatThrownBy(() -> order.cancel("취소 시도", 100L, CancelType.USER_REQUEST))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("배송이 할당된 주문은 취소할 수 없습니다.");
     }
 }

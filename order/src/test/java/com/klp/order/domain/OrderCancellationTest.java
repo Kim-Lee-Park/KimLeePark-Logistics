@@ -1,0 +1,62 @@
+package com.klp.order.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("OrderCancellation 엔티티 테스트")
+public class OrderCancellationTest {
+
+    private Order order;
+    private String cancelReason;
+    private Long cancelledBy;
+    private CancelType cancelType;
+
+    @BeforeEach
+    void setUp() {
+        Long supplierId = 1L;
+        Long customerId = 2L;
+        String comment = "TDD 어디까지 해야 하는건가!";
+        List<OrderItem> orderItems = List.of(
+            new OrderItem(UUID.randomUUID(), 10)
+        );
+
+        order = Order.create(supplierId, customerId, comment, orderItems);
+
+        cancelReason = "일단 취소 사유";
+        cancelledBy = 2L;
+        cancelType = CancelType.USER_REQUEST;
+
+    }
+
+    @Test
+    @DisplayName("주문 취소 정보 생성 - 정상")
+    void createOrderCancellation_Success() {
+        //given
+        //setup
+
+        //when
+        OrderCancellation cancellation = OrderCancellation.create(
+            order,
+            cancelReason,
+            cancelledBy,
+            cancelType
+        );
+
+        //then
+        assertThat(cancellation.getOrder()).isEqualTo(order);
+        assertThat(cancellation.getCancelReason()).isEqualTo(cancelReason);
+        assertThat(cancellation.getCancelledBy()).isEqualTo(cancelledBy);
+        assertThat(cancellation.getCancelType()).isEqualTo(cancelType);
+        assertThat(cancellation.getCancelledAt()).isNotNull();
+        assertThat(cancellation.getCancelledAt()).isBefore(LocalDateTime.now().plusSeconds(1));
+        assertThat(cancellation.getCancelledAt()).isAfter(LocalDateTime.now().minusSeconds(1));
+    }
+
+
+}

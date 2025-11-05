@@ -1,21 +1,31 @@
 package com.klp.order.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("OrderItems 엔티티 테스트")
 public class OrderItemTest {
 
+    private UUID productId;
+    private int quantity;
+
+    @BeforeEach
+    void setUp() {
+        productId = UUID.randomUUID();
+        quantity = 1;
+    }
+
     @Test
     @DisplayName("OrderItem 생성 - 정상")
     void createOrderItem_Success() {
 
-        //given
-        UUID productId = UUID.randomUUID();
-        int quantity = 1;
+        // given
+        // setup으로 진행
 
         //when
         OrderItem orderItem = new OrderItem(productId, quantity);
@@ -31,8 +41,7 @@ public class OrderItemTest {
     @DisplayName("OrderItem 생성 - productId null이면 예외")
     void createOrderItem_Fail_ProductId_is_Null() {
         // given
-        UUID productId = null;
-        int quantity = 10;
+        productId = null;
 
         // when & then
         assertThatThrownBy(() -> new OrderItem(productId, quantity))
@@ -45,7 +54,7 @@ public class OrderItemTest {
     void createOrderItem_Fail_Quantity_is_Zero_or_Negative() {
 
         //given
-        UUID productId = UUID.randomUUID();
+        //setup
 
         // when & then
         assertThatThrownBy(() -> new OrderItem(productId, 0))
@@ -61,11 +70,11 @@ public class OrderItemTest {
     @DisplayName("배송 ID 할당")
     void assignDeliveryId() {
         // given
-        OrderItem orderItem = new OrderItem(UUID.randomUUID(), 10);
+        OrderItem orderItem = new OrderItem(UUID.randomUUID(), quantity);
         UUID deliveryId = UUID.randomUUID();
 
         // when
-        orderItem.assignDelivery(deliveryId);
+        orderItem.assignDeliveryId(deliveryId);
 
         // then
         assertThat(orderItem.getDeliveryId()).isEqualTo(deliveryId);
