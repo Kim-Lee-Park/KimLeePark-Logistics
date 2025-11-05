@@ -2,6 +2,7 @@ package com.klp.hub.company.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
         name = "p_companies",
         schema = "hub_schema"
 )
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Company {
     @Id

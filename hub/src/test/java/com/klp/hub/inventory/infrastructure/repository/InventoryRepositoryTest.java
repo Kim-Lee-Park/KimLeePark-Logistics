@@ -1,11 +1,13 @@
 package com.klp.hub.inventory.infrastructure.repository;
 
 import com.klp.hub.inventory.domain.Inventory;
+import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
@@ -15,13 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-class InventoryJpaRepositoryTest {
+@Import(InventoryRepositoryImpl.class)
+class InventoryRepositoryTest {
 
     @Autowired
-    InventoryJpaRepository inventoryJpaRepository;
+    private InventoryRepository inventoryRepository;
 
     @Autowired
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
     private UUID productId = UUID.randomUUID();
 
@@ -32,7 +35,7 @@ class InventoryJpaRepositoryTest {
         entityManager.persist(inventory);
         entityManager.flush();
 
-        Optional<Inventory> result = inventoryJpaRepository.findByProductId(productId);
+        Optional<Inventory> result = inventoryRepository.findByProductId(productId);
 
         assertTrue(result.isPresent());
     }
@@ -40,7 +43,7 @@ class InventoryJpaRepositoryTest {
     @Test
     @DisplayName("상품의 재고가 존재하지 않는다면 Optional.empty 를 반환한다")
     void notFoundInventoryByProductId() {
-        Optional<Inventory> result = inventoryJpaRepository.findByProductId(productId);
+        Optional<Inventory> result = inventoryRepository.findByProductId(productId);
 
         assertFalse(result.isPresent());
         assertTrue(result.isEmpty());

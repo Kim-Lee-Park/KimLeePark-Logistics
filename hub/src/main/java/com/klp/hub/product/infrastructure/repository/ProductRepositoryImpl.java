@@ -15,6 +15,6 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public Optional<Product> findById(UUID id) {
-        return Optional.empty();
+        return productJpaRepository.findById(id);
     }
 }
