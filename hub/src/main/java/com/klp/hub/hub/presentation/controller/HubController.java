@@ -1,11 +1,11 @@
 package com.klp.hub.hub.presentation.controller;
 
-import com.klp.hub.hub.presentation.dto.request.UpdateHubRequest;
-import com.klp.hub.hub.presentation.dto.request.RegisterHubRequest;
-import com.klp.hub.hub.presentation.dto.response.GetHubDetailResponse;
-import com.klp.hub.hub.presentation.dto.response.GetHubListResponse;
-import com.klp.hub.hub.presentation.dto.response.RegisterHubResponse;
-import com.klp.hub.hub.presentation.dto.response.UpdatedHubResponse;
+import com.klp.hub.hub.presentation.dto.request.hub.UpdateHubRequest;
+import com.klp.hub.hub.presentation.dto.request.hub.RegisterHubRequest;
+import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
 import java.awt.print.Pageable;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -2,9 +2,9 @@ package com.klp.hub.hub.application.service;
 
 import com.klp.hub.hub.application.command.RegisterHubCommand;
 import com.klp.hub.hub.application.command.UpdateHubCommand;
-import com.klp.hub.hub.presentation.dto.response.GetHubDetailResponse;
-import com.klp.hub.hub.presentation.dto.response.RegisterHubResponse;
-import com.klp.hub.hub.presentation.dto.response.UpdatedHubResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
