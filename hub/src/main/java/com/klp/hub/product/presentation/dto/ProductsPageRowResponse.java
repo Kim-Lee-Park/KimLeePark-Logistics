@@ -2,7 +2,7 @@ package com.klp.hub.product.presentation.dto;
 
 import java.util.UUID;
 
-public record ProductListRowResponse(
+public record ProductsPageRowResponse(
         UUID productId,
         UUID hubId,
         String companyName,

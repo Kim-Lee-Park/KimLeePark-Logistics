@@ -2,7 +2,7 @@ package com.klp.hub.product.application;
 
 import com.klp.hub.company.application.CompanyReader;
 import com.klp.hub.product.domain.repository.ProductRepository;
-import com.klp.hub.product.presentation.dto.ProductListRowResponse;
+import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class ProductReader {
         );
     }
 
-    public Page<ProductListRowResponse> getProductsByPageable(Pageable pageable) {
+    public Page<ProductsPageRowResponse> getProductsByPageable(Pageable pageable) {
         return productRepository.findAllByPageable(pageable);
     }
 }

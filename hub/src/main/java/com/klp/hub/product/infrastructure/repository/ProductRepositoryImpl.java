@@ -4,7 +4,7 @@ import com.klp.hub.company.domain.QCompany;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.QProduct;
 import com.klp.hub.product.domain.repository.ProductRepository;
-import com.klp.hub.product.presentation.dto.ProductListRowResponse;
+import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -32,7 +32,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Page<ProductListRowResponse> findAllByPageable(Pageable pageable) {
+    public Page<ProductsPageRowResponse> findAllByPageable(Pageable pageable) {
         var query = queryFactory
                 .select(getProductListRowProjection())
                 .from(qProduct)
@@ -52,9 +52,9 @@ public class ProductRepositoryImpl implements ProductRepository {
         return new PageImpl<>(query, pageable, total);
     }
 
-    private ConstructorExpression<ProductListRowResponse> getProductListRowProjection() {
+    private ConstructorExpression<ProductsPageRowResponse> getProductListRowProjection() {
         return Projections.constructor(
-                ProductListRowResponse.class,
+                ProductsPageRowResponse.class,
                 qProduct.id.as("productId"),
                 qProduct.id.as("hubId"),
                 qCompany.name.as("companyName"),
