@@ -2,6 +2,10 @@ package com.klp.order.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.klp.order.domain.cancel.CancelType;
+import com.klp.order.domain.cancel.OrderCancellation;
+import com.klp.order.domain.order.Order;
+import com.klp.order.domain.orderitem.OrderItem;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

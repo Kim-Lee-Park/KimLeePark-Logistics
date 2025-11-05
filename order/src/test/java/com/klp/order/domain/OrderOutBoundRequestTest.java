@@ -1,0 +1,117 @@
+package com.klp.order.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.klp.order.domain.idempotencykey.OperationType;
+import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
+import com.klp.order.domain.idempotencykey.RequestStatus;
+import com.klp.order.domain.order.Order;
+import com.klp.order.domain.orderitem.OrderItem;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+public class OrderOutBoundRequestTest {
+
+    private Order order;
+    private String idempotencyKey;
+    private String target;
+    private OperationType operation;
+
+    @BeforeEach
+    void setUp() {
+        Long supplierId = 1L;
+        Long customerId = 2L;
+        List<OrderItem> orderItems = List.of(new OrderItem(UUID.randomUUID(), 1));
+        order = Order.create(supplierId, customerId, "요청사항", orderItems);
+        idempotencyKey = "흠 멱등키는 어떻게 구성해야 잘했다고 소문날까나";
+        target = "재고";
+        operation = OperationType.DECREASE;
+
+    }
+
+    @Test
+    @DisplayName("외부 요청 생성 - 정상")
+        // 멱등키관련한 영어가 너무 쓰기 힘들어서 일단 테스트는 한글로 대체하겠습니다...
+    void 멱등키생성_정상() {
+        //given
+        //setUp
+
+        //when
+        OrderOutboundRequest request = OrderOutboundRequest.create(
+            order,
+            idempotencyKey,
+            target,
+            operation
+        );
+        //then
+        assertThat(request.getOrder()).isEqualTo(order);
+        assertThat(request.getIdempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(request.getTarget()).isEqualTo(target);
+        assertThat(request.getOperation()).isEqualTo(operation);
+        assertThat(request.getStatus()).isEqualTo(RequestStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("idempotencyKey null이면 예외")
+    void 멱등키_Null이면_예외() {
+        // when & then
+        assertThatThrownBy(() -> OrderOutboundRequest.create(
+            order, null, target, operation
+        ))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("멱등키는 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("order null이면 예외")
+    void 오더ID가_NULL이면_예외() {
+        // when & then
+        assertThatThrownBy(() -> OrderOutboundRequest.create(
+            null, idempotencyKey, target, operation
+        ))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("주문 정보는 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("target null이면 예외")
+    void 타겟_NULL이면_예외_재고인가_아니면_배송인가() {
+        // when & then
+        assertThatThrownBy(() -> OrderOutboundRequest.create(
+            order, idempotencyKey, null, operation
+        ))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("요청 대상은 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("operation null이면 예외")
+    void operation이_NUL이면_증감인지_감소인지_모르니까() {
+        // when & then
+        assertThatThrownBy(() -> OrderOutboundRequest.create(
+            order, idempotencyKey, target, null
+        ))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("요청 작업은 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("요청 상태를 DONE으로 변경")
+    void markAsDone_Success() {
+        // given
+        OrderOutboundRequest request = OrderOutboundRequest.create(
+            order, idempotencyKey, target, operation
+        );
+        // when
+        request.markAsDone();
+
+        // then
+        assertThat(request.getStatus()).isEqualTo(RequestStatus.DONE);
+    }
+
+
+}
