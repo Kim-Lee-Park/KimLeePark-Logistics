@@ -9,7 +9,10 @@ import org.hibernate.annotations.Comment;
 import java.util.UUID;
 
 @Entity
-@Table(name = "p_products")
+@Table(
+        name = "p_products",
+        schema = "hub_schema"
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Product {

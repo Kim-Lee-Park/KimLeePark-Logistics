@@ -9,7 +9,10 @@ import org.hibernate.annotations.Comment;
 import java.util.UUID;
 
 @Entity
-@Table(name = "p_inventory")
+@Table(
+        name = "p_inventory",
+        schema = "hub_schema"
+)
 @Getter
 public class Inventory {
     @Id
