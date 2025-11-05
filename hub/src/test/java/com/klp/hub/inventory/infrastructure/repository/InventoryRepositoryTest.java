@@ -28,10 +28,12 @@ class InventoryRepositoryTest {
 
     private UUID productId = UUID.randomUUID();
 
+    private UUID hubId = UUID.randomUUID();
+
     @Test
     @DisplayName("상품 ID 를 통해 재고를 조회할 수 있다")
     void findByProductId() {
-        Inventory inventory = new Inventory(productId, 10);
+        Inventory inventory = new Inventory(productId, hubId, 10);
         entityManager.persist(inventory);
         entityManager.flush();
 

@@ -28,10 +28,12 @@ class CompanyRepositoryTest {
     @Autowired
     private EntityManager entityManager;
 
+    private UUID hubId = UUID.randomUUID();
+
     @Test
     @DisplayName("업체 ID 를 통해 업체를 조회할 수 있다")
     void findById() {
-        Company company = new Company(CompanyType.SUPPLIER, "업체명", "업체주소");
+        Company company = new Company(hubId, CompanyType.SUPPLIER, "업체명", "업체주소");
         entityManager.persist(company);
         entityManager.flush();
 

@@ -28,13 +28,18 @@ public class Inventory {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Comment("허브 ID")
+    @Column(name = "hub_id", nullable = false)
+    private UUID hubId;
+
     public Inventory() {
         this.quantity = 0;
     }
 
-    public Inventory(UUID productId, Integer quantity) {
+    public Inventory(UUID productId, UUID hubId, Integer quantity) {
         validQuantity(quantity);
         this.productId = productId;
+        this.hubId = hubId;
         this.quantity = quantity;
     }
 

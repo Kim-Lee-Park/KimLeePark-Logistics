@@ -39,6 +39,8 @@ class ProductRepositoryTest {
 
     private UUID companyId = UUID.randomUUID();
 
+    private UUID hubId = UUID.randomUUID();
+
     @Test
     @DisplayName("상품 ID 를 통해 상품을 조회할 수 있다")
     void findById() {
@@ -65,7 +67,7 @@ class ProductRepositoryTest {
     void findAllByPageable() {
         var page = 0;
         var size = 2;
-        Company company = new Company(CompanyType.SUPPLIER, "업체명", "업체주소");
+        Company company = new Company(hubId, CompanyType.SUPPLIER, "업체명", "업체주소");
         entityManager.persist(company);
         entityManager.flush();
         var companyId = company.getId();
