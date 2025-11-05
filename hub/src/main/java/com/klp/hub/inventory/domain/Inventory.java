@@ -32,10 +32,10 @@ public class Inventory {
         this.quantity = 0;
     }
 
-    public Inventory(Integer quantity, UUID productId) {
+    public Inventory(UUID productId, Integer quantity) {
         validQuantity(quantity);
-        this.quantity = quantity;
         this.productId = productId;
+        this.quantity = quantity;
     }
 
     public void increase(Integer quantity) {

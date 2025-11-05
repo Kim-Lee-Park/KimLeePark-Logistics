@@ -69,6 +69,6 @@ class InventoryTest {
     }
 
     private Inventory inventory(Integer quantity) {
-        return new Inventory(quantity, UUID.randomUUID());
+        return new Inventory(UUID.randomUUID(), quantity);
     }
 }
