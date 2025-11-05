@@ -1,6 +1,6 @@
 package com.klp.hub.hub.presentation.dto.request.hub;
 
-import com.klp.hub.hub.application.command.RegisterHubCommand;
+import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 
 public record RegisterHubRequest(
     String name,

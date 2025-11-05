@@ -1,4 +1,4 @@
-package com.klp.hub.hub.application.command;
+package com.klp.hub.hub.application.command.hub;
 
 public record UpdateHubCommand(
     String name,

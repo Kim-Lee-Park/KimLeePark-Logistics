@@ -1,7 +1,7 @@
 package com.klp.hub.hub.application.service;
 
-import com.klp.hub.hub.application.command.RegisterHubCommand;
-import com.klp.hub.hub.application.command.UpdateHubCommand;
+import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
+import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;

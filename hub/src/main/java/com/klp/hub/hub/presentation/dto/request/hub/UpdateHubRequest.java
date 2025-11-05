@@ -1,6 +1,6 @@
 package com.klp.hub.hub.presentation.dto.request.hub;
 
-import com.klp.hub.hub.application.command.UpdateHubCommand;
+import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 
 public record UpdateHubRequest(
     String name,
