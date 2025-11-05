@@ -2,9 +2,12 @@ package com.klp.hub.product.application;
 
 import com.klp.hub.company.application.CompanyReader;
 import com.klp.hub.product.domain.repository.ProductRepository;
+import com.klp.hub.product.presentation.dto.ProductListRowResponse;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,5 +37,9 @@ public class ProductReader {
                 company.name(),
                 product.getName()
         );
+    }
+
+    public Page<ProductListRowResponse> getProductsByPageable(Pageable pageable) {
+        return productRepository.findAllByPageable(pageable);
     }
 }
