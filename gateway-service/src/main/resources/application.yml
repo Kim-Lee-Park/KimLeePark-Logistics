@@ -14,47 +14,47 @@ spring:
             - id: auth-routes
               uri: lb://auth-service
               predicates:
-                - Path=/auth/**
+                - Path=/v1/auth/**
 
             - id: user-routes
               uri: lb://user-service
               predicates:
-                - Path=/users/**
+                - Path=/v1/users/**
 
             - id: slack-routes
-              uri: lb://user-service
+              uri: lb://notification-service
               predicates:
-                - Path=/slack/**
+                - Path=/v1/slack/**
 
             - id: ai-routes
-              uri: lb://user-service
+              uri: lb://notification-service
               predicates:
-                - Path=/ai/**
+                - Path=/v1/ai/**
 
             - id: order-routes
               uri: lb://order-service
               predicates:
-                - Path=/orders/**
+                - Path=/v1/orders/**
 
             - id: delivery-routes
               uri: lb://order-service
               predicates:
-                - Path=/deliveries/**
+                - Path=/v1/deliveries/**
 
             - id: hub-routes
               uri: lb://hub-service
               predicates:
-                - Path=/hubs/**
+                - Path=/v1/hubs/**
 
             - id: inventory-routes
               uri: lb://hub-service
               predicates:
-                - Path=/inventories/**
+                - Path=/v1/inventories/**
 
             - id: product-routes
               uri: lb://hub-service
               predicates:
-                - Path=/products/**
+                - Path=/v1/products/**
 
           discovery:
             locator:
@@ -64,3 +64,16 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+jwt:
+  access:
+    secret: ${JWT_ACCESS_SECRET}
+
+gateway:
+  auth:
+    public-paths:
+      - /v1/auth/signup
+      - /v1/auth/login
+      - /v1/auth/logout
+      - /v1/auth/token/reissue
+      - /v1/auth/exists
