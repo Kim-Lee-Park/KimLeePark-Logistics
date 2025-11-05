@@ -4,18 +4,14 @@ import com.klp.hub.inventory.application.InventoryReader;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,7 +23,7 @@ class InventoryControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    InventoryReader inventoryReader;
+    private InventoryReader inventoryReader;
 
     @Test
     @DisplayName("단일 상품에 대한 재고를 조회할 수 있다")
