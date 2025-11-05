@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class InventoryJpaRepositoryTest {
 
     @Autowired
-    InventoryJpaRepository inventoryRepository;
+    InventoryJpaRepository inventoryJpaRepository;
 
     @Autowired
     EntityManager entityManager;
@@ -32,7 +32,7 @@ class InventoryJpaRepositoryTest {
         entityManager.persist(inventory);
         entityManager.flush();
 
-        Optional<Inventory> result = inventoryRepository.findByProductId(productId);
+        Optional<Inventory> result = inventoryJpaRepository.findByProductId(productId);
 
         assertTrue(result.isPresent());
     }
@@ -40,7 +40,7 @@ class InventoryJpaRepositoryTest {
     @Test
     @DisplayName("상품의 재고가 존재하지 않는다면 Optional.empty 를 반환한다")
     void notFoundInventoryByProductId() {
-        Optional<Inventory> result = inventoryRepository.findByProductId(productId);
+        Optional<Inventory> result = inventoryJpaRepository.findByProductId(productId);
 
         assertFalse(result.isPresent());
         assertTrue(result.isEmpty());
