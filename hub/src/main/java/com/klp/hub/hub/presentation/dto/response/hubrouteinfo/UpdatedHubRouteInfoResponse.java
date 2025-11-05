@@ -6,8 +6,8 @@ public record UpdatedHubRouteInfoResponse(
     UUID routeInfoId,
     UUID departureId,
     UUID arrivalId,
-    Long duration_min,
-    Double distance_km
+    Long durationMin,
+    Double distanceKm
 ) {
 
 }

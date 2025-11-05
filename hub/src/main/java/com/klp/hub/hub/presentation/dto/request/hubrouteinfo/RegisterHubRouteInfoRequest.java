@@ -6,8 +6,8 @@ import java.util.UUID;
 public record RegisterHubRouteInfoRequest(
     UUID departureId,
     UUID arrivalId,
-    Long duration_min,
-    Double distance_km
+    Long durationMin,
+    Double distanceKm
 ) {
     public RegisterHubRouteInfoCommand toCommand(){
         return new RegisterHubRouteInfoCommand(departureId, arrivalId, duration_min, distance_km);

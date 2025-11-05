@@ -6,10 +6,10 @@ import java.util.UUID;
 public record UpdateHubRouteInfoRequest(
     UUID departureId,
     UUID arrivalId,
-    Long duration_min,
-    Double distance_km
+    Long durationMin,
+    Double distanceKm
 ) {
     public UpdateHubRouteInfoCommand toCommand() {
-        return new UpdateHubRouteInfoCommand(departureId, arrivalId, duration_min, distance_km);
+        return new UpdateHubRouteInfoCommand(departureId, arrivalId, durationMin, distanceKm);
     }
 }
