@@ -15,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-class InventoryRepositoryTest {
+class InventoryJpaRepositoryTest {
 
     @Autowired
-    InventoryRepository inventoryRepository;
+    InventoryJpaRepository inventoryRepository;
 
     @Autowired
     EntityManager entityManager;

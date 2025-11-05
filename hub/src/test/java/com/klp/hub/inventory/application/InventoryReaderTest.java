@@ -1,14 +1,12 @@
 package com.klp.hub.inventory.application;
 
 import com.klp.hub.inventory.domain.Inventory;
-import com.klp.hub.inventory.infrastructure.repository.InventoryRepository;
-import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;

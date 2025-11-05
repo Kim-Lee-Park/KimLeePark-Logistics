@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.application;
 
-import com.klp.hub.inventory.infrastructure.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
