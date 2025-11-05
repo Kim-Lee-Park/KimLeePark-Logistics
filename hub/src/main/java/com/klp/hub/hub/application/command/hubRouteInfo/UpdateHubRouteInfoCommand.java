@@ -5,8 +5,8 @@ import java.util.UUID;
 public record UpdateHubRouteInfoCommand(
     UUID departureId,
     UUID arrivalId,
-    Long duration_min,
-    Double distance_km
+    Long durationMin,
+    Double distanceKm
 ) {
 
 }
