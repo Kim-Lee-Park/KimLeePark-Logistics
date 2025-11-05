@@ -19,7 +19,10 @@ public class CompanyReader {
     private final CompanyRepository companyRepository;
 
     public CompanyResponse getByCompanyId(UUID companyId) {
-        Company company = companyRepository.findById(companyId).orElseThrow();
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> {
+            log.error("업체를 찾을 수 없습니다. companyId : {}", companyId);
+            return new RuntimeException();
+        });
 
         return new CompanyResponse(
                 company.getId(),

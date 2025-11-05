@@ -43,4 +43,12 @@ class CompanyReaderTest {
 
         assertThat(response.id()).isNotNull();
     }
+
+    @Test
+    @DisplayName("해당 업체가 존재하지 않는다면 예외가 발생한다")
+    void throwGetCompanyById() {
+        when(companyRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> companyReader.getByCompanyId(UUID.randomUUID()));
+    }
 }
