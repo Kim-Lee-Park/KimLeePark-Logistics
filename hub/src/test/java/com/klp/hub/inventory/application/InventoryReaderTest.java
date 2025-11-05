@@ -20,10 +20,10 @@ import static org.mockito.Mockito.mock;
 class InventoryReaderTest {
 
     @Mock
-    InventoryRepository inventoryRepository;
+    private InventoryRepository inventoryRepository;
 
     @InjectMocks
-    InventoryReader inventoryReader;
+    private InventoryReader inventoryReader;
 
     private UUID productId = UUID.randomUUID();
 
