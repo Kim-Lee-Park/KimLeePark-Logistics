@@ -1,5 +1,6 @@
 package com.klp.hub.product.application;
 
+import com.klp.hub.company.application.CompanyReader;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,16 +18,20 @@ public class ProductReader {
 
     private final ProductRepository productRepository;
 
+    private final CompanyReader companyReader;
+
     public ProductResponse getProductById(UUID productId) {
         var product = productRepository.findById(productId).orElseThrow(() -> {
             log.error("해당 상품을 찾을 수 없습니다. productId : {}", productId);
             return new RuntimeException();
         });
 
+        var company = companyReader.getByCompanyId(product.getCompanyId());
+
         return new ProductResponse(
                 product.getId(),
                 UUID.randomUUID(),
-                "업체명",
+                company.name(),
                 product.getName()
         );
     }

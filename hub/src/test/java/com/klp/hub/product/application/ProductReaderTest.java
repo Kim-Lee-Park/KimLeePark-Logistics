@@ -1,5 +1,8 @@
 package com.klp.hub.product.application;
 
+import com.klp.hub.company.application.CompanyReader;
+import com.klp.hub.company.domain.CompanyType;
+import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -23,19 +26,27 @@ class ProductReaderTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private CompanyReader companyReader;
+
     @InjectMocks
     private ProductReader productReader;
 
     private UUID productId = UUID.randomUUID();
 
+    private UUID companyId = UUID.randomUUID();
+
     @Test
     @DisplayName("상품의 ID 로 상품을 조회할 수 있다")
     void getProductById() {
         var product = mock(Product.class);
+        var companyResponse = new CompanyResponse(companyId, CompanyType.SUPPLIER.name(), "업체명", "업체주소");
         when(product.getName()).thenReturn("상품명");
         when(product.getId()).thenReturn(productId);
+        when(product.getCompanyId()).thenReturn(companyId);
         when(productRepository.findById(productId))
                 .thenReturn(Optional.of(product));
+        when(companyReader.getByCompanyId(companyId)).thenReturn(companyResponse);
 
         var response = productReader.getProductById(productId);
 
