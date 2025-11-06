@@ -13,7 +13,9 @@ import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubStatus;
 import com.klp.hub.hub.domain.repository.HubRepository;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
+import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +24,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -131,5 +137,29 @@ public class HubServiceTest {
         //then
         assertThatThrownBy(() -> hubService.getHubDetail(hubId))
             .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("허브 목록 조회 성공")
+    void getHubsSuccess(){
+        //given
+        Pageable pageable = PageRequest.of(0, 10);
+        Hub hub1 = Hub.create(new RegisterHubCommand("제주허브", 334455L, 126123L, "제주시 노형동"));
+        Hub hub2 = Hub.create(new RegisterHubCommand("서귀포허브", 444555L, 127333L, "서귀포시 중문동"));
+        List<Hub> hubList = List.of(hub1, hub2);
+        Page<Hub> hubs = new PageImpl<>(hubList, pageable, hubList.size());
+
+        when(hubRepository.getHubs(pageable)).thenReturn(hubs);
+
+        //when
+        GetHubListResponse response= hubService.getHubs(pageable);
+
+        //then
+        assertThat(response).isNotNull();
+        assertThat(response.pageable().page()).isEqualTo(0);
+        assertThat(response.pageable().size()).isEqualTo(10);
+        assertThat(response.hubs()).hasSize(2);
+        assertThat(response.hubs().get(0).name()).isEqualTo("제주허브");
+        assertThat(response.hubs().get(1).name()).isEqualTo("서귀포허브");
     }
 }
