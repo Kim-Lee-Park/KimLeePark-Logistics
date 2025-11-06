@@ -12,6 +12,7 @@ import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class HubService {
     private final HubRepository hubRepository;
+
+    private static final String CACHE_NAME = "hub";
 
     //허브 등록
     @Transactional
@@ -42,7 +45,7 @@ public class HubService {
     }
 
     //허브 단일 조회
-    @Cacheable(cacheNames = "hub",key = "#hubId")
+    @Cacheable(cacheNames = CACHE_NAME,key = "#hubId")
     @Transactional(readOnly = true)
     public GetHubDetailResponse getHubDetail(UUID hubId){
         Hub hub= hubRepository.getHubById(hubId)
@@ -58,6 +61,7 @@ public class HubService {
         return GetHubListResponse.from(page);
     }
 
+    @CachePut(cacheNames = CACHE_NAME , key = "#hubId")
     @Transactional
     public UpdatedHubResponse updateHub(UUID hubId, UpdateHubCommand request){
         Hub hub= hubRepository.getHubById(hubId)

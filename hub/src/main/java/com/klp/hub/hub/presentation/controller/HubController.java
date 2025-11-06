@@ -50,7 +50,8 @@ public class HubController {
     @PatchMapping("/{hubId}")
     public ResponseEntity<UpdatedHubResponse> updateHub(@PathVariable UUID hubId,
         @RequestBody UpdateHubRequest request){
-        return null;
+        UpdatedHubResponse response=hubService.updateHub(hubId, request.toCommand());
+        return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("/{hubId}")
