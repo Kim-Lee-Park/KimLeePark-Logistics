@@ -113,12 +113,29 @@ class ProductServiceTest {
                 quantity
         );
         Product product = mock(Product.class);
+        CompanyResponse companyResponse = mock(CompanyResponse.class);
+        when(companyService.getByCompanyId(companyId)).thenReturn(companyResponse);
+        when(companyResponse.id()).thenReturn(companyId);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(product.getId()).thenReturn(productId);
 
         productService.create(command);
 
         verify(inventoryService, times(1)).create(productId, hubId, quantity);
+    }
+
+    @Test
+    @DisplayName("상품 생성시 업체가 존재하지 않는다면 예외가 발생한다")
+    void throwNullCompany() {
+        ProductCreateCommand command = new ProductCreateCommand(
+                companyId,
+                hubId,
+                "상품명",
+                10
+        );
+        when(companyService.getByCompanyId(companyId)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> productService.create(command));
     }
 
     @Test

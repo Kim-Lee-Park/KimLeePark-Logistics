@@ -49,6 +49,16 @@ public class ProductService {
     }
 
     @Transactional
+    public void create(ProductCreateCommand command) {
+        CompanyResponse companyResponse = companyService.getByCompanyId(command.companyId());
+        Product savedProduct = productRepository.save(
+                new Product(companyResponse.id(), command.name())
+        );
+
+        inventoryService.create(savedProduct.getId(), command.hubId(), command.quantity());
+    }
+
+    @Transactional
     public void update(ProductUpdateCommand command) {
         Product product = getById(command.productId());
 
@@ -72,12 +82,5 @@ public class ProductService {
             return new RuntimeException();
         });
         return product;
-    }
-
-    @Transactional
-    public void create(ProductCreateCommand command) {
-        Product savedProduct = productRepository.save(new Product(command.companyId(), command.name()));
-
-        inventoryService.create(savedProduct.getId(), command.hubId(), command.quantity());
     }
 }
