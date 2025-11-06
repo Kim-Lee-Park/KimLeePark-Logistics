@@ -1,5 +1,6 @@
 package com.klp.hub.product.infrastructure.repository;
 
+import com.klp.hub.TestJpaConfig;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.global.config.QuerydslConfig;
@@ -26,7 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 @Import({
         QuerydslConfig.class,
-        ProductRepositoryImpl.class
+        ProductRepositoryImpl.class,
+        TestJpaConfig.class
 })
 class ProductRepositoryTest {
 

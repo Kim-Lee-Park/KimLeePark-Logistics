@@ -1,5 +1,6 @@
 package com.klp.hub.inventory.domain;
 
+import com.klp.hub.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.util.UUID;
         schema = "hub_schema"
 )
 @Getter
-public class Inventory {
+public class Inventory extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "invevntory_id", nullable = false)
