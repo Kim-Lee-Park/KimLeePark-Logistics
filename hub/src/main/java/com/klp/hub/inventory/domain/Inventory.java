@@ -12,7 +12,13 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "p_inventory",
-        schema = "hub_schema"
+        schema = "hub_schema",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_inventory_product_hub",
+                        columnNames = {"product_id", "hub_id"}
+                )
+        }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
