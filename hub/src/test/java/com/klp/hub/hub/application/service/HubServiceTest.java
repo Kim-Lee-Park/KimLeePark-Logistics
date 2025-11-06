@@ -12,7 +12,9 @@ import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubStatus;
 import com.klp.hub.hub.domain.repository.HubRepository;
+import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class HubServiceTest {
@@ -89,5 +92,44 @@ public class HubServiceTest {
 
         //then
         assertThat(response).isNotNull();
+    }
+
+    @Test
+    @DisplayName("허브 단일 조회 성공")
+    void getHubDetailSuccess(){
+        //given
+        UUID hubId = UUID.randomUUID();
+        RegisterHubCommand command = new RegisterHubCommand(
+            "testHub",
+            11L,
+            12L,
+            "서울특별시"
+        );
+        Hub hub = Hub.create(command);
+        ReflectionTestUtils.setField(hub, "hubId", hubId);
+
+        when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
+
+        //when
+        GetHubDetailResponse response=hubService.getHubDetail(hubId);
+
+        //then
+        assertThat(response).isNotNull();
+        assertThat(response.name()).isEqualTo("testHub");
+        assertThat(response.address()).contains("서울특별시");
+    }
+
+    @Test
+    @DisplayName("허브 단일 조회 실패: 존재하지 않는 허브")
+    void getHubDetailFail(){
+        //given
+        UUID hubId = UUID.randomUUID();
+        when(hubRepository.getHubById(hubId)).thenReturn(Optional.empty());
+
+        //when
+
+        //then
+        assertThatThrownBy(() -> hubService.getHubDetail(hubId))
+            .isInstanceOf(RuntimeException.class);
     }
 }
