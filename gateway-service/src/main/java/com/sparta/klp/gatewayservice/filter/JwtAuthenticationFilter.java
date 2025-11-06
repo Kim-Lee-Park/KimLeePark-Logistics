@@ -35,6 +35,11 @@ public class JwtAuthenticationFilter implements GlobalFilter {
     private final ObjectMapper objectMapper;
     private final GatewayProperties gatewayProperties;
 
+    private static final String USER_ID_HEADER = "X-User-Id";
+    private static final String USER_NAME_HEADER = "X-User-Name";
+    private static final String USER_ROLE_HEADER = "X-User-Role";
+
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -61,9 +66,9 @@ public class JwtAuthenticationFilter implements GlobalFilter {
             String role = claims.get("role", String.class);
 
             ServerHttpRequest upstreamRequest = request.mutate()
-                .header("X-User-Id", userId)
-                .header("X-User-Name", URLEncoder.encode(username, StandardCharsets.UTF_8))
-                .header("X-User-Role", role)
+                .header(USER_ID_HEADER, userId)
+                .header(USER_NAME_HEADER, URLEncoder.encode(username, StandardCharsets.UTF_8))
+                .header(USER_ROLE_HEADER, role)
                 .build();
 
             return chain.filter(exchange.mutate().request(upstreamRequest).build());
