@@ -43,6 +43,17 @@ class ProductTest {
         assertThrows(IllegalArgumentException.class, () -> product.updateName(" "));
     }
 
+    @Test
+    @DisplayName("상품명을 변경할 수 있다")
+    void updateProductName() {
+        var name = "새로운 상품명";
+        var product = createProductByName("기존 상품명");
+
+        product.updateName(name);
+
+        assertEquals(name, product.getName());
+    }
+
     private Product createProductByName(String name) {
         return new Product(UUID.randomUUID(), name);
     }

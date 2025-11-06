@@ -41,6 +41,8 @@ public class Product {
 
     public void updateName(String name) {
         validateName(name);
+
+        this.name = name;
     }
 
     private void validateName(String name) {
