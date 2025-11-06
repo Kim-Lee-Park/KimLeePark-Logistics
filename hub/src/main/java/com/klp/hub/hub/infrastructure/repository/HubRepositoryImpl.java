@@ -20,6 +20,16 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
+    public boolean existsByName(String name) {
+        return hubJpaRepository.existsByName(name);
+    }
+
+    @Override
+    public boolean existsByAddress(String address) {
+        return hubJpaRepository.existsByAddress(address);
+    }
+
+    @Override
     public Optional<Hub> getHubById(UUID hubId) {
         return hubJpaRepository.findById(hubId);
     }

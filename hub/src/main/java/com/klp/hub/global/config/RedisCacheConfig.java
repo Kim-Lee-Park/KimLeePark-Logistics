@@ -52,6 +52,7 @@ public class RedisCacheConfig {
         return RedisCacheManager.builder(connectionFactory)
             .cacheDefaults(redisCacheConfig)
             .withInitialCacheConfigurations(cacheConfigurations)
+            .transactionAware() // 트랜잭션 커밋 이후에 캐시 작업
             .build();
     }
 }

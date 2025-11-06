@@ -8,12 +8,12 @@ public record RegisterHubRequest(
     Long longitude,
     String address
 ) {
-    public RegisterHubCommand toCommand(RegisterHubRequest dto){
+    public RegisterHubCommand toCommand(){
         return new RegisterHubCommand(
-            dto.name(),
-            dto.latitude(),
-            dto.longitude(),
-            dto.address()
+            name,
+            latitude,
+            longitude,
+            address
         );
     }
 }

@@ -9,6 +9,10 @@ import org.springframework.data.domain.Pageable;
 public interface HubRepository {
     Hub save(Hub hub);
 
+    boolean existsByName(String name);
+
+    boolean existsByAddress(String address);
+
     Optional<Hub> getHubById(UUID hubId);
 
     Page<Hub> getHubs(Pageable pageable);
