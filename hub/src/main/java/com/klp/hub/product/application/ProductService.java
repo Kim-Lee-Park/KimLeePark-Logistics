@@ -15,10 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import com.klp.hub.product.application.dto.ProductUpdateCommand;
-import com.klp.hub.product.domain.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -31,11 +27,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> {
-            log.error("해당 상품을 찾을 수 없습니다. productId : {}", productId);
-            return new RuntimeException();
-        });
-
+        Product product = getById(productId);
         CompanyResponse company = companyService.getByCompanyId(product.getCompanyId());
 
         return new ProductResponse(
@@ -51,6 +43,18 @@ public class ProductService {
         return productRepository.findAllByPageable(pageable);
     }
 
-    public void update(ProductUpdateCommand request) {
+    @Transactional
+    public void update(ProductUpdateCommand command) {
+        Product product = getById(command.productId());
+
+        product.updateName(command.name());
+    }
+
+    private Product getById(UUID productId) {
+        Product product = productRepository.findById(productId).orElseThrow(() -> {
+            log.error("해당 상품을 찾을 수 없습니다. productId : {}", productId);
+            return new RuntimeException();
+        });
+        return product;
     }
 }

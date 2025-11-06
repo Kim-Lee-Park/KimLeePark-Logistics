@@ -7,14 +7,11 @@ import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import com.klp.hub.product.application.dto.ProductUpdateCommand;
-import com.klp.hub.product.domain.Product;
-import com.klp.hub.product.domain.repository.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -22,9 +19,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -79,8 +76,7 @@ class ProductServiceTest {
                 newName
         );
         var product = new Product(companyId, oldName);
-        when(product.getId()).thenReturn(productId);
-        when(productRepository.findById(productId))
+        when(productRepository.findById(any(UUID.class)))
                 .thenReturn(Optional.of(product));
 
         productService.update(request);
