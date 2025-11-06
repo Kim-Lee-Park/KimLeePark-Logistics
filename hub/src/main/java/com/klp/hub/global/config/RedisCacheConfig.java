@@ -3,6 +3,7 @@ package com.klp.hub.global.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import java.util.HashMap;
@@ -26,22 +27,14 @@ public class RedisCacheConfig {
 
     @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
-        // ObjectMapper 커스텀
-        ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        // Json 직렬화
-        GenericJackson2JsonRedisSerializer serializer
-            = new GenericJackson2JsonRedisSerializer(objectMapper);
+        var valueSerializer = new GenericJackson2JsonRedisSerializer();
+        var keySerializer   = new org.springframework.data.redis.serializer.StringRedisSerializer();
 
         // config
         RedisCacheConfiguration redisCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofMinutes(10))  // TTL 기본 설정
-            .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(serializer)
-            )
+            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(keySerializer))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer))
             .prefixCacheNameWith(KEY_PREFIX); // 키 접두어
 
         // 캐시 이름마다 다른 TTL 설정 Option

@@ -38,7 +38,7 @@ public class HubController {
 
     @GetMapping("/{hubId}")
     public ResponseEntity<GetHubDetailResponse> getHubDetail(@PathVariable UUID hubId){
-        return null;
+        return ResponseEntity.ok().body(hubService.getHubDetail(hubId));
     }
 
     @GetMapping("")

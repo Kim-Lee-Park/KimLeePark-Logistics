@@ -10,6 +10,7 @@ import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class HubService {
     private final HubRepository hubRepository;
 
-    @CachePut(cacheNames = "hub", key="#result.hubId")
     @Transactional
     public RegisterHubResponse registerHub(RegisterHubCommand request){
 
@@ -36,9 +36,12 @@ public class HubService {
         return new RegisterHubResponse(hub.getHubId());
     }
 
+    @Cacheable(cacheNames = "hub",key = "#hubId")
     @Transactional(readOnly = true)
     public GetHubDetailResponse getHubDetail(UUID hubId){
-        return null;
+        Hub hub= hubRepository.getHubById(hubId)
+            .orElseThrow(()->new RuntimeException("hub not found"));
+        return GetHubDetailResponse.from(hub);
     }
 
     @Transactional(readOnly = true)
