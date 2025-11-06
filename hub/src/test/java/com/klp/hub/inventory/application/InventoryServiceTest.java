@@ -67,4 +67,12 @@ class InventoryServiceTest {
         assertTrue(inventory.isDeleted());
         assertThat(inventory.getDeletedAt()).isNotNull();
     }
+
+    @Test
+    @DisplayName("재고 ID 를 통해 재고를 삭제할때 재고가 없다면 예외가 발생한다")
+    void throwDeletedByNullInventoryId() {
+        when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> inventoryService.delete(inventoryId));
+    }
 }

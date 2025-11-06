@@ -40,6 +40,10 @@ public class InventoryService {
     }
 
     private Inventory getById(UUID inventoryId) {
-        return inventoryRepository.findById(inventoryId).orElse(null);
+        return inventoryRepository.findById(inventoryId).orElseThrow(() -> {
+            log.error("재고가 존재하지 않습니다. inventoryId = {}", inventoryId);
+            // FIXME: 도메인 예외 전까지 임시 예외처리
+            throw new RuntimeException();
+        });
     }
 }
