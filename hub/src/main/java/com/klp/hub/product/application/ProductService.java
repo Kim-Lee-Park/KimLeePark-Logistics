@@ -4,6 +4,7 @@ import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
@@ -71,5 +72,12 @@ public class ProductService {
             return new RuntimeException();
         });
         return product;
+    }
+
+    @Transactional
+    public void create(ProductCreateCommand command) {
+        Product savedProduct = productRepository.save(new Product(command.companyId(), command.name()));
+
+        inventoryService.create(savedProduct.getId(), command.hubId(), command.quantity());
     }
 }

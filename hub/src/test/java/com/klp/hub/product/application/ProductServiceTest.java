@@ -5,6 +5,7 @@ import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductResponse;
@@ -45,6 +46,8 @@ class ProductServiceTest {
     private UUID companyId = UUID.randomUUID();
 
     private UUID inventoryId = UUID.randomUUID();
+
+    private UUID hubId = UUID.randomUUID();
 
     @Test
     @DisplayName("상품의 ID 로 상품을 조회할 수 있다")
@@ -97,6 +100,25 @@ class ProductServiceTest {
         when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> productService.delete(productId));
+    }
+
+    @Test
+    @DisplayName("상품을 생성할때 재고도 같이 생성한다")
+    void withCreateInventory() {
+        Integer quantity = 10;
+        ProductCreateCommand command = new ProductCreateCommand(
+                companyId,
+                hubId,
+                "상품명",
+                quantity
+        );
+        Product product = mock(Product.class);
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(product.getId()).thenReturn(productId);
+
+        productService.create(command);
+
+        verify(inventoryService, times(1)).create(productId, hubId, quantity);
     }
 
     @Test

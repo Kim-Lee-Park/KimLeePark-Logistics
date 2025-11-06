@@ -22,4 +22,9 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     public Optional<Inventory> findById(UUID inventoryId) {
         return inventoryJpaRepository.findById(inventoryId);
     }
+
+    @Override
+    public Inventory save(Inventory inventory) {
+        return inventoryJpaRepository.save(inventory);
+    }
 }
