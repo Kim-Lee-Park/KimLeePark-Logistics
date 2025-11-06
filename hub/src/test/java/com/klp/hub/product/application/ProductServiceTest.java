@@ -6,11 +6,15 @@ import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductResponse;
+import com.klp.hub.product.application.dto.ProductUpdateCommand;
+import com.klp.hub.product.domain.Product;
+import com.klp.hub.product.domain.repository.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -20,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -62,5 +67,24 @@ class ProductServiceTest {
         when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> productService.getProductById(productId));
+    }
+
+    @Test
+    @DisplayName("상품명을 변경할 수 있다")
+    void updateProduct() {
+        var oldName = "기존 상품명";
+        var newName = "새로운 상품명";
+        var request = new ProductUpdateCommand(
+                productId,
+                newName
+        );
+        var product = new Product(companyId, oldName);
+        when(product.getId()).thenReturn(productId);
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(product));
+
+        productService.update(request);
+
+        assertThat(product.getName()).isEqualTo(newName);
     }
 }

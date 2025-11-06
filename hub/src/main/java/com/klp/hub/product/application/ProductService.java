@@ -14,6 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import com.klp.hub.product.application.dto.ProductUpdateCommand;
+import com.klp.hub.product.domain.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -44,5 +49,8 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductsPageRowResponse> getProductsByPageable(Pageable pageable) {
         return productRepository.findAllByPageable(pageable);
+    }
+
+    public void update(ProductUpdateCommand request) {
     }
 }
