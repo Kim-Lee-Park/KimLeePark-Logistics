@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.entity.orderitem.OrderItem;
+import com.klp.order.global.AuditConfig;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,14 +13,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @DisplayName("OrderRepository 테스트")
+@ActiveProfiles("test")
+@Import(AuditConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class OrderRepositoryTest {
 
     @Autowired
@@ -32,9 +39,10 @@ public class OrderRepositoryTest {
 
 
     @BeforeEach
-    void setup() {
+    void setup() throws Exception {
         orderItems1 = List.of(new OrderItem(UUID.randomUUID(), 10));
-        orderItems2 = List.of(new OrderItem(UUID.randomUUID(), 10));
+        orderItems2 = List.of(new OrderItem(UUID.randomUUID(), 20));
+        order1 = Order.create(1L, 2L, "주문1요청사항", orderItems1);
 
     }
 
@@ -42,7 +50,7 @@ public class OrderRepositoryTest {
     @DisplayName("주문 저장- 정상")
     void 주문정상() {
         //given
-        order1 = Order.create(1L, 2L, "주문1요청사항", orderItems1);
+        //setup
 
         //when
         Order saveOrder = orderRepository.save(order1);
@@ -54,7 +62,7 @@ public class OrderRepositoryTest {
         assertThat(saveOrder.getComment()).isEqualTo("주문1요청사항");
         assertThat(saveOrder.getOrderStatus()).isEqualTo(OrderStatus.ING);
         assertThat(saveOrder.getCancellation()).isNull();
-        assertThat(saveOrder.getOutboundRequests()).isNull();
+        assertThat(saveOrder.getOutboundRequests()).hasSize(0);
     }
 
     @Test
@@ -62,7 +70,8 @@ public class OrderRepositoryTest {
     void 주문ID로조회_정상() {
 
         //given
-        UUID orderId = order1.getOrderId();
+        Order saveOrder = orderRepository.save(order1);
+        UUID orderId = saveOrder.getOrderId();
 
         //when
         Optional<Order> foundOrder = orderRepository.findById(orderId);
@@ -91,6 +100,7 @@ public class OrderRepositoryTest {
     @DisplayName("전체 주문 조회-성공")
     void 전체_주문_조회() {
         // when
+        Order saveOrder = orderRepository.save(order1);
         List<Order> orders = orderRepository.findAll();
 
         // then
@@ -101,6 +111,7 @@ public class OrderRepositoryTest {
     @DisplayName("페이징 처리 -정상")
     void 페이징처리_정상() {
         // given
+        Order saveOrder = orderRepository.save(order1);
         Pageable pageable = PageRequest.of(0, 1, Sort.by("createdAt").descending());
 
         // when
@@ -111,14 +122,15 @@ public class OrderRepositoryTest {
         assertThat(orderPage.getTotalElements()).isEqualTo(1);
         assertThat(orderPage.getTotalPages()).isEqualTo(1);
         assertThat(orderPage.isFirst()).isTrue();
-        assertThat(orderPage.hasNext()).isTrue();
+        assertThat(orderPage.hasNext()).isFalse();
     }
 
     @Test
     @DisplayName("주문 수정 - 정상")
     void 주문수정_정상() {
         // given
-        UUID orderId = order1.getOrderId();
+        Order saveOrder = orderRepository.save(order1);
+        UUID orderId = saveOrder.getOrderId();
         String newComment = "수정된 주문";
         List<OrderItem> newOrderItems = List.of(
             new OrderItem(UUID.randomUUID(), 100)
@@ -139,6 +151,7 @@ public class OrderRepositoryTest {
     @DisplayName("주문 삭제 - 정상 (Soft Delete)")
     void 주문삭제_정상() {
         // given
+        Order saveOrder = orderRepository.save(order1);
         UUID orderId = order1.getOrderId();
         Long deletedBy = 3L;
 
