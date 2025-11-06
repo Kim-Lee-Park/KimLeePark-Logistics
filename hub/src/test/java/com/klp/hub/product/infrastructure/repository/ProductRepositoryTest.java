@@ -5,6 +5,7 @@ import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.config.QuerydslConfig;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
+import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -65,12 +67,12 @@ class ProductRepositoryTest {
     @Test
     @DisplayName("총 3개의 데이터에서 1페이지, 2개의 데이터를 조회할 수 있다")
     void findAllByPageable() {
-        var page = 0;
-        var size = 2;
+        int page = 0;
+        int size = 2;
         Company company = new Company(hubId, CompanyType.SUPPLIER, "업체명", "업체주소");
         entityManager.persist(company);
         entityManager.flush();
-        var companyId = company.getId();
+        UUID companyId = company.getId();
         Product productA = new Product(companyId, "상품A");
         Product productB = new Product(companyId, "상품B");
         Product productC = new Product(companyId, "상품C");
@@ -79,8 +81,8 @@ class ProductRepositoryTest {
         entityManager.persist(productC);
         entityManager.flush();
 
-        var pageable = PageRequest.of(page, size);
-        var result = productRepository.findAllByPageable(pageable);
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<ProductsPageRowResponse> result = productRepository.findAllByPageable(pageable);
 
         assertEquals(2, result.getContent().size());
         assertEquals(3, result.getTotalElements());

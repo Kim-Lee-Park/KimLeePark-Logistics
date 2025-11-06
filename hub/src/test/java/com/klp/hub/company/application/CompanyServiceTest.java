@@ -3,6 +3,7 @@ package com.klp.hub.company.application;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
+import com.klp.hub.company.presentation.dto.CompanyResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ class CompanyServiceTest {
     @DisplayName("업체 ID 를 통해 업체를 조회할 수 있다")
     void getCompanyById() {
         UUID companyId = UUID.randomUUID();
-        var company = mock(Company.class);
+        Company company = mock(Company.class);
         when(company.getId()).thenReturn(companyId);
         when(company.getType()).thenReturn(CompanyType.SUPPLIER);
         when(company.getName()).thenReturn("업체명");
@@ -39,7 +40,7 @@ class CompanyServiceTest {
         when(companyRepository.findById(companyId))
                 .thenReturn(Optional.of(company));
 
-        var response = companyService.getByCompanyId(companyId);
+        CompanyResponse response = companyService.getByCompanyId(companyId);
 
         assertThat(response.id()).isNotNull();
     }

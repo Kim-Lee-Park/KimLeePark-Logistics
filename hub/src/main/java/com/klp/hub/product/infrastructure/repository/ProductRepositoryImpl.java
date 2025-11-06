@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public Page<ProductsPageRowResponse> findAllByPageable(Pageable pageable) {
-        var query = queryFactory
+        List<ProductsPageRowResponse> response = queryFactory
                 .select(getProductListRowProjection())
                 .from(qProduct)
                 .join(qCompany)
@@ -42,14 +43,14 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        var total = queryFactory
+        Long total = queryFactory
                 .select(qProduct.count())
                 .from(qProduct)
                 .join(qCompany)
                 .on(qProduct.companyId.eq(qCompany.id))
                 .fetchOne();
 
-        return new PageImpl<>(query, pageable, total);
+        return new PageImpl<>(response, pageable, total);
     }
 
     private ConstructorExpression<ProductsPageRowResponse> getProductListRowProjection() {

@@ -51,13 +51,13 @@ class ProductControllerTest {
     @Test
     @DisplayName("상품 목록을 페이지네이션으로 조회할 수 있다")
     void getProductsByPageable() throws Exception {
-        var row = new ProductsPageRowResponse(
+        ProductsPageRowResponse row = new ProductsPageRowResponse(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "업체명",
                 "상품명"
         );
-        var page = new PageImpl<>(List.of(row), PageRequest.of(0, 10), 100);
+        PageImpl<ProductsPageRowResponse> page = new PageImpl<>(List.of(row), PageRequest.of(0, 10), 100);
 
         when(productService.getProductsByPageable(any(Pageable.class))).thenReturn(page);
 

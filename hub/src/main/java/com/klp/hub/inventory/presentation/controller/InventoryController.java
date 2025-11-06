@@ -23,7 +23,7 @@ public class InventoryController {
     @GetMapping("/{productId}")
     public ResponseEntity<InventoryResponse> getInventoryByProductId(@PathVariable("productId") String productId) {
         log.info("== 단일 상품의 재고 조회 productId : {} ==", productId);
-        var response = inventoryService.getByProductId(UUID.fromString(productId));
+        InventoryResponse response = inventoryService.getByProductId(UUID.fromString(productId));
         log.info("== 단일 상품의 재고 조회 성공 ==");
         return ResponseEntity.ok().body(response);
     }

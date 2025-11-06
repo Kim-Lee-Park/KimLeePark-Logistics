@@ -2,6 +2,7 @@ package com.klp.hub.inventory.application;
 
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,12 +31,12 @@ class InventoryServiceTest {
     @Test
     @DisplayName("한 상품의 재고를 조회할 수 있다")
     void getInventoryByProductId() {
-        var inventory = mock(Inventory.class);
+        Inventory inventory = mock(Inventory.class);
         when(inventory.getQuantity()).thenReturn(10);
         when(inventoryRepository.findByProductId(productId))
                 .thenReturn(Optional.of(inventory));
 
-        var response = inventoryService.getByProductId(productId);
+        InventoryResponse response = inventoryService.getByProductId(productId);
 
         assertEquals(response.productId(), productId);
         assertEquals(response.quantity(), inventory.getQuantity());

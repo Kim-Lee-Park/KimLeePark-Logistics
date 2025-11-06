@@ -1,6 +1,8 @@
 package com.klp.hub.product.application;
 
 import com.klp.hub.company.application.CompanyService;
+import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import com.klp.hub.product.presentation.dto.ProductResponse;
@@ -24,12 +26,12 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID productId) {
-        var product = productRepository.findById(productId).orElseThrow(() -> {
+        Product product = productRepository.findById(productId).orElseThrow(() -> {
             log.error("해당 상품을 찾을 수 없습니다. productId : {}", productId);
             return new RuntimeException();
         });
 
-        var company = companyService.getByCompanyId(product.getCompanyId());
+        CompanyResponse company = companyService.getByCompanyId(product.getCompanyId());
 
         return new ProductResponse(
                 product.getId(),
