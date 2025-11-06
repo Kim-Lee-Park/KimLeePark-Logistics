@@ -3,6 +3,7 @@ package com.klp.hub.product.application;
 import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.domain.Product;
@@ -55,7 +56,13 @@ public class ProductService {
                 new Product(companyResponse.id(), command.name())
         );
 
-        inventoryService.create(savedProduct.getId(), command.hubId(), command.quantity());
+        try {
+            inventoryService.create(savedProduct.getId(), command.hubId(), command.quantity());
+        } catch (UniqueConstraintException exception) {
+            log.error("이미 해당 재고가 존재합니다.");
+            // FIXME: 도메인 예외 교체 필요
+            throw new RuntimeException(exception.getMessage());
+        }
     }
 
     @Transactional

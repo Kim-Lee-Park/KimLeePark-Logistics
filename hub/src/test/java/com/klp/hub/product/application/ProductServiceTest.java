@@ -4,6 +4,7 @@ import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.domain.Product;
@@ -134,6 +135,27 @@ class ProductServiceTest {
                 10
         );
         when(companyService.getByCompanyId(companyId)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> productService.create(command));
+    }
+
+    @Test
+    @DisplayName("상품 생성시 이미 해당 상품의 재고가 존재하면 예외가 발생한다")
+    void throwDuplicatedInventory() {
+        Integer quantity = 10;
+        ProductCreateCommand command = new ProductCreateCommand(
+                companyId,
+                hubId,
+                "상품명",
+                quantity
+        );
+        Product product = mock(Product.class);
+        CompanyResponse companyResponse = mock(CompanyResponse.class);
+        when(companyService.getByCompanyId(companyId)).thenReturn(companyResponse);
+        when(companyResponse.id()).thenReturn(companyId);
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(product.getId()).thenReturn(productId);
+        when(inventoryService.create(productId, command.hubId(), quantity)).thenThrow(UniqueConstraintException.class);
 
         assertThrows(RuntimeException.class, () -> productService.create(command));
     }
