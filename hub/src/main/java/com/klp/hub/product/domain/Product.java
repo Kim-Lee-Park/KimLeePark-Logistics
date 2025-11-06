@@ -40,4 +40,10 @@ public class Product {
         this.name = name;
         this.companyId = companyId;
     }
+
+    public void updateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("상품명은 필수입니다.");
+        }
+    }
 }
