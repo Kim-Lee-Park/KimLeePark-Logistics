@@ -53,6 +53,7 @@ public class OrderCancellationRepositoryTest {
 
         cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
         orderRepository.save(order1);
+        cancellation1 = order1.getCancellation();
     }
 
     @Test
@@ -79,6 +80,7 @@ public class OrderCancellationRepositoryTest {
         //when
         OrderCancellation cancellation = order2.cancel(cancelReason, cancelledBy, cancelType);
         orderRepository.save(order2);
+        cancellation = order2.getCancellation();
 
         //then
         OrderCancellation savedCancellation = orderCancellationRepository
