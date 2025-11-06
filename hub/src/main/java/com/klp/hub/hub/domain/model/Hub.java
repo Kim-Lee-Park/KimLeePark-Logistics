@@ -2,6 +2,7 @@ package com.klp.hub.hub.domain.model;
 
 import com.klp.hub.common.entity.BaseEntity;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
+import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,5 +47,20 @@ public class Hub extends BaseEntity {
         hub.address = command.address();
         hub.status=HubStatus.ACTIVE;
         return hub;
+    }
+
+    public void update(UpdateHubCommand command) {
+        if(command.name()!=null){
+            name = command.name();
+        }
+        if(command.latitude()!=null){
+            latitude = command.latitude();
+        }
+        if(command.longitude()!=null){
+            longitude = command.longitude();
+        }
+        if(command.address()!=null){
+            address = command.address();
+        }
     }
 }

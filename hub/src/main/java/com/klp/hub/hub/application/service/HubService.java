@@ -60,7 +60,19 @@ public class HubService {
 
     @Transactional
     public UpdatedHubResponse updateHub(UUID hubId, UpdateHubCommand request){
-        return null;
+        Hub hub= hubRepository.getHubById(hubId)
+            .orElseThrow(()->new RuntimeException("hub not found"));
+
+        if (hubRepository.existsByName(request.name())) {
+            throw new RuntimeException("hub name duplicated");
+        }
+        if(hubRepository.existsByAddress(request.address())){
+            throw new RuntimeException("hub address duplicated");
+        }
+
+        hub.update(request);
+
+        return UpdatedHubResponse.from(hub);
     }
 
     @Transactional

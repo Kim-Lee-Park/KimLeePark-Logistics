@@ -1,6 +1,7 @@
 package com.klp.hub.hub.presentation.controller;
 
 import com.klp.hub.hub.application.service.HubService;
+import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.presentation.dto.request.hub.UpdateHubRequest;
 import com.klp.hub.hub.presentation.dto.request.hub.RegisterHubRequest;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
