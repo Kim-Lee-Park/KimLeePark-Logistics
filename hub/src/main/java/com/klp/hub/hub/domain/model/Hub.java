@@ -28,4 +28,6 @@ public class Hub extends BaseEntity {
     private Long longitude;
 
     private String address;
+
+    private HubStatus status;
 }
