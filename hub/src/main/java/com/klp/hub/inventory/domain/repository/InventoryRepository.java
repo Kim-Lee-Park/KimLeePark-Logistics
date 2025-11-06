@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface InventoryRepository {
     Optional<Inventory> findByProductId(UUID productId);
+
+    Optional<Inventory> findById(UUID inventoryId);
 }

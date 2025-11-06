@@ -17,4 +17,9 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     public Optional<Inventory> findByProductId(UUID productId) {
         return inventoryJpaRepository.findByProductId(productId);
     }
+
+    @Override
+    public Optional<Inventory> findById(UUID inventoryId) {
+        return inventoryJpaRepository.findById(inventoryId);
+    }
 }

@@ -30,4 +30,16 @@ public class InventoryService {
                 inventory.getQuantity()
         );
     }
+
+    public UUID delete(UUID inventoryId) {
+        Inventory inventory = getById(inventoryId);
+
+        inventory.delete(1L);
+
+        return inventory.getId();
+    }
+
+    private Inventory getById(UUID inventoryId) {
+        return inventoryRepository.findById(inventoryId).orElse(null);
+    }
 }
