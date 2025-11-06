@@ -3,6 +3,8 @@ package com.klp.hub.inventory.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InventoryTest {
@@ -67,6 +69,6 @@ class InventoryTest {
     }
 
     private Inventory inventory(Integer quantity) {
-        return new Inventory(quantity, "productId");
+        return new Inventory(UUID.randomUUID(), UUID.randomUUID(), quantity);
     }
 }

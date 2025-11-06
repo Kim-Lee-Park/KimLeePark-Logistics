@@ -3,9 +3,13 @@ package com.klp.hub.company.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CompanyTest {
+
+    private UUID hubId = UUID.randomUUID();
 
     @Test
     @DisplayName("업체 종류는 Null 일 수 없다")
@@ -37,15 +41,25 @@ class CompanyTest {
         assertThrows(IllegalArgumentException.class, () -> createCompanyByAddress(" "));
     }
 
+    @Test
+    @DisplayName("허브 ID는 Null일 수 없다")
+    void nullHubId() {
+        assertThrows(IllegalArgumentException.class, () -> createCompanyByHubId(null));
+    }
+
     private Company createCompanyByType(CompanyType type) {
-        return new Company(type, "name", "address");
+        return new Company(hubId, type, "name", "address");
     }
 
     private Company createCompanyByName(String name) {
-        return new Company(CompanyType.SUPPLIER, name, "address");
+        return new Company(hubId, CompanyType.SUPPLIER, name, "address");
     }
 
     private Company createCompanyByAddress(String address) {
-        return new Company(CompanyType.SUPPLIER, "상품명", address);
+        return new Company(hubId, CompanyType.SUPPLIER, "상품명", address);
+    }
+
+    private Company createCompanyByHubId(UUID hubId) {
+        return new Company(hubId, CompanyType.SUPPLIER, "상품명", "address");
     }
 }
