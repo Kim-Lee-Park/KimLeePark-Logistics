@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -90,5 +91,17 @@ class ProductServiceTest {
         when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> productService.delete(productId));
+    }
+
+    @Test
+    @DisplayName("상품 ID를 통해서 상품을 softDelete 할 수 있다")
+    void softDelete() {
+        Product product = new Product(companyId, "상품명");
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+        productService.delete(productId);
+
+        assertTrue(product.isDeleted());
+        assertThat(product.getDeletedAt()).isNotNull();
     }
 }

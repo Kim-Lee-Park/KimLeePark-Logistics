@@ -50,9 +50,12 @@ public class ProductService {
         product.updateName(command.name());
     }
 
+    @Transactional
     public UUID delete(UUID productId) {
         Product product = getById(productId);
-        return null;
+
+        product.delete(1L);
+        return product.getId();
     }
 
     private Product getById(UUID productId) {
