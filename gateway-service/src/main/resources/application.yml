@@ -77,3 +77,31 @@ gateway:
       - /v1/auth/logout
       - /v1/auth/token/reissue
       - /v1/auth/exists
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: test-routes
+              uri: http://localhost:8081
+              predicates:
+                - Path=/v1/test/**
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  access:
+    secret: testSecretKeytestSecretKeytestSecretKey
+
+gateway:
+  auth:
+    public-paths:
+      - /v1/test/public
