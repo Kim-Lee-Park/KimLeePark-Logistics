@@ -1,9 +1,10 @@
-package com.klp.order.domain;
+package com.klp.order.domain.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.klp.order.domain.orderitem.OrderItem;
+import java.lang.reflect.Field;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,15 +22,22 @@ public class OrderItemTest {
         quantity = 1;
     }
 
+    private void injectOrderItemId(OrderItem orderItem) throws Exception {
+        Field orderItemIdField = OrderItem.class.getDeclaredField("orderItemId");
+        orderItemIdField.setAccessible(true);
+        orderItemIdField.set(orderItem, UUID.randomUUID());
+    }
+
     @Test
     @DisplayName("OrderItem 생성 - 정상")
-    void createOrderItem_Success() {
+    void createOrderItem_Success() throws Exception {
 
         // given
         // setup으로 진행
 
         //when
         OrderItem orderItem = new OrderItem(productId, quantity);
+        injectOrderItemId(orderItem);
 
         //then
         assertThat(orderItem.getProductId()).isEqualTo(productId);

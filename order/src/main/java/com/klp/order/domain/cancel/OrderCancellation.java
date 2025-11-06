@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -27,16 +28,17 @@ public class OrderCancellation {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID orderCancellationId;
 
-    @OneToOne(mappedBy = "cancellation", fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
     private Order order;
 
     @Column(name = "cancel_reason", columnDefinition = "TEXT")
     private String cancelReason;
 
-    @Column(name = "cancelled_by")
+    @Column(name = "cancelled_by", nullable = false)
     private Long cancelledBy;
 
-    @Column(name = "cancelled_at")
+    @Column(name = "cancelled_at", nullable = false)
     private LocalDateTime cancelledAt;
 
     @Enumerated(EnumType.STRING)

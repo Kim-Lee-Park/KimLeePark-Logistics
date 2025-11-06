@@ -1,4 +1,4 @@
-package com.klp.order.domain;
+package com.klp.order.domain.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,6 +6,7 @@ import com.klp.order.domain.cancel.CancelType;
 import com.klp.order.domain.cancel.OrderCancellation;
 import com.klp.order.domain.order.Order;
 import com.klp.order.domain.orderitem.OrderItem;
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -38,9 +39,15 @@ public class OrderCancellationTest {
 
     }
 
+    private void injectOrderCancellation(OrderCancellation cancellation) throws Exception {
+        Field field = OrderCancellation.class.getDeclaredField("orderCancellationId");
+        field.setAccessible(true);
+        field.set(cancellation, UUID.randomUUID());
+    }
+
     @Test
     @DisplayName("주문 취소 정보 생성 - 정상")
-    void createOrderCancellation_Success() {
+    void createOrderCancellation_Success() throws Exception {
         //given
         //setup
 
@@ -51,8 +58,10 @@ public class OrderCancellationTest {
             cancelledBy,
             cancelType
         );
+        injectOrderCancellation(cancellation);
 
         //then
+        assertThat(cancellation.getOrderCancellationId()).isNotNull();
         assertThat(cancellation.getOrder()).isEqualTo(order);
         assertThat(cancellation.getCancelReason()).isEqualTo(cancelReason);
         assertThat(cancellation.getCancelledBy()).isEqualTo(cancelledBy);
