@@ -29,8 +29,9 @@ class InventoryControllerTest {
     @DisplayName("단일 상품에 대한 재고를 조회할 수 있다")
     void getInventoryByProductId() throws Exception {
         UUID productId = UUID.randomUUID();
+        UUID inventoryId = UUID.randomUUID();
         when(inventoryService.getByProductId(productId))
-                .thenReturn(new InventoryResponse(productId, 10));
+                .thenReturn(new InventoryResponse(productId, inventoryId, 10));
 
         mockMvc.perform(get("/v1/inventories/{productId}", productId))
                 .andExpect(status().isOk())

@@ -3,6 +3,8 @@ package com.klp.hub.product.application;
 import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductResponse;
@@ -21,8 +23,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -33,12 +34,17 @@ class ProductServiceTest {
     @Mock
     private CompanyService companyService;
 
+    @Mock
+    private InventoryService inventoryService;
+
     @InjectMocks
     private ProductService productService;
 
     private UUID productId = UUID.randomUUID();
 
     private UUID companyId = UUID.randomUUID();
+
+    private UUID inventoryId = UUID.randomUUID();
 
     @Test
     @DisplayName("상품의 ID 로 상품을 조회할 수 있다")
@@ -97,11 +103,27 @@ class ProductServiceTest {
     @DisplayName("상품 ID를 통해서 상품을 softDelete 할 수 있다")
     void softDelete() {
         Product product = new Product(companyId, "상품명");
+        InventoryResponse inventoryResponse = mock(InventoryResponse.class);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(inventoryService.getByProductId(productId)).thenReturn(inventoryResponse);
+        when(inventoryResponse.inventoryId()).thenReturn(inventoryId);
 
         productService.delete(productId);
 
         assertTrue(product.isDeleted());
         assertThat(product.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("상품 삭제시 관련된 재고도 삭제된다")
+    void deletedInventoryWhenProductDeleted() {
+        Product product = new Product(companyId, "상품명");
+        InventoryResponse inventoryResponse = new InventoryResponse(productId, inventoryId, 0);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(inventoryService.getByProductId(productId)).thenReturn(inventoryResponse);
+
+        productService.delete(productId);
+
+        verify(inventoryService, times(1)).delete(inventoryResponse.inventoryId());
     }
 }

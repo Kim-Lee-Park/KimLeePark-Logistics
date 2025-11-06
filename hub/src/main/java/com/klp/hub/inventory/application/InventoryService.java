@@ -27,6 +27,7 @@ public class InventoryService {
 
         return new InventoryResponse(
                 productId,
+                inventory.getId(),
                 inventory.getQuantity()
         );
     }

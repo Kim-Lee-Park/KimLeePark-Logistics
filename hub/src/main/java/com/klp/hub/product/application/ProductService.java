@@ -2,6 +2,8 @@ package com.klp.hub.product.application;
 
 import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
@@ -24,6 +26,8 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     private final CompanyService companyService;
+
+    private final InventoryService inventoryService;
 
     @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID productId) {
@@ -55,6 +59,9 @@ public class ProductService {
         Product product = getById(productId);
 
         product.delete(1L);
+
+        InventoryResponse response = inventoryService.getByProductId(productId);
+        inventoryService.delete(response.inventoryId());
         return product.getId();
     }
 
