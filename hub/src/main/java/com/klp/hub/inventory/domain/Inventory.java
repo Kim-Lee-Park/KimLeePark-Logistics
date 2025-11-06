@@ -36,6 +36,7 @@ public class Inventory extends BaseEntity {
 
     public Inventory(UUID productId, UUID hubId) {
         validProduct(productId);
+        validHub(hubId);
         this.productId = productId;
         this.hubId = hubId;
         this.quantity = 0;
@@ -44,6 +45,7 @@ public class Inventory extends BaseEntity {
     public Inventory(UUID productId, UUID hubId, Integer quantity) {
         validQuantity(quantity);
         validProduct(productId);
+        validHub(hubId);
         this.productId = productId;
         this.hubId = hubId;
         this.quantity = quantity;
@@ -74,6 +76,12 @@ public class Inventory extends BaseEntity {
     private void validProduct(UUID productId) {
         if (productId == null) {
             throw new IllegalArgumentException("상품은 필수입니다.");
+        }
+    }
+
+    private void validHub(UUID hubId) {
+        if (hubId == null) {
+            throw new IllegalArgumentException("허브는 필수입니다.");
         }
     }
 }

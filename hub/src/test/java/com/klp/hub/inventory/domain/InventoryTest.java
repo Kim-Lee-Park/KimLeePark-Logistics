@@ -11,6 +11,8 @@ class InventoryTest {
 
     private UUID hubId = UUID.randomUUID();
 
+    private UUID productId = UUID.randomUUID();
+
     @Test
     @DisplayName("재고 수량은 음수가 될 수 없다")
     void negativeQuantity() {
@@ -74,6 +76,12 @@ class InventoryTest {
     @DisplayName("상품이 존재하지 않으면 예외가 발생한다")
     void throwNullProduct() {
         assertThrows(IllegalArgumentException.class, () -> new Inventory(null, hubId));
+    }
+
+    @Test
+    @DisplayName("허브가 존재하지 않으면 예외가 발생한다")
+    void throwNullHub() {
+        assertThrows(IllegalArgumentException.class, () -> new Inventory(productId, null));
     }
 
     private Inventory inventory(Integer quantity) {
