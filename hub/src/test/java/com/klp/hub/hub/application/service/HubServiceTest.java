@@ -6,9 +6,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
+import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubStatus;
 import com.klp.hub.hub.domain.repository.HubRepository;
@@ -161,5 +164,114 @@ public class HubServiceTest {
         assertThat(response.hubs()).hasSize(2);
         assertThat(response.hubs().get(0).name()).isEqualTo("제주허브");
         assertThat(response.hubs().get(1).name()).isEqualTo("서귀포허브");
+    }
+
+    @Test
+    @DisplayName("허브 수정 실패: 존재하지 않는 허브")
+    void updateHubFailNotFound(){
+        //given
+        UUID hubId = UUID.randomUUID();
+        UpdateHubCommand command = new UpdateHubCommand(
+            "testHub",
+            11L,
+            12L,
+            "서울특별시"
+        );
+        when(hubRepository.getHubById(hubId)).thenReturn(Optional.empty());
+
+        //then
+        assertThatThrownBy(()->hubService.updateHub(hubId,command))
+            .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("허브 수정 실패: 중복된 이름")
+    void updateHubFailDuplicateName(){
+        //given
+        UUID hubId = UUID.randomUUID();
+        RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11L, 12L, "서울");
+
+        Hub original = Hub.create(registerHubCommand);
+        ReflectionTestUtils.setField(original, "hubId", hubId);
+
+        when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
+
+        UpdateHubCommand command = new UpdateHubCommand(
+            "testHub",
+            11L,
+            12L,
+            "서울특별시"
+        );
+        when(hubRepository.existsByName(command.name())).thenReturn(true);
+
+        //when
+
+        //then
+        assertThatThrownBy(() -> hubService.updateHub(hubId, command))
+            .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("허브 수정 실패: 중복된 주소")
+    void updateHubFailDuplicateAddress(){
+        //given
+        UUID hubId = UUID.randomUUID();
+        RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11L, 12L, "서울");
+
+        Hub original = Hub.create(registerHubCommand);
+        ReflectionTestUtils.setField(original, "hubId", hubId);
+
+        when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
+
+        UpdateHubCommand command = new UpdateHubCommand(
+            "testHub",
+            11L,
+            12L,
+            "서울특별시"
+        );
+        when(hubRepository.existsByName(command.name())).thenReturn(false);
+        when(hubRepository.existsByAddress(command.address())).thenReturn(true);
+
+        //when
+
+        //then
+        assertThatThrownBy(() -> hubService.updateHub(hubId, command))
+            .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("허브 수정 성공")
+    void updateHubSuccess(){
+        //given
+        UUID hubId = UUID.randomUUID();
+        RegisterHubCommand command = new RegisterHubCommand(
+            "testHub",
+            11L,
+            12L,
+            "서울특별시"
+        );
+        Hub hub = Hub.create(command);
+        ReflectionTestUtils.setField(hub, "hubId", hubId);
+
+        when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
+
+        UpdateHubCommand updateHubCommand = new UpdateHubCommand(
+            "testHubUpdated",
+            15L,
+            151L,
+            "서울특별시 updated"
+        );
+
+        //when
+        hubService.updateHub(hubId, updateHubCommand);
+
+        // then
+        assertThat(hub.getName()).isEqualTo("testHubUpdated");
+        assertThat(hub.getLatitude()).isEqualTo(15L);
+        assertThat(hub.getLongitude()).isEqualTo(151L);
+        assertThat(hub.getAddress()).isEqualTo("서울특별시 updated");
+
+        // 만약 서비스에서 save()를 호출하지 않는 설계라면 다음 라인으로 보장
+        verify(hubRepository, never()).save(any(Hub.class));
     }
 }
