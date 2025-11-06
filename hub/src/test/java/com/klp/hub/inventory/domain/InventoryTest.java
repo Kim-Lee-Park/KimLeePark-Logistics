@@ -27,29 +27,29 @@ class InventoryTest {
 
     @Test
     @DisplayName("재고 증가시 인자가 음수가 될 수 없다")
-    void increaseNegativeQuantity() {
+    void replenishNegativeQuantity() {
         Inventory inventory = inventory(0);
         assertThrows(IllegalArgumentException.class, () -> {
-            inventory.increase(-1);
+            inventory.replenish(-1);
         });
     }
 
     @Test
     @DisplayName("재고의 수량을 증가시킬 수 있다")
-    void increaseQuantity() {
+    void replenishQuantity() {
         Inventory inventory = inventory(1);
 
-        inventory.increase(1);
+        inventory.replenish(1);
 
         assertEquals(2, inventory.getQuantity());
     }
 
     @Test
     @DisplayName("재고 차감시 인자가 음수가 될 수 없다")
-    void decreaseNegativeQuantity() {
+    void deductNegativeQuantity() {
         Inventory inventory = inventory(0);
         assertThrows(IllegalArgumentException.class, () -> {
-            inventory.decrease(-1);
+            inventory.deduct(-1);
         });
     }
 
@@ -58,16 +58,16 @@ class InventoryTest {
     void betterThanQuantity() {
         Inventory inventory = inventory(100);
         assertThrows(IllegalArgumentException.class, () -> {
-            inventory.decrease(101);
+            inventory.deduct(101);
         });
     }
 
     @Test
     @DisplayName("재고의 수량을 차감시킬 수 있다")
-    void decreaseQuantity() {
+    void deductQuantity() {
         Inventory inventory = inventory(1);
 
-        inventory.decrease(1);
+        inventory.deduct(1);
 
         assertEquals(0, inventory.getQuantity());
     }

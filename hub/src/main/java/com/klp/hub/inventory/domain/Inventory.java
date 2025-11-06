@@ -57,13 +57,13 @@ public class Inventory extends BaseEntity {
         this.quantity = quantity;
     }
 
-    public void increase(Integer quantity) {
+    public void replenish(Integer quantity) {
         validQuantity(quantity);
 
         this.quantity += quantity;
     }
 
-    public void decrease(Integer quantity) {
+    public void deduct(Integer quantity) {
         validQuantity(quantity);
 
         if (this.quantity - quantity < 0) {
