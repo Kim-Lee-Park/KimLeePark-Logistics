@@ -3,7 +3,7 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.order.domain.orderitem.OrderItem;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.lang.reflect.Field;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

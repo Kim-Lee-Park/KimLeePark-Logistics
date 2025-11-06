@@ -1,4 +1,4 @@
-package com.klp.order.domain.idempotencykey;
+package com.klp.order.domain.entity.idempotencykey;
 
 public enum RequestStatus {
     PENDING("사용 전"),

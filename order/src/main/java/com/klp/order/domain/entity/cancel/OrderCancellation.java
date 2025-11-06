@@ -1,6 +1,6 @@
-package com.klp.order.domain.cancel;
+package com.klp.order.domain.entity.cancel;
 
-import com.klp.order.domain.order.Order;
+import com.klp.order.domain.entity.order.Order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

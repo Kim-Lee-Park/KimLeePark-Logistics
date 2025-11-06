@@ -3,11 +3,11 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.order.domain.idempotencykey.OperationType;
-import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
-import com.klp.order.domain.idempotencykey.RequestStatus;
-import com.klp.order.domain.order.Order;
-import com.klp.order.domain.orderitem.OrderItem;
+import com.klp.order.domain.entity.idempotencykey.OperationType;
+import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
+import com.klp.order.domain.entity.idempotencykey.RequestStatus;
+import com.klp.order.domain.entity.order.Order;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

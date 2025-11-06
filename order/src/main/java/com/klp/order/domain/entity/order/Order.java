@@ -1,10 +1,10 @@
-package com.klp.order.domain.order;
+package com.klp.order.domain.entity.order;
 
 import com.klp.order.common.BaseEntity;
-import com.klp.order.domain.cancel.CancelType;
-import com.klp.order.domain.cancel.OrderCancellation;
-import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
-import com.klp.order.domain.orderitem.OrderItem;
+import com.klp.order.domain.entity.cancel.CancelType;
+import com.klp.order.domain.entity.cancel.OrderCancellation;
+import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

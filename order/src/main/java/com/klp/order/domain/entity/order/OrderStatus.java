@@ -1,4 +1,4 @@
-package com.klp.order.domain.order;
+package com.klp.order.domain.entity.order;
 
 public enum OrderStatus {
     ING("진행 중"),

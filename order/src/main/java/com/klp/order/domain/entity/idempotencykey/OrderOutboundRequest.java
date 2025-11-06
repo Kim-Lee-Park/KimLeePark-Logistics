@@ -1,7 +1,7 @@
-package com.klp.order.domain.idempotencykey;
+package com.klp.order.domain.entity.idempotencykey;
 
 
-import com.klp.order.domain.order.Order;
+import com.klp.order.domain.entity.order.Order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

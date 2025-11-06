@@ -2,9 +2,9 @@ package com.klp.order.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.klp.order.domain.order.Order;
-import com.klp.order.domain.order.OrderStatus;
-import com.klp.order.domain.orderitem.OrderItem;
+import com.klp.order.domain.entity.order.Order;
+import com.klp.order.domain.entity.order.OrderStatus;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

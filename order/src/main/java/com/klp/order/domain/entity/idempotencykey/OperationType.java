@@ -1,4 +1,4 @@
-package com.klp.order.domain.idempotencykey;
+package com.klp.order.domain.entity.idempotencykey;
 
 public enum OperationType {
     INCREASE("증감"),
