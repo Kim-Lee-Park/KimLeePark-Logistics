@@ -80,4 +80,17 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.pageable.isFirst").isBoolean())
                 .andExpect(jsonPath("$.pageable.isLast").isBoolean());
     }
+
+    @Test
+    @DisplayName("상품 ID 로 상품을 삭제할 수 있다")
+    void softDeleteById() throws Exception {
+        UUID productId = UUID.randomUUID();
+        when(productService.delete(productId))
+                .thenReturn(productId);
+
+        mockMvc.perform(delete("/v1/products/{productId}", productId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.productId").isString());
+    }
 }

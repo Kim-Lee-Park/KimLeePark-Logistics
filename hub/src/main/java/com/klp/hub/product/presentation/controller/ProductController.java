@@ -1,6 +1,7 @@
 package com.klp.hub.product.presentation.controller;
 
 import com.klp.hub.product.application.ProductService;
+import com.klp.hub.product.presentation.dto.ProductDeleteResponse;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
@@ -10,10 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -39,5 +37,13 @@ public class ProductController {
         Page<ProductsPageRowResponse> response = productService.getProductsByPageable(pageable);
         log.info("== 상품 목록 조회 성공 ==");
         return ResponseEntity.ok().body(ProductsPageResponse.from(response));
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ProductDeleteResponse> deleteById(@PathVariable("productId") String productId) {
+        log.info("== 상품 삭제 ==");
+        UUID deletedProductId = productService.delete(UUID.fromString(productId));
+        log.info("== 상품 삭제 완료 ==");
+        return ResponseEntity.ok().body(new ProductDeleteResponse(deletedProductId));
     }
 }
