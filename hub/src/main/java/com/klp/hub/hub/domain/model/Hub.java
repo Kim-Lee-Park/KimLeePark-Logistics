@@ -50,16 +50,16 @@ public class Hub extends BaseEntity {
     }
 
     public void update(UpdateHubCommand command) {
-        if(command.name()!=null){
+        if(command.nameIsNotNull()){
             name = command.name();
         }
-        if(command.latitude()!=null){
+        if(command.latitudeIsNotNull()){
             latitude = command.latitude();
         }
-        if(command.longitude()!=null){
+        if(command.longitudeIsNotNull()){
             longitude = command.longitude();
         }
-        if(command.address()!=null){
+        if(command.addressIsNotNull()){
             address = command.address();
         }
     }
