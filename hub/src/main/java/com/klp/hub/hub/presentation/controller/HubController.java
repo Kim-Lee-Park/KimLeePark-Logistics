@@ -7,10 +7,10 @@ import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
-import java.awt.print.Pageable;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +43,7 @@ public class HubController {
 
     @GetMapping("")
     public ResponseEntity<GetHubListResponse> getHubs(Pageable pageable){
-        return null;
+        return ResponseEntity.ok().body(hubService.getHubs(pageable));
     }
 
     @PatchMapping("/{hubId}")
