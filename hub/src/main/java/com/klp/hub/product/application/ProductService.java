@@ -51,7 +51,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void create(ProductCreateCommand command) {
+    public UUID create(ProductCreateCommand command) {
         CompanyResponse companyResponse = companyService.getByCompanyId(command.companyId());
         Product savedProduct = productRepository.save(
                 new Product(companyResponse.id(), command.name())
@@ -59,6 +59,7 @@ public class ProductService {
 
         try {
             inventoryService.create(savedProduct.getId(), command.hubId(), command.quantity());
+            return savedProduct.getId();
         } catch (UniqueConstraintException exception) {
             log.error("이미 해당 재고가 존재합니다.");
             // FIXME: 도메인 예외 교체 필요

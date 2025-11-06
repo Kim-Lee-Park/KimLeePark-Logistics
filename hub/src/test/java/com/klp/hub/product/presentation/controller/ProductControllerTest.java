@@ -2,10 +2,7 @@ package com.klp.hub.product.presentation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.hub.product.application.ProductService;
-import com.klp.hub.product.presentation.dto.ProductResponse;
-import com.klp.hub.product.presentation.dto.ProductUpdateRequest;
-import com.klp.hub.product.presentation.dto.ProductUpdateResponse;
-import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
+import com.klp.hub.product.presentation.dto.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +83,28 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.pageable.hasNext").isBoolean())
                 .andExpect(jsonPath("$.pageable.isFirst").isBoolean())
                 .andExpect(jsonPath("$.pageable.isLast").isBoolean());
+    }
+
+    @Test
+    @DisplayName("상품을 생성할 수 있다")
+    void createProduct() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+        ProductCreateRequest request = new ProductCreateRequest(
+                companyId,
+                hubId,
+                "상품명",
+                10
+        );
+        when(productService.create(any())).thenReturn(productId);
+
+        mockMvc.perform(post("/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.productId").isString());
     }
 
     @Test

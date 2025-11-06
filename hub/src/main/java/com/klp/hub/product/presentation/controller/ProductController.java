@@ -37,6 +37,14 @@ public class ProductController {
         return ResponseEntity.ok().body(ProductsPageResponse.from(response));
     }
 
+    @PostMapping
+    public ResponseEntity<ProductCreateResponse> create(@Valid @RequestBody ProductCreateRequest request) {
+        log.info("== 상품 생성 ==");
+        UUID productId = productService.create(request.toCommand());
+        log.info("== 상품 생성 성공 ==");
+        return ResponseEntity.ok().body(new ProductCreateResponse(productId));
+    }
+
     @PatchMapping("/{productId}")
     public ResponseEntity<ProductUpdateResponse> updateProduct(
             @PathVariable("productId") String productId,
