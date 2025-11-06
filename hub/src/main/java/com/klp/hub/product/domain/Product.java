@@ -30,9 +30,7 @@ public class Product {
     private String name;
 
     public Product(UUID companyId, String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("상품명은 필수입니다.");
-        }
+        validateName(name);
 
         if (companyId == null) {
             throw new IllegalArgumentException("업체 ID는 필수입니다.");
@@ -42,6 +40,10 @@ public class Product {
     }
 
     public void updateName(String name) {
+        validateName(name);
+    }
+
+    private void validateName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("상품명은 필수입니다.");
         }
