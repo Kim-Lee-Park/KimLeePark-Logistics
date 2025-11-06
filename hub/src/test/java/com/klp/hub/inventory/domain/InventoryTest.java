@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InventoryTest {
 
+    private UUID hubId = UUID.randomUUID();
+
     @Test
     @DisplayName("재고 수량은 음수가 될 수 없다")
     void negativeQuantity() {
@@ -66,6 +68,12 @@ class InventoryTest {
         inventory.decrease(1);
 
         assertEquals(0, inventory.getQuantity());
+    }
+
+    @Test
+    @DisplayName("상품이 존재하지 않으면 예외가 발생한다")
+    void throwNullProduct() {
+        assertThrows(IllegalArgumentException.class, () -> new Inventory(null, hubId));
     }
 
     private Inventory inventory(Integer quantity) {

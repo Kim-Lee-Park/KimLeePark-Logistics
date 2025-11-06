@@ -15,6 +15,7 @@ import java.util.UUID;
         schema = "hub_schema"
 )
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Inventory extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,12 +34,16 @@ public class Inventory extends BaseEntity {
     @Column(name = "hub_id", nullable = false)
     private UUID hubId;
 
-    public Inventory() {
+    public Inventory(UUID productId, UUID hubId) {
+        validProduct(productId);
+        this.productId = productId;
+        this.hubId = hubId;
         this.quantity = 0;
     }
 
     public Inventory(UUID productId, UUID hubId, Integer quantity) {
         validQuantity(quantity);
+        validProduct(productId);
         this.productId = productId;
         this.hubId = hubId;
         this.quantity = quantity;
@@ -63,6 +68,12 @@ public class Inventory extends BaseEntity {
     private void validQuantity(Integer quantity) {
         if (quantity == null || quantity < 0) {
             throw new IllegalArgumentException("재고 수량은 필수이면서 음수일 수 없습니다.");
+        }
+    }
+
+    private void validProduct(UUID productId) {
+        if (productId == null) {
+            throw new IllegalArgumentException("상품은 필수입니다.");
         }
     }
 }
