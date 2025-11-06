@@ -18,7 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_order_cancellation")
+@Table(name = "p_order_cancellation", schema = "order_schema")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderCancellation {
