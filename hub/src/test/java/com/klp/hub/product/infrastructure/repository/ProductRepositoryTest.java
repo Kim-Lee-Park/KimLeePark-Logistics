@@ -2,7 +2,7 @@ package com.klp.hub.product.infrastructure.repository;
 
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
-import com.klp.hub.config.QuerydslConfig;
+import com.klp.hub.global.config.QuerydslConfig;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
