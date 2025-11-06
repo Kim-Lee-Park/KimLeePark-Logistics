@@ -9,7 +9,10 @@ import org.hibernate.annotations.Comment;
 import java.util.UUID;
 
 @Entity
-@Table(name = "p_inventory")
+@Table(
+        name = "p_inventory",
+        schema = "hub_schema"
+)
 @Getter
 public class Inventory {
     @Id
@@ -23,16 +26,21 @@ public class Inventory {
 
     @Comment("상품 ID")
     @Column(name = "product_id", nullable = false)
-    private String productId;
+    private UUID productId;
+
+    @Comment("허브 ID")
+    @Column(name = "hub_id", nullable = false)
+    private UUID hubId;
 
     public Inventory() {
         this.quantity = 0;
     }
 
-    public Inventory(Integer quantity, String productId) {
+    public Inventory(UUID productId, UUID hubId, Integer quantity) {
         validQuantity(quantity);
-        this.quantity = quantity;
         this.productId = productId;
+        this.hubId = hubId;
+        this.quantity = quantity;
     }
 
     public void increase(Integer quantity) {

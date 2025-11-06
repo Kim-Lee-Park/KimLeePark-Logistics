@@ -9,7 +9,10 @@ import org.hibernate.annotations.Comment;
 import java.util.UUID;
 
 @Entity
-@Table(name = "p_products")
+@Table(
+        name = "p_products",
+        schema = "hub_schema"
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Product {
@@ -20,13 +23,13 @@ public class Product {
 
     @Comment("회사 ID")
     @Column(name = "company_id", nullable = false)
-    private String companyId;
+    private UUID companyId;
 
     @Comment("상품명")
     @Column(name = "name", nullable = false)
     private String name;
 
-    public Product(String companyId, String name) {
+    public Product(UUID companyId, String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("상품명은 필수입니다.");
         }
