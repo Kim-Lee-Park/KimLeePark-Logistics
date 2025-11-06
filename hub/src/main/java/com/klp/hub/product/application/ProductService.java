@@ -8,6 +8,7 @@ import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
+import com.klp.hub.product.presentation.dto.ProductUpdateResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
@@ -66,10 +67,15 @@ public class ProductService {
     }
 
     @Transactional
-    public void update(ProductUpdateCommand command) {
+    public ProductUpdateResponse update(ProductUpdateCommand command) {
         Product product = getById(command.productId());
 
         product.updateName(command.name());
+
+        return new ProductUpdateResponse(
+                product.getId(),
+                product.getName()
+        );
     }
 
     @Transactional

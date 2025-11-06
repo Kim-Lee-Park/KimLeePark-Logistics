@@ -1,10 +1,8 @@
 package com.klp.hub.product.presentation.controller;
 
 import com.klp.hub.product.application.ProductService;
-import com.klp.hub.product.presentation.dto.ProductDeleteResponse;
-import com.klp.hub.product.presentation.dto.ProductResponse;
-import com.klp.hub.product.presentation.dto.ProductsPageResponse;
-import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
+import com.klp.hub.product.presentation.dto.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,6 +35,17 @@ public class ProductController {
         Page<ProductsPageRowResponse> response = productService.getProductsByPageable(pageable);
         log.info("== 상품 목록 조회 성공 ==");
         return ResponseEntity.ok().body(ProductsPageResponse.from(response));
+    }
+
+    @PatchMapping("/{productId}")
+    public ResponseEntity<ProductUpdateResponse> updateProduct(
+            @PathVariable("productId") String productId,
+            @Valid @RequestBody ProductUpdateRequest request
+    ) {
+        log.info("== 상품 변경 ==");
+        ProductUpdateResponse response = productService.update(request.toCommand(productId));
+        log.info("== 상품 변경 성공 ==");
+        return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("/{productId}")
