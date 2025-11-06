@@ -50,6 +50,11 @@ public class ProductService {
         product.updateName(command.name());
     }
 
+    public UUID delete(UUID productId) {
+        Product product = getById(productId);
+        return null;
+    }
+
     private Product getById(UUID productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> {
             log.error("해당 상품을 찾을 수 없습니다. productId : {}", productId);

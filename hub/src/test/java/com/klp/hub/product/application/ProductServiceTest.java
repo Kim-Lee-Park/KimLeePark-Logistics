@@ -69,18 +69,26 @@ class ProductServiceTest {
     @Test
     @DisplayName("상품명을 변경할 수 있다")
     void updateProduct() {
-        var oldName = "기존 상품명";
-        var newName = "새로운 상품명";
-        var request = new ProductUpdateCommand(
+        String oldName = "기존 상품명";
+        String newName = "새로운 상품명";
+        ProductUpdateCommand command = new ProductUpdateCommand(
                 productId,
                 newName
         );
-        var product = new Product(companyId, oldName);
+        Product product = new Product(companyId, oldName);
         when(productRepository.findById(any(UUID.class)))
                 .thenReturn(Optional.of(product));
 
-        productService.update(request);
+        productService.update(command);
 
         assertThat(product.getName()).isEqualTo(newName);
+    }
+
+    @Test
+    @DisplayName("상품 ID 를 통해 상품을 삭제할 때 상품이 존재하지 않으면 예외가 발생한다")
+    void throwDeleteByNullProduct() {
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> productService.delete(productId));
     }
 }
