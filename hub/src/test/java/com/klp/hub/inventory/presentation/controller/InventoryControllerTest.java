@@ -1,6 +1,6 @@
 package com.klp.hub.inventory.presentation.controller;
 
-import com.klp.hub.inventory.application.InventoryReader;
+import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,13 +23,13 @@ class InventoryControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private InventoryReader inventoryReader;
+    private InventoryService inventoryService;
 
     @Test
     @DisplayName("단일 상품에 대한 재고를 조회할 수 있다")
     void getInventoryByProductId() throws Exception {
         UUID productId = UUID.randomUUID();
-        when(inventoryReader.getByProductId(productId))
+        when(inventoryService.getByProductId(productId))
                 .thenReturn(new InventoryResponse(productId, 10));
 
         mockMvc.perform(get("/v1/inventories/{productId}", productId))

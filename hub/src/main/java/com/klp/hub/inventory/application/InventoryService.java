@@ -1,7 +1,6 @@
 package com.klp.hub.inventory.application;
 
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
-import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@Transactional(readOnly = true)
 @Slf4j
 @RequiredArgsConstructor
-public class InventoryReader {
+public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
 
+    @Transactional(readOnly = true)
     public InventoryResponse getByProductId(UUID productId) {
         var inventory = inventoryRepository.findByProductId(productId).orElseThrow(() -> {
             log.error("해당 상품의 재고를 찾을 수 없습니다. productId={}", productId);

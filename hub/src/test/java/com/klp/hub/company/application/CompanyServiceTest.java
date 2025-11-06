@@ -19,13 +19,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyReaderTest {
+class CompanyServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
 
     @InjectMocks
-    private CompanyReader companyReader;
+    private CompanyService companyService;
 
     @Test
     @DisplayName("업체 ID 를 통해 업체를 조회할 수 있다")
@@ -39,7 +39,7 @@ class CompanyReaderTest {
         when(companyRepository.findById(companyId))
                 .thenReturn(Optional.of(company));
 
-        var response = companyReader.getByCompanyId(companyId);
+        var response = companyService.getByCompanyId(companyId);
 
         assertThat(response.id()).isNotNull();
     }
@@ -49,6 +49,6 @@ class CompanyReaderTest {
     void throwGetCompanyById() {
         when(companyRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> companyReader.getByCompanyId(UUID.randomUUID()));
+        assertThrows(RuntimeException.class, () -> companyService.getByCompanyId(UUID.randomUUID()));
     }
 }

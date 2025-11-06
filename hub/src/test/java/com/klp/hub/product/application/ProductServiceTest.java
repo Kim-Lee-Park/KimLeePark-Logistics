@@ -1,6 +1,6 @@
 package com.klp.hub.product.application;
 
-import com.klp.hub.company.application.CompanyReader;
+import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import com.klp.hub.product.domain.Product;
@@ -21,16 +21,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductReaderTest {
+class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
 
     @Mock
-    private CompanyReader companyReader;
+    private CompanyService companyService;
 
     @InjectMocks
-    private ProductReader productReader;
+    private ProductService productService;
 
     private UUID productId = UUID.randomUUID();
 
@@ -46,9 +46,9 @@ class ProductReaderTest {
         when(product.getCompanyId()).thenReturn(companyId);
         when(productRepository.findById(productId))
                 .thenReturn(Optional.of(product));
-        when(companyReader.getByCompanyId(companyId)).thenReturn(companyResponse);
+        when(companyService.getByCompanyId(companyId)).thenReturn(companyResponse);
 
-        var response = productReader.getProductById(productId);
+        var response = productService.getProductById(productId);
 
         assertThat(response.productId()).isNotNull();
         assertEquals(productId, response.productId());
@@ -60,6 +60,6 @@ class ProductReaderTest {
     void throwGetProductById() {
         when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> productReader.getProductById(productId));
+        assertThrows(RuntimeException.class, () -> productService.getProductById(productId));
     }
 }

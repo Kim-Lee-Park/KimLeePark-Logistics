@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@Transactional(readOnly = true)
 @Slf4j
 @RequiredArgsConstructor
-public class CompanyReader {
+public class CompanyService {
 
     private final CompanyRepository companyRepository;
 
+    @Transactional(readOnly = true)
     public CompanyResponse getByCompanyId(UUID companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> {
             log.error("업체를 찾을 수 없습니다. companyId : {}", companyId);

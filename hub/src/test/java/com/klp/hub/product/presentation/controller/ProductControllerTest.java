@@ -1,6 +1,6 @@
 package com.klp.hub.product.presentation.controller;
 
-import com.klp.hub.product.application.ProductReader;
+import com.klp.hub.product.application.ProductService;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,13 +30,13 @@ class ProductControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ProductReader productReader;
+    private ProductService productService;
 
     @Test
     @DisplayName("상품 ID 로 상품을 조회할 수 있다")
     void getProductById() throws Exception {
         UUID productId = UUID.randomUUID();
-        when(productReader.getProductById(productId))
+        when(productService.getProductById(productId))
                 .thenReturn(new ProductResponse(productId, UUID.randomUUID(), "업체명", "상품명"));
 
         mockMvc.perform(get("/v1/products/{productId}", productId))
@@ -60,7 +59,7 @@ class ProductControllerTest {
         );
         var page = new PageImpl<>(List.of(row), PageRequest.of(0, 10), 100);
 
-        when(productReader.getProductsByPageable(any(Pageable.class))).thenReturn(page);
+        when(productService.getProductsByPageable(any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/v1/products")
                 .param("page", "0")

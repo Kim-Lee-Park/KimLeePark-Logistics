@@ -17,13 +17,13 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class InventoryReaderTest {
+class InventoryServiceTest {
 
     @Mock
     private InventoryRepository inventoryRepository;
 
     @InjectMocks
-    private InventoryReader inventoryReader;
+    private InventoryService inventoryService;
 
     private UUID productId = UUID.randomUUID();
 
@@ -35,7 +35,7 @@ class InventoryReaderTest {
         when(inventoryRepository.findByProductId(productId))
                 .thenReturn(Optional.of(inventory));
 
-        var response = inventoryReader.getByProductId(productId);
+        var response = inventoryService.getByProductId(productId);
 
         assertEquals(response.productId(), productId);
         assertEquals(response.quantity(), inventory.getQuantity());
@@ -46,6 +46,6 @@ class InventoryReaderTest {
     void throwGetInventoryByProductId() {
         when(inventoryRepository.findByProductId(productId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> inventoryReader.getByProductId(productId));
+        assertThrows(RuntimeException.class, () -> inventoryService.getByProductId(productId));
     }
 }

@@ -1,6 +1,6 @@
 package com.klp.hub.product.presentation.controller;
 
-import com.klp.hub.product.application.ProductReader;
+import com.klp.hub.product.application.ProductService;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +21,12 @@ import java.util.UUID;
 @RequestMapping("/v1/products")
 public class ProductController {
 
-    private final ProductReader productReader;
+    private final ProductService productService;
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable("productId") String productId) {
         log.info("== 단일 상품 조회 productId : {} ==", productId);
-        var response = productReader.getProductById(UUID.fromString(productId));
+        var response = productService.getProductById(UUID.fromString(productId));
         log.info("== 단일 상품 조회 성공 ==");
         return ResponseEntity.ok().body(response);
     }
@@ -34,7 +34,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ProductsPageResponse> getProductsByPageable(@PageableDefault(size = 10) Pageable pageable) {
         log.info("== 상품 목록 조회 ==");
-        var response = productReader.getProductsByPageable(pageable);
+        var response = productService.getProductsByPageable(pageable);
         log.info("== 상품 목록 조회 성공 ==");
         return ResponseEntity.ok().body(ProductsPageResponse.from(response));
     }
