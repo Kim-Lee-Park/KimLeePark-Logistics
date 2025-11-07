@@ -27,4 +27,8 @@ public record InventoryDeductCommand(
             );
         }
     }
+
+    public int size() {
+        return products.size();
+    }
 }

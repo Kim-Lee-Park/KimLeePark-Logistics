@@ -118,4 +118,18 @@ class InventoryServiceTest {
         assertEquals(Process.SUCCESS, response.process());
         verify(inventoryRepository, times(1)).deductAll(anyList());
     }
+
+    @Test
+    @DisplayName("재고가 부족하다면 예외를 반환하고 재고를 차감하지 않는다")
+    void insufficientStock() {
+        int quantity = 10;
+        InventoryDeductCommand command = new InventoryDeductCommand(
+            idempotencyKey,
+            List.of(new Product(productId, hubId, quantity))
+        );
+        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+        when(inventoryRepository.deductAll(command.toInventoryDeductList())).thenReturn(0);
+
+        assertThrows(RuntimeException.class, () -> inventoryService.deduct(command));
+    }
 }

@@ -53,7 +53,11 @@ public class InventoryService {
             return InventoryDeductResponse.already();
         }
 
-        inventoryRepository.deductAll(command.toInventoryDeductList());
+        int updated = inventoryRepository.deductAll(command.toInventoryDeductList());
+        if (updated != command.size()) {
+            log.error("재고가 부족합니다.");
+            throw new RuntimeException();
+        }
         return InventoryDeductResponse.success();
     }
 
