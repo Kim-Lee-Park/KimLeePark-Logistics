@@ -1,5 +1,6 @@
 package com.klp.authservice.auth.entrypoint.dto.request;
 
+import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,8 +24,11 @@ public record SignUpRequest(
     @NotBlank(message = "소속 업체명(또는 허브명)은 필수 입니다")
     String affiliationName,
 
-    @NotNull
+    @NotNull(message = "업체 타입은 필수입니다")
     AffiliationType affiliationType
 ) {
 
+    public SignUpCommand toCommand() {
+        return new SignUpCommand(userName, password, slackId, affiliationName, affiliationType);
+    }
 }

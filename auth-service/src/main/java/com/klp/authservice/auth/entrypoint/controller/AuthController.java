@@ -1,5 +1,6 @@
 package com.klp.authservice.auth.entrypoint.controller;
 
+import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
+    private final AuthService authService;
+
     @PostMapping("/signUp")
-    public ResponseEntity<?> signUp(@Valid @RequestBody SignUpRequest request) {
-        return null;
+    public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequest request) {
+        authService.signUp(request.toCommand());
+        return ResponseEntity.ok().build();
     }
 }
