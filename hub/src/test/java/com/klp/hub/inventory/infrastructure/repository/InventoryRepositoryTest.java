@@ -1,7 +1,9 @@
 package com.klp.hub.inventory.infrastructure.repository;
 
+import com.klp.hub.TestJpaConfig;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(InventoryRepositoryImpl.class)
+@Import({
+        InventoryRepositoryImpl.class,
+        TestJpaConfig.class
+})
 class InventoryRepositoryTest {
 
     @Autowired
@@ -49,5 +54,18 @@ class InventoryRepositoryTest {
 
         assertFalse(result.isPresent());
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("같은 상품과 허브 조홥으로 재고를 생성하려면 예외가 발생한다")
+    void throwDuplicateInventoryHub() {
+        Inventory inventoryA = new Inventory(productId, hubId, 10);
+        inventoryRepository.save(inventoryA);
+
+        Inventory duplicatedInventory = new Inventory(productId, hubId, 10);
+
+        assertThrows(UniqueConstraintException.class, () -> {
+            inventoryRepository.save(duplicatedInventory);
+        });
     }
 }

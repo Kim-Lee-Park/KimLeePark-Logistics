@@ -1,4 +1,4 @@
-package com.klp.hub.config;
+package com.klp.hub.global.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
