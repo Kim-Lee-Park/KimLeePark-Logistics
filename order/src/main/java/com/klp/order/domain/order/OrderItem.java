@@ -39,7 +39,7 @@ public class OrderItem extends BaseEntity {
 
     @Column(name = "delivery_id")
     private UUID deliveryId;
-    
+
     private OrderItem(Order order, UUID productId, int quantity) {
         validateOrder(order);
         validateProductId(productId);
@@ -53,16 +53,6 @@ public class OrderItem extends BaseEntity {
 
     public static OrderItem of(Order order, OrderItemCommand command) {
         return new OrderItem(order, command.productId(), command.quantity());
-    }
-
-
-    public static OrderItem forTest(UUID productId, int quantity) {
-        OrderItem orderItem = new OrderItem();
-        orderItem.validateProductId(productId);
-        orderItem.validateQuantity(quantity);
-        orderItem.productId = productId;
-        orderItem.quantity = quantity;
-        return orderItem;
     }
 
     private void validateOrder(Order order) {
