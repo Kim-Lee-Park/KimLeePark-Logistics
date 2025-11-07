@@ -6,6 +6,7 @@ import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,8 @@ public class InventoryController {
 
     @GetMapping("/{productId}")
     public ResponseEntity<InventoryResponse> getInventoryByProductId(
-        @PathVariable("productId") String productId) {
+        @PathVariable("productId") String productId
+    ) {
         log.info("== 단일 상품의 재고 조회 productId : {} ==", productId);
         InventoryResponse response = inventoryService.getByProductId(UUID.fromString(productId));
         log.info("== 단일 상품의 재고 조회 성공 ==");
@@ -36,7 +38,7 @@ public class InventoryController {
 
     @PostMapping("/deduct")
     public ResponseEntity<InventoryDeductResponse> deduct(
-        @RequestBody InventoryDeductRequest request
+        @Valid @RequestBody InventoryDeductRequest request
     ) {
         log.info("== 재고 차감 멱등키 : {} ==", request.idempotencyKey());
         InventoryDeductResponse response = inventoryService.deduct(request.toCommand());
@@ -46,11 +48,11 @@ public class InventoryController {
 
     @PostMapping("/replenish")
     public ResponseEntity<InventoryReplenishResponse> replenish(
-        @RequestBody InventoryReplenishRequest request
+        @Valid @RequestBody InventoryReplenishRequest request
     ) {
-        log.info("== 재고 차감 멱등키 : {} ==", request.idempotencyKey());
+        log.info("== 재고 증가 멱등키 : {} ==", request.idempotencyKey());
         InventoryReplenishResponse response = inventoryService.replenish(request.toCommand());
-        log.info("== 재고 차감 성공");
+        log.info("== 재고 증가 성공");
         return ResponseEntity.ok().body(response);
     }
 }
