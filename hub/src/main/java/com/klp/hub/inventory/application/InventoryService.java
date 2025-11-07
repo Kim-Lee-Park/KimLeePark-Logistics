@@ -2,11 +2,13 @@ package com.klp.hub.inventory.application;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
+import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +68,22 @@ public class InventoryService {
             throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
         }
         return InventoryDeductResponse.success();
+    }
+
+    @Transactional
+    public InventoryReplenishResponse replenish(InventoryReplenishCommand command) {
+        boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
+        if (!acquired) {
+            log.warn("이미 처리된 요청입니다.");
+            return InventoryReplenishResponse.already();
+        }
+
+        int updated = inventoryRepository.replenishAll(command.toInventoryReplenish());
+        if (updated != command.size()) {
+            log.error("재고가 존재하지 않습니다.");
+            throw new BusinessException(InventoryErrorCode.NOT_FOUND_INVENTORY);
+        }
+        return InventoryReplenishResponse.success();
     }
 
     @Transactional

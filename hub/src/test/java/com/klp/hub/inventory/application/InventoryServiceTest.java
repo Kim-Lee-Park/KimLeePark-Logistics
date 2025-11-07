@@ -15,12 +15,14 @@ import com.klp.common.exception.BusinessException;
 import com.klp.common.exception.ErrorCode;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
+import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Process;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import java.util.List;
 import java.util.Optional;
@@ -158,5 +160,39 @@ class InventoryServiceTest {
             BusinessException.class, () -> inventoryService.deduct(command))
             .getErrorCode();
         assertEquals(InventoryErrorCode.INSUFFICIENT_STOCK, errorCode);
+    }
+
+    @Test
+    @DisplayName("존재하는 재고에 대해서 재고 증가요청시 성공한다")
+    void replenish() {
+        int quantity = 5;
+        InventoryReplenishCommand command = new InventoryReplenishCommand(
+            idempotencyKey,
+            List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
+        );
+        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+        when(inventoryRepository.replenishAll(command.toInventoryReplenish())).thenReturn(1);
+
+        InventoryReplenishResponse response = inventoryService.replenish(command);
+
+        assertEquals(InventoryReplenishResponse.Process.SUCCESS, response.process());
+        verify(inventoryRepository, times(1)).replenishAll(anyList());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 재고에 대한 재고 증가시 예외가 발생한다")
+    void replenishNonExistenceInventory() {
+        int quantity = 10;
+        InventoryReplenishCommand command = new InventoryReplenishCommand(
+            idempotencyKey,
+            List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
+        );
+        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+        when(inventoryRepository.replenishAll(command.toInventoryReplenish())).thenReturn(0);
+
+        ErrorCode errorCode = assertThrows(
+            BusinessException.class, () -> inventoryService.replenish(command))
+            .getErrorCode();
+        assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
     }
 }
