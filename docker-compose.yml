@@ -8,11 +8,18 @@ services:
       POSTGRES_DB: logistics
       TZ: Asia/Seoul
     volumes:
+      - klp_postgres_data:/var/lib/postgresql
       - ./init-sql:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
   redis:
     image: redis
     container_name: redis-klp
+    volumes:
+      - klp_redis_data:/data
     ports:
       - "6379:6379"
+
+volumes:
+  klp_postgres_data:
+  klp_redis_data:
