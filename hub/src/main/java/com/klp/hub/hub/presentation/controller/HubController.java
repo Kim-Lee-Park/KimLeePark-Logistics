@@ -8,6 +8,7 @@ import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class HubController {
 
     @PostMapping("")
     public ResponseEntity<RegisterHubResponse> registerHub(
-        @RequestBody RegisterHubRequest request
+        @Valid @RequestBody RegisterHubRequest request
     ){
         RegisterHubResponse response=hubService.registerHub(request.toCommand());
         URI uri=URI.create("/v1/hubs/"+response.hubId());

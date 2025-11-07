@@ -12,8 +12,8 @@ public record GetHubListResponse(
     public record HubSummaryResponse(
         UUID hubId,
         String name,
-        Long latitude,
-        Long longitude,
+        Double latitude,
+        Double longitude,
         String address
     ){}
 

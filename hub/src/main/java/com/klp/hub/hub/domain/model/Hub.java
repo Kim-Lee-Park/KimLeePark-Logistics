@@ -5,6 +5,8 @@ import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,18 +30,19 @@ public class Hub extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
-    private Long latitude;
+    private Double latitude;
 
     @Column(nullable = false)
-    private Long longitude;
+    private Double longitude;
 
     @Column(nullable = false)
     private String address;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private HubStatus status;
 
-    public static Hub create(String name, Long latitude, Long longitude, String address) {
+    public static Hub create(String name, Double latitude, Double longitude, String address) {
         Hub hub = new Hub();
         hub.name= name;
         hub.latitude = latitude;
@@ -49,7 +52,7 @@ public class Hub extends BaseEntity {
         return hub;
     }
 
-    public void update(String name, Long latitude, Long longitude, String address) {
+    public void update(String name, Double latitude, Double longitude, String address) {
         if(name != null){
             this.name = name;
         }
