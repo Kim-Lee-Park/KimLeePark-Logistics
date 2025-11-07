@@ -4,6 +4,7 @@ import com.klp.common.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
@@ -37,10 +38,15 @@ public class InventoryService {
 
     @Transactional
     public UUID create(UUID productId, UUID hubId, Integer quantity) {
-        Inventory savedInventory = inventoryRepository.save(
-            new Inventory(productId, hubId, quantity)
-        );
-        return savedInventory.getId();
+        try {
+            Inventory savedInventory = inventoryRepository.save(
+                new Inventory(productId, hubId, quantity)
+            );
+            return savedInventory.getId();
+        } catch (UniqueConstraintException exception) {
+            log.error("이미 해당 재고가 존재합니다.");
+            throw new BusinessException(InventoryErrorCode.INVENTORY_ALREADY_EXISTS);
+        }
     }
 
     /**

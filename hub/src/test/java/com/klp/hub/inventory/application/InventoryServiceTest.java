@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -16,6 +17,7 @@ import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Process;
@@ -93,6 +95,19 @@ class InventoryServiceTest {
             () -> inventoryService.delete(inventoryId))
             .getErrorCode();
         assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
+    }
+
+    @Test
+    @DisplayName("재고 생성시 이미 해당 상품과 허브에 재고가 존재한다면 예외가 발생한다")
+    void throwDuplicatedInventory() {
+        Integer quantity = 10;
+        when(inventoryRepository.save(any(Inventory.class)))
+            .thenThrow(UniqueConstraintException.class);
+
+        ErrorCode errorCode = assertThrows(BusinessException.class,
+            () -> inventoryService.create(productId, hubId, quantity))
+            .getErrorCode();
+        assertEquals(InventoryErrorCode.INVENTORY_ALREADY_EXISTS, errorCode);
     }
 
     @Test
