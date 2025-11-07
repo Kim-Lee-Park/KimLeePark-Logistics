@@ -70,6 +70,9 @@ public class InventoryService {
         return InventoryDeductResponse.success();
     }
 
+    /**
+     * 상품의 재고를 일괄 증가시킨다
+     */
     @Transactional
     public InventoryReplenishResponse replenish(InventoryReplenishCommand command) {
         boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
