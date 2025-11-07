@@ -1,7 +1,9 @@
 package com.klp.hub.inventory.application;
 
+import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,19 @@ public class InventoryService {
         Inventory savedInventory = inventoryRepository.save(
             new Inventory(productId, hubId, quantity));
         return savedInventory.getId();
+    }
+
+    /**
+     * 상품의 재고를 일괄 차감시킨다
+     */
+    @Transactional
+    public InventoryDeductResponse deduct(InventoryDeductCommand command) {
+        boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
+        if (!acquired) {
+            log.info("이미 처리된 요청입니다.");
+            return InventoryDeductResponse.already();
+        }
+        return null;
     }
 
     @Transactional

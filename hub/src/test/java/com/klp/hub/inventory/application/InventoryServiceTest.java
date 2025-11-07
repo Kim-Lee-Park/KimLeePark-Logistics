@@ -1,22 +1,28 @@
 package com.klp.hub.inventory.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
+import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Process;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryServiceTest {
@@ -39,7 +45,7 @@ class InventoryServiceTest {
         Inventory inventory = mock(Inventory.class);
         when(inventory.getQuantity()).thenReturn(10);
         when(inventoryRepository.findByProductId(productId))
-                .thenReturn(Optional.of(inventory));
+            .thenReturn(Optional.of(inventory));
 
         InventoryResponse response = inventoryService.getByProductId(productId);
 
@@ -73,5 +79,21 @@ class InventoryServiceTest {
         when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> inventoryService.delete(inventoryId));
+    }
+
+    @Test
+    @DisplayName("재고 차감 요청시 이미 처리된 요청이라면 ALREADY 를 반환한다")
+    void idempotency() {
+        String idempotencyKey = "idempotencyKey";
+        InventoryDeductCommand command = new InventoryDeductCommand(
+            idempotencyKey,
+            List.of(new Product(productId, 10))
+        );
+        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey))
+            .thenReturn(false);
+
+        InventoryDeductResponse response = inventoryService.deduct(command);
+
+        assertEquals(Process.ALREADY_DEDUCTED, response.process());
     }
 }
