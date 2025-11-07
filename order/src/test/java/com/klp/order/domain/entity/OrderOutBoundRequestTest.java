@@ -91,9 +91,6 @@ public class OrderOutBoundRequestTest {
 
     @Test
     @DisplayName("operation null이면 (증감,감소.배송,취소)인지 알 수 없기 때문에 예외처리")
-        //이 부분 또한 Operation은 행위에 관련된건데
-        //재고는 증감,감소 배송은 생성과취소를 나타내고 있기 때문에
-        // 이 부분이 null이면 예외처리로 진행하였습니다.
     void operation이_NULL이면_예외() {
         // when & then
         assertThatThrownBy(() -> OrderOutboundRequest.create(

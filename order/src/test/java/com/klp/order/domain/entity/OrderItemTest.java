@@ -29,7 +29,6 @@ public class OrderItemTest {
         order = Order.create(1L, 2L, "테스트 주문", initialItems);
     }
 
-
     @Test
     @DisplayName("OrderItem 생성 - 정상")
     void createOrderItem_Success() {
@@ -61,10 +60,6 @@ public class OrderItemTest {
     @Test
     @DisplayName("OrderItem 생성 - quantity가 0 이하면 예외")
     void createOrderItem_Fail_Quantity_is_Zero_or_Negative() {
-
-        //given
-        //setup
-
         // when & then
         assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, 0)))
             .isInstanceOf(IllegalArgumentException.class)
@@ -133,6 +128,4 @@ public class OrderItemTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
     }
-
-
 }

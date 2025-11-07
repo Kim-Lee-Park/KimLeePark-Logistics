@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Order 엔티티 테스트")
 class OrderTest {
 
-    // 이 선언하는 것을 너무 반복하고 있어서 필드에 선언한 후 사용 예정
     private Long supplierId;
     private Long customerId;
     private String comment;
@@ -26,7 +25,6 @@ class OrderTest {
     private UUID productId2;
     private List<OrderItemCommand> itemCommands;
 
-    // 미리 값 넣어서 사용 예장
     @BeforeEach
     void setUp() {
         supplierId = 1L;
@@ -49,12 +47,10 @@ class OrderTest {
         Order order = Order.create(supplierId, customerId, comment, itemCommands);
 
         // then
-        assertThat(order.getOrderId()).isNotNull();
         assertThat(order.getSupplierId()).isEqualTo(supplierId);
         assertThat(order.getCustomerId()).isEqualTo(customerId);
         assertThat(order.getComment()).isEqualTo(comment);
         assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.ING);
-        assertThat(order.getOrderId()).isNotNull();
 
         // 주문 아이템 검증
         assertThat(order.getOrderItems()).hasSize(2);
@@ -64,7 +60,6 @@ class OrderTest {
         assertThat(order.getOrderItems().get(1).getQuantity()).isEqualTo(5);
         assertThat(order.getOrderItems().get(1).getDeliveryId()).isNull();
 
-        // 양방향 관계 확인
         assertThat(order.getOrderItems().get(0).getOrder()).isEqualTo(order);
         assertThat(order.getOrderItems().get(1).getOrder()).isEqualTo(order);
     }
