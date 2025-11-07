@@ -25,6 +25,8 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final String INVENTORY_TABLE = "hub_schema.p_inventory";
+
     @Override
     public Optional<Inventory> findByProductId(UUID productId) {
         return inventoryJpaRepository.findByProductId(productId);
@@ -56,13 +58,13 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
     @Override
     public int deductAll(List<InventoryDeduct> inventoryDeducts) {
-        String sql = """
-            UPDATE hub_schema.p_inventory
-               SET quantity = quantity - ?
-             WHERE product_id = ?
-               AND hub_id     = ?
-               AND quantity   >= ?
-            """;
+        String sql = String.format("""
+            UPDATE %s
+                SET quantity = quantity - ?
+            WHERE product_id = ?
+                AND hub_id     = ?
+                AND quantity   >= ?
+            """, INVENTORY_TABLE);
 
         List<Object[]> batchArgs = inventoryDeducts.stream()
             .map(line -> new Object[]{
@@ -79,12 +81,12 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
     @Override
     public int replenishAll(List<InventoryReplenish> inventoryReplenishes) {
-        String sql = """
-            UPDATE hub_schema.p_inventory
+        String sql = String.format("""
+            UPDATE %s
                SET quantity = quantity + ?
-             WHERE product_id = ?
-               AND hub_id     = ?
-            """;
+            WHERE product_id = ?
+                AND hub_id     = ?
+            """, INVENTORY_TABLE);
 
         List<Object[]> batchArgs = inventoryReplenishes.stream()
             .map(line -> new Object[]{
