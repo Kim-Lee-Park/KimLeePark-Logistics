@@ -6,20 +6,19 @@ import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.application.dto.ProductCreateCommand;
+import com.klp.hub.product.application.dto.ProductUpdateCommand;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
+import com.klp.hub.product.presentation.dto.ProductResponse;
 import com.klp.hub.product.presentation.dto.ProductUpdateResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
-import com.klp.hub.product.presentation.dto.ProductResponse;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
-import com.klp.hub.product.application.dto.ProductUpdateCommand;
 
 @Service
 @Slf4j
@@ -35,13 +34,14 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID productId) {
         Product product = getById(productId);
+        InventoryResponse inventory = inventoryService.getByProductId(productId);
         CompanyResponse company = companyService.getByCompanyId(product.getCompanyId());
 
         return new ProductResponse(
-                product.getId(),
-                UUID.randomUUID(),
-                company.name(),
-                product.getName()
+            product.getId(),
+            inventory.hubId(),
+            company.name(),
+            product.getName()
         );
     }
 
@@ -54,7 +54,7 @@ public class ProductService {
     public UUID create(ProductCreateCommand command) {
         CompanyResponse companyResponse = companyService.getByCompanyId(command.companyId());
         Product savedProduct = productRepository.save(
-                new Product(companyResponse.id(), command.name())
+            new Product(companyResponse.id(), command.name())
         );
 
         try {
@@ -74,8 +74,8 @@ public class ProductService {
         product.updateName(command.name());
 
         return new ProductUpdateResponse(
-                product.getId(),
-                product.getName()
+            product.getId(),
+            product.getName()
         );
     }
 

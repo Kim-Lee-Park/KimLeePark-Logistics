@@ -3,12 +3,11 @@ package com.klp.hub.inventory.application;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -26,15 +25,17 @@ public class InventoryService {
         });
 
         return new InventoryResponse(
-                productId,
-                inventory.getId(),
-                inventory.getQuantity()
+            productId,
+            inventory.getId(),
+            inventory.getHubId(),
+            inventory.getQuantity()
         );
     }
 
     @Transactional
     public UUID create(UUID productId, UUID hubId, Integer quantity) {
-        Inventory savedInventory = inventoryRepository.save(new Inventory(productId, hubId, quantity));
+        Inventory savedInventory = inventoryRepository.save(
+            new Inventory(productId, hubId, quantity));
         return savedInventory.getId();
     }
 
