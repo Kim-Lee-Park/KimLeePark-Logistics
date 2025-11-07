@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:delivery-test-db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        hbm2ddl.create_namespaces: true
+        globally_quoted_identifiers: true
+        default_schema: delivery_schema
+    show-sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
