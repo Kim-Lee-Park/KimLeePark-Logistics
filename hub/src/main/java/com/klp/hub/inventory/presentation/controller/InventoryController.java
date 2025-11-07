@@ -3,6 +3,8 @@ package com.klp.hub.inventory.presentation.controller;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishRequest;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,16 @@ public class InventoryController {
     ) {
         log.info("== 재고 차감 멱등키 : {} ==", request.idempotencyKey());
         InventoryDeductResponse response = inventoryService.deduct(request.toCommand());
+        log.info("== 재고 차감 성공");
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/replenish")
+    public ResponseEntity<InventoryReplenishResponse> replenish(
+        @RequestBody InventoryReplenishRequest request
+    ) {
+        log.info("== 재고 차감 멱등키 : {} ==", request.idempotencyKey());
+        InventoryReplenishResponse response = inventoryService.replenish(request.toCommand());
         log.info("== 재고 차감 성공");
         return ResponseEntity.ok().body(response);
     }

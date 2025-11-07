@@ -16,6 +16,8 @@ import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest.Product;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishRequest;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import java.util.List;
 import java.util.UUID;
@@ -60,7 +62,7 @@ class InventoryControllerTest {
     }
 
     @Test
-    @DisplayName("재고를 차감할 수 있다")
+    @DisplayName("재고를 차감시킬 수 있다")
     void deduct() throws Exception {
         UUID productId = UUID.randomUUID();
         UUID hubId = UUID.randomUUID();
@@ -74,6 +76,28 @@ class InventoryControllerTest {
             .thenReturn(new InventoryDeductResponse(Status.SUCCESS));
 
         mockMvc.perform(post("/v1/inventories/deduct")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.status").isString());
+    }
+
+    @Test
+    @DisplayName("재고를 증가시킬 수 있다")
+    void replenish() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+        Integer quantity = 10;
+        String idempotencyKey = "idempotencyKey";
+        InventoryReplenishRequest request = new InventoryReplenishRequest(
+            idempotencyKey,
+            List.of(new InventoryReplenishRequest.Product(productId, hubId, quantity))
+        );
+        when(inventoryService.replenish(request.toCommand()))
+            .thenReturn(new InventoryReplenishResponse(InventoryReplenishResponse.Status.SUCCESS));
+
+        mockMvc.perform(post("/v1/inventories/replenish")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
