@@ -10,10 +10,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.klp.common.exception.BusinessException;
+import com.klp.common.exception.ErrorCode;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Process;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
@@ -63,7 +66,10 @@ class InventoryServiceTest {
     void throwGetInventoryByProductId() {
         when(inventoryRepository.findByProductId(productId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> inventoryService.getByProductId(productId));
+        ErrorCode errorCode = assertThrows(BusinessException.class,
+            () -> inventoryService.getByProductId(productId))
+            .getErrorCode();
+        assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
     }
 
     @Test
@@ -83,7 +89,10 @@ class InventoryServiceTest {
     void throwDeletedByNullInventoryId() {
         when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> inventoryService.delete(inventoryId));
+        ErrorCode errorCode = assertThrows(BusinessException.class,
+            () -> inventoryService.delete(inventoryId))
+            .getErrorCode();
+        assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
     }
 
     @Test
@@ -130,6 +139,9 @@ class InventoryServiceTest {
         when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
         when(inventoryRepository.deductAll(command.toInventoryDeductList())).thenReturn(0);
 
-        assertThrows(RuntimeException.class, () -> inventoryService.deduct(command));
+        ErrorCode errorCode = assertThrows(
+            BusinessException.class, () -> inventoryService.deduct(command))
+            .getErrorCode();
+        assertEquals(InventoryErrorCode.INSUFFICIENT_STOCK, errorCode);
     }
 }
