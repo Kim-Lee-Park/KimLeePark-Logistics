@@ -3,10 +3,10 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.cancel.CancelType;
 import com.klp.order.domain.cancel.OrderCancellation;
 import com.klp.order.domain.order.Order;
-import com.klp.order.domain.order.OrderItem;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,11 +28,11 @@ public class OrderCancellationTest {
         Long supplierId = 1L;
         Long customerId = 2L;
         String comment = "TDD 어디까지 해야 하는건가!";
-        List<OrderItem> orderItems = List.of(
-            new OrderItem(UUID.randomUUID(), 10)
+        List<OrderItemCommand> initialItems = List.of(
+            new OrderItemCommand(UUID.randomUUID(), 1)
         );
 
-        order = Order.create(supplierId, customerId, comment, orderItems);
+        order = Order.create(supplierId, customerId, comment, initialItems);
 
         cancelReason = "일단 취소 사유";
         cancelledBy = 2L;
@@ -101,7 +101,7 @@ public class OrderCancellationTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("취소자 정보는 필수입니다.");
     }
-    
+
     @Test
     @DisplayName("주문 취소 정보 생성 - cancelType이 null일 경우 예외 발생")
     void 주문취소정보생성_취소정보가null이면_예외발생() {

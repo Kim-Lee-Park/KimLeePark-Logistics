@@ -3,11 +3,11 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.idempotencykey.OperationType;
 import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.idempotencykey.RequestStatus;
 import com.klp.order.domain.order.Order;
-import com.klp.order.domain.order.OrderItem;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +25,10 @@ public class OrderOutBoundRequestTest {
     void setUp() {
         Long supplierId = 1L;
         Long customerId = 2L;
-        List<OrderItem> orderItems = List.of(new OrderItem(UUID.randomUUID(), 1));
-        order = Order.create(supplierId, customerId, "요청사항", orderItems);
+        List<OrderItemCommand> initialItems = List.of(
+            new OrderItemCommand(UUID.randomUUID(), 1)
+        );
+        order = Order.create(supplierId, customerId, "요청사항", initialItems);
         idempotencyKey = "흠 멱등키는 어떻게 구성해야 잘했다고 소문날까나";
         target = "재고";
         operation = OperationType.DECREASE;
