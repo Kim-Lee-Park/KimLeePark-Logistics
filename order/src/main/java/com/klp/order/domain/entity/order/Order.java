@@ -1,4 +1,4 @@
-package com.klp.order.domain.entity.order;
+package com.klp.order.domain.order;
 
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.cancel.CancelType;

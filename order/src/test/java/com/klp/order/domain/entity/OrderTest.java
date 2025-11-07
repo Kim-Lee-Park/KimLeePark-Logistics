@@ -42,9 +42,6 @@ class OrderTest {
         orderItems.add(new OrderItem(productId2, 5));
     }
 
-    // 테스트를 통과하기 위해 리플렉션을 통해 Id 주입 하겠습니다.
-    // 현재 GenerationType.UUID라 추후에 ID가 형성되지만 우선은 테스트를 위해 리플레겻ㄴ을 통해
-    // Id 주입 후 테스트 진행하겠습니다.!
     private void injectOrderId(Order order) throws Exception {
         Field orderIdField = Order.class.getDeclaredField("orderId");
         orderIdField.setAccessible(true);
@@ -54,11 +51,6 @@ class OrderTest {
 
     @Test
     @DisplayName("주문 생성 - 정상 (주문 아이템 포함)")
-        // 지금 오류 나는 이유
-        // entity에 db에 저장될때 마다 생성하는 generationTupe.uuid를 사용해서
-        // db 저장 될때 마다 배정되는데 지금은 db에 저장안해놔서 orederId가 null이되며 오류 발생
-        // 하지만 제대로 하면 정상 작동 <- 11.05
-        // 11.06 리플렉션을 통해 Id 주입 후 해결
     void createOrder_Success() throws Exception {
         // when
         Order order = Order.create(supplierId, customerId, comment, orderItems);

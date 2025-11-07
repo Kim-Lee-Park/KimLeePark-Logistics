@@ -3,8 +3,7 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.order.domain.entity.orderitem.OrderItem;
-import java.lang.reflect.Field;
+import com.klp.order.domain.order.OrderItem;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,11 +21,6 @@ public class OrderItemTest {
         quantity = 1;
     }
 
-    private void injectOrderItemId(OrderItem orderItem) throws Exception {
-        Field orderItemIdField = OrderItem.class.getDeclaredField("orderItemId");
-        orderItemIdField.setAccessible(true);
-        orderItemIdField.set(orderItem, UUID.randomUUID());
-    }
 
     @Test
     @DisplayName("OrderItem 생성 - 정상")
@@ -87,6 +81,36 @@ public class OrderItemTest {
 
         // then
         assertThat(orderItem.getDeliveryId()).isEqualTo(deliveryId);
+    }
+
+    @Test
+    @DisplayName("수량 수정 - 정상")
+    void updateQuantity_Success() {
+        // given
+        OrderItem orderItem = new OrderItem(productId, quantity);
+        int newQuantity = 100;
+
+        // when
+        orderItem.updateQuantity(newQuantity);
+
+        // then
+        assertThat(orderItem.getQuantity()).isEqualTo(newQuantity);
+    }
+
+    @Test
+    @DisplayName("수량 수정 - 0 이하면 예외")
+    void updateQuantity_Fail_When_Zero_or_Negative() {
+        // given
+        OrderItem orderItem = new OrderItem(productId, quantity);
+
+        // when & then
+        assertThatThrownBy(() -> orderItem.updateQuantity(0))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("주문 수량은 1개 이상이어야 합니다.");
+
+        assertThatThrownBy(() -> orderItem.updateQuantity(-5))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("주문 수량은 1개 이상이어야 합니다.");
     }
 
 

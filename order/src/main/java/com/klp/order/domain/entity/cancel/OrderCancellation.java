@@ -47,6 +47,10 @@ public class OrderCancellation {
 
     public static OrderCancellation create(Order order, String cancelReason, Long cancelledBy,
         CancelType cancelType) {
+        validateOrder(order);
+        validateCancelledBy(cancelledBy);
+        validateCancelType(cancelType);
+
         OrderCancellation cancellation = new OrderCancellation();
         cancellation.order = order;
         cancellation.cancelReason = cancelReason;
@@ -55,5 +59,22 @@ public class OrderCancellation {
         cancellation.cancelledAt = LocalDateTime.now();
         return cancellation;
     }
+    
+    private static void validateOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("주문 정보는 필수입니다.");
+        }
+    }
 
+    private static void validateCancelledBy(Long cancelledBy) {
+        if (cancelledBy == null) {
+            throw new IllegalArgumentException("취소자 정보는 필수입니다.");
+        }
+    }
+
+    private static void validateCancelType(CancelType cancelType) {
+        if (cancelType == null) {
+            throw new IllegalArgumentException("취소 유형은 필수입니다.");
+        }
+    }
 }
