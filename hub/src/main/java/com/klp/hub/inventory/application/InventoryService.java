@@ -49,10 +49,12 @@ public class InventoryService {
     public InventoryDeductResponse deduct(InventoryDeductCommand command) {
         boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
         if (!acquired) {
-            log.info("이미 처리된 요청입니다.");
+            log.warn("이미 처리된 요청입니다.");
             return InventoryDeductResponse.already();
         }
-        return null;
+
+        inventoryRepository.deductAll(command.toInventoryDeductList());
+        return InventoryDeductResponse.success();
     }
 
     @Transactional

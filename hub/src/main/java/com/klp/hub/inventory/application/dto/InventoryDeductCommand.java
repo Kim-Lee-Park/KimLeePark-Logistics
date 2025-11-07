@@ -9,6 +9,10 @@ public record InventoryDeductCommand(
     List<Product> products
 ) {
 
+    public List<InventoryDeduct> toInventoryDeductList() {
+        return products.stream().map(Product::toInventoryDeduct).toList();
+    }
+
     public record Product(
         UUID productId,
         UUID hubId,

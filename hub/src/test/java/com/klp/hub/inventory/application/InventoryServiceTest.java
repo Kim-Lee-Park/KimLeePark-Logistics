@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
@@ -38,6 +41,8 @@ class InventoryServiceTest {
     private UUID hubId = UUID.randomUUID();
 
     private UUID inventoryId = UUID.randomUUID();
+
+    String idempotencyKey = "idempotencyKey";
 
     @Test
     @DisplayName("한 상품의 재고를 조회할 수 있다")
@@ -95,5 +100,22 @@ class InventoryServiceTest {
         InventoryDeductResponse response = inventoryService.deduct(command);
 
         assertEquals(Process.ALREADY_DEDUCTED, response.process());
+    }
+
+    @Test
+    @DisplayName("재고가 충분하고 멱등키가 처음이라면 성공을 반환하고 재고를 차감한다")
+    void deduct() {
+        int quantity = 5;
+        InventoryDeductCommand command = new InventoryDeductCommand(
+            idempotencyKey,
+            List.of(new Product(productId, hubId, quantity))
+        );
+        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+        when(inventoryRepository.deductAll(command.toInventoryDeductList())).thenReturn(1);
+
+        InventoryDeductResponse response = inventoryService.deduct(command);
+
+        assertEquals(Process.SUCCESS, response.process());
+        verify(inventoryRepository, times(1)).deductAll(anyList());
     }
 }
