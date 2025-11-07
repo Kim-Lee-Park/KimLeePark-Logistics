@@ -4,6 +4,7 @@ import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotency;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
+import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,27 @@ public class InventoryRepositoryImpl implements InventoryRepository {
                 line.productId(),
                 line.hubId(),
                 line.quantity()
+            })
+            .toList();
+
+        int[] updateCount = jdbcTemplate.batchUpdate(sql, batchArgs);
+        return IntStream.of(updateCount).sum();
+    }
+
+    @Override
+    public int replenishAll(List<InventoryReplenish> inventoryReplenishes) {
+        String sql = """
+            UPDATE hub_schema.p_inventory
+               SET quantity = quantity + ?
+             WHERE product_id = ?
+               AND hub_id     = ?
+            """;
+
+        List<Object[]> batchArgs = inventoryReplenishes.stream()
+            .map(line -> new Object[]{
+                line.quantity(),
+                line.productId(),
+                line.hubId(),
             })
             .toList();
 

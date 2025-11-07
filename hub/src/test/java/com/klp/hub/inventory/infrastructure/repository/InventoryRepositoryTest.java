@@ -9,6 +9,7 @@ import com.klp.hub.TestJpaConfig;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
+import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -114,6 +115,41 @@ class InventoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("재고가 없는 상품에 대해서 재고 차감시 재고는 차감되지 않는다")
+    void deductNonExistentInventory() {
+        int addQuantity = 10;
+        List<InventoryDeduct> inventoryDeducts = List.of(
+            new InventoryDeduct(productId, hubId, addQuantity)
+        );
+
+        int updated = inventoryRepository.deductAll(inventoryDeducts);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertEquals(0, updated);
+    }
+
+    @Test
+    @DisplayName("서로 다른 재고에 대한 차감시 특정 재고가 존재하지 않는다면 해당 재고는 차감에 실패한다")
+    void deductAllNonExistentInventory() {
+        UUID nonExistentProductId = UUID.randomUUID();
+        UUID nonExistentHubId = UUID.randomUUID();
+        UUID productIdB = UUID.randomUUID();
+        UUID hubIdB = UUID.randomUUID();
+        inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
+        List<InventoryDeduct> inventoryDeducts = List.of(
+            new InventoryDeduct(nonExistentProductId, nonExistentHubId, 10),
+            new InventoryDeduct(productIdB, hubIdB, 20)
+        );
+
+        int updated = inventoryRepository.deductAll(inventoryDeducts);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertEquals(1, updated);
+    }
+
+    @Test
     @DisplayName("재고가 충분하지 않다면 재고는 차감되지 않는다")
     void insufficientStock() {
         int quantity = 10;
@@ -179,5 +215,84 @@ class InventoryRepositoryTest {
         assertEquals(1, updated);
         assertEquals(0, inventoryA.getQuantity());
         assertEquals(20, inventoryB.getQuantity());
+    }
+
+    @Test
+    @DisplayName("재고가 있는 상품의 재고를 증가시킨다")
+    void replenish() {
+        int quantity = 10;
+        int addQuantity = 10;
+        inventoryRepository.save(new Inventory(productId, hubId, quantity));
+        List<InventoryReplenish> inventoryReplenishes = List.of(
+            new InventoryReplenish(productId, hubId, addQuantity)
+        );
+
+        int updated = inventoryRepository.replenishAll(inventoryReplenishes);
+        entityManager.flush();
+        entityManager.clear();
+        Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow();
+
+        assertEquals(1, updated);
+        assertEquals(quantity + addQuantity, inventory.getQuantity());
+    }
+
+    @Test
+    @DisplayName("서로 다른 재고에 대한 증가시 모두 성공한다")
+    void addAll() {
+        UUID productIdA = UUID.randomUUID();
+        UUID hubIdA = UUID.randomUUID();
+        UUID productIdB = UUID.randomUUID();
+        UUID hubIdB = UUID.randomUUID();
+        inventoryRepository.save(new Inventory(productIdA, hubIdA, 10));
+        inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
+        List<InventoryReplenish> inventoryReplenishes = List.of(
+            new InventoryReplenish(productIdA, hubIdA, 10),
+            new InventoryReplenish(productIdB, hubIdB, 20)
+        );
+
+        int updated = inventoryRepository.replenishAll(inventoryReplenishes);
+        entityManager.flush();
+        entityManager.clear();
+        Inventory inventoryA = inventoryRepository.findByProductId(productIdA).orElseThrow();
+        Inventory inventoryB = inventoryRepository.findByProductId(productIdB).orElseThrow();
+
+        assertEquals(2, updated);
+        assertEquals(20, inventoryA.getQuantity());
+        assertEquals(40, inventoryB.getQuantity());
+    }
+
+    @Test
+    @DisplayName("재고가 없는 상품에 대해서 재고 증가시 재고는 증가되지 않는다")
+    void replenishNonExistentInventory() {
+        int addQuantity = 10;
+        List<InventoryReplenish> inventoryReplenishes = List.of(
+            new InventoryReplenish(productId, hubId, addQuantity)
+        );
+
+        int updated = inventoryRepository.replenishAll(inventoryReplenishes);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertEquals(0, updated);
+    }
+
+    @Test
+    @DisplayName("서로 다른 재고에 대한 증가시 특정 재고가 존재하지 않는다면 해당 재고는 증가에 실패한다")
+    void replenishAllNonExistentInventory() {
+        UUID nonExistentProductId = UUID.randomUUID();
+        UUID nonExistentHubId = UUID.randomUUID();
+        UUID productIdB = UUID.randomUUID();
+        UUID hubIdB = UUID.randomUUID();
+        inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
+        List<InventoryReplenish> inventoryReplenishes = List.of(
+            new InventoryReplenish(nonExistentProductId, nonExistentHubId, 10),
+            new InventoryReplenish(productIdB, hubIdB, 20)
+        );
+
+        int updated = inventoryRepository.replenishAll(inventoryReplenishes);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertEquals(1, updated);
     }
 }
