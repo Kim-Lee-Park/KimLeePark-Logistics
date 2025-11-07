@@ -77,10 +77,8 @@ public class OrderOutBoundRequestTest {
     }
 
     @Test
-    @DisplayName("target null이면 예외")
-        // 멱등키 같은 경우 재고용 멱등키인지, 배송용 멱등키인지 값을 받고 있습니다.
-        //만약 타겟이 null 이면 어떤 역할의 멱등키인지 알 수 없기 때문에 예외처리하였습니다.
-    void 타겟_NULL이면_예외_재고인지_배송인지_멱등키의_역할을_알수없기떄문() {
+    @DisplayName("target null이면 멱등키의 역할(재고,배송)을 알 수 없으므로 예외")
+    void Target_NULL이면_예외() {
         // when & then
         assertThatThrownBy(() -> OrderOutboundRequest.create(
             order, idempotencyKey, null, operation
@@ -90,11 +88,11 @@ public class OrderOutBoundRequestTest {
     }
 
     @Test
-    @DisplayName("operation null이면 예외")
+    @DisplayName("operation null이면 (증감,감소.배송,취소)인지 알 수 없기 때문에 예외처리")
         //이 부분 또한 Operation은 행위에 관련된건데
         //재고는 증감,감소 배송은 생성과취소를 나타내고 있기 때문에
         // 이 부분이 null이면 예외처리로 진행하였습니다.
-    void operation이_NUL이면_증감인지_감소인지_혹은_배송생성인지_알수_없기_떄문에_예외처리() {
+    void operation이_NULL이면_예외() {
         // when & then
         assertThatThrownBy(() -> OrderOutboundRequest.create(
             order, idempotencyKey, target, null
