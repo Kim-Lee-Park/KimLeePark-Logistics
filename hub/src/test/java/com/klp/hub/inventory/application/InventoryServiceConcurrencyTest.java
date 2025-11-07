@@ -11,7 +11,7 @@ import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryRepositoryImpl;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Process;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -158,9 +158,9 @@ public class InventoryServiceConcurrencyTest {
                 try {
                     InventoryDeductResponse response = inventoryService.deduct(command);
 
-                    if (response.process() == Process.SUCCESS) {
+                    if (response.status() == Status.SUCCESS) {
                         successCont[0]++;
-                    } else if (response.process() == Process.ALREADY_DEDUCTED) {
+                    } else if (response.status() == Status.ALREADY_DEDUCTED) {
                         alreadyCount[0]++;
                     }
                 } finally {

@@ -1,18 +1,18 @@
 package com.klp.hub.inventory.presentation.dto;
 
 public record InventoryReplenishResponse(
-    Process process
+    Status status
 ) {
 
     public static InventoryReplenishResponse success() {
-        return new InventoryReplenishResponse(Process.SUCCESS);
+        return new InventoryReplenishResponse(Status.SUCCESS);
     }
 
     public static InventoryReplenishResponse already() {
-        return new InventoryReplenishResponse(Process.ALREADY_REPLENISHED);
+        return new InventoryReplenishResponse(Status.ALREADY_REPLENISHED);
     }
 
-    public enum Process {
+    public enum Status {
         SUCCESS, ALREADY_REPLENISHED
     }
 }

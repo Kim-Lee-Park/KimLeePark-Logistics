@@ -2,15 +2,22 @@ package com.klp.hub.inventory.presentation.controller;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.common.exception.GlobalExceptionHandler;
 import com.klp.common.security.config.SecurityConfig;
 import com.klp.common.security.filter.AuthorizationFilter;
 import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest.Product;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +34,9 @@ class InventoryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private InventoryService inventoryService;
@@ -47,5 +57,27 @@ class InventoryControllerTest {
             .andExpect(jsonPath("$.inventoryId").isString())
             .andExpect(jsonPath("$.hubId").isString())
             .andExpect(jsonPath("$.quantity").isNumber());
+    }
+
+    @Test
+    @DisplayName("재고를 차감할 수 있다")
+    void deduct() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+        Integer quantity = 10;
+        String idempotencyKey = "idempotencyKey";
+        InventoryDeductRequest request = new InventoryDeductRequest(
+            idempotencyKey,
+            List.of(new Product(productId, hubId, quantity))
+        );
+        when(inventoryService.deduct(request.toCommand()))
+            .thenReturn(new InventoryDeductResponse(Status.SUCCESS));
+
+        mockMvc.perform(post("/v1/inventories/deduct")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.status").isString());
     }
 }

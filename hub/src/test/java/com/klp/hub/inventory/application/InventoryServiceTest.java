@@ -21,8 +21,8 @@ import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Process;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse.Status;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import java.util.List;
 import java.util.Optional;
@@ -125,7 +125,7 @@ class InventoryServiceTest {
 
         InventoryDeductResponse response = inventoryService.deduct(command);
 
-        assertEquals(Process.ALREADY_DEDUCTED, response.process());
+        assertEquals(InventoryDeductResponse.Status.ALREADY_DEDUCTED, response.status());
     }
 
     @Test
@@ -141,7 +141,7 @@ class InventoryServiceTest {
 
         InventoryDeductResponse response = inventoryService.deduct(command);
 
-        assertEquals(Process.SUCCESS, response.process());
+        assertEquals(InventoryDeductResponse.Status.SUCCESS, response.status());
         verify(inventoryRepository, times(1)).deductAll(anyList());
     }
 
@@ -175,7 +175,7 @@ class InventoryServiceTest {
 
         InventoryReplenishResponse response = inventoryService.replenish(command);
 
-        assertEquals(InventoryReplenishResponse.Process.SUCCESS, response.process());
+        assertEquals(Status.SUCCESS, response.status());
         verify(inventoryRepository, times(1)).replenishAll(anyList());
     }
 
