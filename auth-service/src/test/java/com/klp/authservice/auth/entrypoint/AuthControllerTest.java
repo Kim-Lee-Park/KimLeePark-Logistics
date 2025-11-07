@@ -1,15 +1,19 @@
 package com.klp.authservice.auth.entrypoint;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.authservice.auth.application.AuthService;
+import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
 import com.klp.authservice.auth.entrypoint.controller.AuthController;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
-import com.klp.common.exception.GlobalExceptionHandler;
-import com.klp.common.security.config.SecurityConfig;
-import com.klp.common.security.filter.AuthorizationFilter;
+import com.klp.authservice.auth.infrastructure.exception.GlobalExceptionHandler;
+import com.klp.authservice.auth.infrastructure.security.config.SecurityConfig;
+import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AuthController.class)
@@ -29,8 +34,11 @@ class AuthControllerTest {
     @Autowired
     protected ObjectMapper mapper;
 
+    @MockitoBean
+    private AuthService authService;
+
     @Nested
-    @DisplayName("회원가입 요청 실패 테스트")
+    @DisplayName("회원가입 실패 테스트")
     class failSignUp {
 
         @Nested
@@ -421,17 +429,30 @@ class AuthControllerTest {
         }
     }
 
-    @Test
-    @DisplayName("회원가입 성공")
-    void signUp_success() throws Exception {
-        // given
-        SignUpRequest signUpRequest = new SignUpRequest("testuser1", "!Password123", "slackId", "testCopmpany",
-            AffiliationType.COMPANY);
+    @Nested
+    @DisplayName("회원가입 성공 테스트")
+    class successSignUp {
 
-        // when & then
-        mockMvc.perform(post("/v1/auth/signUp")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(signUpRequest)))
-            .andExpect(status().isOk());
+        @Test
+        @DisplayName("유효한 요청일 경우 회원가입에 성공한다")
+        void validPassword_success() throws Exception {
+            // given
+            String userName = "testuser1";
+            String password = "Password123!";
+            String slackId = "slackId";
+            String affiliationName = "testCompany";
+            AffiliationType type = AffiliationType.COMPANY;
+
+            SignUpRequest signUpRequest = new SignUpRequest(userName, password, slackId, affiliationName, type);
+
+            // when
+            doNothing().when(authService).signUp(any(SignUpCommand.class));
+
+            // then
+            mockMvc.perform(post("/v1/auth/signUp")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().isOk());
+        }
     }
 }
