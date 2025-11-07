@@ -1,13 +1,17 @@
 package com.klp.hub.company.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.klp.common.exception.BusinessException;
+import com.klp.common.exception.ErrorCode;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
+import com.klp.hub.company.exception.CompanyErrorCode;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,9 +51,12 @@ class CompanyServiceTest {
     @Test
     @DisplayName("해당 업체가 존재하지 않는다면 예외가 발생한다")
     void throwGetCompanyById() {
-        when(companyRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
+        UUID companyId = UUID.randomUUID();
+        when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class,
-            () -> companyService.getByCompanyId(UUID.randomUUID()));
+        ErrorCode errorCode = assertThrows(BusinessException.class,
+            () -> companyService.getByCompanyId(companyId))
+            .getErrorCode();
+        assertEquals(CompanyErrorCode.NOT_FOUND_COMPANY, errorCode);
     }
 }

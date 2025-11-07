@@ -1,7 +1,9 @@
 package com.klp.hub.company.application;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.repository.CompanyRepository;
+import com.klp.hub.company.exception.CompanyErrorCode;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,7 @@ public class CompanyService {
     public CompanyResponse getByCompanyId(UUID companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> {
             log.error("업체를 찾을 수 없습니다. companyId : {}", companyId);
-            return new RuntimeException();
+            return new BusinessException(CompanyErrorCode.NOT_FOUND_COMPANY);
         });
 
         return new CompanyResponse(
