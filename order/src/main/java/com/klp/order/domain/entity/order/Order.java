@@ -1,5 +1,6 @@
 package com.klp.order.domain.order;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
@@ -58,32 +59,34 @@ public class Order extends BaseEntity {
 
 
     public static Order create(Long supplierId, Long customerId, String comment,
-        List<OrderItem> orderItems) {
+        List<OrderItemCommand> itemCommands) {
         Order order = new Order();
         order.validateSupplierId(supplierId);
         order.validateCustomerId(customerId);
-        order.validateOrderItems(orderItems);
+        order.validateItemCommands(itemCommands);
 
         order.supplierId = supplierId;
         order.customerId = customerId;
         order.comment = comment;
         order.orderStatus = OrderStatus.ING;
 
-        for (OrderItem orderItem : orderItems) {
-            order.addOrderItem(orderItem);
+        for (OrderItemCommand command : itemCommands) {
+            OrderItem orderItem = OrderItem.of(order, command);
+            order.orderItems.add(orderItem);
         }
 
         return order;
     }
 
-    public void updateOrder(String comment, List<OrderItem> newOrderItems) {
+    public void updateOrder(String comment, List<OrderItemCommand> itemCommands) {
         checkCanUpdate();
         this.comment = comment;
 
-        if (newOrderItems != null && !newOrderItems.isEmpty()) {
+        if (itemCommands != null && !itemCommands.isEmpty()) {
             this.orderItems.clear();
-            for (OrderItem orderItem : newOrderItems) {
-                addOrderItem(orderItem);
+            for (OrderItemCommand command : itemCommands) {
+                OrderItem orderItem = OrderItem.of(this, command);
+                this.orderItems.add(orderItem);
             }
         }
     }
@@ -114,20 +117,15 @@ public class Order extends BaseEntity {
         }
     }
 
-    private void validateOrderItems(List<OrderItem> orderItems) {
-        if (orderItems == null) {
+    private void validateItemCommands(List<OrderItemCommand> itemCommands) {
+        if (itemCommands == null) {
             throw new IllegalArgumentException("주문 상품은 필수입니다.");
         }
-        if (orderItems.isEmpty()) {
+        if (itemCommands.isEmpty()) {
             throw new IllegalArgumentException("주문 상품은 최소 1개 이상이어야 합니다.");
         }
     }
 
-
-    private void addOrderItem(OrderItem orderItem) {
-        this.orderItems.add(orderItem);
-        orderItem.setOrder(this);
-    }
 
     private void checkCanCancel() {
         if (this.orderStatus == OrderStatus.DELIVERY_ASSIGNED) {
@@ -152,5 +150,4 @@ public class Order extends BaseEntity {
             throw new IllegalStateException("완료된 주문은 수정할 수 없습니다.");
         }
     }
-
 }

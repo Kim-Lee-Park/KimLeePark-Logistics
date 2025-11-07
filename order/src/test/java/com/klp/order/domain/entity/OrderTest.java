@@ -3,12 +3,11 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.order.domain.entity.cancel.CancelType;
-import com.klp.order.domain.entity.cancel.OrderCancellation;
-import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.domain.entity.orderitem.OrderItem;
-import java.lang.reflect.Field;
+import com.klp.order.command.OrderItemCommand;
+import com.klp.order.domain.cancel.CancelType;
+import com.klp.order.domain.cancel.OrderCancellation;
+import com.klp.order.domain.order.Order;
+import com.klp.order.domain.order.OrderStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +24,7 @@ class OrderTest {
     private String comment;
     private UUID productId1;
     private UUID productId2;
-    private List<OrderItem> orderItems;
+    private List<OrderItemCommand> itemCommands;
 
     // 미리 값 넣어서 사용 예장
     @BeforeEach
@@ -37,24 +36,18 @@ class OrderTest {
         productId1 = UUID.randomUUID();
         productId2 = UUID.randomUUID();
 
-        orderItems = new ArrayList<>();
-        orderItems.add(new OrderItem(productId1, 10));
-        orderItems.add(new OrderItem(productId2, 5));
-    }
-
-    private void injectOrderId(Order order) throws Exception {
-        Field orderIdField = Order.class.getDeclaredField("orderId");
-        orderIdField.setAccessible(true);
-        orderIdField.set(order, UUID.randomUUID());
+        itemCommands = new ArrayList<>();
+        itemCommands.add(new OrderItemCommand(productId1, 10));
+        itemCommands.add(new OrderItemCommand(productId2, 5));
     }
 
 
     @Test
     @DisplayName("주문 생성 - 정상 (주문 아이템 포함)")
-    void createOrder_Success() throws Exception {
+    void createOrder_Success() {
         // when
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
-        injectOrderId(order);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
+
         // then
         assertThat(order.getOrderId()).isNotNull();
         assertThat(order.getSupplierId()).isEqualTo(supplierId);
@@ -67,6 +60,7 @@ class OrderTest {
         assertThat(order.getOrderItems()).hasSize(2);
         assertThat(order.getOrderItems().get(0).getProductId()).isEqualTo(productId1);
         assertThat(order.getOrderItems().get(0).getQuantity()).isEqualTo(10);
+        assertThat(order.getOrderItems().get(1).getProductId()).isEqualTo(productId2);
         assertThat(order.getOrderItems().get(1).getQuantity()).isEqualTo(5);
         assertThat(order.getOrderItems().get(1).getDeliveryId()).isNull();
 
@@ -82,7 +76,7 @@ class OrderTest {
         supplierId = null;
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("공급 업체 ID는 필수입니다.");
     }
@@ -94,31 +88,31 @@ class OrderTest {
         customerId = null;
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("수령 업체 ID는 필수입니다.");
     }
 
     @Test
-    @DisplayName("주문 생성 - orderItems가 null이면 예외")
-    void createOrder_Fail_Because_OrderItems_is_Null() {
+    @DisplayName("주문 생성 - itemCommands가 null이면 예외")
+    void createOrder_Fail_Because_ItemCommands_is_Null() {
         // given
-        orderItems = null;
+        itemCommands = null;
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("주문 상품은 필수입니다.");
     }
 
     @Test
-    @DisplayName("주문 생성 - orderItems가 비어있으면 예외")
-    void createOrder_Fail_Because_OrderItems_is_EmptyArray() {
+    @DisplayName("주문 생성 - itemCommands가 비어있으면 예외")
+    void createOrder_Fail_Because_ItemCommands_is_EmptyArray() {
         // given
-        orderItems = new ArrayList<>();
+        itemCommands = new ArrayList<>();
 
         // when & then
-        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, orderItems))
+        assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("주문 상품은 최소 1개 이상이어야 합니다.");
     }
@@ -127,33 +121,40 @@ class OrderTest {
     @DisplayName("주문 수정 - 정상 수정")
     void updateOrder_Success() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         String newComment = "수정된 요청사항";
-        List<OrderItem> newOrderItems = new ArrayList<>();
-        newOrderItems.add(new OrderItem(UUID.randomUUID(), 15));
-        newOrderItems.add(new OrderItem(UUID.randomUUID(), 20));
+
+        List<OrderItemCommand> newItemCommands = new ArrayList<>();
+        newItemCommands.add(new OrderItemCommand(UUID.randomUUID(), 15));
+        newItemCommands.add(new OrderItemCommand(UUID.randomUUID(), 20));
 
         // when
-        order.updateOrder(newComment, newOrderItems);
+        order.updateOrder(newComment, newItemCommands);
 
         // then
         assertThat(order.getComment()).isEqualTo(newComment);
         assertThat(order.getOrderItems()).hasSize(2);
         assertThat(order.getOrderItems().get(0).getQuantity()).isEqualTo(15);
         assertThat(order.getOrderItems().get(1).getQuantity()).isEqualTo(20);
+
+        assertThat(order.getOrderItems().get(0).getOrder()).isEqualTo(order);
+        assertThat(order.getOrderItems().get(1).getOrder()).isEqualTo(order);
     }
 
     @Test
     @DisplayName("주문 수정 - 배송이 할당된 주문 수정 시도 - 실패")
     void updateOrder_Fail_Because_Already_assign_Delivery() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
         String newComment = "수정 시도";
-        List<OrderItem> newOrderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+
+        List<OrderItemCommand> newItemCommands = List.of(
+            new OrderItemCommand(UUID.randomUUID(), 10)
+        );
 
         // when & then
-        assertThatThrownBy(() -> order.updateOrder(newComment, newOrderItems))
+        assertThatThrownBy(() -> order.updateOrder(newComment, newItemCommands))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("배송이 할당된 주문은 수정할 수 없습니다.");
     }
@@ -162,13 +163,16 @@ class OrderTest {
     @DisplayName("주문 수정 - 취소된 주문 수정 시도 - 실패")
     void updateOrder_Fail_Because_Already_cancel() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.cancel("취소", 100L, CancelType.USER_REQUEST);
         String newComment = "수정 시도";
-        List<OrderItem> newOrderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+
+        List<OrderItemCommand> newItemCommands = List.of(
+            new OrderItemCommand(UUID.randomUUID(), 10)
+        );
 
         // when & then
-        assertThatThrownBy(() -> order.updateOrder(newComment, newOrderItems))
+        assertThatThrownBy(() -> order.updateOrder(newComment, newItemCommands))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("취소된 주문은 수정할 수 없습니다.");
     }
@@ -177,13 +181,16 @@ class OrderTest {
     @DisplayName("주문 수정 - 완료된 주문 수정 시도 - 실패")
     void updateOrder_Fail_Because_Already_completed() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.changeStatus(OrderStatus.COMPLETE);
         String newComment = "수정 시도";
-        List<OrderItem> newOrderItems = List.of(new OrderItem(UUID.randomUUID(), 10));
+
+        List<OrderItemCommand> newItemCommands = List.of(
+            new OrderItemCommand(UUID.randomUUID(), 10)
+        );
 
         // when & then
-        assertThatThrownBy(() -> order.updateOrder(newComment, newOrderItems))
+        assertThatThrownBy(() -> order.updateOrder(newComment, newItemCommands))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("완료된 주문은 수정할 수 없습니다.");
     }
@@ -192,7 +199,7 @@ class OrderTest {
     @DisplayName("주문 상태 변경 - 정상 변경")
     void changeOrderStatus_Success() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
 
         // when
         order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
@@ -205,7 +212,7 @@ class OrderTest {
     @DisplayName("주문 상태 변경 - 실패 - 취소된 주문")
     void changeOrderStatus_Fail_Because_Order_Status_is_Cancelled() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.cancel("취소", 100L, CancelType.USER_REQUEST);
 
         // when & then
@@ -218,7 +225,7 @@ class OrderTest {
     @DisplayName("주문 취소 - 정상")
     void cancelOrder_Success() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         String cancelReason = "고객 요청으로 인한 취소";
         Long cancelledBy = 3L;
         CancelType cancelType = CancelType.USER_REQUEST;
@@ -239,7 +246,7 @@ class OrderTest {
     @DisplayName("주문 취소 - 실패 - 이미 취소된 주문")
     void cancelOrder_Fail_AlreadyCancelled() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.cancel("첫 번째 취소", 100L, CancelType.USER_REQUEST);
 
         // when & then
@@ -252,7 +259,7 @@ class OrderTest {
     @DisplayName("주문 취소 - 실패 - 완료된 주문")
     void cancelOrder_Fail_CompletedOrder() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.changeStatus(OrderStatus.COMPLETE);
 
         // when & then
@@ -265,7 +272,7 @@ class OrderTest {
     @DisplayName("주문 취소 - 실패 - 배송 할당된 주문")
     void cancelOrder_Fail_DeliveryAssignedOrder() {
         // given
-        Order order = Order.create(supplierId, customerId, comment, orderItems);
+        Order order = Order.create(supplierId, customerId, comment, itemCommands);
         order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
 
         // when & then
