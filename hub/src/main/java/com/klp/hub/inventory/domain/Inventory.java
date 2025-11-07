@@ -57,12 +57,20 @@ public class Inventory extends BaseEntity {
         this.quantity = quantity;
     }
 
+    /**
+     * @param quantity 재고 수량
+     * 재고 수량을 증가시킨다
+     */
     public void replenish(Integer quantity) {
         validQuantity(quantity);
 
         this.quantity += quantity;
     }
 
+    /**
+     * @param quantity 재고 수량
+     * 재고 수량을 차감시킨다
+     */
     public void deduct(Integer quantity) {
         validQuantity(quantity);
 
