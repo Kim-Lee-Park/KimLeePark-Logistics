@@ -2,9 +2,11 @@ package com.klp.order.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.orderitem.OrderItem;
 import com.klp.order.global.AuditConfig;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,19 +37,21 @@ public class OrderItemRepositoryTest {
     private OrderItem orderItem1;
     private OrderItem orderItem2;
     private OrderItem orderItem3;
+    private List<OrderItemCommand> itemCommands1;
+    private List<OrderItemCommand> itemCommands2;
 
     @BeforeEach
     void setup() {
-        List<OrderItem> orderItems1 = List.of(
-            new OrderItem(UUID.randomUUID(), 10),
-            new OrderItem(UUID.randomUUID(), 5)
-        );
-        List<OrderItem> orderItems2 = List.of(
-            new OrderItem(UUID.randomUUID(), 20)
-        );
-        order1 = Order.create(1L, 2L, "주문1", orderItems1);
+        itemCommands1 = new ArrayList<>();
+        itemCommands2 = new ArrayList<>();
+
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 5));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), 20));
+
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
         order1 = orderRepository.save(order1);
-        order2 = Order.create(2L, 3L, "주문2", orderItems2);
+        order2 = Order.create(2L, 3L, "주문2", itemCommands2);
         order2 = orderRepository.save(order2);
 
         orderItem1 = order1.getOrderItems().get(0);
@@ -56,7 +60,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("OrderItem ID로 조회 - 정상")
+    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem ID로 조회 - 정상")
     void OrderItem_ID로_조회_정상() {
         // given
         UUID orderItemId = orderItem1.getOrderItemId();
@@ -71,7 +75,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("OrderItem ID로 조회 - 존재하지 않는 OrderItem")
+    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem ID로 조회 - 존재하지 않는 com.klp.order.domain.entity.orderitem.OrderItem")
     void 없는_ID로_조회() {
         // given
         UUID nonExistentId = UUID.randomUUID();
@@ -84,7 +88,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("전체 OrderItem 조회")
+    @DisplayName("전체 com.klp.order.domain.entity.orderitem.OrderItem 조회")
     void 전체_OrderItem_조회() {
         // when
         List<OrderItem> orderItems = orderItemRepository.findAll();
@@ -94,7 +98,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("주문 ID로 OrderItem 조회 - 정상")
+    @DisplayName("주문 ID로 com.klp.order.domain.entity.orderitem.OrderItem 조회 - 정상")
     void 주문ID로_OrderItem_조회_정상() {
         // given
         UUID orderId = order1.getOrderId();
@@ -110,7 +114,7 @@ public class OrderItemRepositoryTest {
 
 
     @Test
-    @DisplayName("배송 ID가 null인 OrderItem 조회 - 정상")
+    @DisplayName("배송 ID가 null인 com.klp.order.domain.entity.orderitem.OrderItem 조회 - 정상")
     void 배송ID가null인_OrderItem_조회_정상() {
         // when
         List<OrderItem> orderItems = orderItemRepository.findByDeliveryIdIsNull();
@@ -122,7 +126,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("OrderItem 수정 - 수량 변경")
+    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 수정 - 수량 변경")
     void OrderItem_수정_수량변경() {
         // given
         UUID orderItemId = orderItem1.getOrderItemId();
@@ -138,7 +142,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("OrderItem 배송 ID 할당 - 정상")
+    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 배송 ID 할당 - 정상")
     void OrderItem_배송ID할당_정상() {
         // given
         UUID orderItemId = orderItem1.getOrderItemId();
@@ -155,7 +159,7 @@ public class OrderItemRepositoryTest {
 
     //
     @Test
-    @DisplayName("OrderItem 삭제 - 정상 (Soft Delete)")
+    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 삭제 - 정상 (Soft Delete)")
     void OrderItem_삭제_정상() {
         // given
         UUID orderItemId = orderItem1.getOrderItemId();
@@ -191,7 +195,7 @@ public class OrderItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("주문 ID로 삭제되지 않은 OrderItem 조회 - 정상")
+    @DisplayName("주문 ID로 삭제되지 않은 com.klp.order.domain.entity.orderitem.OrderItem 조회 - 정상")
     void 주문ID로_삭제되지않은_OrderItem_조회_정상() {
         // given
         UUID orderId = order1.getOrderId();

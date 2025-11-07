@@ -2,10 +2,11 @@ package com.klp.order.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.domain.entity.orderitem.OrderItem;
 import com.klp.order.global.AuditConfig;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,16 +34,17 @@ public class OrderRepositoryTest {
     private OrderRepository orderRepository;
 
     private Order order1;
-    private Order order2;
-    private List<OrderItem> orderItems1;
-    private List<OrderItem> orderItems2;
+    private List<OrderItemCommand> itemCommands1;
+    private List<OrderItemCommand> itemCommands2;
 
 
     @BeforeEach
     void setup() throws Exception {
-        orderItems1 = List.of(new OrderItem(UUID.randomUUID(), 10));
-        orderItems2 = List.of(new OrderItem(UUID.randomUUID(), 20));
-        order1 = Order.create(1L, 2L, "주문1요청사항", orderItems1);
+        itemCommands1 = new ArrayList<>();
+        itemCommands2 = new ArrayList<>();
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), 20));
+        order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
 
     }
 
@@ -132,13 +134,12 @@ public class OrderRepositoryTest {
         Order saveOrder = orderRepository.save(order1);
         UUID orderId = saveOrder.getOrderId();
         String newComment = "수정된 주문";
-        List<OrderItem> newOrderItems = List.of(
-            new OrderItem(UUID.randomUUID(), 100)
-        );
+        List<OrderItemCommand> newOrderItemCommands = List.of(
+            new OrderItemCommand(UUID.randomUUID(), 100));
 
         // when
         Order foundOrder = orderRepository.findById(orderId).orElseThrow();
-        foundOrder.updateOrder(newComment, newOrderItems);
+        foundOrder.updateOrder(newComment, newOrderItemCommands);
         Order updatedOrder = orderRepository.save(foundOrder);
 
         // then

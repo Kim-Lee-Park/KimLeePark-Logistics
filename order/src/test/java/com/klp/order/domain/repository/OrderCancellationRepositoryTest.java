@@ -2,11 +2,12 @@ package com.klp.order.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.entity.orderitem.OrderItem;
 import com.klp.order.global.AuditConfig;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,20 +36,21 @@ public class OrderCancellationRepositoryTest {
     private Order order1;
     private Order order2;
     private OrderCancellation cancellation1;
+    private List<OrderItemCommand> itemCommands1;
+    private List<OrderItemCommand> itemCommands2;
 
 
     @BeforeEach
     void setup() {
-        List<OrderItem> orderItems1 = List.of(
-            new OrderItem(UUID.randomUUID(), 10),
-            new OrderItem(UUID.randomUUID(), 5)
-        );
-        List<OrderItem> orderItems2 = List.of(
-            new OrderItem(UUID.randomUUID(), 20)
-        );
-        order1 = Order.create(1L, 2L, "주문1", orderItems1);
+        itemCommands1 = new ArrayList<>();
+        itemCommands2 = new ArrayList<>();
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 20));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), 5));
+
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
         order1 = orderRepository.save(order1);
-        order2 = Order.create(2L, 3L, "주문2", orderItems2);
+        order2 = Order.create(2L, 3L, "주문2", itemCommands2);
         order2 = orderRepository.save(order2);
 
         cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);

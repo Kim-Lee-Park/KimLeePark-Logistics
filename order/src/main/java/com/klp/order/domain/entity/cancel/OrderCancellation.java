@@ -18,6 +18,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+;
+
 @Entity
 @Table(name = "p_order_cancellation", schema = "order_schema")
 @Getter
@@ -59,7 +61,7 @@ public class OrderCancellation {
         cancellation.cancelledAt = LocalDateTime.now();
         return cancellation;
     }
-    
+
     private static void validateOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("주문 정보는 필수입니다.");

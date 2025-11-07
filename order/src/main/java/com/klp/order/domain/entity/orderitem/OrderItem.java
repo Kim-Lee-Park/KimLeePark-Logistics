@@ -1,13 +1,8 @@
-<<<<<<<< HEAD:order/src/main/java/com/klp/order/domain/entity/orderitem/OrderItem.java
 package com.klp.order.domain.entity.orderitem;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.order.Order;
-========
-package com.klp.order.domain.order;
-
-import com.klp.order.common.BaseEntity;
->>>>>>>> feat/18/order-entity-testCode:order/src/main/java/com/klp/order/domain/entity/order/OrderItem.java
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -46,12 +41,25 @@ public class OrderItem extends BaseEntity {
     @Column(name = "delivery_id")
     private UUID deliveryId;
 
-    public OrderItem(UUID productId, int quantity) {
+    private OrderItem(Order order, UUID productId, int quantity) {
+        validateOrder(order);
         validateProductId(productId);
         validateQuantity(quantity);
 
+        this.order = order;
         this.productId = productId;
         this.quantity = quantity;
+    }
+
+
+    public static OrderItem of(Order order, OrderItemCommand command) {
+        return new OrderItem(order, command.productId(), command.quantity());
+    }
+
+    private void validateOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("주문은 필수입니다.");
+        }
     }
 
     private void validateProductId(UUID productId) {
@@ -66,7 +74,6 @@ public class OrderItem extends BaseEntity {
         }
     }
 
-    //우선은 만들어질때 배송 Id 가 null 이고 추후에 배송Id 배정 시 그때 채워줄 메서드
     public void assignDeliveryId(UUID deliveryId) {
         this.deliveryId = deliveryId;
     }
@@ -76,11 +83,4 @@ public class OrderItem extends BaseEntity {
         this.quantity = quantity;
     }
 
-    // 연관관계 편의 메서드
-    void setOrder(Order order) {
-        if (order == null) {
-            throw new IllegalArgumentException("주문은 필수입니다.");
-        }
-        this.order = order;
-    }
 }

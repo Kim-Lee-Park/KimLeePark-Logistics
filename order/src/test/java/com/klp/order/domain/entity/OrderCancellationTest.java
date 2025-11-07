@@ -3,14 +3,10 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.entity.orderitem.OrderItem;
-import com.klp.order.command.OrderItemCommand;
-import com.klp.order.domain.cancel.CancelType;
-import com.klp.order.domain.cancel.OrderCancellation;
-import com.klp.order.domain.order.Order;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;

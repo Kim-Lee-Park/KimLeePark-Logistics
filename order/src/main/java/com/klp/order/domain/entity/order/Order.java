@@ -1,4 +1,4 @@
-package com.klp.order.domain.order;
+package com.klp.order.domain.entity.order;
 
 import com.klp.order.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
@@ -23,6 +23,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "p_orders", schema = "order_schema")
@@ -58,7 +59,8 @@ public class Order extends BaseEntity {
     private List<OrderOutboundRequest> outboundRequests = new ArrayList<>();
 
 
-    public static Order create(Long supplierId, Long customerId, String comment,
+    public static Order create(Long supplierId, Long customerId,
+        String comment,
         List<OrderItemCommand> itemCommands) {
         Order order = new Order();
         order.validateSupplierId(supplierId);
@@ -71,7 +73,8 @@ public class Order extends BaseEntity {
         order.orderStatus = OrderStatus.ING;
 
         for (OrderItemCommand command : itemCommands) {
-            OrderItem orderItem = OrderItem.of(order, command);
+            OrderItem orderItem = OrderItem.of(
+                order, command);
             order.orderItems.add(orderItem);
         }
 
@@ -98,7 +101,8 @@ public class Order extends BaseEntity {
         this.orderStatus = newStatus;
     }
 
-    public OrderCancellation cancel(String cancelReason, Long cancelledBy, CancelType cancelType) {
+    public OrderCancellation cancel(String cancelReason,
+        Long cancelledBy, CancelType cancelType) {
         checkCanCancel();
         this.orderStatus = OrderStatus.CANCELLED;
         this.cancellation = OrderCancellation.create(this, cancelReason, cancelledBy, cancelType);
