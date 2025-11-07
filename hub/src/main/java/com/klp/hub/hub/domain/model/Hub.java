@@ -39,28 +39,28 @@ public class Hub extends BaseEntity {
     @Column(nullable = false)
     private HubStatus status;
 
-    public static Hub create(RegisterHubCommand command){
+    public static Hub create(String name, Long latitude, Long longitude, String address) {
         Hub hub = new Hub();
-        hub.name= command.name();
-        hub.latitude = command.latitude();
-        hub.longitude = command.longitude();
-        hub.address = command.address();
+        hub.name= name;
+        hub.latitude = latitude;
+        hub.longitude = longitude;
+        hub.address = address;
         hub.status=HubStatus.ACTIVE;
         return hub;
     }
 
-    public void update(UpdateHubCommand command) {
-        if(command.nameIsNotNull()){
-            name = command.name();
+    public void update(String name, Long latitude, Long longitude, String address) {
+        if(name != null){
+            this.name = name;
         }
-        if(command.latitudeIsNotNull()){
-            latitude = command.latitude();
+        if(latitude != null){
+            this.latitude = latitude;
         }
-        if(command.longitudeIsNotNull()){
-            longitude = command.longitude();
+        if(longitude != null){
+            this.longitude = longitude;
         }
-        if(command.addressIsNotNull()){
-            address = command.address();
+        if(address != null){
+            this.address = address;
         }
     }
 }

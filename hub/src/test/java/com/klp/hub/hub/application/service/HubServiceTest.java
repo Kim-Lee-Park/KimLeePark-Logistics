@@ -114,7 +114,7 @@ public class HubServiceTest {
             12L,
             "서울특별시"
         );
-        Hub hub = Hub.create(command);
+        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
         ReflectionTestUtils.setField(hub, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
@@ -147,8 +147,10 @@ public class HubServiceTest {
     void getHubsSuccess(){
         //given
         Pageable pageable = PageRequest.of(0, 10);
-        Hub hub1 = Hub.create(new RegisterHubCommand("제주허브", 334455L, 126123L, "제주시 노형동"));
-        Hub hub2 = Hub.create(new RegisterHubCommand("서귀포허브", 444555L, 127333L, "서귀포시 중문동"));
+        RegisterHubCommand command1 =new RegisterHubCommand("제주허브", 334455L, 126123L, "제주시 노형동");
+        RegisterHubCommand command2 = new RegisterHubCommand("서귀포허브", 444555L, 127333L, "서귀포시 중문동");
+        Hub hub1 = Hub.create(command1.name(), command1.latitude(), command1.longitude(), command1.address());
+        Hub hub2 = Hub.create(command2.name(), command2.latitude(), command2.longitude(), command2.address());
         List<Hub> hubList = List.of(hub1, hub2);
         Page<Hub> hubs = new PageImpl<>(hubList, pageable, hubList.size());
 
@@ -191,7 +193,7 @@ public class HubServiceTest {
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11L, 12L, "서울");
 
-        Hub original = Hub.create(registerHubCommand);
+        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
         ReflectionTestUtils.setField(original, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
@@ -218,7 +220,7 @@ public class HubServiceTest {
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11L, 12L, "서울");
 
-        Hub original = Hub.create(registerHubCommand);
+        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
         ReflectionTestUtils.setField(original, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
@@ -250,7 +252,7 @@ public class HubServiceTest {
             12L,
             "서울특별시"
         );
-        Hub hub = Hub.create(command);
+        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
         ReflectionTestUtils.setField(hub, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));

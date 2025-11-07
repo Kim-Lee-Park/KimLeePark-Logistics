@@ -21,7 +21,7 @@ public class HubTest {
         );
 
         //when
-        Hub hub= Hub.create(command);
+        Hub hub= Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
 
         //then
         assertThat(hub.getName()).isEqualTo("testHub");
@@ -41,7 +41,7 @@ public class HubTest {
             12L,
             "서울특별시"
         );
-        Hub hub= Hub.create(registerHubCommand);
+        Hub hub= Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
 
         UpdateHubCommand updateHubCommand = new UpdateHubCommand(
             "testHubUpdated",
@@ -51,7 +51,7 @@ public class HubTest {
         );
 
         //when
-        hub.update(updateHubCommand);
+        hub.update(updateHubCommand.name(), updateHubCommand.latitude(), updateHubCommand.longitude(), updateHubCommand.address());
 
         //then
         assertThat(hub.getName()).isEqualTo("testHubUpdated");

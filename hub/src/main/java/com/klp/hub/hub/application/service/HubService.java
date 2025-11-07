@@ -38,7 +38,8 @@ public class HubService {
             throw new RuntimeException("hub address duplicated");
         } // TODO: BusinessException으로 변경하기
 
-        Hub hub=Hub.create(request);
+        Hub hub=Hub.create(request.name(), request.latitude(), request.longitude(),
+            request.address());
         hubRepository.save(hub);
 
         return new RegisterHubResponse(hub.getHubId());
@@ -74,7 +75,7 @@ public class HubService {
             throw new RuntimeException("hub address duplicated");
         }
 
-        hub.update(request);
+        hub.update(request.name(), request.latitude(), request.longitude(), request.address());
 
         return UpdatedHubResponse.from(hub);
     }
