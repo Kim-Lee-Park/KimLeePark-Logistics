@@ -132,7 +132,7 @@ class InventoryRepositoryTest {
     }
 
     @Test
-    @DisplayName("서로 다른 재고에 대한 요청시 재고가 충분하다면 모두 성공한다")
+    @DisplayName("서로 다른 재고에 대한 차감시 재고가 충분하다면 모두 차감된다")
     void deductAll() {
         UUID productIdA = UUID.randomUUID();
         UUID hubIdA = UUID.randomUUID();
@@ -157,7 +157,7 @@ class InventoryRepositoryTest {
     }
 
     @Test
-    @DisplayName("서로 다른 재고에 대한 요청시 일부 재고가 부족하다면 해당 재고는 차감에 실패한다")
+    @DisplayName("서로 다른 재고에 대한 차감시 일부 재고가 부족하다면 해당 재고는 차감에 실패한다")
     void deductPartialFail() {
         UUID productIdA = UUID.randomUUID();
         UUID hubIdA = UUID.randomUUID();
