@@ -1,8 +1,6 @@
 package com.klp.hub.hub.domain.model;
 
 import com.klp.hub.common.entity.BaseEntity;
-import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
-import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

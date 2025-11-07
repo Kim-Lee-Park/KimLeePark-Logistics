@@ -15,8 +15,8 @@ public class HubTest {
         //given
         RegisterHubCommand command =new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
 
@@ -37,16 +37,16 @@ public class HubTest {
         //given
         RegisterHubCommand registerHubCommand =new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         Hub hub= Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
 
         UpdateHubCommand updateHubCommand = new UpdateHubCommand(
             "testHubUpdated",
-            15L,
-            151L,
+            15.,
+            151.,
             "서울특별시 updated"
         );
 

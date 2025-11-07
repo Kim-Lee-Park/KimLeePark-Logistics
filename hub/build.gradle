@@ -16,6 +16,7 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 ext {
@@ -55,6 +56,12 @@ dependencies {
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation("org.springframework.boot:spring-boot-starter-cache")
+
+    //공통 모듈
+    implementation 'com.klp.common:common-module:1.0.0'
+
+    //spring aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 dependencyManagement {
