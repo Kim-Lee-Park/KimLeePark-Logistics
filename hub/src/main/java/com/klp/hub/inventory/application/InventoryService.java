@@ -37,7 +37,8 @@ public class InventoryService {
     @Transactional
     public UUID create(UUID productId, UUID hubId, Integer quantity) {
         Inventory savedInventory = inventoryRepository.save(
-            new Inventory(productId, hubId, quantity));
+            new Inventory(productId, hubId, quantity)
+        );
         return savedInventory.getId();
     }
 

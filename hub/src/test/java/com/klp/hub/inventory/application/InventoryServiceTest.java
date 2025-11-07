@@ -87,7 +87,7 @@ class InventoryServiceTest {
         String idempotencyKey = "idempotencyKey";
         InventoryDeductCommand command = new InventoryDeductCommand(
             idempotencyKey,
-            List.of(new Product(productId, 10))
+            List.of(new Product(productId, hubId, 10))
         );
         when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey))
             .thenReturn(false);

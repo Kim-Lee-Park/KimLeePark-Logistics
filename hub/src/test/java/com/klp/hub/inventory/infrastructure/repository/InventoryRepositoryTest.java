@@ -1,5 +1,6 @@
 package com.klp.hub.inventory.infrastructure.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.klp.hub.TestJpaConfig;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -58,7 +61,7 @@ class InventoryRepositoryTest {
     }
 
     @Test
-    @DisplayName("같은 상품과 허브 조홥으로 재고를 생성하려면 예외가 발생한다")
+    @DisplayName("같은 상품과 허브 조합으로 재고를 생성하려면 예외가 발생한다")
     void throwDuplicateInventoryHub() {
         Inventory inventoryA = new Inventory(productId, hubId, 10);
         inventoryRepository.save(inventoryA);
@@ -90,5 +93,91 @@ class InventoryRepositoryTest {
         boolean result = inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey);
 
         assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("재고가 충분하다면 재고를 차감한다")
+    void deduct() {
+        int quantity = 10;
+        inventoryRepository.save(new Inventory(productId, hubId, quantity));
+        List<InventoryDeduct> inventoryDeducts = List.of(
+            new InventoryDeduct(productId, hubId, quantity)
+        );
+
+        int updated = inventoryRepository.deductAll(inventoryDeducts);
+        entityManager.flush();
+        entityManager.clear();
+        Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow();
+
+        assertEquals(1, updated);
+        assertEquals(0, inventory.getQuantity());
+    }
+
+    @Test
+    @DisplayName("재고가 충분하지 않다면 재고는 차감되지 않는다")
+    void insufficientStock() {
+        int quantity = 10;
+        inventoryRepository.save(new Inventory(productId, hubId, quantity));
+        List<InventoryDeduct> insufficientDeducts = List.of(
+            new InventoryDeduct(productId, hubId, 11)
+        );
+
+        int updated = inventoryRepository.deductAll(insufficientDeducts);
+        entityManager.flush();
+        entityManager.clear();
+        Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow();
+
+        assertEquals(0, updated);
+        assertEquals(10, inventory.getQuantity());
+    }
+
+    @Test
+    @DisplayName("서로 다른 재고에 대한 요청시 재고가 충분하다면 모두 성공한다")
+    void deductAll() {
+        UUID productIdA = UUID.randomUUID();
+        UUID hubIdA = UUID.randomUUID();
+        UUID productIdB = UUID.randomUUID();
+        UUID hubIdB = UUID.randomUUID();
+        inventoryRepository.save(new Inventory(productIdA, hubIdA, 10));
+        inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
+        List<InventoryDeduct> inventoryDeducts = List.of(
+            new InventoryDeduct(productIdA, hubIdA, 10),
+            new InventoryDeduct(productIdB, hubIdB, 20)
+        );
+
+        int updated = inventoryRepository.deductAll(inventoryDeducts);
+        entityManager.flush();
+        entityManager.clear();
+        Inventory inventoryA = inventoryRepository.findByProductId(productIdA).orElseThrow();
+        Inventory inventoryB = inventoryRepository.findByProductId(productIdB).orElseThrow();
+
+        assertEquals(2, updated);
+        assertEquals(0, inventoryA.getQuantity());
+        assertEquals(0, inventoryB.getQuantity());
+    }
+
+    @Test
+    @DisplayName("서로 다른 재고에 대한 요청시 일부 재고가 부족하다면 해당 재고는 차감에 실패한다")
+    void deductPartialFail() {
+        UUID productIdA = UUID.randomUUID();
+        UUID hubIdA = UUID.randomUUID();
+        UUID productIdB = UUID.randomUUID();
+        UUID hubIdB = UUID.randomUUID();
+        inventoryRepository.save(new Inventory(productIdA, hubIdA, 10));
+        inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
+        List<InventoryDeduct> inventoryDeducts = List.of(
+            new InventoryDeduct(productIdA, hubIdA, 10),
+            new InventoryDeduct(productIdB, hubIdB, 21) // 1개 더 차감
+        );
+
+        int updated = inventoryRepository.deductAll(inventoryDeducts);
+        entityManager.flush();
+        entityManager.clear();
+        Inventory inventoryA = inventoryRepository.findByProductId(productIdA).orElseThrow();
+        Inventory inventoryB = inventoryRepository.findByProductId(productIdB).orElseThrow();
+
+        assertEquals(1, updated);
+        assertEquals(0, inventoryA.getQuantity());
+        assertEquals(20, inventoryB.getQuantity());
     }
 }

@@ -3,11 +3,15 @@ package com.klp.hub.inventory.infrastructure.repository;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotency;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,6 +21,8 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     private final InventoryJpaRepository inventoryJpaRepository;
 
     private final InventoryIdempotencyJpaRepository idempotencyJpaRepository;
+
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Optional<Inventory> findByProductId(UUID productId) {
@@ -45,5 +51,28 @@ public class InventoryRepositoryImpl implements InventoryRepository {
         } catch (DataIntegrityViolationException exception) {
             return false;
         }
+    }
+
+    @Override
+    public int deductAll(List<InventoryDeduct> inventoryDeducts) {
+        String sql = """
+            UPDATE hub_schema.p_inventory
+               SET quantity = quantity - ?
+             WHERE product_id = ?
+               AND hub_id     = ?
+               AND quantity   >= ?
+            """;
+
+        List<Object[]> batchArgs = inventoryDeducts.stream()
+            .map(line -> new Object[]{
+                line.quantity(),
+                line.productId(),
+                line.hubId(),
+                line.quantity()
+            })
+            .toList();
+
+        int[] updateCount = jdbcTemplate.batchUpdate(sql, batchArgs);
+        return IntStream.of(updateCount).sum();
     }
 }
