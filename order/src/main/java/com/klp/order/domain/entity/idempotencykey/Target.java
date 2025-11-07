@@ -1,12 +1,12 @@
 package com.klp.order.domain.entity.idempotencykey;
 
-public enum RequestStatus {
-    PENDING("사용 전"),
-    DONE("사용 완료");
+public enum Target {
+    DELIVERY("배송"),
+    INVENTORY("재고");
 
     private String description;
 
-    RequestStatus(String description) {
+    Target(String description) {
         this.description = description;
     }
 }

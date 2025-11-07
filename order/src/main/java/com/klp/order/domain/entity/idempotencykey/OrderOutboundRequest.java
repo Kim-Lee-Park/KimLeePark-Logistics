@@ -36,19 +36,17 @@ public class OrderOutboundRequest {
     @Column(name = "idempotency_key", nullable = false, unique = true)
     private String idempotencyKey;
 
-    @Column(name = "target", nullable = false)
-    private String target;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Target target;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "operation", nullable = false)
     private OperationType operation;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private RequestStatus status;
 
     public static OrderOutboundRequest create(Order order, String idempotencyKey,
-        String target, OperationType operation) {
+        Target target, OperationType operation) {
         OrderOutboundRequest request = new OrderOutboundRequest();
 
         request.validateOrder(order);
@@ -60,26 +58,9 @@ public class OrderOutboundRequest {
         request.idempotencyKey = idempotencyKey;
         request.target = target;
         request.operation = operation;
-        request.status = RequestStatus.PENDING;
-
         return request;
     }
 
-    //Done이면 그냥 return 그리고 PENDING이면 DONE으로 변환
-    public void markAsDone() {
-        if (status == RequestStatus.DONE) {
-            return;
-        }
-        status = RequestStatus.DONE;
-    }
-
-    public boolean isPending() {
-        return this.status == RequestStatus.PENDING;
-    }
-
-    public boolean isDone() {
-        return this.status == RequestStatus.DONE;
-    }
 
     private void validateOrder(Order order) {
         if (order == null) {
@@ -93,8 +74,8 @@ public class OrderOutboundRequest {
         }
     }
 
-    private void validateTarget(String target) {
-        if (target == null || target.isBlank()) {
+    private void validateTarget(Target target) {
+        if (target == null) {
             throw new IllegalArgumentException("요청 대상은 필수입니다.");
         }
     }
