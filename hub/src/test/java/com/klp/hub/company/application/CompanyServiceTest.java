@@ -1,23 +1,22 @@
 package com.klp.hub.company.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyServiceTest {
@@ -38,11 +37,11 @@ class CompanyServiceTest {
         when(company.getName()).thenReturn("업체명");
         when(company.getAddress()).thenReturn("업체주소");
         when(companyRepository.findById(companyId))
-                .thenReturn(Optional.of(company));
+            .thenReturn(Optional.of(company));
 
         CompanyResponse response = companyService.getByCompanyId(companyId);
 
-        assertThat(response.id()).isNotNull();
+        assertThat(response.companyId()).isNotNull();
     }
 
     @Test
@@ -50,6 +49,7 @@ class CompanyServiceTest {
     void throwGetCompanyById() {
         when(companyRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> companyService.getByCompanyId(UUID.randomUUID()));
+        assertThrows(RuntimeException.class,
+            () -> companyService.getByCompanyId(UUID.randomUUID()));
     }
 }

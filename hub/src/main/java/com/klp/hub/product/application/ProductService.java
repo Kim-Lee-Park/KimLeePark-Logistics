@@ -54,7 +54,7 @@ public class ProductService {
     public UUID create(ProductCreateCommand command) {
         CompanyResponse companyResponse = companyService.getByCompanyId(command.companyId());
         Product savedProduct = productRepository.save(
-            new Product(companyResponse.id(), command.name())
+            new Product(companyResponse.companyId(), command.name())
         );
 
         try {

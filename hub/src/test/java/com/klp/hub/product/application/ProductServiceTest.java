@@ -59,6 +59,7 @@ class ProductServiceTest {
         Product product = mock(Product.class);
         CompanyResponse companyResponse = new CompanyResponse(
             companyId,
+            hubId,
             CompanyType.SUPPLIER.name(),
             "업체명",
             "업체주소"
@@ -131,7 +132,7 @@ class ProductServiceTest {
         Product product = mock(Product.class);
         CompanyResponse companyResponse = mock(CompanyResponse.class);
         when(companyService.getByCompanyId(companyId)).thenReturn(companyResponse);
-        when(companyResponse.id()).thenReturn(companyId);
+        when(companyResponse.companyId()).thenReturn(companyId);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(product.getId()).thenReturn(productId);
 
@@ -167,7 +168,7 @@ class ProductServiceTest {
         Product product = mock(Product.class);
         CompanyResponse companyResponse = mock(CompanyResponse.class);
         when(companyService.getByCompanyId(companyId)).thenReturn(companyResponse);
-        when(companyResponse.id()).thenReturn(companyId);
+        when(companyResponse.companyId()).thenReturn(companyId);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(product.getId()).thenReturn(productId);
         when(inventoryService.create(productId, command.hubId(), quantity)).thenThrow(
