@@ -1,8 +1,8 @@
 package com.klp.hub.product.presentation.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.hub.product.application.ProductService;
-import com.klp.hub.product.presentation.dto.ProductResponse;
-import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
+import com.klp.hub.product.presentation.dto.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,6 +29,9 @@ class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private ProductService productService;
@@ -79,5 +83,62 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.pageable.hasNext").isBoolean())
                 .andExpect(jsonPath("$.pageable.isFirst").isBoolean())
                 .andExpect(jsonPath("$.pageable.isLast").isBoolean());
+    }
+
+    @Test
+    @DisplayName("상품을 생성할 수 있다")
+    void createProduct() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+        ProductCreateRequest request = new ProductCreateRequest(
+                companyId,
+                hubId,
+                "상품명",
+                10
+        );
+        when(productService.create(any())).thenReturn(productId);
+
+        mockMvc.perform(post("/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.productId").isString());
+    }
+
+    @Test
+    @DisplayName("상품을 변경할 수 있다")
+    void updateProduct() throws Exception {
+        UUID productId = UUID.randomUUID();
+        String name = "상품명";
+        ProductUpdateRequest request = new ProductUpdateRequest(
+                name
+        );
+        ProductUpdateResponse response = new ProductUpdateResponse(
+                productId,
+                name
+        );
+        when(productService.update(any())).thenReturn(response);
+
+        mockMvc.perform(patch("/v1/products/{productId}", productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.productId").isString());
+    }
+
+    @Test
+    @DisplayName("상품 ID 로 상품을 삭제할 수 있다")
+    void softDeleteById() throws Exception {
+        UUID productId = UUID.randomUUID();
+        when(productService.delete(productId))
+                .thenReturn(productId);
+
+        mockMvc.perform(delete("/v1/products/{productId}", productId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.productId").isString());
     }
 }

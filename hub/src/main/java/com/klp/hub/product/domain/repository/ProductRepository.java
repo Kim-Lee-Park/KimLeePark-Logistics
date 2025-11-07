@@ -12,4 +12,6 @@ public interface ProductRepository {
     Optional<Product> findById(UUID id);
 
     Page<ProductsPageRowResponse> findAllByPageable(Pageable pageable);
+
+    Product save(Product product);
 }
