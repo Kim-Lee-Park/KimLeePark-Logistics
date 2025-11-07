@@ -4,7 +4,6 @@ import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.cancel.CancelType;
 import com.klp.order.domain.cancel.OrderCancellation;
 import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
-import com.klp.order.domain.orderitem.OrderItem;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

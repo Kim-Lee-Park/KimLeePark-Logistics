@@ -1,7 +1,6 @@
-package com.klp.order.domain.orderitem;
+package com.klp.order.domain.order;
 
 import com.klp.order.common.BaseEntity;
-import com.klp.order.domain.order.Order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -71,7 +70,10 @@ public class OrderItem extends BaseEntity {
     }
 
     // 연관관계 편의 메서드
-    public void setOrder(Order order) {
+    void setOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("주문은 필수입니다.");
+        }
         this.order = order;
     }
 }
