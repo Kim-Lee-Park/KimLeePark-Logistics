@@ -6,5 +6,8 @@ public record UpdateHubCommand(
     Long longitude,
     String address
 ) {
-
+    public Boolean nameIsNotNull(){return name != null;}
+    public Boolean latitudeIsNotNull(){return latitude != null;}
+    public Boolean longitudeIsNotNull(){return longitude != null;}
+    public Boolean addressIsNotNull(){return address != null;}
 }

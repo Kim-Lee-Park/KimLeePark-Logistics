@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/hubs/routes/info")
+@RequestMapping("/v1/hubs/routes/info")
 public class HubRouteInfoController {
 
     @PostMapping("")

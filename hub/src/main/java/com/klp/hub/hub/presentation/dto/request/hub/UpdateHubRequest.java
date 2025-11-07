@@ -8,12 +8,12 @@ public record UpdateHubRequest(
     Long longitude,
     String address
 ) {
-    public UpdateHubCommand toCommand(UpdateHubRequest dto){
+    public UpdateHubCommand toCommand(){
         return new UpdateHubCommand(
-            dto.name(),
-            dto.latitude(),
-            dto.longitude(),
-            dto.address()
+            name,
+            latitude,
+            longitude,
+            address
         );
     }
 }
