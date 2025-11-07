@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 엔티티 테스트")
+@DisplayName("OrderItem 엔티티 테스트")
 public class OrderItemTest {
 
     private UUID productId;
@@ -30,7 +30,7 @@ public class OrderItemTest {
     }
 
     @Test
-    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 생성 - 정상")
+    @DisplayName("OrderItem 생성 - 정상")
     void createOrderItem_Success() {
         // given
         OrderItemCommand command = new OrderItemCommand(productId, quantity);
@@ -46,7 +46,7 @@ public class OrderItemTest {
     }
 
     @Test
-    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 생성 - productId null이면 예외")
+    @DisplayName("OrderItem 생성 - productId null이면 예외")
     void createOrderItem_Fail_ProductId_is_Null() {
         // given
         OrderItemCommand command = new OrderItemCommand(null, quantity);
@@ -58,7 +58,7 @@ public class OrderItemTest {
     }
 
     @Test
-    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 생성 - quantity가 0 이하면 예외")
+    @DisplayName("OrderItem 생성 - quantity가 0 이하면 예외")
     void createOrderItem_Fail_Quantity_is_Zero_or_Negative() {
         // when & then
         assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, 0)))
@@ -71,7 +71,7 @@ public class OrderItemTest {
     }
 
     @Test
-    @DisplayName("com.klp.order.domain.entity.orderitem.OrderItem 생성 - Order가 null이면 예외")
+    @DisplayName("OrderItem 생성 - Order가 null이면 예외")
     void createOrderItem_Fail_Order_is_Null() {
         // given
         OrderItemCommand command = new OrderItemCommand(productId, quantity);
