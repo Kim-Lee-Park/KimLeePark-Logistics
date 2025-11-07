@@ -12,7 +12,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_hub_route_infos", schema = "hub_schema")
