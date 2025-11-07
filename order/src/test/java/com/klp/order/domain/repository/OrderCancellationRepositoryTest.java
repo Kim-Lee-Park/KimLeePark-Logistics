@@ -59,7 +59,7 @@ public class OrderCancellationRepositoryTest {
     }
 
     @Test
-    @DisplayName("취소되지 않은 주문은 취소 정보가 null")
+    @DisplayName("취소되지 않은 주문은 취소 정보가 null인지 체크")
     void 취소되지않은_주문_취소정보_null() {
         // given
         UUID orderId = order2.getOrderId();
@@ -80,9 +80,9 @@ public class OrderCancellationRepositoryTest {
         CancelType cancelType = CancelType.USER_REQUEST;
 
         //when
-        OrderCancellation cancellation = order2.cancel(cancelReason, cancelledBy, cancelType);
+        order2.cancel(cancelReason, cancelledBy, cancelType);
         orderRepository.save(order2);
-        cancellation = order2.getCancellation();
+        OrderCancellation cancellation = order2.getCancellation();
 
         //then
         OrderCancellation savedCancellation = orderCancellationRepository

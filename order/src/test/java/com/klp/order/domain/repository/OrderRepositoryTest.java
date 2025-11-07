@@ -86,6 +86,17 @@ public class OrderRepositoryTest {
     }
 
     @Test
+    @DisplayName("삭제되지 않은 주문 조회")
+    void 삭제되지_않은_주문_조회() {
+        //when
+        orderRepository.save(order1);
+        List<Order> notDeletedOrders = orderRepository.findByDeletedAtIsNull();
+        //then
+        assertThat(notDeletedOrders).hasSize(1);
+        assertThat(notDeletedOrders.get(0).getDeletedAt()).isNull();
+    }
+
+    @Test
     @DisplayName("주문 ID로 조회 - 존재하지 않는 주문")
     void 없는ID로_조회() {
         // given
@@ -166,6 +177,62 @@ public class OrderRepositoryTest {
         assertThat(deletedOrder.isDeleted()).isTrue();
         assertThat(deletedOrder.getDeletedAt()).isNotNull();
         assertThat(deletedOrder.getDeletedBy()).isEqualTo(deletedBy);
+    }
+
+    @Test
+    @DisplayName("공급업체Id로 조회")
+    void 공급업체_Id로조회() {
+        //given
+        //when
+        orderRepository.save(order1);
+        List<Order> supplierOrders = orderRepository.findBySupplierId(1L);
+
+        //then
+        assertThat(supplierOrders).hasSize(1);
+        assertThat(supplierOrders.get(0).getSupplierId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("수령업체 Id로 조회")
+    void 수령업체Id로_조회() {
+        //given
+        //when
+        orderRepository.save(order1);
+        List<Order> customerOrders = orderRepository.findByCustomerId(2L);
+
+        //then
+        assertThat(customerOrders).hasSize(1);
+        assertThat(customerOrders.get(0).getCustomerId()).isEqualTo(2L);
+    }
+
+    @Test
+    @DisplayName("주문Id로 검색 - 삭제되어있지 않은걸로 검색")
+    void 삭제_되지않은_주문_검색() {
+        //given
+
+        //when
+        orderRepository.save(order1);
+        Optional notDeletedOrderSearch = orderRepository.findByOrderIdAndDeletedAtIsNull(
+            order1.getOrderId());
+
+        //then
+        assertThat(notDeletedOrderSearch).isPresent();
+    }
+
+    @Test
+    @DisplayName("주문Id로 검색 - 삭제되어있지 있는걸로 검색")
+    void 삭제_되어있는_주문_검색() {
+        //given
+
+        //when
+        orderRepository.save(order1);
+        orderRepository.delete(order1);
+        Optional deletedOrder = orderRepository.findByOrderIdAndDeletedAtIsNull(
+            order1.getOrderId());
+
+        //then
+        assertThat(deletedOrder).isEmpty();
+
     }
 
 
