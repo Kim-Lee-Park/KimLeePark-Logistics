@@ -1,17 +1,11 @@
-package com.klp.order.domain.repository;
+package com.klp.order.infrastructure.repository;
 
 import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderItemRepository {
-
-    OrderItem save(OrderItem orderItem);
-
-    Optional<OrderItem> findById(UUID orderItemId);
-
-    List<OrderItem> findAll();
+public interface OrderItemJpaRepository extends JpaRepository<OrderItem, UUID> {
 
     List<OrderItem> findByOrder_OrderId(UUID orderId);
 
