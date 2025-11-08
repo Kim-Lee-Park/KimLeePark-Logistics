@@ -38,4 +38,13 @@ public class HubRouteInfo extends BaseEntity {
     @Comment("거리")
     @Column(nullable = false)
     private Double distanceKm;
+
+    public static HubRouteInfo create(UUID departureId, UUID arrivalId, Long durationMin, Double distanceKm) {
+        HubRouteInfo info = new HubRouteInfo();
+        info.departureId = departureId;
+        info.arrivalId = arrivalId;
+        info.durationMin = durationMin;
+        info.distanceKm = distanceKm;
+        return info;
+    }
 }

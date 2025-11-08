@@ -1,5 +1,6 @@
 package com.klp.hub.hub.presentation.controller;
 
+import com.klp.hub.hub.application.service.HubRouteInfoService;
 import com.klp.hub.hub.presentation.dto.request.hubrouteinfo.RegisterHubRouteInfoRequest;
 import com.klp.hub.hub.presentation.dto.request.hubrouteinfo.UpdateHubRouteInfoRequest;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoDetailResponse;
@@ -7,6 +8,7 @@ import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoLis
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.RegisterHubRouteInfoResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.UpdatedHubRouteInfoResponse;
 import java.awt.print.Pageable;
+import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/hubs/routes/info")
 public class HubRouteInfoController {
+    private final HubRouteInfoService hubRouteInfoService;
 
+    //허브간 이동 정보 생성
     @PostMapping("")
     public ResponseEntity<RegisterHubRouteInfoResponse> registerHubRouteInfo(
         @RequestBody RegisterHubRouteInfoRequest request
     ){
-        return null;
+        RegisterHubRouteInfoResponse response=hubRouteInfoService.registerHubRouteInfo(request.toCommand());
+        URI location=URI.create("/v1/hubs/routes/info/"+response.hubRouteInfoId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @GetMapping("/{hubId}")

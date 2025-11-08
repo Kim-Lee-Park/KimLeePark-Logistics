@@ -1,9 +1,11 @@
 package com.klp.hub.hub.application.service;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.repository.HubRepository;
+import com.klp.hub.hub.exception.HubErrorCode;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse.HubSummaryResponse;
@@ -83,6 +85,12 @@ public class HubService {
     @Transactional
     public void deleteHub(UUID hubId){
 
+    }
+
+    @Transactional(readOnly = true)
+    public Hub getHubById(UUID hubId){
+        return hubRepository.getHubById(hubId)
+            .orElseThrow(()->new BusinessException(HubErrorCode.NOT_EXISTS));
     }
 
 }
