@@ -14,16 +14,16 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-public class DeliveryJpaRepositoryTest {
+public class DeliveryRepositoryImplTest {
 
 
   @Autowired
-  private DeliveryJpaRepository deliveryJpaRepository;
+  private DeliveryRepositoryImpl deliveryRepository;
 
 
   @Test
   void repository가_null_아님을_검증() {
-    Assertions.assertThat(deliveryJpaRepository).isNotNull();
+    Assertions.assertThat(deliveryRepository).isNotNull();
   }
 
 
@@ -46,12 +46,12 @@ public class DeliveryJpaRepositoryTest {
     Delivery delivery = Delivery.create(routePlanId, vendorDriverId, orderId, departureId,
         arrivalId, receiverId, receiverName, address, receiverSlackId, routesId);
 
-    Delivery result = deliveryJpaRepository.save(delivery);
+    Delivery result = deliveryRepository.save(delivery);
 
     // then: 생성 검증
     assertThat(result.getDeliveryId()).isNotNull();
     assertThat(delivery.getOrderId()).isEqualTo(orderId);
-    assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.AT_HUB_WAITING);
+    assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
 
   }
 
@@ -75,9 +75,9 @@ public class DeliveryJpaRepositoryTest {
     Delivery delivery = Delivery.create(routePlanId, vendorDriverId, orderId, departureId,
         arrivalId, receiverId, receiverName, address, receiverSlackId, routesId);
 
-    Delivery result = deliveryJpaRepository.save(delivery);
+    Delivery result = deliveryRepository.save(delivery);
 
-    Optional<Delivery> findResult = deliveryJpaRepository.findByDeliveryId(result.getDeliveryId());
+    Optional<Delivery> findResult = deliveryRepository.findByDeliveryId(result.getDeliveryId());
 
     // then: 생성 검증
     assertThat(findResult).isPresent().get().extracting(Delivery::getStatus)
