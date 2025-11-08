@@ -35,7 +35,7 @@ public class Delivery extends BaseEntity {
   @Column(name = "vendor_drvier_id", nullable = false)
   private UUID vendorDrvierId;
 
-  @Comment("업체 배송담당자 ID")
+  @Comment("주문 ID")
   @Column(name = "order_id", nullable = false)
   private UUID orderId;
 
@@ -92,7 +92,7 @@ public class Delivery extends BaseEntity {
       String receiverSlackId, UUID routesId) {
     return new Delivery(routePlanId, vendorDriverId, orderId, departureId, arrivalId,
         receiverId, receiverName, address, receiverSlackId, routesId,
-        DeliveryStatus.AT_HUB_WAITING);
+        DeliveryStatus.CREATED);
   }
 
 }
