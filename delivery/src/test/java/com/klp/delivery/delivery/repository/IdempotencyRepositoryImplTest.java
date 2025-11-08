@@ -10,20 +10,22 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-public class IdempotencyJpaRepositoryTest {
+@Import(IdempotencyKeyRepositoryImpl.class)
+public class IdempotencyRepositoryImplTest {
 
 
   @Autowired
-  private IdempotencyKeyJpaRepository idempotencyKeyJpaRepository;
+  private IdempotencyKeyRepositoryImpl idempotencyKeyRepositoryImpl;
 
 
   @Test
   void repository가_null_아님을_검증() {
-    Assertions.assertThat(idempotencyKeyJpaRepository).isNotNull();
+    Assertions.assertThat(idempotencyKeyRepositoryImpl).isNotNull();
   }
 
 
@@ -37,7 +39,7 @@ public class IdempotencyJpaRepositoryTest {
     // when: 멱등키 엔티티 생성
     IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId);
 
-    IdempotencyKey result = idempotencyKeyJpaRepository.save(idempotencyKey);
+    IdempotencyKey result = idempotencyKeyRepositoryImpl.save(idempotencyKey);
 
     // then: 생성 검증
     assertThat(result.getIdempotencyKey()).isNotNull();
@@ -57,9 +59,9 @@ public class IdempotencyJpaRepositoryTest {
     // when: 멱등키 엔티티 생성 및 조회
     IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId);
 
-    idempotencyKeyJpaRepository.save(idempotencyKey);
+    idempotencyKeyRepositoryImpl.save(idempotencyKey);
 
-    Optional<IdempotencyKey> result = idempotencyKeyJpaRepository.findByIdempotencyKey(key);
+    Optional<IdempotencyKey> result = idempotencyKeyRepositoryImpl.findByIdempotencyKey(key);
 
     // then: 생성 검증
     assertThat(result.get().getIdempotencyKey()).isNotNull();
