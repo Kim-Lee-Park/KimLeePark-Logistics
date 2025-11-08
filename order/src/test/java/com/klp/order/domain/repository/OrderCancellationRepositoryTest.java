@@ -62,6 +62,10 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("취소되지 않은 주문은 취소 정보가 null인지 체크")
     void 취소되지않은_주문_취소정보_null() {
         // given
+        //setup
+        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
+        //orderRepository.save(order1);
+        // ordr2는 취소되지 않은 주문
         UUID orderId = order2.getOrderId();
 
         // when
@@ -101,6 +105,9 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("취소 정보 ID로 조회 - 정상")
     void 취소정보_ID로_조회_정상() {
         // given
+        //setup
+        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
+        //orderRepository.save(order1);
         UUID cancellationId = cancellation1.getOrderCancellationId();
 
         // when
@@ -131,6 +138,11 @@ public class OrderCancellationRepositoryTest {
     @Test
     @DisplayName("전체 취소 정보 조회")
     void 전체_취소정보_조회() {
+        //given
+        //setup
+        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
+        //orderRepository.save(order1);
+
         // when
         List<OrderCancellation> cancellations = orderCancellationRepository.findAll();
 
@@ -141,7 +153,10 @@ public class OrderCancellationRepositoryTest {
     @Test
     @DisplayName("주문 ID로 취소 정보 조회 - 정상")
     void 주문ID로_취소정보_조회_정상() {
-        // given
+        // given+
+        //setup
+        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
+        //orderRepository.save(order1);
         UUID orderId = order1.getOrderId();
 
         // when
@@ -158,6 +173,9 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("주문 삭제 시 취소 정보도 함께 삭제 (CASCADE)")
     void 주문삭제시_취소정보도_삭제() {
         // given
+        //setup
+        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
+        //orderRepository.save(order1);
         UUID orderId = order1.getOrderId();
         UUID cancellationId = cancellation1.getOrderCancellationId();
 

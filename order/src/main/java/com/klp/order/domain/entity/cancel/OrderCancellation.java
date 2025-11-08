@@ -18,8 +18,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-;
-
 @Entity
 @Table(name = "p_order_cancellation", schema = "order_schema")
 @Getter

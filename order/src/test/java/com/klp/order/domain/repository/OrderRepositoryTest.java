@@ -53,6 +53,7 @@ public class OrderRepositoryTest {
     void 주문정상() {
         //given
         //setup
+        //order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
 
         //when
         Order saveOrder = orderRepository.save(order1);
@@ -112,8 +113,9 @@ public class OrderRepositoryTest {
     @Test
     @DisplayName("전체 주문 조회-성공")
     void 전체_주문_조회() {
+        // given
+        orderRepository.save(order1);
         // when
-        Order saveOrder = orderRepository.save(order1);
         List<Order> orders = orderRepository.findAll();
 
         // then
@@ -124,7 +126,7 @@ public class OrderRepositoryTest {
     @DisplayName("페이징 처리 -정상")
     void 페이징처리_정상() {
         // given
-        Order saveOrder = orderRepository.save(order1);
+        orderRepository.save(order1);
         Pageable pageable = PageRequest.of(0, 1, Sort.by("createdAt").descending());
 
         // when
@@ -163,7 +165,7 @@ public class OrderRepositoryTest {
     @DisplayName("주문 삭제 - 정상 (Soft Delete)")
     void 주문삭제_정상() {
         // given
-        Order saveOrder = orderRepository.save(order1);
+        orderRepository.save(order1);
         UUID orderId = order1.getOrderId();
         Long deletedBy = 3L;
 
@@ -183,6 +185,9 @@ public class OrderRepositoryTest {
     @DisplayName("공급업체Id로 조회")
     void 공급업체_Id로조회() {
         //given
+        //setup
+        //order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
+
         //when
         orderRepository.save(order1);
         List<Order> supplierOrders = orderRepository.findBySupplierId(1L);
@@ -196,6 +201,9 @@ public class OrderRepositoryTest {
     @DisplayName("수령업체 Id로 조회")
     void 수령업체Id로_조회() {
         //given
+        //setup
+        //order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
+
         //when
         orderRepository.save(order1);
         List<Order> customerOrders = orderRepository.findByCustomerId(2L);
@@ -209,6 +217,8 @@ public class OrderRepositoryTest {
     @DisplayName("주문Id로 검색 - 삭제되어있지 않은걸로 검색")
     void 삭제_되지않은_주문_검색() {
         //given
+        //setup
+        //order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
 
         //when
         orderRepository.save(order1);
@@ -223,6 +233,8 @@ public class OrderRepositoryTest {
     @DisplayName("주문Id로 검색 - 삭제되어있지 있는걸로 검색")
     void 삭제_되어있는_주문_검색() {
         //given
+        //setup
+        //order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
 
         //when
         orderRepository.save(order1);

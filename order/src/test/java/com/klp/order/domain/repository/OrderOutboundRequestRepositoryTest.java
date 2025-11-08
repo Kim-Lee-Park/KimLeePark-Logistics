@@ -96,6 +96,8 @@ public class OrderOutboundRequestRepositoryTest {
     @DisplayName("외부 요청 ID로 조회 - 정상")
     void 외부요청_ID로_조회_정상() {
         // given
+        //setup
+        // requestRepository.save(outboundRequest1);
         UUID requestId = outboundRequest1.getReqeustId();
 
         // when
@@ -123,6 +125,10 @@ public class OrderOutboundRequestRepositoryTest {
     @Test
     @DisplayName("전체 외부 요청 조회")
     void 전체_외부요청_조회() {
+        // given
+        // setup
+        // requestRepository.save(outboundRequest1);
+
         // when
         List<OrderOutboundRequest> requests = requestRepository.findAll();
 
@@ -134,6 +140,8 @@ public class OrderOutboundRequestRepositoryTest {
     @DisplayName("멱등키로 외부 요청 조회 - 정상")
     void 멱등키로_외부요청_조회_정상() {
         // given
+        // setup
+        // requestRepository.save(outboundRequest1);
         String idempotencyKey = idempotentKey1;
 
         // when
@@ -151,6 +159,7 @@ public class OrderOutboundRequestRepositoryTest {
     @DisplayName("멱등키로 외부 요청 조회 - 존재하지 않는 키")
     void 존재하지않는_멱등키로_조회() {
         // given
+        // requestRepository.save(outboundRequest1);
         String nonExistentKey = "존재하지-않는-키";
 
         // when

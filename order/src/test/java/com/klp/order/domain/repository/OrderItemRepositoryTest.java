@@ -63,6 +63,10 @@ public class OrderItemRepositoryTest {
     @DisplayName("OrderItem ID로 조회 - 정상")
     void OrderItem_ID로_조회_정상() {
         // given
+        // setup
+        // orderItem1 = order1.getOrderItems().get(0);
+        // orderItem2 = order1.getOrderItems().get(1);
+        // orderItem3 = order2.getOrderItems().get(0);
         UUID orderItemId = orderItem1.getOrderItemId();
 
         // when
@@ -90,6 +94,12 @@ public class OrderItemRepositoryTest {
     @Test
     @DisplayName("전체 OrderItem 조회")
     void 전체_OrderItem_조회() {
+        // given
+        // setup
+        // orderItem1 = order1.getOrderItems().get(0);
+        // orderItem2 = order1.getOrderItems().get(1);
+        // orderItem3 = order2.getOrderItems().get(0);
+
         // when
         List<OrderItem> orderItems = orderItemRepository.findAll();
 
@@ -116,6 +126,12 @@ public class OrderItemRepositoryTest {
     @Test
     @DisplayName("배송 ID가 null인 OrderItem 조회 - 정상")
     void 배송ID가null인_OrderItem_조회_정상() {
+        //given
+        // setup
+        // orderItem1 = order1.getOrderItems().get(0);
+        // orderItem2 = order1.getOrderItems().get(1);
+        // orderItem3 = order2.getOrderItems().get(0);
+
         // when
         List<OrderItem> orderItems = orderItemRepository.findByDeliveryIdIsNull();
 

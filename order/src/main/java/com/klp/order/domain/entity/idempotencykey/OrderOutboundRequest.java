@@ -36,7 +36,7 @@ public class OrderOutboundRequest {
     private String idempotencyKey;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "target", nullable = false)
     private Target target;
 
     @Enumerated(EnumType.STRING)
