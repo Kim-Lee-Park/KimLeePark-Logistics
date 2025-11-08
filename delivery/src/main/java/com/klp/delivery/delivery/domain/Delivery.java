@@ -28,7 +28,7 @@ public class Delivery extends BaseEntity {
   private UUID deliveryId;
 
   @Comment("허브 경로 계획 ID")
-  @Column(name = "route_plan_id", nullable = false)
+  @Column(name = "route_plan_id")
   private UUID routePlanId;
 
   @Comment("업체 배송담당자 ID")
@@ -64,17 +64,16 @@ public class Delivery extends BaseEntity {
   private String receiverSlackId;
 
   @Comment("배송경로 ID")
-  @Column(name = "routes_id", nullable = false)
+  @Column(name = "routes_id")
   private UUID routesId;
 
   @Comment("배송상태")
   @Enumerated(EnumType.STRING)
   private DeliveryStatus status;
 
-  public Delivery(UUID routePlanId, UUID vendorDrvierId, UUID orderId, UUID departureId,
+  public Delivery(UUID vendorDrvierId, UUID orderId, UUID departureId,
       UUID arrivalId, UUID receiverId, String receiverName, String address,
-      String receiverSlackId, UUID routesId, DeliveryStatus status) {
-    this.routePlanId = routePlanId;
+      String receiverSlackId, DeliveryStatus status) {
     this.vendorDrvierId = vendorDrvierId;
     this.orderId = orderId;
     this.departureId = departureId;
@@ -83,15 +82,14 @@ public class Delivery extends BaseEntity {
     this.receiverName = receiverName;
     this.address = address;
     this.receiverSlackId = receiverSlackId;
-    this.routesId = routesId;
     this.status = status;
   }
 
-  public static Delivery create(UUID routePlanId, UUID vendorDriverId, UUID orderId,
+  public static Delivery create(UUID vendorDriverId, UUID orderId,
       UUID departureId, UUID arrivalId, UUID receiverId, String receiverName, String address,
-      String receiverSlackId, UUID routesId) {
-    return new Delivery(routePlanId, vendorDriverId, orderId, departureId, arrivalId,
-        receiverId, receiverName, address, receiverSlackId, routesId,
+      String receiverSlackId) {
+    return new Delivery(vendorDriverId, orderId, departureId, arrivalId,
+        receiverId, receiverName, address, receiverSlackId,
         DeliveryStatus.CREATED);
   }
 
