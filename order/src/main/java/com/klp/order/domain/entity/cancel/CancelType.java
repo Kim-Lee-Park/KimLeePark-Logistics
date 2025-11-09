@@ -1,4 +1,4 @@
-package com.klp.order.domain.cancel;
+package com.klp.order.domain.entity.cancel;
 
 public enum CancelType {
     USER_REQUEST("고객 요청"),

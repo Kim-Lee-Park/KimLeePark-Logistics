@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.klp.order.command.OrderItemCommand;
-import com.klp.order.domain.order.Order;
-import com.klp.order.domain.order.OrderItem;
+import com.klp.order.domain.entity.order.Order;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

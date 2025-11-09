@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.klp.order.command.OrderItemCommand;
-import com.klp.order.domain.idempotencykey.OperationType;
-import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
-import com.klp.order.domain.idempotencykey.RequestStatus;
-import com.klp.order.domain.order.Order;
+import com.klp.order.domain.entity.idempotencykey.OperationType;
+import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
+import com.klp.order.domain.entity.idempotencykey.Target;
+import com.klp.order.domain.entity.order.Order;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,7 @@ public class OrderOutBoundRequestTest {
 
     private Order order;
     private String idempotencyKey;
-    private String target;
+    private Target target;
     private OperationType operation;
 
     @BeforeEach
@@ -30,7 +30,7 @@ public class OrderOutBoundRequestTest {
         );
         order = Order.create(supplierId, customerId, "요청사항", initialItems);
         idempotencyKey = "흠 멱등키는 어떻게 구성해야 잘했다고 소문날까나";
-        target = "재고";
+        target = Target.INVENTORY;
         operation = OperationType.DECREASE;
 
     }
@@ -53,7 +53,6 @@ public class OrderOutBoundRequestTest {
         assertThat(request.getIdempotencyKey()).isEqualTo(idempotencyKey);
         assertThat(request.getTarget()).isEqualTo(target);
         assertThat(request.getOperation()).isEqualTo(operation);
-        assertThat(request.getStatus()).isEqualTo(RequestStatus.PENDING);
     }
 
     @Test
@@ -99,20 +98,5 @@ public class OrderOutBoundRequestTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("요청 작업은 필수입니다.");
     }
-
-    @Test
-    @DisplayName("요청 상태를 DONE으로 변경")
-    void markAsDone_Success() {
-        // given
-        OrderOutboundRequest request = OrderOutboundRequest.create(
-            order, idempotencyKey, target, operation
-        );
-        // when
-        request.markAsDone();
-
-        // then
-        assertThat(request.getStatus()).isEqualTo(RequestStatus.DONE);
-    }
-
 
 }
