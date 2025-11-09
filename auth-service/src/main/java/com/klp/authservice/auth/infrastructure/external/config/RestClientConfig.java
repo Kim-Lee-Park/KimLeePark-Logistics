@@ -1,6 +1,7 @@
 package com.klp.authservice.auth.infrastructure.external.config;
 
 import org.apache.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -12,10 +13,13 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class RestClientConfig {
 
+    @Value("${clients.user.base-url}")
+    private String userClientUrl;
+
     @Bean
     public RestClient userRestClient() {
         return RestClient.builder()
-            .baseUrl("http://localhost:8010")
+            .baseUrl(userClientUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     }
