@@ -188,7 +188,6 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문 취소 - 정상")
-        //취소 관련한 테스트는 OrderCancellation에서 마저 진행하겠습니다.
     void cancelOrder_Success() {
         // given
         String cancelReason = "고객 요청";
