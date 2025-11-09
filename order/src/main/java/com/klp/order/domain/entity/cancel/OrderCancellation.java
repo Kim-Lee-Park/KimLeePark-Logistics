@@ -1,6 +1,6 @@
-package com.klp.order.domain.cancel;
+package com.klp.order.domain.entity.cancel;
 
-import com.klp.order.domain.order.Order;
+import com.klp.order.domain.entity.order.Order;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,7 +59,7 @@ public class OrderCancellation {
         cancellation.cancelledAt = LocalDateTime.now();
         return cancellation;
     }
-    
+
     private static void validateOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("주문 정보는 필수입니다.");

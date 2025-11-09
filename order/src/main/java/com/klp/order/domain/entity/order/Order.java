@@ -1,10 +1,11 @@
-package com.klp.order.domain.order;
+package com.klp.order.domain.entity.order;
 
 import com.klp.order.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
-import com.klp.order.domain.cancel.CancelType;
-import com.klp.order.domain.cancel.OrderCancellation;
-import com.klp.order.domain.idempotencykey.OrderOutboundRequest;
+import com.klp.order.domain.entity.cancel.CancelType;
+import com.klp.order.domain.entity.cancel.OrderCancellation;
+import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +23,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "p_orders", schema = "order_schema")
@@ -57,7 +59,8 @@ public class Order extends BaseEntity {
     private List<OrderOutboundRequest> outboundRequests = new ArrayList<>();
 
 
-    public static Order create(Long supplierId, Long customerId, String comment,
+    public static Order create(Long supplierId, Long customerId,
+        String comment,
         List<OrderItemCommand> itemCommands) {
         Order order = new Order();
         order.validateSupplierId(supplierId);
@@ -70,7 +73,8 @@ public class Order extends BaseEntity {
         order.orderStatus = OrderStatus.ING;
 
         for (OrderItemCommand command : itemCommands) {
-            OrderItem orderItem = OrderItem.of(order, command);
+            OrderItem orderItem = OrderItem.of(
+                order, command);
             order.orderItems.add(orderItem);
         }
 
@@ -97,7 +101,8 @@ public class Order extends BaseEntity {
         this.orderStatus = newStatus;
     }
 
-    public OrderCancellation cancel(String cancelReason, Long cancelledBy, CancelType cancelType) {
+    public OrderCancellation cancel(String cancelReason,
+        Long cancelledBy, CancelType cancelType) {
         checkCanCancel();
         this.orderStatus = OrderStatus.CANCELLED;
         this.cancellation = OrderCancellation.create(this, cancelReason, cancelledBy, cancelType);
