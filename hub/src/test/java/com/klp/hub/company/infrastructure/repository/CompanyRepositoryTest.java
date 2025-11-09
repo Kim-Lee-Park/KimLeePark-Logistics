@@ -1,5 +1,6 @@
 package com.klp.hub.company.infrastructure.repository;
 
+import com.klp.hub.TestJpaConfig;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
@@ -19,7 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(CompanyRepositoryImpl.class)
+@Import({
+        CompanyRepositoryImpl.class,
+        TestJpaConfig.class
+})
 class CompanyRepositoryTest {
 
     @Autowired
