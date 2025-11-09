@@ -304,12 +304,9 @@ class OrderItemServiceTest {
         UUID deliveryId = UUID.randomUUID();
         List<UUID> emptyList = List.of();
 
-        // when
-        List<OrderItem> result = orderItemService.assignDeliveryIdBatch(emptyList, deliveryId);
-
-        // then
+        // when & then
         assertThatThrownBy(() -> orderItemService.assignDeliveryIdBatch(emptyList, deliveryId))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("주문 항목이 비어있을 수 없습니다.");
+            .hasMessage("주문 아이템이 존재하지 않습니다.");
     }
 }
