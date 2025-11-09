@@ -137,7 +137,9 @@ class InventoryServiceTest {
             List.of(new Product(productId, hubId, quantity))
         );
         when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.deductAll(command.toInventoryDeductList())).thenReturn(1);
+        when(inventoryRepository.deductAll(
+            InventoryUpdatePlanner.planDeduct(command.products()))
+        ).thenReturn(1);
 
         InventoryDeductResponse response = inventoryService.deduct(command);
 
@@ -154,7 +156,9 @@ class InventoryServiceTest {
             List.of(new Product(productId, hubId, quantity))
         );
         when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.deductAll(command.toInventoryDeductList())).thenReturn(0);
+        when(inventoryRepository.deductAll(
+            InventoryUpdatePlanner.planDeduct(command.products()))
+        ).thenReturn(0);
 
         ErrorCode errorCode = assertThrows(
             BusinessException.class, () -> inventoryService.deduct(command))
@@ -171,7 +175,9 @@ class InventoryServiceTest {
             List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
         );
         when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.replenishAll(command.toInventoryReplenish())).thenReturn(1);
+        when(inventoryRepository.replenishAll(
+            InventoryUpdatePlanner.planReplenish(command.products()))
+        ).thenReturn(1);
 
         InventoryReplenishResponse response = inventoryService.replenish(command);
 
@@ -188,7 +194,9 @@ class InventoryServiceTest {
             List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
         );
         when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.replenishAll(command.toInventoryReplenish())).thenReturn(0);
+        when(inventoryRepository.replenishAll(
+            InventoryUpdatePlanner.planReplenish(command.products()))
+        ).thenReturn(0);
 
         ErrorCode errorCode = assertThrows(
             BusinessException.class, () -> inventoryService.replenish(command))

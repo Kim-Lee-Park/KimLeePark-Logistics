@@ -5,11 +5,14 @@ import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
+import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +65,10 @@ public class InventoryService {
             return InventoryDeductResponse.already();
         }
 
-        int updated = inventoryRepository.deductAll(command.toInventoryDeductList());
+        List<InventoryDeduct> plans = InventoryUpdatePlanner.planDeduct(
+            command.products()
+        );
+        int updated = inventoryRepository.deductAll(plans);
         if (updated != command.size()) {
             log.error("재고가 부족합니다.");
             throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
@@ -81,7 +87,10 @@ public class InventoryService {
             return InventoryReplenishResponse.already();
         }
 
-        int updated = inventoryRepository.replenishAll(command.toInventoryReplenish());
+        List<InventoryReplenish> plans = InventoryUpdatePlanner.planReplenish(
+            command.products()
+        );
+        int updated = inventoryRepository.replenishAll(plans);
         if (updated != command.size()) {
             log.error("재고가 존재하지 않습니다.");
             throw new BusinessException(InventoryErrorCode.NOT_FOUND_INVENTORY);
