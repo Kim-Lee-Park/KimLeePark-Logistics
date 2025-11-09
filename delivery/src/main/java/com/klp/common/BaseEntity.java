@@ -17,37 +17,37 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-    @CreatedDate
-    @Column(updatable = false, nullable = false)
-    @Comment("생성 시간")
-    private LocalDateTime createdAt;
+  @CreatedDate
+  @Column(updatable = false, nullable = false)
+  @Comment("생성 시간")
+  private LocalDateTime createdAt;
 
-    @CreatedBy
-    @Column(updatable = false)
-    @Comment("생성자")
-    private Long createdBy;
+  @CreatedBy
+  @Column(updatable = false)
+  @Comment("생성자")
+  private Long createdBy;
 
-    @LastModifiedDate
-    @Comment("수정 시간")
-    private LocalDateTime updatedAt;
+  @LastModifiedDate
+  @Comment("수정 시간")
+  private LocalDateTime updatedAt;
 
-    @LastModifiedBy
-    @Comment("수정자")
-    private Long updatedBy;
+  @LastModifiedBy
+  @Comment("수정자")
+  private Long updatedBy;
 
-    @Comment("삭제 시간")
-    private LocalDateTime deletedAt;
+  @Comment("삭제 시간")
+  private LocalDateTime deletedAt;
 
-    @Comment("삭제자")
-    private Long deletedBy;
+  @Comment("삭제자")
+  private Long deletedBy;
 
-    public void delete(Long deletedBy) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deletedBy;
-    }
+  public void delete(Long deletedBy) {
+    this.deletedAt = LocalDateTime.now();
+    this.deletedBy = deletedBy;
+  }
 
-    public boolean isDeleted() {
-        return this.deletedAt != null;
-    }
+  public boolean isDeleted() {
+    return this.deletedAt != null;
+  }
 
 }
