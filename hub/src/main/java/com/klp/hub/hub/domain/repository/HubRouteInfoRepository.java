@@ -1,6 +1,7 @@
 package com.klp.hub.hub.domain.repository;
 
 import com.klp.hub.hub.domain.model.HubRouteInfo;
+import com.querydsl.core.BooleanBuilder;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -11,5 +12,5 @@ public interface HubRouteInfoRepository {
 
     Optional<HubRouteInfo> getHubRouteInfoById(UUID hubRouteInfoId);
 
-    Page<HubRouteInfo> getHubRoutes(Pageable pageable);
+    Page<HubRouteInfo> getHubRoutes(UUID depId, UUID arrId, Pageable pageable);
 }

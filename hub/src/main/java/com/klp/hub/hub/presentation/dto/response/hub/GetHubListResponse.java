@@ -1,5 +1,6 @@
 package com.klp.hub.hub.presentation.dto.response.hub;
 
+import com.klp.hub.common.dto.PageableDto;
 import com.klp.hub.hub.domain.model.Hub;
 import java.util.List;
 import java.util.UUID;
@@ -16,19 +17,6 @@ public record GetHubListResponse(
         Double longitude,
         String address
     ){}
-
-    public record PageableDto(
-        Integer page,
-        Integer size,
-        Integer totalElements,
-        Integer totalPages,
-        Boolean hasNext,
-        Boolean hasPrevious,
-        Boolean isFirst,
-        Boolean isLast
-    ) {
-
-    }
 
     public static GetHubListResponse from(Page<Hub> page) {
         List<HubSummaryResponse> hubs = page.getContent().stream()

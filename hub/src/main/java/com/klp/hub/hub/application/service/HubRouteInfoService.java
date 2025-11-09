@@ -6,14 +6,18 @@ import com.klp.hub.hub.application.command.hubRouteInfo.RegisterHubRouteInfoComm
 import com.klp.hub.hub.application.command.hubRouteInfo.UpdateHubRouteInfoCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
+import com.klp.hub.hub.domain.model.QHubRouteInfo;
 import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
+import com.klp.hub.hub.exception.HubRouteInfoErrorCode;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoListResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.RegisterHubRouteInfoResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.UpdatedHubRouteInfoResponse;
+import com.querydsl.core.BooleanBuilder;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,14 +48,18 @@ public class HubRouteInfoService {
         return new RegisterHubRouteInfoResponse(hubRouteInfoRepository.save(info).getHubRouteId());
     }
 
+    //허브간 이동 정보 단일 조회
     @Transactional(readOnly = true)
     public GetHubRouteInfoDetailResponse getHubRouteInfoDetail(UUID hubRouteInfoId){
-        return null;
+        HubRouteInfo routeInfo= getHubRouteInfoById(hubRouteInfoId);
+        return GetHubRouteInfoDetailResponse.from(routeInfo);
     }
 
+    //허브간 이동 정보 목록 조회
     @Transactional(readOnly = true)
-    public GetHubRouteInfoListResponse getHubRouteInfos(Pageable pageable){
-        return null;
+    public GetHubRouteInfoListResponse getHubRouteInfos(UUID departureId,UUID arrivalId,Pageable pageable){
+        Page<HubRouteInfo> routeInfos = hubRouteInfoRepository.getHubRoutes(departureId, arrivalId, pageable);
+        return GetHubRouteInfoListResponse.from(routeInfos);
     }
 
     @Transactional
@@ -61,5 +69,11 @@ public class HubRouteInfoService {
 
     @Transactional
     public void deleteHubRouteInfo(UUID hubRouteInfoId){
+    }
+
+    @Transactional(readOnly = true)
+    public HubRouteInfo getHubRouteInfoById(UUID hubRouteInfoId){
+        return hubRouteInfoRepository.getHubRouteInfoById(hubRouteInfoId)
+            .orElseThrow(()->new BusinessException(HubRouteInfoErrorCode.NOT_EXISTS));
     }
 }
