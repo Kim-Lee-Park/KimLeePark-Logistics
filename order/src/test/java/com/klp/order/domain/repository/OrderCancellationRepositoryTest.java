@@ -7,6 +7,8 @@ import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.AuditConfig;
+import com.klp.order.infrastructure.repository.OrderCancellationJpaRepository;
+import com.klp.order.infrastructure.repository.OrderJpaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,45 +30,30 @@ import org.springframework.test.context.ActiveProfiles;
 public class OrderCancellationRepositoryTest {
 
     @Autowired
-    private OrderCancellationRepository orderCancellationRepository;
+    private OrderCancellationJpaRepository orderCancellationRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private OrderJpaRepository orderRepository;
 
     private Order order1;
-    private Order order2;
-    private OrderCancellation cancellation1;
     private List<OrderItemCommand> itemCommands1;
-    private List<OrderItemCommand> itemCommands2;
 
 
     @BeforeEach
     void setup() {
         itemCommands1 = new ArrayList<>();
-        itemCommands2 = new ArrayList<>();
         itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
         itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 20));
-        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), 5));
-
-        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
-        order1 = orderRepository.save(order1);
-        order2 = Order.create(2L, 3L, "주문2", itemCommands2);
-        order2 = orderRepository.save(order2);
-
-        cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
-        orderRepository.save(order1);
-        cancellation1 = order1.getCancellation();
     }
 
     @Test
     @DisplayName("취소되지 않은 주문은 취소 정보가 null인지 체크")
     void 취소되지않은_주문_취소정보_null() {
         // given
-        //setup
-        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
-        //orderRepository.save(order1);
-        // ordr2는 취소되지 않은 주문
-        UUID orderId = order2.getOrderId();
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
+        order1 = orderRepository.save(order1);
+
+        UUID orderId = order1.getOrderId();
 
         // when
         Order foundOrder = orderRepository.findById(orderId).orElseThrow();
@@ -83,10 +70,13 @@ public class OrderCancellationRepositoryTest {
         Long cancelledBy = 100L;
         CancelType cancelType = CancelType.USER_REQUEST;
 
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
+        order1 = orderRepository.save(order1);
+
         //when
-        order2.cancel(cancelReason, cancelledBy, cancelType);
-        orderRepository.save(order2);
-        OrderCancellation cancellation = order2.getCancellation();
+        order1.cancel(cancelReason, cancelledBy, cancelType);
+        orderRepository.save(order1);
+        OrderCancellation cancellation = order1.getCancellation();
 
         //then
         OrderCancellation savedCancellation = orderCancellationRepository
@@ -105,10 +95,16 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("취소 정보 ID로 조회 - 정상")
     void 취소정보_ID로_조회_정상() {
         // given
-        //setup
-        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
-        //orderRepository.save(order1);
-        UUID cancellationId = cancellation1.getOrderCancellationId();
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
+        order1 = orderRepository.save(order1);
+        String cancelReason = "고객 요청";
+        Long cancelledBy = 100L;
+        CancelType cancelType = CancelType.USER_REQUEST;
+        order1.cancel(cancelReason, cancelledBy, cancelType);
+        orderRepository.save(order1);
+        OrderCancellation cancellation = order1.getCancellation();
+
+        UUID cancellationId = cancellation.getOrderCancellationId();
 
         // when
         Optional<OrderCancellation> foundCancellation = orderCancellationRepository
@@ -139,9 +135,13 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("전체 취소 정보 조회")
     void 전체_취소정보_조회() {
         //given
-        //setup
-        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
-        //orderRepository.save(order1);
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
+        order1 = orderRepository.save(order1);
+        String cancelReason = "고객 요청";
+        Long cancelledBy = 100L;
+        CancelType cancelType = CancelType.USER_REQUEST;
+        order1.cancel(cancelReason, cancelledBy, cancelType);
+        orderRepository.save(order1);
 
         // when
         List<OrderCancellation> cancellations = orderCancellationRepository.findAll();
@@ -154,9 +154,14 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("주문 ID로 취소 정보 조회 - 정상")
     void 주문ID로_취소정보_조회_정상() {
         // given+
-        //setup
-        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
-        //orderRepository.save(order1);
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
+        order1 = orderRepository.save(order1);
+        String cancelReason = "고객 요청";
+        Long cancelledBy = 100L;
+        CancelType cancelType = CancelType.USER_REQUEST;
+        order1.cancel(cancelReason, cancelledBy, cancelType);
+        orderRepository.save(order1);
+
         UUID orderId = order1.getOrderId();
 
         // when
@@ -173,11 +178,17 @@ public class OrderCancellationRepositoryTest {
     @DisplayName("주문 삭제 시 취소 정보도 함께 삭제 (CASCADE)")
     void 주문삭제시_취소정보도_삭제() {
         // given
-        //setup
-        //cancellation1 = order1.cancel("고객 요청", 100L, CancelType.USER_REQUEST);
-        //orderRepository.save(order1);
+        order1 = Order.create(1L, 2L, "주문1", itemCommands1);
+        order1 = orderRepository.save(order1);
+        String cancelReason = "고객 요청";
+        Long cancelledBy = 100L;
+        CancelType cancelType = CancelType.USER_REQUEST;
+        order1.cancel(cancelReason, cancelledBy, cancelType);
+        orderRepository.save(order1);
+        OrderCancellation cancellation = order1.getCancellation();
+
         UUID orderId = order1.getOrderId();
-        UUID cancellationId = cancellation1.getOrderCancellationId();
+        UUID cancellationId = cancellation.getOrderCancellationId();
 
         // when
         orderRepository.deleteById(orderId);

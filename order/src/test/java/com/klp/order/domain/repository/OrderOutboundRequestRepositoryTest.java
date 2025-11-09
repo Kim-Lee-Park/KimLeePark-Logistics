@@ -8,6 +8,8 @@ import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.AuditConfig;
+import com.klp.order.infrastructure.repository.OrderJpaRepository;
+import com.klp.order.infrastructure.repository.OrderOutboundRequestJpaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +31,10 @@ import org.springframework.test.context.ActiveProfiles;
 public class OrderOutboundRequestRepositoryTest {
 
     @Autowired
-    private OrderOutboundRequestRepository requestRepository;
+    private OrderOutboundRequestJpaRepository requestRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private OrderJpaRepository orderRepository;
 
     private String idempotentKey1;
     private String idempotentKey2;

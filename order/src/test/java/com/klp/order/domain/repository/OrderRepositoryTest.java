@@ -6,6 +6,7 @@ import com.klp.order.command.OrderItemCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.global.AuditConfig;
+import com.klp.order.infrastructure.repository.OrderJpaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
 public class OrderRepositoryTest {
 
     @Autowired
-    private OrderRepository orderRepository;
+    private OrderJpaRepository orderRepository;
 
     private Order order1;
     private List<OrderItemCommand> itemCommands1;
