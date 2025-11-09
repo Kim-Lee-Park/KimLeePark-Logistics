@@ -34,11 +34,11 @@ public class HubService {
     public RegisterHubResponse registerHub(RegisterHubCommand request){
 
         if(hubRepository.existsByName(request.name())){
-            throw new RuntimeException("hub name duplicated");
+            throw new BusinessException(HubErrorCode.HUB_NAME_DUPLICATED);
         }
         if(hubRepository.existsByAddress(request.address())){
-            throw new RuntimeException("hub address duplicated");
-        } // TODO: BusinessException으로 변경하기
+            throw new BusinessException(HubErrorCode.HUB_ADDRESS_DUPLICATED);
+        }
 
         Hub hub=Hub.create(request.name(), request.latitude(), request.longitude(),
             request.address());
