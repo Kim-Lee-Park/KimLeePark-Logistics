@@ -99,7 +99,7 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문 생성 - 실패 - customerId가 null")
-    void createOrder_Fail_SupplierIdNull() {
+    void createOrder_Fail_CustomerIdNull() {
         // given
         CreateOrderCommand invalidCommand = new CreateOrderCommand(
             1L,
@@ -117,7 +117,7 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문 생성 - 실패 - orderItems가 null")
-    void createOrder_Fail_SupplierIdNull() {
+    void createOrder_Fail_orderItem_is_Null() {
         // given
         CreateOrderCommand invalidCommand = new CreateOrderCommand(
             1L,
@@ -129,7 +129,7 @@ class OrderServiceTest {
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(invalidCommand))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("주문 아이템은 필수입니다.");
+            .hasMessage("주문 상품은 필수입니다.");
 
     }
 
@@ -188,35 +188,7 @@ class OrderServiceTest {
 
     @Test
     @DisplayName("주문 취소 - 정상")
-    void cancelOrder_Success() {
-        // given
-        String cancelReason = "고객 요청";
-        Long cancelledBy = 100L;
-        CancelType cancelType = CancelType.USER_REQUEST;
-
-        given(orderRepository.findById(orderId))
-            .willReturn(Optional.of(savedOrder));
-        given(orderRepository.save(any(Order.class)))
-            .willReturn(savedOrder);
-
-        // when
-        Order result = orderService.cancelOrder(
-            orderId,
-            cancelReason,
-            cancelledBy,
-            cancelType
-        );
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.getOrderStatus()).isEqualTo(OrderStatus.CANCELLED);
-        assertThat(result.getCancellation()).isNotNull();
-    }
-
-    @Test
-    @DisplayName("주문 취소 - 정상")
-        // 주문 취소 관련한 테스트들은 OrderCancellationTest에서 진행할 에정
-        // 어떤 값이 Null일 경우
+        //취소 관련한 테스트는 OrderCancellation에서 마저 진행하겠습니다.
     void cancelOrder_Success() {
         // given
         String cancelReason = "고객 요청";
