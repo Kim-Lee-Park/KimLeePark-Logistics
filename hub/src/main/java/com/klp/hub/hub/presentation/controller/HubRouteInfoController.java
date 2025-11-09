@@ -62,6 +62,7 @@ public class HubRouteInfoController {
 
     @DeleteMapping("/{routeInfoId}")
     public ResponseEntity<Void> deleteHub(@PathVariable UUID routeInfoId){
+        hubRouteInfoService.deleteHubRouteInfo(routeInfoId);
         return ResponseEntity.ok().build();
     }
 }

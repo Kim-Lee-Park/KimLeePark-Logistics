@@ -72,6 +72,8 @@ public class HubRouteInfoService {
 
     @Transactional
     public void deleteHubRouteInfo(UUID hubRouteInfoId){
+        HubRouteInfo routeInfo=getHubRouteInfoById(hubRouteInfoId);
+        routeInfo.delete(0L); //TODO: 인증 객체 생기면 수정하기
     }
 
     @Transactional(readOnly = true)
