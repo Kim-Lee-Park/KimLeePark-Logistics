@@ -54,12 +54,14 @@ public class HubRouteInfoController {
         return ResponseEntity.ok(hubRouteInfoService.getHubRouteInfos(departureId,arrivalId,pageable));
     }
 
+    //허브간 이동 정보 수정
     @PatchMapping("/{routeInfoId}")
     public ResponseEntity<UpdatedHubRouteInfoResponse> updateHubRouteInfo(@PathVariable UUID routeInfoId,
         @RequestBody UpdateHubRouteInfoRequest request){
         return ResponseEntity.ok(hubRouteInfoService.updateHubRouteInfo(routeInfoId, request.toCommand()));
     }
 
+    //허브간 이동 정보 삭제
     @DeleteMapping("/{routeInfoId}")
     public ResponseEntity<Void> deleteHub(@PathVariable UUID routeInfoId){
         hubRouteInfoService.deleteHubRouteInfo(routeInfoId);

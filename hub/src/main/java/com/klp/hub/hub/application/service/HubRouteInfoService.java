@@ -70,12 +70,14 @@ public class HubRouteInfoService {
         return UpdatedHubRouteInfoResponse.from(hubRouteInfo);
     }
 
+    //허브간 이동 정보 삭제
     @Transactional
     public void deleteHubRouteInfo(UUID hubRouteInfoId){
         HubRouteInfo routeInfo=getHubRouteInfoById(hubRouteInfoId);
         routeInfo.delete(0L); //TODO: 인증 객체 생기면 수정하기
     }
 
+    //허브간 이동 정보 ID로 조회
     @Transactional(readOnly = true)
     public HubRouteInfo getHubRouteInfoById(UUID hubRouteInfoId){
         return hubRouteInfoRepository.getHubRouteInfoById(hubRouteInfoId)

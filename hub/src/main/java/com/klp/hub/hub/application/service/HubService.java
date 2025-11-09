@@ -64,6 +64,7 @@ public class HubService {
         return GetHubListResponse.from(page);
     }
 
+    //허브 수정
     @CachePut(cacheNames = CACHE_NAME , key = "#hubId")
     @Transactional
     public UpdatedHubResponse updateHub(UUID hubId, UpdateHubCommand request){
@@ -81,11 +82,13 @@ public class HubService {
         return UpdatedHubResponse.from(hub);
     }
 
+    //허브 삭제
     @Transactional
     public void deleteHub(UUID hubId){
 
     }
 
+    //허브 ID로 조회
     @Transactional(readOnly = true)
     public Hub getHubById(UUID hubId){
         return hubRepository.getHubById(hubId)
