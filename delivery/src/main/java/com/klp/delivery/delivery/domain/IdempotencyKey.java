@@ -44,4 +44,9 @@ public class IdempotencyKey extends BaseEntity {
   }
 
 
+  public void updateStatus(IdempotencyStatus status) {
+    this.status = status;
+  }
+
+
 }
