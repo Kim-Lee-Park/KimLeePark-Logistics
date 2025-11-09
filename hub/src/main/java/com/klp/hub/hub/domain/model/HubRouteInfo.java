@@ -47,4 +47,9 @@ public class HubRouteInfo extends BaseEntity {
         info.distanceKm = distanceKm;
         return info;
     }
+
+    public void update(Long durationMin, Double distanceKm) {
+        if(durationMin != null) this.durationMin = durationMin;
+        if(distanceKm != null) this.distanceKm = distanceKm;
+    }
 }

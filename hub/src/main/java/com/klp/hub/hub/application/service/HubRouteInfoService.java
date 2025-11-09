@@ -62,9 +62,12 @@ public class HubRouteInfoService {
         return GetHubRouteInfoListResponse.from(routeInfos);
     }
 
+    //허브간 이동 정보 수정
     @Transactional
     public UpdatedHubRouteInfoResponse updateHubRouteInfo(UUID hubRouteInfoId, UpdateHubRouteInfoCommand request){
-        return null;
+        HubRouteInfo hubRouteInfo=getHubRouteInfoById(hubRouteInfoId);
+        hubRouteInfo.update(request.durationMin(),request.distanceKm());
+        return UpdatedHubRouteInfoResponse.from(hubRouteInfo);
     }
 
     @Transactional

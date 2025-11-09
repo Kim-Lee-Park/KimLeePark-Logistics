@@ -57,7 +57,7 @@ public class HubRouteInfoController {
     @PatchMapping("/{routeInfoId}")
     public ResponseEntity<UpdatedHubRouteInfoResponse> updateHubRouteInfo(@PathVariable UUID routeInfoId,
         @RequestBody UpdateHubRouteInfoRequest request){
-        return null;
+        return ResponseEntity.ok(hubRouteInfoService.updateHubRouteInfo(routeInfoId, request.toCommand()));
     }
 
     @DeleteMapping("/{routeInfoId}")
