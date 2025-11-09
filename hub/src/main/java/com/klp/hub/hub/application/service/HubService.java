@@ -67,14 +67,13 @@ public class HubService {
     @CachePut(cacheNames = CACHE_NAME , key = "#hubId")
     @Transactional
     public UpdatedHubResponse updateHub(UUID hubId, UpdateHubCommand request){
-        Hub hub= hubRepository.getHubById(hubId)
-            .orElseThrow(()->new RuntimeException("hub not found"));
+        Hub hub= getHubById(hubId);
 
         if (hubRepository.existsByName(request.name())) {
-            throw new RuntimeException("hub name duplicated");
+            throw new BusinessException(HubErrorCode.HUB_NAME_DUPLICATED);
         }
         if(hubRepository.existsByAddress(request.address())){
-            throw new RuntimeException("hub address duplicated");
+            throw new BusinessException(HubErrorCode.HUB_ADDRESS_DUPLICATED);
         }
 
         hub.update(request.name(), request.latitude(), request.longitude(), request.address());
