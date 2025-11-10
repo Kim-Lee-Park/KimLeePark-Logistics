@@ -6,7 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.IdempotencyStatus;
+import com.klp.delivery.common.IdempotencyStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
