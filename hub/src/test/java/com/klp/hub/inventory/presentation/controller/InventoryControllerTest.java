@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.klp.common.exception.GlobalExceptionHandler;
-import com.klp.common.security.config.SecurityConfig;
-import com.klp.common.security.filter.AuthorizationFilter;
+import com.klp.hub.global.config.SecurityConfig;
+import com.klp.hub.global.exception.GlobalExceptionHandler;
+import com.klp.hub.global.filter.AuthorizationFilter;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest.Product;
