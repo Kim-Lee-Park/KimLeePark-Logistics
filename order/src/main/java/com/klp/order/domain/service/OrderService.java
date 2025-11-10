@@ -72,16 +72,24 @@ public class OrderService {
     public Order changeOrderStatus(UUID orderId,
         OrderStatus newStatus) {
         Order order = findById(orderId);
+
         order.changeStatus(newStatus);
 
         return orderRepository.save(order);
     }
 
     @Transactional
-    public void deleteOrder(UUID orderId, Long deletedBy) {
+    public Order deleteOrder(UUID orderId, Long deletedBy) {
+        checkDeletedBy(deletedBy);
         Order order = findById(orderId);
         order.delete(deletedBy);
 
-        orderRepository.save(order);
+        return orderRepository.save(order);
+    }
+
+    private void checkDeletedBy(Long deletedBy) {
+        if (deletedBy == null) {
+            throw new IllegalArgumentException("삭제자는 필수 정보 입니다.");
+        }
     }
 }

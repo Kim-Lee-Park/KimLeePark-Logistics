@@ -98,6 +98,9 @@ public class Order extends BaseEntity {
         if (this.orderStatus == OrderStatus.CANCELLED) {
             throw new IllegalStateException("취소된 주문은 상태를 변경할 수 없습니다.");
         }
+        if (newStatus == null) {
+            throw new IllegalArgumentException("변경할 주문 상태가 존재해야 합니다.");
+        }
         this.orderStatus = newStatus;
     }
 

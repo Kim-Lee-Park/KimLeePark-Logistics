@@ -259,4 +259,64 @@ class OrderServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isDeleted()).isFalse();
     }
+
+    @Test
+    @DisplayName("주문 상태 변경 - 정상")
+    void changeOrderStatus_Success() {
+        //given
+        OrderStatus newStatus = OrderStatus.COMPLETE;
+
+        given(orderRepository.findById(orderId))
+            .willReturn(Optional.of(savedOrder));
+        given(orderRepository.save(any(Order.class)))
+            .willReturn(savedOrder);
+
+        //when
+        Order result = orderService.changeOrderStatus(orderId, newStatus);
+
+        //then
+        assertThat(result).isNotNull();
+        assertThat(result.getOrderStatus()).isEqualTo(newStatus);
+    }
+
+    @Test
+    @DisplayName("주문 상태 변경 - 주문상태가 Null일경우")
+    void changeOrderStatus_Fail_status_is_null() {
+        //given
+        OrderStatus newStatus = null;
+
+        given(orderRepository.findById(orderId))
+            .willReturn(Optional.of(savedOrder));
+
+        //when
+        assertThatThrownBy(() -> orderService.changeOrderStatus(orderId, newStatus))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("변경할 주문 상태가 존재해야 합니다.");
+    }
+
+    @Test
+    @DisplayName("주문 삭제-정상")
+    void deleteOrder_Success() {
+        //given
+        Long deletedBy = 100L;
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(savedOrder));
+        given(orderRepository.save(any(Order.class))).willReturn(savedOrder);
+
+        //when
+        Order result = orderService.deleteOrder(orderId, deletedBy);
+        //then
+        assertThat(result).isNotNull();
+        assertThat(result.getDeletedBy()).isEqualTo(deletedBy);
+    }
+
+    @Test
+    @DisplayName("주문 삭제-실패-삭제자가null")
+    void deleteOrder_fail_deletedBy_is_null() {
+        //given
+        Long deletedBy = null;
+        //when
+        assertThatThrownBy(() -> orderService.deleteOrder(orderId, deletedBy))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("삭제자는 필수 정보 입니다.");
+    }
 }
