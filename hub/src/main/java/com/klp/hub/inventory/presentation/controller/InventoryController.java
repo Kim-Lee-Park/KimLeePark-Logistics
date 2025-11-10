@@ -1,16 +1,22 @@
 package com.klp.hub.inventory.presentation.controller;
 
 import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishRequest;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,10 +27,32 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @GetMapping("/{productId}")
-    public ResponseEntity<InventoryResponse> getInventoryByProductId(@PathVariable("productId") String productId) {
+    public ResponseEntity<InventoryResponse> getInventoryByProductId(
+        @PathVariable("productId") String productId
+    ) {
         log.info("== 단일 상품의 재고 조회 productId : {} ==", productId);
         InventoryResponse response = inventoryService.getByProductId(UUID.fromString(productId));
         log.info("== 단일 상품의 재고 조회 성공 ==");
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/deduct")
+    public ResponseEntity<InventoryDeductResponse> deduct(
+        @Valid @RequestBody InventoryDeductRequest request
+    ) {
+        log.info("== 재고 차감 멱등키 : {} ==", request.idempotencyKey());
+        InventoryDeductResponse response = inventoryService.deduct(request.toCommand());
+        log.info("== 재고 차감 성공");
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/replenish")
+    public ResponseEntity<InventoryReplenishResponse> replenish(
+        @Valid @RequestBody InventoryReplenishRequest request
+    ) {
+        log.info("== 재고 증가 멱등키 : {} ==", request.idempotencyKey());
+        InventoryReplenishResponse response = inventoryService.replenish(request.toCommand());
+        log.info("== 재고 증가 성공");
         return ResponseEntity.ok().body(response);
     }
 }
