@@ -28,7 +28,8 @@ public class OrderOutboundRequestService {
 
     public OrderOutboundRequestResponse findById(UUID requestId) {
         OrderOutboundRequest request = orderOutboundRequestRepository.findById(requestId)
-            .orElseThrow(() -> new BusinessException(OrderOutboundRequestErrorCode.REQUEST_REQUIRED));
+            .orElseThrow(
+                () -> new BusinessException(OrderOutboundRequestErrorCode.REQUEST_REQUIRED));
 
         return OrderOutboundRequestResponse.from(request);
     }
@@ -36,7 +37,8 @@ public class OrderOutboundRequestService {
     public OrderOutboundRequestResponse findByIdempotencyKey(String idempotencyKey) {
         OrderOutboundRequest request = orderOutboundRequestRepository.findByIdempotencyKey(
                 idempotencyKey)
-            .orElseThrow(() -> new BusinessException(OrderOutboundRequestErrorCode.REQUEST_BY_IDEMPOTENCY_KEY_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(
+                OrderOutboundRequestErrorCode.REQUEST_BY_IDEMPOTENCY_KEY_NOT_FOUND));
         return OrderOutboundRequestResponse.from(request);
     }
 
@@ -50,7 +52,6 @@ public class OrderOutboundRequestService {
     public OrderOutboundRequestResponse save(CreateOrderOutboundRequestCommand command) {
         Order order = orderRepository.findById(command.orderId())
             .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
-
 
         OrderOutboundRequest request = OrderOutboundRequest.create(
             order,
@@ -71,7 +72,8 @@ public class OrderOutboundRequestService {
     public OrderOutboundRequestResponse saveIfNotExists(CreateOrderOutboundRequestCommand command) {
         // 멱등키 존재 여부 확인
         if (existsByIdempotencyKey(command.idempotencyKey())) {
-            throw new BusinessException(OrderOutboundRequestErrorCode.IDEMPOTENCY_KEY_ALREADY_EXISTS);
+            throw new BusinessException(
+                OrderOutboundRequestErrorCode.IDEMPOTENCY_KEY_ALREADY_EXISTS);
         }
 
         // 존재하지 않으면 저장
@@ -102,7 +104,7 @@ public class OrderOutboundRequestService {
             throw new BusinessException(OrderOutboundRequestErrorCode.TARGET_REQUIRED);
         }
         if (operationType == null) {
-            throw new BusinessException(OrderOutboundRequestErrorCode.OPERATION_TYPE_REQUIRED;
+            throw new BusinessException(OrderOutboundRequestErrorCode.OPERATION_TYPE_REQUIRED);
         }
     }
 }
