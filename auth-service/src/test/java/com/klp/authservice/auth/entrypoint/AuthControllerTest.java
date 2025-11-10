@@ -12,6 +12,7 @@ import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
 import com.klp.authservice.auth.entrypoint.controller.AuthController;
+import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.infrastructure.exception.GlobalExceptionHandler;
