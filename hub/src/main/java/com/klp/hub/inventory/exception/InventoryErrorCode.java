@@ -1,9 +1,11 @@
 package com.klp.hub.inventory.exception;
 
 import com.klp.common.exception.ErrorCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Getter
 @RequiredArgsConstructor
 public enum InventoryErrorCode implements ErrorCode {
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "재고 수량이 부족합니다."),
@@ -12,14 +14,4 @@ public enum InventoryErrorCode implements ErrorCode {
 
     private final HttpStatus status;
     private final String message;
-
-    @Override
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
 }
