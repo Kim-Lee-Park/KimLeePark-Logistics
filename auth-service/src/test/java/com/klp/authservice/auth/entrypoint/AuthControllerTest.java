@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,8 @@ import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.infrastructure.exception.GlobalExceptionHandler;
+import com.klp.authservice.auth.infrastructure.jwt.JwtConstants;
+import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.infrastructure.security.config.SecurityConfig;
 import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +43,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private TokenProvider refreshTokenProvider;
 
     @Nested
     @DisplayName("회원가입 실패 테스트")
@@ -465,7 +471,7 @@ class AuthControllerTest {
     class LoginSuccessTest {
 
         @Test
-        @DisplayName("유효한 요청일 경우 로그인에 성공한다")
+        @DisplayName("유효한 요청일 경우 로그인에 성공한다. 로그인 성공 시 쿠키로 RefreshToken이 발급된다.")
         void validRequest_success() throws Exception {
             // given
             Long userId = 1L;
@@ -473,18 +479,22 @@ class AuthControllerTest {
             String password = "Password1!";
             String role = "MASTER";
             String accessToken = "valid.access.token";
+            String refreshToken = "valid.refresh.token";
 
             LoginRequest request = new LoginRequest(userName, password);
             LoginResponse response = new LoginResponse(userId, userName, role, accessToken);
 
             // when
             when(authService.login(any(LoginCommand.class))).thenReturn(response);
+            when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(refreshToken);
 
             // then
             mockMvc.perform(post("/v1/auth/login")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(mapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists(JwtConstants.REFRESH_TOKEN_COOKIE_NAME))
+                .andExpect(cookie().value(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken));
         }
     }
 

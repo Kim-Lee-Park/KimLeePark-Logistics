@@ -4,8 +4,11 @@ import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
+import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
+import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final TokenProvider refreshTokenProvider;
 
     @PostMapping("/signUp")
     public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequest request) {
@@ -27,6 +31,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok().body(authService.login(request.toCommand()));
+        LoginResponse response = authService.login(request.toCommand());
+
+        String refreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(refreshToken).toString());
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(response);
     }
 }
