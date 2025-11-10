@@ -38,11 +38,8 @@ public class BlackListToken extends BaseEntity {
 
     public static BlackListToken create(String token, LocalDateTime expiration) {
         validateBlackListToken(token, expiration);
-
-        BlackListToken blackListToken = new BlackListToken();
-        blackListToken.token = token;
-        blackListToken.expiration = expiration;
-        return blackListToken;
+        
+        return new BlackListToken(token, expiration);
     }
 
     private static void validateBlackListToken(String token, LocalDateTime expiration) {
