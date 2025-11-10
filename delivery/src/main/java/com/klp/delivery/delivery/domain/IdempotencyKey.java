@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.domain;
 
-import com.klp.common.BaseEntity;
-import com.klp.common.IdempotencyStatus;
+import com.klp.delivery.common.BaseEntity;
+import com.klp.delivery.common.IdempotencyStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

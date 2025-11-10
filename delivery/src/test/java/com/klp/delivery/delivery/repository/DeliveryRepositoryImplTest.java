@@ -2,7 +2,8 @@ package com.klp.delivery.delivery.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.klp.common.DeliveryStatus;
+import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.common.JpaAuditingConfig;
 import com.klp.delivery.delivery.domain.Delivery;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(DeliveryRepositoryImpl.class)
+@Import({DeliveryRepositoryImpl.class, JpaAuditingConfig.class})
 public class DeliveryRepositoryImplTest {
 
 
