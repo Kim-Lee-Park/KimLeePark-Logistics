@@ -51,8 +51,7 @@ public class HubService {
     @Cacheable(cacheNames = CACHE_NAME,key = "#hubId")
     @Transactional(readOnly = true)
     public GetHubDetailResponse getHubDetail(UUID hubId){
-        Hub hub= hubRepository.getHubById(hubId)
-            .orElseThrow(()->new RuntimeException("hub not found"));
+        Hub hub= getHubById(hubId);
         return GetHubDetailResponse.from(hub);
     }
 
@@ -89,10 +88,16 @@ public class HubService {
     }
 
     //허브 ID로 조회
+    @Cacheable(cacheNames = CACHE_NAME,key = "#hubId")
     @Transactional(readOnly = true)
     public Hub getHubById(UUID hubId){
         return hubRepository.getHubById(hubId)
             .orElseThrow(()->new BusinessException(HubErrorCode.NOT_EXISTS));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Hub> getHubByIds(List<UUID> hubIds){
+        return hubRepository.getHubsByIds(hubIds);
     }
 
 }

@@ -59,6 +59,10 @@ dependencies {
 
     //공통 모듈
     implementation 'com.klp.common:common-module:1.0.0'
+
+    //shedLock
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:6.10.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:6.10.0'
 }
 
 dependencyManagement {

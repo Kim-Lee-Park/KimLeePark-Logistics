@@ -9,13 +9,25 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_hubs", schema = "hub_schema")
+@Table(name = "p_hubs",
+    schema = "hub_schema",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_hub_name",
+            columnNames = {"name"}
+        ),
+        @UniqueConstraint(
+            name = "uk_hub_address",
+            columnNames = {"address"}
+        )
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Hub extends BaseEntity {

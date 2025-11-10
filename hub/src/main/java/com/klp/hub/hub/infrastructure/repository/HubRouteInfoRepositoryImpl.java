@@ -3,9 +3,11 @@ package com.klp.hub.hub.infrastructure.repository;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
 import com.klp.hub.hub.domain.model.QHubRouteInfo;
 import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
+import com.klp.hub.hub.infrastructure.dto.RoutePairDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -39,9 +41,6 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
     public Page<HubRouteInfo> getHubRoutes(UUID depId, UUID arrId, Pageable pageable) {
         QHubRouteInfo qRouteInfo = QHubRouteInfo.hubRouteInfo;
 
-        BooleanBuilder booleanBuilder = new BooleanBuilder();
-        booleanBuilder.and(qRouteInfo.departureId.eq(depId));
-
         JPQLQuery<HubRouteInfo> base = queryFactory.selectFrom(qRouteInfo)
             .where(
                 depId != null ? qRouteInfo.departureId.eq(depId) : null,
@@ -67,5 +66,26 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
             .fetch();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public List<RoutePairDto> findExistingParisIn(List<UUID> hubIds) {
+        QHubRouteInfo qRouteInfo = QHubRouteInfo.hubRouteInfo;
+
+        return queryFactory
+            .select(Projections.constructor(RoutePairDto.class, qRouteInfo.departureId, qRouteInfo.arrivalId))
+            .from(qRouteInfo)
+            .where(
+                qRouteInfo.deletedAt.isNull(),
+                qRouteInfo.departureId.in(hubIds),
+                qRouteInfo.arrivalId.in(hubIds),
+                qRouteInfo.departureId.ne(qRouteInfo.arrivalId)
+            )
+            .fetch();
+    }
+
+    @Override
+    public boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId) {
+        return hubRouteInfoJpaRepository.existsByDepartureIdAndArrivalId(departureId, arrivalId);
     }
 }

@@ -35,6 +35,11 @@ public class HubRouteInfoService {
         Hub departureHub=hubService.getHubById(request.departureId());
         Hub arrivalHub=hubService.getHubById(request.arrivalId());
 
+        if(hubRouteInfoRepository.existsByDepartureIdAndArrivalId(request.departureId(), request.arrivalId())) {
+            log.warn("ALREADY_EXISTS_HUB_ROUTE_INFO Error departureId: {}, arrivalId: {}", request.departureId(), request.arrivalId());
+            throw new BusinessException(HubRouteInfoErrorCode.ALREADY_EXISTS_HUB_ROUTE_INFO);
+        }
+
         Long durationMin=DistanceTimeUtil.estimateDurationMinutes(departureHub.getLatitude(),departureHub.getLongitude(),arrivalHub.getLatitude(),arrivalHub.getLongitude());
         Double distanceKm=DistanceTimeUtil.calculateDistanceKm(departureHub.getLatitude(),departureHub.getLongitude(),arrivalHub.getLatitude(),arrivalHub.getLongitude());
 
@@ -81,6 +86,9 @@ public class HubRouteInfoService {
     @Transactional(readOnly = true)
     public HubRouteInfo getHubRouteInfoById(UUID hubRouteInfoId){
         return hubRouteInfoRepository.getHubRouteInfoById(hubRouteInfoId)
-            .orElseThrow(()->new BusinessException(HubRouteInfoErrorCode.NOT_EXISTS));
+            .orElseThrow(()->{
+                log.warn("HUB ROUTE INFO NOT_EXISTS hubRouteInfoId: {}",hubRouteInfoId);
+                return new BusinessException(HubRouteInfoErrorCode.NOT_EXISTS);
+            });
     }
 }

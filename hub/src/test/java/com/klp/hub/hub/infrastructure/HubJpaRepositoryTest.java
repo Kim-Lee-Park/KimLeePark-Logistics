@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.infrastructure.HubJpaRepositoryTest.JpaAuditingTestConfig;
 import com.klp.hub.hub.infrastructure.repository.HubJpaRepository;
+import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,8 @@ public class HubJpaRepositoryTest {
 
     @Autowired
     private HubJpaRepository hubJpaRepository;
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     @DisplayName("저장 성공")
@@ -48,8 +51,9 @@ public class HubJpaRepositoryTest {
     void findByName(){
         //given
         Hub hub=Hub.create("test",11.,11.,"testAddress");
-        hubJpaRepository.save(hub);
+        hubJpaRepository.saveAndFlush(hub);
 
+        entityManager.clear();
         Optional<Hub> result=hubJpaRepository.findById(hub.getHubId());
 
         assertThat(result).isPresent();
