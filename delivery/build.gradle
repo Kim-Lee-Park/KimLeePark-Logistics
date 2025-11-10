@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.klp'
@@ -13,6 +14,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+jacoco {
+    toolVersion = '0.8.14'
 }
 
 repositories {
@@ -27,7 +32,7 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    
+
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
@@ -76,4 +81,29 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    reports {
+        html.required = true
+        xml.required = true
+        csv.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/DeliveryApplication.class',
+                    '**/common/*Config.class',
+                    '**/common/BaseEntity.class',
+                    '**/presentation/dto/**',
+                    '**/application/command/**',
+                    '**/common/*Status.class',
+                    '**/exception/*ErrorCode.class',
+                    '**/domain/*Repository.class'
+            ])
+        }))
+    }
 }
