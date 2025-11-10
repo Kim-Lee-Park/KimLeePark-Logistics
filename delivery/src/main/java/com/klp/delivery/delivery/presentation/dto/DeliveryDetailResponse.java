@@ -1,6 +1,7 @@
 package com.klp.delivery.delivery.presentation.dto;
 
 import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.delivery.domain.Delivery;
 import java.util.UUID;
 
 public record DeliveryDetailResponse(
@@ -15,18 +16,18 @@ public record DeliveryDetailResponse(
     DeliveryStatus status
 ) {
 
-  public static DeliveryDetailResponse from(com.klp.delivery.delivery.domain.Delivery delivery) {
-    return new DeliveryDetailResponse(
-        delivery.getDeliveryId(),
-        delivery.getOrderId(),
-        delivery.getDepartureId(),
-        delivery.getArrivalId(),
-        delivery.getReceiverId(),
-        delivery.getReceiverName(),
-        delivery.getAddress(),
-        delivery.getReceiverSlackId(),
-        delivery.getStatus()
-    );
-  }
+    public static DeliveryDetailResponse from(Delivery delivery) {
+        return new DeliveryDetailResponse(
+            delivery.getDeliveryId(),
+            delivery.getOrderId(),
+            delivery.getDepartureId(),
+            delivery.getArrivalId(),
+            delivery.getReceiverId(),
+            delivery.getReceiverName(),
+            delivery.getAddress(),
+            delivery.getReceiverSlackId(),
+            delivery.getStatus()
+        );
+    }
 }
 
