@@ -45,9 +45,7 @@ public class AuthService {
     public LoginResponse login(LoginCommand command) {
         UserDataDTO dto = userClient.getUserByUserName(command.userName());
 
-        if (!passwordEncoder.matches(command.password(), dto.password())) {
-            throw new BusinessException(AuthErrorCode.INVALID_PASSWORD);
-        }
+        validatePassword(command.password(), dto.password());
 
         String accessToken = accessTokenProvider.generate(dto.userId(), dto.userName(), dto.role());
 
@@ -56,5 +54,11 @@ public class AuthService {
 
     private boolean checkDuplicateUserName(String userName) {
         return userClient.checkUserNameAvailable(userName);
+    }
+
+    private void validatePassword(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new BusinessException(AuthErrorCode.INVALID_PASSWORD);
+        }
     }
 }
