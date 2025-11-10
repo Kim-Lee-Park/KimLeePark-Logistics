@@ -283,7 +283,7 @@ class InventoryRepositoryTest {
         UUID nonExistentHubId = UUID.randomUUID();
         UUID productIdB = UUID.randomUUID();
         UUID hubIdB = UUID.randomUUID();
-        inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
+        Inventory savedInventory = inventoryRepository.save(new Inventory(productIdB, hubIdB, 20));
         List<InventoryReplenish> inventoryReplenishes = List.of(
             new InventoryReplenish(nonExistentProductId, nonExistentHubId, 10),
             new InventoryReplenish(productIdB, hubIdB, 20)
@@ -294,5 +294,6 @@ class InventoryRepositoryTest {
         entityManager.clear();
 
         assertEquals(1, updated);
+        assertEquals(20, savedInventory.getQuantity());
     }
 }
