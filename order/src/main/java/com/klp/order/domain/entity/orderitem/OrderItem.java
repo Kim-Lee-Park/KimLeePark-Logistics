@@ -1,8 +1,10 @@
 package com.klp.order.domain.entity.orderitem;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.global.exception.OrderItemErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -58,19 +60,19 @@ public class OrderItem extends BaseEntity {
 
     private void validateOrder(Order order) {
         if (order == null) {
-            throw new IllegalArgumentException("주문은 필수입니다.");
+            throw new BusinessException(OrderItemErrorCode.ORDER_REQUIRED);
         }
     }
 
     private void validateProductId(UUID productId) {
         if (productId == null) {
-            throw new IllegalArgumentException("상품 ID는 필수입니다.");
+            throw new BusinessException(OrderItemErrorCode.PRODUCT_ID_REQUIRED);
         }
     }
 
     private void validateQuantity(int quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("주문 수량은 1개 이상이어야 합니다.");
+            throw new BusinessException(OrderItemErrorCode.QUANTITY_MIN_REQUIRED);
         }
     }
 

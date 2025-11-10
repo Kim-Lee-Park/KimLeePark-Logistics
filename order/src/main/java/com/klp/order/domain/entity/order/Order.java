@@ -1,11 +1,13 @@
 package com.klp.order.domain.entity.order;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.orderitem.OrderItem;
+import com.klp.order.global.exception.OrderErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -96,10 +98,10 @@ public class Order extends BaseEntity {
 
     public void changeStatus(OrderStatus newStatus) {
         if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("취소된 주문은 상태를 변경할 수 없습니다.");
+            throw new BusinessException(OrderErrorCode.CANNOT_CHANGE_CANCELLED_ORDER_STATUS);
         }
         if (newStatus == null) {
-            throw new IllegalArgumentException("변경할 주문 상태가 존재해야 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_STATUS_REQUIRED);
         }
         this.orderStatus = newStatus;
     }
@@ -114,47 +116,47 @@ public class Order extends BaseEntity {
 
     private void validateSupplierId(Long supplierId) {
         if (supplierId == null) {
-            throw new IllegalArgumentException("공급 업체 ID는 필수입니다.");
+            throw new BusinessException(OrderErrorCode.SUPPLIER_ID_REQUIRED);
         }
     }
 
     private void validateCustomerId(Long customerId) {
         if (customerId == null) {
-            throw new IllegalArgumentException("수령 업체 ID는 필수입니다.");
+            throw new BusinessException(OrderErrorCode.CUSTOMER_ID_REQUIRED);
         }
     }
 
     private void validateItemCommands(List<OrderItemCommand> itemCommands) {
         if (itemCommands == null) {
-            throw new IllegalArgumentException("주문 상품은 필수입니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_ITEMS_REQUIRED);
         }
         if (itemCommands.isEmpty()) {
-            throw new IllegalArgumentException("주문 상품은 최소 1개 이상이어야 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_ITEMS_MIN_REQUIRED);
         }
     }
 
 
     private void checkCanCancel() {
         if (this.orderStatus == OrderStatus.DELIVERY_ASSIGNED) {
-            throw new IllegalStateException("배송이 할당된 주문은 취소할 수 없습니다.");
+            throw new BusinessException(OrderErrorCode.CANNOT_CANCEL_DELIVERY_ASSIGNED);
         }
         if (this.orderStatus == OrderStatus.COMPLETE) {
-            throw new IllegalStateException("완료된 주문은 취소할 수 없습니다.");
+            throw new BusinessException(OrderErrorCode.CANNOT_CANCEL_COMPLETED_ORDER);
         }
         if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("이미 취소된 주문입니다.");
+            throw new BusinessException(OrderErrorCode.ALREADY_CANCELLED_ORDER);
         }
     }
 
     private void checkCanUpdate() {
         if (this.orderStatus == OrderStatus.DELIVERY_ASSIGNED) {
-            throw new IllegalStateException("배송이 할당된 주문은 수정할 수 없습니다.");
+            throw new BusinessException(OrderErrorCode.CANNOT_UPDATE_DELIVERY_ASSIGNED);
         }
         if (this.orderStatus == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("취소된 주문은 수정할 수 없습니다.");
+            throw new BusinessException(OrderErrorCode.CANNOT_UPDATE_CANCELLED_ORDER);
         }
         if (this.orderStatus == OrderStatus.COMPLETE) {
-            throw new IllegalStateException("완료된 주문은 수정할 수 없습니다.");
+            throw new BusinessException(OrderErrorCode.CANNOT_UPDATE_COMPLETED_ORDER);
         }
     }
 }

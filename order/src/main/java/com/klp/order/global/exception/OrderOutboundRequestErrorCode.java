@@ -17,7 +17,8 @@ public enum OrderOutboundRequestErrorCode implements ErrorCode {
     IDEMPOTENCY_KEY_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 멱등키 입니다."),
     ORDER_ID_REQUIRED(HttpStatus.BAD_REQUEST, "주문 ID는 필수입니다."),
     TARGET_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "타겟은 필수입니다."),
-    OPERATION_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "작업 타입은 필수입니다.");
+    OPERATION_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "작업 타입은 필수입니다."),
+    OREDER_REQUIRED(HttpStatus.BAD_REQUEST, "주문 정보는 필수입니다.");
 
     private final HttpStatus status;
     private final String message;

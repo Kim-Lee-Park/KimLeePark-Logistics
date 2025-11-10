@@ -3,6 +3,7 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
@@ -83,7 +84,7 @@ public class OrderCancellationTest {
             cancelledBy,
             cancelType
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 정보는 필수입니다.");
     }
 
@@ -98,7 +99,7 @@ public class OrderCancellationTest {
             null,
             cancelType
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("취소자 정보는 필수입니다.");
     }
 
@@ -113,7 +114,7 @@ public class OrderCancellationTest {
             cancelledBy,
             null
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("취소 유형은 필수입니다.");
     }
 

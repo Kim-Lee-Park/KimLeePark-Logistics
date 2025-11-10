@@ -1,6 +1,8 @@
 package com.klp.order.domain.entity.idempotencykey;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.global.exception.OrderOutboundRequestErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,25 +65,25 @@ public class OrderOutboundRequest {
 
     private void validateOrder(Order order) {
         if (order == null) {
-            throw new IllegalArgumentException("주문 정보는 필수입니다.");
+            throw new BusinessException(OrderOutboundRequestErrorCode.OREDER_REQUIRED);
         }
     }
 
     private void validateIdempotencyKey(String idempotencyKey) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
-            throw new IllegalArgumentException("멱등키는 필수입니다.");
+            throw new BusinessException(OrderOutboundRequestErrorCode.IDEMPOTENCY_KEY_REQUIRED);
         }
     }
 
     private void validateTarget(Target target) {
         if (target == null) {
-            throw new IllegalArgumentException("요청 대상은 필수입니다.");
+            throw new BusinessException(OrderOutboundRequestErrorCode.TARGET_REQUIRED);
         }
     }
 
     private void validateOperation(OperationType operation) {
         if (operation == null) {
-            throw new IllegalArgumentException("요청 작업은 필수입니다.");
+            throw new BusinessException(OrderOutboundRequestErrorCode.OPERATION_REQUIRED);
         }
     }
 }

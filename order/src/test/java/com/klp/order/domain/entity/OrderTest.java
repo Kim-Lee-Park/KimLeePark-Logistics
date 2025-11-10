@@ -3,6 +3,7 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
@@ -72,7 +73,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("공급 업체 ID는 필수입니다.");
     }
 
@@ -84,7 +85,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("수령 업체 ID는 필수입니다.");
     }
 
@@ -96,7 +97,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 상품은 필수입니다.");
     }
 
@@ -108,7 +109,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> Order.create(supplierId, customerId, comment, itemCommands))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 상품은 최소 1개 이상이어야 합니다.");
     }
 
@@ -150,7 +151,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.updateOrder(newComment, newItemCommands))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("배송이 할당된 주문은 수정할 수 없습니다.");
     }
 
@@ -168,7 +169,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.updateOrder(newComment, newItemCommands))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("취소된 주문은 수정할 수 없습니다.");
     }
 
@@ -186,7 +187,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.updateOrder(newComment, newItemCommands))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("완료된 주문은 수정할 수 없습니다.");
     }
 
@@ -212,7 +213,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.changeStatus(OrderStatus.DELIVERY_ASSIGNED))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("취소된 주문은 상태를 변경할 수 없습니다.");
     }
 
@@ -246,7 +247,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.cancel("두 번째 취소", 100L, CancelType.ADMIN_CANCEL))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("이미 취소된 주문입니다.");
     }
 
@@ -259,7 +260,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.cancel("취소 시도", 100L, CancelType.USER_REQUEST))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("완료된 주문은 취소할 수 없습니다.");
     }
 
@@ -272,7 +273,7 @@ class OrderTest {
 
         // when & then
         assertThatThrownBy(() -> order.cancel("취소 시도", 100L, CancelType.USER_REQUEST))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("배송이 할당된 주문은 취소할 수 없습니다.");
     }
 }
