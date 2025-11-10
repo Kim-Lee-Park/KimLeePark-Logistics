@@ -1,4 +1,4 @@
-package com.klp.common;
+package com.klp.delivery.common;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
