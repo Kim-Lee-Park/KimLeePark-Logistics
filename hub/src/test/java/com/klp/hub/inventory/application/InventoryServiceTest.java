@@ -201,6 +201,6 @@ class InventoryServiceTest {
         ErrorCode errorCode = assertThrows(
             BusinessException.class, () -> inventoryService.replenish(command))
             .getErrorCode();
-        assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
+        assertEquals(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND, errorCode);
     }
 }

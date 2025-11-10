@@ -92,8 +92,8 @@ public class InventoryService {
         );
         int updated = inventoryRepository.replenishAll(plans);
         if (updated != command.size()) {
-            log.error("재고가 존재하지 않습니다.");
-            throw new BusinessException(InventoryErrorCode.NOT_FOUND_INVENTORY);
+            log.error("증가하려는 일부 재고를 찾을 수 없습니다.");
+            throw new BusinessException(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND);
         }
         return InventoryReplenishResponse.success();
     }
