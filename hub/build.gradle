@@ -63,6 +63,10 @@ dependencies {
     //shedLock
     implementation 'net.javacrumbs.shedlock:shedlock-spring:6.10.0'
     implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:6.10.0'
+
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 dependencyManagement {
