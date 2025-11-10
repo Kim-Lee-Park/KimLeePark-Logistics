@@ -2,15 +2,18 @@ package com.klp.authservice.auth.entrypoint;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.authservice.auth.application.AuthService;
+import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
 import com.klp.authservice.auth.entrypoint.controller.AuthController;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
+import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.infrastructure.exception.GlobalExceptionHandler;
 import com.klp.authservice.auth.infrastructure.security.config.SecurityConfig;
 import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
@@ -39,7 +42,7 @@ class AuthControllerTest {
 
     @Nested
     @DisplayName("회원가입 실패 테스트")
-    class failSignUp {
+    class FailSignUp {
 
         @Nested
         @DisplayName("username 실패 케이스")
@@ -431,7 +434,7 @@ class AuthControllerTest {
 
     @Nested
     @DisplayName("회원가입 성공 테스트")
-    class successSignUp {
+    class SuccessSignUp {
 
         @Test
         @DisplayName("유효한 요청일 경우 회원가입에 성공한다")
@@ -453,6 +456,127 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(mapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isOk());
+        }
+    }
+
+    @Nested
+    @DisplayName("로그인 성공 테스트")
+    class LoginSuccessTest {
+
+        @Test
+        @DisplayName("유효한 요청일 경우 로그인에 성공한다")
+        void validRequest_success() throws Exception {
+            // given
+            Long userId = 1L;
+            String userName = "testuser";
+            String password = "Password1!";
+            String role = "MASTER";
+            String accessToken = "valid.access.token";
+
+            LoginRequest request = new LoginRequest(userName, password);
+            LoginResponse response = new LoginResponse(userId, userName, role, accessToken);
+
+            // when
+            when(authService.login(any(LoginCommand.class))).thenReturn(response);
+
+            // then
+            mockMvc.perform(post("/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+        }
+    }
+
+    @Nested
+    @DisplayName("로그인 실패 테스트")
+    class LoginFailTest {
+
+        @Nested
+        @DisplayName("userName 실패 케이스")
+        class UsernameInvalid {
+
+            @Test
+            @DisplayName("null이면 실패한다")
+            void nullUsername_fail() throws Exception {
+                // given
+                LoginRequest loginRequest = new LoginRequest(null, "Password1!");
+
+                // when & then
+                mockMvc.perform(post("/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            @DisplayName("빈 문자열이면 실패한다")
+            void emptyUsername_fail() throws Exception {
+                // given
+                LoginRequest loginRequest = new LoginRequest("", "Password1!");
+
+                // when & then
+                mockMvc.perform(post("/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            @DisplayName("공백이면 실패한다")
+            void whiteSpaceUsername_fail() throws Exception {
+                // given
+                LoginRequest loginRequest = new LoginRequest("     ", "Password1!");
+
+                // when & then
+                mockMvc.perform(post("/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        @DisplayName("password 실패 케이스")
+        class PasswordInvalid {
+
+            @Test
+            @DisplayName("null이면 실패한다")
+            void nullPassword_fail() throws Exception {
+                // given
+                LoginRequest loginRequest = new LoginRequest("testuser", null);
+
+                // when & then
+                mockMvc.perform(post("/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            @DisplayName("빈 문자열이면 실패한다")
+            void emptyPassword_fail() throws Exception {
+                // given
+                LoginRequest loginRequest = new LoginRequest("testuser", "");
+
+                // when & then
+                mockMvc.perform(post("/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            @DisplayName("공백이면 실패한다")
+            void whiteSpacePassword_fail() throws Exception {
+                // given
+                LoginRequest loginRequest = new LoginRequest("testuser", "   ");
+
+                // when & then
+                mockMvc.perform(post("/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isBadRequest());
+            }
         }
     }
 }
