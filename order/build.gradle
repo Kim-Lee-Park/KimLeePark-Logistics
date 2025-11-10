@@ -22,6 +22,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 ext {
@@ -44,6 +45,8 @@ dependencies {
     //lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'com.klp.common:common-module:1.0.0'
 }
 
 dependencyManagement {
