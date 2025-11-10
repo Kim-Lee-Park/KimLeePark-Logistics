@@ -14,6 +14,9 @@ public enum AuthErrorCode implements ErrorCode {
     USER_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "유저 서비스 요청 오류가 발생했습니다"),
     USER_SERVICE_INTERNAL_ERROR(HttpStatus.BAD_GATEWAY, "유저 서비스에 일시적인 오류가 발생했습니다"),
 
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다"),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다"),
+
     // 블랙리스트 도메인 에러 코드
     BLACKLIST_CREATE_ERROR(HttpStatus.BAD_REQUEST, "블랙리스트 토큰 생성에 실패했습니다");
 

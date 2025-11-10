@@ -1,6 +1,7 @@
 package com.klp.authservice.auth.application.client;
 
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 
 public interface UserClient {
 
@@ -13,4 +14,9 @@ public interface UserClient {
      * 회원가입 이후 유저 생성 요청
      */
     void createUser(UserCreateRequest request);
+
+    /**
+     * userName으로 유저 정보를 가져오는 요청
+     */
+    UserDataDTO getUserByUserName(String userName);
 }

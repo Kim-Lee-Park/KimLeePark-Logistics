@@ -3,6 +3,7 @@ package com.klp.authservice.auth.infrastructure.external;
 import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.client.UserClient;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,26 @@ public class UserClientImpl implements UserClient {
                 .toBodilessEntity();
         } catch (HttpClientErrorException e) {
             log.error("유저 생성 요청 실패: status: {}", e.getStatusCode());
+            throw new BusinessException(AuthErrorCode.USER_SERVICE_ERROR);
+
+        } catch (HttpServerErrorException e) {
+            log.error("유저 서비스 오류 발생: status: {}", e.getStatusCode());
+            throw new BusinessException(AuthErrorCode.USER_SERVICE_INTERNAL_ERROR);
+        }
+    }
+
+    @Override
+    public UserDataDTO getUserByUserName(String userName) {
+        try {
+            return userRestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/v1/users")
+                    .queryParam("username", userName)
+                    .build())
+                .retrieve()
+                .body(UserDataDTO.class);
+
+        } catch (HttpClientErrorException e) {
+            log.error("유저 정보 조회 요청 실패: status: {}", e.getStatusCode());
             throw new BusinessException(AuthErrorCode.USER_SERVICE_ERROR);
 
         } catch (HttpServerErrorException e) {

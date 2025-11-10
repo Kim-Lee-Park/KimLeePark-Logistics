@@ -1,5 +1,6 @@
 package com.klp.authservice.auth.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -10,9 +11,13 @@ import static org.mockito.Mockito.when;
 
 import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.client.UserClient;
+import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
+import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
+import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.common.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,6 +36,9 @@ class AuthServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private TokenProvider accessTokenProvider;
 
     @InjectMocks
     private AuthService authService;
@@ -130,33 +138,27 @@ class AuthServiceTest {
             String password = "Password1!";
             String encodedPassword = "encodedPassword";
             String role = "MASTER";
-            String slackId = " slackId";
-            String affiliationName = "testCompany";
-            AffiliationType affiliationType = AffiliationType.COMPANY;
             String accessToken = "access.token.data";
+            Long userId = 1L;
 
             LoginCommand command = new LoginCommand(userName, password);
-            UserDataDTO dto = new UserDataDTO(userName, encodedPassword, role, slackId, affiliationName,
-                affiliationType, accessToken);
+            UserDataDTO dto = new UserDataDTO(userId, userName, encodedPassword, role);
 
-            when(userClient.getUserByUserName()).thenReturn(dto);
+            when(userClient.getUserByUserName(userName)).thenReturn(dto);
             when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
-            when(accessTokenProvider.generate(userName, role)).thenReturn(accessToken);
+            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(accessToken);
 
             // when
-            LoginResponse response = authService.login(userName, password);
+            LoginResponse response = authService.login(command);
 
             // then
             assertThat(response.userName()).isEqualTo(userName);
             assertThat(response.role()).isEqualTo(role);
-            assertThat(response.slackId()).isEqualTo(slackId);
-            assertThat(response.affiliationName()).isEqualTo(affiliationName);
-            assertThat(response.affiliationType()).isEqualTo(affiliationType.name());
             assertThat(response.accessToken()).isEqualTo(accessToken);
 
             verify(userClient).getUserByUserName(userName);
             verify(passwordEncoder).matches(password, encodedPassword);
-            verify(accessTokenProvider).generateAccessToken(userName, role);
+            verify(accessTokenProvider).generate(userId, userName, role);
 
         }
 
@@ -173,26 +175,27 @@ class AuthServiceTest {
                 .thenThrow(new BusinessException(AuthErrorCode.USER_NOT_FOUND));
 
             // then
-            assertThatThrownBy(() -> authService.login(commnad))
+            assertThatThrownBy(() -> authService.login(command))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.USER_NOT_FOUND.getMessage());
 
             verify(userClient).getUserByUserName(userName);
             verify(passwordEncoder, never()).matches(any(), any());
-            verify(accessTokenProvider, never()).generateAccessToken(any(), any());
+            verify(accessTokenProvider, never()).generate(any(), any(), any());
         }
 
         @Test
         @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패한다")
         void passwordMismatch_fail() {
             // given
+            Long userId = 1L;
             String userName = "testuser";
             String password = "WrongPassword!";
             String encodedPassword = "encodedPassword";
             String role = "MASTER";
 
             LoginCommand command = new LoginCommand(userName, password);
-            UserDataDTO userResponse = new UserDataDTO(userName, encodedPassword, role);
+            UserDataDTO userResponse = new UserDataDTO(userId, userName, encodedPassword, role);
 
             // when
             when(userClient.getUserByUserName(userName)).thenReturn(userResponse);
@@ -205,7 +208,7 @@ class AuthServiceTest {
 
             verify(userClient).getUserByUserName(userName);
             verify(passwordEncoder).matches(password, encodedPassword);
-            verify(accessTokenProvide, never()).generateAccessToken(any(), any());
+            verify(accessTokenProvider, never()).generate(any(), any(), any());
         }
     }
 }
