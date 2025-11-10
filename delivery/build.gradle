@@ -62,6 +62,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // REST Assured for E2E testing
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+
     implementation 'com.klp.common:common-module:1.0.0'
 }
 
