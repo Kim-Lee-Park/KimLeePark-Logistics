@@ -117,4 +117,95 @@ class AuthServiceTest {
             verify(userClient).createUser(request);
         }
     }
+
+    @Nested
+    @DisplayName("Login 메소드 테스트")
+    class LoginTest {
+
+        @Test
+        @DisplayName("로그인에 성공한다")
+        void login_success() {
+            // given
+            String userName = "testuser";
+            String password = "Password1!";
+            String encodedPassword = "encodedPassword";
+            String role = "MASTER";
+            String slackId = " slackId";
+            String affiliationName = "testCompany";
+            AffiliationType affiliationType = AffiliationType.COMPANY;
+            String accessToken = "access.token.data";
+
+            LoginCommand command = new LoginCommand(userName, password);
+            UserDataDTO dto = new UserDataDTO(userName, encodedPassword, role, slackId, affiliationName,
+                affiliationType, accessToken);
+
+            when(userClient.getUserByUserName()).thenReturn(dto);
+            when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
+            when(accessTokenProvider.generate(userName, role)).thenReturn(accessToken);
+
+            // when
+            LoginResponse response = authService.login(userName, password);
+
+            // then
+            assertThat(response.userName()).isEqualTo(userName);
+            assertThat(response.role()).isEqualTo(role);
+            assertThat(response.slackId()).isEqualTo(slackId);
+            assertThat(response.affiliationName()).isEqualTo(affiliationName);
+            assertThat(response.affiliationType()).isEqualTo(affiliationType.name());
+            assertThat(response.accessToken()).isEqualTo(accessToken);
+
+            verify(userClient).getUserByUserName(userName);
+            verify(passwordEncoder).matches(password, encodedPassword);
+            verify(accessTokenProvider).generateAccessToken(userName, role);
+
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 사용자는 로그인에 실패한다")
+        void notExistUser_fail() {
+            // given
+            String userName = "notExistUser";
+            String password = "Password1!";
+            LoginCommand command = new LoginCommand(userName, password);
+
+            // when
+            when(userClient.getUserByUserName(userName))
+                .thenThrow(new BusinessException(AuthErrorCode.USER_NOT_FOUND));
+
+            // then
+            assertThatThrownBy(() -> authService.login(commnad))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(AuthErrorCode.USER_NOT_FOUND.getMessage());
+
+            verify(userClient).getUserByUserName(userName);
+            verify(passwordEncoder, never()).matches(any(), any());
+            verify(accessTokenProvider, never()).generateAccessToken(any(), any());
+        }
+
+        @Test
+        @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패한다")
+        void passwordMismatch_fail() {
+            // given
+            String userName = "testuser";
+            String password = "WrongPassword!";
+            String encodedPassword = "encodedPassword";
+            String role = "MASTER";
+
+            LoginCommand command = new LoginCommand(userName, password);
+            UserDataDTO userResponse = new UserDataDTO(userName, encodedPassword, role);
+
+            // when
+            when(userClient.getUserByUserName(userName)).thenReturn(userResponse);
+            when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
+
+            // then
+            assertThatThrownBy(() -> authService.login(command))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(AuthErrorCode.INVALID_PASSWORD.getMessage());
+
+            verify(userClient).getUserByUserName(userName);
+            verify(passwordEncoder).matches(password, encodedPassword);
+            verify(accessTokenProvide, never()).generateAccessToken(any(), any());
+        }
+    }
 }
