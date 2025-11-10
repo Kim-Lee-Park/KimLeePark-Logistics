@@ -1,7 +1,9 @@
 package com.klp.delivery.delivery.domain;
 
-import com.klp.common.BaseEntity;
-import com.klp.common.DeliveryStatus;
+import com.klp.common.exception.BusinessException;
+import com.klp.delivery.common.BaseEntity;
+import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
+import org.springframework.util.StringUtils;
 
 @Entity
 @Getter
@@ -88,9 +91,30 @@ public class Delivery extends BaseEntity {
   public static Delivery create(UUID vendorDriverId, UUID orderId,
       UUID departureId, UUID arrivalId, UUID receiverId, String receiverName, String address,
       String receiverSlackId) {
+    validateDeliveryData(vendorDriverId, receiverName, address, receiverSlackId);
     return new Delivery(vendorDriverId, orderId, departureId, arrivalId,
         receiverId, receiverName, address, receiverSlackId,
         DeliveryStatus.CREATED);
+  }
+
+  private static void validateDeliveryData(UUID vendorDriverId, String receiverName, String address,
+      String receiverSlackId) {
+    if (vendorDriverId == null) {
+      throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "배송 담당자는 필수입니다.");
+    }
+    if (!StringUtils.hasText(address)) {
+      throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "배송지 주소는 필수입니다.");
+    }
+    if (!StringUtils.hasText(receiverName)) {
+      throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "수령인 이름은 필수입니다.");
+    }
+    if (!StringUtils.hasText(receiverSlackId)) {
+      throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "수령인 슬랙 ID는 필수입니다.");
+    }
+  }
+
+  public void updateStatus(DeliveryStatus status) {
+    this.status = status;
   }
 
 }
