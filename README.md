@@ -741,12 +741,6 @@ curl -X PATCH http://localhost:8080/api/deliveries/{deliveryId}/status \
 
 ## 실행 방법
 
-### 사전 요구사항
-
-- **Java 17** 이상
-- **Gradle** (프로젝트에 Gradle Wrapper 포함)
-- **PostgreSQL** 데이터베이스
-
 ```bash
 1. 데이터베이스 설정
 docker-compose up -d
