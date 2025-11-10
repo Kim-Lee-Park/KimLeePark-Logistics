@@ -1,9 +1,9 @@
 package com.klp.order.domain.service;
 
 
+import com.klp.order.command.CancelOrderCommand;
 import com.klp.order.command.CreateOrderCommand;
 import com.klp.order.command.UpdateOrderCommand;
-import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
@@ -46,15 +46,13 @@ public class OrderService {
     }
 
     @Transactional
-    public Order cancelOrder(
-        UUID orderId,
-        String cancelReason,
-        Long cancelledBy,
-        CancelType cancelType
-    ) {
+    public Order cancelOrder(UUID orderId, CancelOrderCommand command) {
         Order order = findById(orderId);
-        order.cancel(cancelReason, cancelledBy, cancelType);
-
+        order.cancel(
+            command.cancelReason(),
+            command.cancelledBy(),
+            command.cancelType()
+        );
         return orderRepository.save(order);
     }
 

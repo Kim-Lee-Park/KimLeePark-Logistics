@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.klp.order.command.CancelOrderCommand;
 import com.klp.order.command.CreateOrderCommand;
 import com.klp.order.command.OrderItemCommand;
 import com.klp.order.command.UpdateOrderCommand;
@@ -190,9 +191,7 @@ class OrderServiceTest {
     @DisplayName("주문 취소 - 정상")
     void cancelOrder_Success() {
         // given
-        String cancelReason = "고객 요청";
-        Long cancelledBy = 100L;
-        CancelType cancelType = CancelType.USER_REQUEST;
+        CancelOrderCommand command = new CancelOrderCommand("고객 요청", 100L, CancelType.USER_REQUEST);
 
         given(orderRepository.findById(orderId))
             .willReturn(Optional.of(savedOrder));
@@ -200,12 +199,7 @@ class OrderServiceTest {
             .willReturn(savedOrder);
 
         // when
-        Order result = orderService.cancelOrder(
-            orderId,
-            cancelReason,
-            cancelledBy,
-            cancelType
-        );
+        Order result = orderService.cancelOrder(orderId, command);
 
         // then
         assertThat(result).isNotNull();
