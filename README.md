@@ -8,6 +8,7 @@
 - [설계 결정 사항](#설계-결정-사항)
 - [테스트 전략](#테스트-전략)
 - [실행 방법](#실행-방법)
+- [Jacoco 리포트](#테스트-리포트)
 - [트러블슈팅](#트러블슈팅)
 - [학습 회고](#학습-회고)
 
@@ -736,6 +737,53 @@ curl -X PATCH http://localhost:8080/api/deliveries/{deliveryId}/status \
     "status": "AT_HUB_WAITING"
   }'
 ```
+---
+
+## 실행 방법
+
+### 사전 요구사항
+
+- **Java 17** 이상
+- **Gradle** (프로젝트에 Gradle Wrapper 포함)
+- **PostgreSQL** 데이터베이스
+
+```bash
+1. 데이터베이스 설정
+docker-compose up -d
+
+2. 빌드
+cd delivery
+
+# Gradle Wrapper를 사용한 빌드
+./gradlew clean build
+
+# 테스트 제외하고 빌드
+./gradlew clean build -x test
+
+3. 실행
+
+# Gradle을 통한 실행
+./gradlew bootRun
+
+# 또는 빌드된 JAR 파일 실행
+java -jar build/libs/delivery-0.0.1-SNAPSHOT.jar
+
+4. 테스트 실행
+
+# 전체 테스트 실행
+./gradlew test
+
+# 테스트 커버리지 리포트 생성
+./gradlew test jacocoTestReport
+
+# 커버리지 리포트 확인
+open build/reports/jacoco/test/html/index.html
+```
+
+---
+
+## 테스트 리포트
+<img width="1674" height="285" alt="스크린샷 2025-11-10 오후 4 52 57" src="https://github.com/user-attachments/assets/6423dec2-fc00-48a5-bb0d-84f21397b06b" />
 
 ---
 
