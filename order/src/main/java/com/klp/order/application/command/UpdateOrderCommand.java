@@ -1,4 +1,4 @@
-package com.klp.order.command;
+package com.klp.order.application.command;
 
 import java.util.List;
 

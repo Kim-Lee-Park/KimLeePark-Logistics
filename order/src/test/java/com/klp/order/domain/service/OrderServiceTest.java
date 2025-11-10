@@ -5,10 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-import com.klp.order.command.CancelOrderCommand;
-import com.klp.order.command.CreateOrderCommand;
-import com.klp.order.command.OrderItemCommand;
-import com.klp.order.command.UpdateOrderCommand;
+import com.klp.order.application.command.CancelOrderCommand;
+import com.klp.order.application.command.CreateOrderCommand;
+import com.klp.order.application.command.OrderItemCommand;
+import com.klp.order.application.command.UpdateOrderCommand;
+import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;

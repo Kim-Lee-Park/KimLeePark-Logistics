@@ -1,6 +1,6 @@
 package com.klp.order.domain.entity.orderitem;
 
-import com.klp.order.command.OrderItemCommand;
+import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.order.Order;
 import jakarta.persistence.Column;

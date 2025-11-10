@@ -1,9 +1,9 @@
-package com.klp.order.domain.service;
+package com.klp.order.application.service;
 
 
-import com.klp.order.command.CancelOrderCommand;
-import com.klp.order.command.CreateOrderCommand;
-import com.klp.order.command.UpdateOrderCommand;
+import com.klp.order.application.command.CancelOrderCommand;
+import com.klp.order.application.command.CreateOrderCommand;
+import com.klp.order.application.command.UpdateOrderCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;

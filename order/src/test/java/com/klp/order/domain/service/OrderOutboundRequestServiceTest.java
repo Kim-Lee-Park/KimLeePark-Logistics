@@ -5,12 +5,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-import com.klp.order.command.OrderItemCommand;
+import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
+import com.klp.order.application.command.OrderItemCommand;
+import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.repository.OrderOutboundRequestRepository;
+import com.klp.order.domain.repository.OrderRepository;
+import com.klp.order.presentation.dto.OrderOutboundRequestResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,11 +33,16 @@ class OrderOutboundRequestServiceTest {
     @Mock
     private OrderOutboundRequestRepository orderOutboundRequestRepository;
 
+    @Mock
+    private OrderRepository orderRepository;
+
     @InjectMocks
     private OrderOutboundRequestService orderOutboundRequestService;
 
     private Order order;
     private OrderOutboundRequest outboundRequest;
+    private CreateOrderOutboundRequestCommand command;
+    private UUID orderId;
     private UUID requestId;
     private String idempotencyKey;
 
@@ -44,11 +53,19 @@ class OrderOutboundRequestServiceTest {
         );
         order = Order.create(1L, 2L, "테스트 주문", itemCommands);
 
+        orderId = UUID.randomUUID();
         requestId = UUID.randomUUID();
         idempotencyKey = "test-idempotency-key-12345";
+
+        command = new CreateOrderOutboundRequestCommand(
+            orderId,
+            idempotencyKey,
+            Target.INVENTORY,
+            OperationType.DECREASE
+        );
     }
 
-    private OrderOutboundRequest create(Order order, String idempotencyKey, Target target,
+    private OrderOutboundRequest createEntity(Order order, String idempotencyKey, Target target,
         OperationType operationType) {
         return OrderOutboundRequest.create(order, idempotencyKey, target, operationType);
     }
@@ -57,19 +74,19 @@ class OrderOutboundRequestServiceTest {
     @DisplayName("외부 요청 조회 - ID로 조회 성공")
     void findById_Success() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
         given(orderOutboundRequestRepository.findById(requestId))
             .willReturn(Optional.of(outboundRequest));
 
         // when
-        OrderOutboundRequest result = orderOutboundRequestService.findById(requestId);
+        OrderOutboundRequestResponse result = orderOutboundRequestService.findById(requestId);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(outboundRequest);
-        assertThat(result.getIdempotencyKey()).isEqualTo(idempotencyKey);
-        assertThat(result.getTarget()).isEqualTo(Target.INVENTORY);
-        assertThat(result.getOperation()).isEqualTo(OperationType.DECREASE);
+        assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(result.target()).isEqualTo(Target.INVENTORY);
+        assertThat(result.operation()).isEqualTo(OperationType.DECREASE);
     }
 
     @Test
@@ -90,19 +107,20 @@ class OrderOutboundRequestServiceTest {
     @DisplayName("멱등키로 외부 요청 조회 - 정상")
     void findByIdempotencyKey_Success() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
         given(orderOutboundRequestRepository.findByIdempotencyKey(idempotencyKey))
             .willReturn(Optional.of(outboundRequest));
 
         // when
-        OrderOutboundRequest result = orderOutboundRequestService
+        OrderOutboundRequestResponse result = orderOutboundRequestService
             .findByIdempotencyKey(idempotencyKey);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getIdempotencyKey()).isEqualTo(idempotencyKey);
-        assertThat(result.getTarget()).isEqualTo(Target.INVENTORY);
-        assertThat(result.getOperation()).isEqualTo(OperationType.DECREASE);
+        assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(result.target()).isEqualTo(Target.INVENTORY);
+        assertThat(result.operation()).isEqualTo(OperationType.DECREASE);
     }
 
     @Test
@@ -118,15 +136,14 @@ class OrderOutboundRequestServiceTest {
             .findByIdempotencyKey(nonExistentKey))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("해당 멱등키의 요청을 찾을 수 없습니다.");
-
     }
-
 
     @Test
     @DisplayName("전체 외부 요청 조회")
     void findAll_Success() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
         OrderOutboundRequest request2 = OrderOutboundRequest.create(
             order,
             "another-key",
@@ -139,45 +156,59 @@ class OrderOutboundRequestServiceTest {
             .willReturn(requests);
 
         // when
-        List<OrderOutboundRequest> result = orderOutboundRequestService.findAll();
+        List<OrderOutboundRequestResponse> result = orderOutboundRequestService.findAll();
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result.get(1).getIdempotencyKey()).isEqualTo("another-key");
-        assertThat(result.get(1).getTarget()).isEqualTo(Target.DELIVERY);
-        assertThat(result.get(1).getOperation()).isEqualTo(OperationType.MAKING);
+        assertThat(result.get(0).idempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(result.get(0).target()).isEqualTo(Target.INVENTORY);
+        assertThat(result.get(0).operation()).isEqualTo(OperationType.DECREASE);
+        assertThat(result.get(1).idempotencyKey()).isEqualTo("another-key");
+        assertThat(result.get(1).target()).isEqualTo(Target.DELIVERY);
+        assertThat(result.get(1).operation()).isEqualTo(OperationType.MAKING);
     }
 
     @Test
     @DisplayName("외부 요청 저장 - 정상")
     void save_Success() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
+
+        given(orderRepository.findById(orderId))
+            .willReturn(Optional.of(order));
         given(orderOutboundRequestRepository.save(any(OrderOutboundRequest.class)))
             .willReturn(outboundRequest);
 
         // when
-        OrderOutboundRequest result = orderOutboundRequestService.save(outboundRequest);
+        OrderOutboundRequestResponse result = orderOutboundRequestService.save(command);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(outboundRequest);
+        assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(result.target()).isEqualTo(Target.INVENTORY);
+        assertThat(result.operation()).isEqualTo(OperationType.DECREASE);
     }
 
     @Test
-    @DisplayName("외부 요청 저장 - null 저장 시도")
-    void save_Fail_NullRequest() {
+    @DisplayName("외부 요청 저장 - 주문을 찾을 수 없음")
+    void save_Fail_OrderNotFound() {
+        // given
+        given(orderRepository.findById(orderId))
+            .willReturn(Optional.empty());
+
         // when & then
-        assertThatThrownBy(() -> orderOutboundRequestService.save(null))
+        assertThatThrownBy(() -> orderOutboundRequestService.save(command))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("요청 정보는 필수입니다.");
+            .hasMessage("주문을 찾을 수 없습니다.");
     }
 
     @Test
     @DisplayName("멱등키 존재 여부 확인 - 존재함")
     void existsByIdempotencyKey_True() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
         given(orderOutboundRequestRepository.findByIdempotencyKey(idempotencyKey))
             .willReturn(Optional.of(outboundRequest));
 
@@ -207,42 +238,41 @@ class OrderOutboundRequestServiceTest {
     @DisplayName("멱등성 체크 및 저장 - 새로운 요청 (저장)")
     void saveIfNotExists_NewRequest() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
+
         given(orderOutboundRequestRepository.findByIdempotencyKey(idempotencyKey))
             .willReturn(Optional.empty());
+        given(orderRepository.findById(orderId))
+            .willReturn(Optional.of(order));
         given(orderOutboundRequestRepository.save(any(OrderOutboundRequest.class)))
             .willReturn(outboundRequest);
 
         // when
-        OrderOutboundRequest result = orderOutboundRequestService
-            .saveIfNotExists(outboundRequest);
+        OrderOutboundRequestResponse result = orderOutboundRequestService
+            .saveIfNotExists(command);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(outboundRequest);
-        assertThat(result.getIdempotencyKey()).isEqualTo(idempotencyKey);
-        assertThat(result.getTarget()).isEqualTo(Target.INVENTORY);
-        assertThat(result.getOperation()).isEqualTo(OperationType.DECREASE);
+        assertThat(result.idempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(result.target()).isEqualTo(Target.INVENTORY);
+        assertThat(result.operation()).isEqualTo(OperationType.DECREASE);
     }
 
     @Test
     @DisplayName("멱등성 체크 및 저장 - 이미 존재하는 요청")
     void saveIfNotExists_ExistingRequest() {
         // given
-        outboundRequest = create(order, idempotencyKey, Target.INVENTORY, OperationType.DECREASE);
+        outboundRequest = createEntity(order, idempotencyKey, Target.INVENTORY,
+            OperationType.DECREASE);
         given(orderOutboundRequestRepository.findByIdempotencyKey(idempotencyKey))
             .willReturn(Optional.of(outboundRequest));
 
-        //when&then
-
-        assertThatThrownBy(() -> orderOutboundRequestService.saveIfNotExists(
-            outboundRequest
-        ))
+        // when & then
+        assertThatThrownBy(() -> orderOutboundRequestService.saveIfNotExists(command))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("이미 존재하는 멱등키 입니다.");
-
+            .hasMessage("이미 존재하는 멱등키입니다.");
     }
-
 
     @Test
     @DisplayName("멱등키 생성 - 주문 ID, 타겟, 작업 타입 기반")
@@ -265,9 +295,8 @@ class OrderOutboundRequestServiceTest {
     }
 
     @Test
-    @DisplayName("멱등키 생성 - order가 null일때")
-    void generateIdempotencyKey_Fail_order_Null() {
-
+    @DisplayName("멱등키 생성 - orderId가 null일때")
+    void generateIdempotencyKey_Fail_OrderId_Null() {
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService.generateIdempotencyKey(
             null, Target.DELIVERY, OperationType.MAKING
@@ -278,8 +307,7 @@ class OrderOutboundRequestServiceTest {
 
     @Test
     @DisplayName("멱등키 생성 - 타겟이 null일때")
-    void generateIdempotencyKey_Fail_target_Null() {
-
+    void generateIdempotencyKey_Fail_Target_Null() {
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService.generateIdempotencyKey(
             UUID.randomUUID(), null, OperationType.MAKING
@@ -290,8 +318,7 @@ class OrderOutboundRequestServiceTest {
 
     @Test
     @DisplayName("멱등키 생성 - operation이 null일때")
-    void generateIdempotencyKey_Fail_operation_Null() {
-
+    void generateIdempotencyKey_Fail_Operation_Null() {
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService.generateIdempotencyKey(
             UUID.randomUUID(), Target.DELIVERY, null

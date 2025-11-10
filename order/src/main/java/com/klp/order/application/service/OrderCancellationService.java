@@ -1,4 +1,4 @@
-package com.klp.order.domain.service;
+package com.klp.order.application.service;
 
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.repository.OrderCancellationRepository;
