@@ -37,9 +37,7 @@ public class OrderOutboundRequestService {
 
     @Transactional
     public OrderOutboundRequest save(OrderOutboundRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("요청 정보는 필수입니다.");
-        }
+        checkRequestIsNull(request);
         return orderOutboundRequestRepository.save(request);
     }
 
@@ -51,9 +49,7 @@ public class OrderOutboundRequestService {
 
     @Transactional
     public OrderOutboundRequest saveIfNotExists(OrderOutboundRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("요청 정보는 필수입니다.");
-        }
+        checkRequestIsNull(request);
 
         String idempotencyKey = request.getIdempotencyKey();
         Optional<OrderOutboundRequest> existing =
@@ -91,6 +87,12 @@ public class OrderOutboundRequestService {
         }
         if (operationType == null) {
             throw new IllegalArgumentException("작업 타입은 필수입니다.");
+        }
+    }
+
+    private void checkRequestIsNull(OrderOutboundRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("요청 정보는 필수입니다.");
         }
     }
 }
