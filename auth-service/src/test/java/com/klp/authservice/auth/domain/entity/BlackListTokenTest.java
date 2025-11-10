@@ -1,5 +1,8 @@
 package com.klp.authservice.auth.domain.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.common.exception.BusinessException;
 import java.time.LocalDateTime;
@@ -20,7 +23,7 @@ class BlackListTokenTest {
 
         // then
         assertThat(blackListToken.getToken()).isEqualTo(token);
-        assertThat(blackListToken.getExpiration()).isEqalTo(expiration);
+        assertThat(blackListToken.getExpiration()).isEqualTo(expiration);
     }
 
     @Test
