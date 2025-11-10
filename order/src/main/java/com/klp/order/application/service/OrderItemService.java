@@ -1,8 +1,10 @@
 package com.klp.order.application.service;
 
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.orderitem.OrderItem;
 import com.klp.order.domain.repository.OrderItemRepository;
+import com.klp.order.global.exception.OrderItemErrorCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +22,7 @@ public class OrderItemService {
 
     public OrderItem findById(UUID orderItemId) {
         return orderItemRepository.findById(orderItemId)
-            .orElseThrow(() -> new IllegalArgumentException("주문 아이템을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(OrderItemErrorCode.ORDER_ITEM_NOT_FOUND));
     }
 
 
@@ -68,7 +70,7 @@ public class OrderItemService {
     @Transactional
     public List<OrderItem> assignDeliveryIdBatch(List<UUID> orderItemIds, UUID deliveryId) {
         if (orderItemIds == null || orderItemIds.isEmpty()) {
-            throw new IllegalArgumentException("주문 아이템이 존재하지 않습니다.");
+            throw new BusinessException(OrderItemErrorCode.ORDER_ITEM_NOT_FOUND);
         }
 
         List<OrderItem> updatedItems = new ArrayList<>();

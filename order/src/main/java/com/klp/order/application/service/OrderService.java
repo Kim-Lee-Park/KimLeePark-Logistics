@@ -1,12 +1,14 @@
 package com.klp.order.application.service;
 
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
+import com.klp.order.global.exception.OrderErrorCode;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +36,7 @@ public class OrderService {
 
     public Order findById(UUID orderId) {
         return orderRepository.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 
     @Transactional
@@ -89,7 +91,7 @@ public class OrderService {
 
     private void checkDeletedBy(Long deletedBy) {
         if (deletedBy == null) {
-            throw new IllegalArgumentException("삭제자는 필수 정보 입니다.");
+            throw new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED);
         }
     }
 }

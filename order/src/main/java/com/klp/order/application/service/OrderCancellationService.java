@@ -1,7 +1,9 @@
 package com.klp.order.application.service;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.repository.OrderCancellationRepository;
+import com.klp.order.global.exception.OrderCancellationErrorCode;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +20,15 @@ public class OrderCancellationService {
 
     public OrderCancellation findById(UUID cancellationId) {
         return orderCancellationRepository.findById(cancellationId)
-            .orElseThrow(() -> new IllegalArgumentException("주문 취소 정보를 찾을 수 없습니다."));
+            .orElseThrow(
+                () -> new BusinessException(OrderCancellationErrorCode.CANCELLATION_NOT_FOUND));
     }
 
 
     public OrderCancellation findByOrderId(UUID orderId) {
         return orderCancellationRepository.findByOrder_OrderId(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 주문의 취소 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(
+                OrderCancellationErrorCode.CANCELLATION_BY_ORDER_NOT_FOUND));
     }
 
 
@@ -40,7 +44,7 @@ public class OrderCancellationService {
 
     private void checkCancellationisNull(OrderCancellation cancellation) {
         if (cancellation == null) {
-            throw new IllegalArgumentException("취소 정보는 필수입니다.");
+            throw new BusinessException(OrderCancellationErrorCode.CANCELLATION_REQUIRED);
         }
     }
 

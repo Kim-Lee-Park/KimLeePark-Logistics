@@ -7,7 +7,7 @@ import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.global.AuditConfig;
+import com.klp.order.global.config.AuditConfig;
 import com.klp.order.infrastructure.repository.OrderJpaRepository;
 import com.klp.order.infrastructure.repository.OrderOutboundRequestJpaRepository;
 import java.util.ArrayList;

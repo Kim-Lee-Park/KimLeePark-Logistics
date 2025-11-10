@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.global.AuditConfig;
+import com.klp.order.global.config.AuditConfig;
 import com.klp.order.infrastructure.repository.OrderJpaRepository;
 import java.util.ArrayList;
 import java.util.List;
