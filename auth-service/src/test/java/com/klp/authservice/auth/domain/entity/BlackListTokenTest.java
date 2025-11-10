@@ -16,8 +16,7 @@ class BlackListTokenTest {
 
     private static final String VALID_TOKEN = "blackList.token.data";
     private static final LocalDateTime VALID_EXPIRATION = LocalDateTime.now().plusHours(1);
-
-
+    
     @Test
     @DisplayName("블랙리스트 토큰 생성 성공")
     void createBlackListToken_success() {
