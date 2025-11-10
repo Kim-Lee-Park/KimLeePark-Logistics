@@ -2,14 +2,12 @@ package com.klp.hub.inventory.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.klp.hub.TestJpaConfig;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
-import com.klp.hub.inventory.infrastructure.repository.InventoryRepositoryImpl;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
 import java.util.List;
@@ -24,19 +22,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@DataJpaTest
-@Import({
-    InventoryRepositoryImpl.class,
-    InventoryService.class,
-    TestJpaConfig.class
-})
+@SpringBootTest
 @ActiveProfiles("test")
 public class InventoryServiceConcurrencyTest {
 
@@ -73,8 +64,6 @@ public class InventoryServiceConcurrencyTest {
 
         @Test
         @DisplayName("다수의 동시 요청 시 최종 재고는 0이 되어야 한다")
-        @Transactional(propagation = Propagation.NOT_SUPPORTED)
-        @Rollback(false)
         void deductAllConcurrency() throws InterruptedException {
             int qtyPerThread = initQuantity / threadCount;
             ExecutorService executorService = Executors.newFixedThreadPool(32);
@@ -105,8 +94,6 @@ public class InventoryServiceConcurrencyTest {
 
         @Test
         @DisplayName("다수의 동시 요청시 최종 재고는 정확히 증가해야 한다")
-        @Transactional(propagation = Propagation.NOT_SUPPORTED)
-        @Rollback(false)
         void replenishConcurrency() throws InterruptedException {
             int qtyPerThread = initQuantity / threadCount;
             int totalQuantity = qtyPerThread * threadCount;
@@ -140,8 +127,6 @@ public class InventoryServiceConcurrencyTest {
 
         @Test
         @DisplayName("단 하나의 요청만 성공하고 나머지는 중복으로 처리되어야 한다")
-        @Transactional(propagation = Propagation.NOT_SUPPORTED)
-        @Rollback(false)
         void idempotencyConcurrency() throws InterruptedException {
             String sharedIdempotencyKey = "sharedIdempotencyKey";
             int qtyPerThread = initQuantity / threadCount; // 10개
