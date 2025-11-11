@@ -35,8 +35,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(
     controllers = OrderController.class,
     excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@DisplayName("OrderController 테스트")
-class OrderControllerTest {
+@DisplayName("OrderCreateGetController 테스트")
+class OrderCreateGetControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -237,4 +237,6 @@ class OrderControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
     }
+
+
 }
