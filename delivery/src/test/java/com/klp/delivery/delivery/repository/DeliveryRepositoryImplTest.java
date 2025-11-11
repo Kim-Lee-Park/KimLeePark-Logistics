@@ -1,5 +1,7 @@
 package com.klp.delivery.delivery.repository;
 
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.klp.delivery.common.DeliveryStatus;
@@ -20,69 +22,51 @@ import org.springframework.test.context.ActiveProfiles;
 public class DeliveryRepositoryImplTest {
 
 
-  @Autowired
-  private DeliveryRepositoryImpl deliveryRepository;
+    @Autowired
+    private DeliveryRepositoryImpl deliveryRepository;
 
 
-  @Test
-  void repository가_null_아님을_검증() {
-    Assertions.assertThat(deliveryRepository).isNotNull();
-  }
+    @Test
+    void repository가_null_아님을_검증() {
+        Assertions.assertThat(deliveryRepository).isNotNull();
+    }
 
 
-  @Test
-  void 배송_등록_성공() {
+    @Test
+    void 배송_등록_성공() {
 
-    // given: 배송 등록 데이터 준비
-    UUID vendorDriverId = UUID.randomUUID();
-    UUID orderId = UUID.randomUUID();
-    UUID departureId = UUID.randomUUID();
-    UUID arrivalId = UUID.randomUUID();
-    UUID receiverId = UUID.randomUUID();
-    String receiverName = "김철수";
-    String address = "서울특별시 강남구 테헤란로 123";
-    String receiverSlackId = "U123456789";
+        // given: 배송 등록 데이터 준비
+        Delivery delivery = createDelivery();
 
-    // when: 배송 엔티티 생성
-    Delivery delivery = Delivery.create(vendorDriverId, orderId, departureId,
-        arrivalId, receiverId, receiverName, address, receiverSlackId);
+        // when: 배송 엔티티 생성
+        Delivery result = deliveryRepository.save(delivery);
 
-    Delivery result = deliveryRepository.save(delivery);
+        // then: 생성 검증
+        assertThat(result.getDeliveryId()).isNotNull();
+        assertThat(delivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
+        assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
 
-    // then: 생성 검증
-    assertThat(result.getDeliveryId()).isNotNull();
-    assertThat(delivery.getOrderId()).isEqualTo(orderId);
-    assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
-
-  }
+    }
 
 
-  @Test
-  void 배송ID로_배송_조회_성공() {
+    @Test
+    void 배송ID로_배송_조회_성공() {
 
-    // given: 배송 등록 데이터 준비
-    UUID vendorDriverId = UUID.randomUUID();
-    UUID orderId = UUID.randomUUID();
-    UUID departureId = UUID.randomUUID();
-    UUID arrivalId = UUID.randomUUID();
-    UUID receiverId = UUID.randomUUID();
-    String receiverName = "김철수";
-    String address = "서울특별시 강남구 테헤란로 123";
-    String receiverSlackId = "U123456789";
+        // given: 배송 등록 데이터 준비
+        Delivery delivery = createDelivery();
 
-    // when: 배송 엔티티 생성
-    Delivery delivery = Delivery.create(vendorDriverId, orderId, departureId,
-        arrivalId, receiverId, receiverName, address, receiverSlackId);
+        // when: 배송 엔티티 생성
+        Delivery saved = deliveryRepository.save(delivery);
+        Optional<Delivery> findResult = deliveryRepository.findByDeliveryId(saved.getDeliveryId());
 
-    Delivery result = deliveryRepository.save(delivery);
+        // then: 생성 검증
+        assertThat(findResult)
+            .isPresent()
+            .get()
+            .extracting(Delivery::getStatus)
+            .isEqualTo(DeliveryStatus.CREATED);
 
-    Optional<Delivery> findResult = deliveryRepository.findByDeliveryId(result.getDeliveryId());
-
-    // then: 생성 검증
-    assertThat(findResult).isPresent().get().extracting(Delivery::getStatus)
-        .isEqualTo(DeliveryStatus.CREATED);
-
-  }
+    }
 
 
 }

@@ -38,7 +38,7 @@ public class IdempotencyRepositoryImplTest {
     UUID orderId = UUID.randomUUID();
 
     // when: 멱등키 엔티티 생성
-    IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId);
+    IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId, IdempotencyStatus.PENDING);
 
     IdempotencyKey result = idempotencyKeyRepositoryImpl.save(idempotencyKey);
 
@@ -58,7 +58,7 @@ public class IdempotencyRepositoryImplTest {
     UUID orderId = UUID.randomUUID();
 
     // when: 멱등키 엔티티 생성 및 조회
-    IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId);
+    IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId, IdempotencyStatus.PENDING);
 
     idempotencyKeyRepositoryImpl.save(idempotencyKey);
 

@@ -1,38 +1,35 @@
 package com.klp.delivery.delivery.fixture;
 
-import com.klp.delivery.common.DeliveryStatus;
 import com.klp.delivery.delivery.domain.Company;
 import com.klp.delivery.delivery.domain.Delivery;
 import com.klp.delivery.delivery.domain.Driver;
-import com.klp.delivery.delivery.presentation.dto.OrderItemDto;
-import java.util.ArrayList;
+import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
+import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;
 import java.util.List;
 import java.util.UUID;
 
 public class DeliveryFixture {
 
-  public static UUID DEFAULT_ORDER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-  public static UUID DEFAULT_DEPARTURE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
-  public static UUID DEFAULT_RECEIVER_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
-  public static UUID DEFAULT_VENDOR_DRIVER_ID = UUID.fromString(
-      "00000000-0000-0000-0000-000000000004");
-  public static UUID DEFAULT_ARRIVAL_ID = UUID.fromString("00000000-0000-0000-0000-000000000005");
-  public static UUID DEFAULT_DELIVERY_ID = UUID.fromString("00000000-0000-0000-0000-000000000006");
-  public static UUID DEFAULT_HUB_ID_UUID = UUID.fromString("00000000-0000-0000-0000-000000000007");
-  public static UUID DEFAULT_ORDER_ITEM_ID = UUID.fromString(
-      "00000000-0000-0000-0000-000000000008");
-  public static UUID DEFAULT_PRODUCT_ID = UUID.fromString("00000000-0000-0000-0000-000000000009");
+  public static UUID DEFAULT_ORDER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");               // 주문 ID
+  public static UUID DEFAULT_DEPARTURE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");           // 출발 허브 ID
+  public static UUID DEFAULT_RECEIVER_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");            // 수령업체 ID
+  public static UUID DEFAULT_SENDER_ID = UUID.fromString("00000000-0000-0000-0000-000000000004");              // 발송업체 ID
+  public static Long DEFAULT_VENDOR_DRIVER_ID = 1234L;
+
+  public static UUID DEFAULT_DELIVERY_ID = UUID.fromString("00000000-0000-0000-0000-000000000006");             // 출발 허브 ID
+  public static UUID DEFAULT_ARRIVAL_ID = UUID.fromString("00000000-0000-0000-0000-000000000005");              // 도착 허브 ID
+  public static UUID DEFAULT_ORDER_ITEM_ID = UUID.fromString("00000000-0000-0000-0000-000000000007");           // 주문 아이템 ID
 
   public static String DEFAULT_COMPANY_NAME = "테스트업체";
   public static String DEFAULT_COMPANY_ADDRESS = "서울특별시 강남구 테헤란로 123";
-  public static String DEFAULT_HUB_ID = "00000000-0000-0000-0000-000000000007";
+  public static String DEFAULT_HUB_ID = DEFAULT_DELIVERY_ID.toString();                                                // 기본 허브 ID
   public static String DEFAULT_RECEIVER_SLACK_ID = "U123456";
-  public static String DEFAULT_VENDOR_DRIVER_ID_STR = DEFAULT_VENDOR_DRIVER_ID.toString();
+  public static Long DEFAULT_VENDOR_DRIVER_ID_STR = DEFAULT_VENDOR_DRIVER_ID;
 
-  public static Long DEFAULT_SUPPLIER_ID = 1L;
-  public static Long DEFAULT_CUSTOMER_ID = 2L;
+  public static UUID DEFAULT_SUPPLIER_ID =  DEFAULT_SENDER_ID;                                                         // 공급업체 ID
+  public static UUID DEFAULT_CUSTOMER_ID = DEFAULT_RECEIVER_ID;                                                        // 수령업체 ID
   public static String DEFAULT_IDEMPOTENCY_KEY = "멱등키123";
-  public static Integer DEFAULT_QUANTITY = 10;
+
 
   public static Company createCompany() {
     return new Company(
@@ -58,16 +55,44 @@ public class DeliveryFixture {
     return new Driver(DEFAULT_VENDOR_DRIVER_ID_STR, DEFAULT_RECEIVER_SLACK_ID);
   }
 
-  public static Driver createDriver(String vendorDriverId, String receiverSlackId) {
+  public static Driver createDriver(Long vendorDriverId, String receiverSlackId) {
     return new Driver(vendorDriverId, receiverSlackId);
   }
+
+    private static Delivery buildDelivery(
+        Long vendorDriverId,
+        UUID orderId,
+        UUID orderItemId,
+        UUID departureId,
+        UUID arrivalId,
+        UUID senderId,
+        UUID receiverId,
+        String companyName,
+        String companyAddress,
+        String receiverSlackId
+    ) {
+        return Delivery.create(
+            vendorDriverId,
+            orderId,
+            orderItemId,
+            departureId,
+            arrivalId,
+            senderId,
+            receiverId,
+            companyName,
+            companyAddress,
+            receiverSlackId
+        );
+    }
 
   public static Delivery createDelivery() {
     return Delivery.create(
         DEFAULT_VENDOR_DRIVER_ID,
         DEFAULT_ORDER_ID,
+        DEFAULT_ORDER_ITEM_ID,
         DEFAULT_DEPARTURE_ID,
         DEFAULT_ARRIVAL_ID,
+        DEFAULT_SENDER_ID,
         DEFAULT_RECEIVER_ID,
         DEFAULT_COMPANY_NAME,
         DEFAULT_COMPANY_ADDRESS,
@@ -75,6 +100,7 @@ public class DeliveryFixture {
     );
   }
 
+  //  기본 배송 객체 생성 후, 리플렉션으로 deliveryId를 지정
   public static Delivery createDelivery(UUID deliveryId) {
     Delivery delivery = createDelivery();
     try {
@@ -87,44 +113,97 @@ public class DeliveryFixture {
     return delivery;
   }
 
-  public static Delivery createDeliveryWithStatus(DeliveryStatus status) {
-    Delivery delivery = createDelivery();
-    delivery.updateStatus(status);
-    return delivery;
-  }
 
-  public static OrderItemDto createOrderItemDto() {
-    return new OrderItemDto(
-        DEFAULT_ORDER_ITEM_ID,
-        DEFAULT_HUB_ID_UUID,
-        DEFAULT_PRODUCT_ID,
-        null, // deliveryId는 null (새로 생성)
-        DEFAULT_QUANTITY
-    );
-  }
+     // 주소만 다르게 (유효성 테스트용)
+    public static Delivery createDeliveryWithAddress(String companyAddress) {
+        return buildDelivery(
+            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_ORDER_ID,
+            DEFAULT_ORDER_ITEM_ID,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_ARRIVAL_ID,
+            DEFAULT_SENDER_ID,
+            DEFAULT_RECEIVER_ID,
+            DEFAULT_COMPANY_NAME,
+            companyAddress,
+            DEFAULT_RECEIVER_SLACK_ID
+        );
+    }
 
-  public static OrderItemDto createOrderItemDto(UUID orderItemId, UUID hubId, UUID productId,
-      UUID deliveryId, Integer quantity) {
-    return new OrderItemDto(
-        orderItemId,
-        hubId,
-        productId,
-        deliveryId,
-        quantity
-    );
-  }
+    // 회사명만 다르게 (유효성 테스트용)
+    public static Delivery createDeliveryWithCompanyName(String companyName) {
+        return buildDelivery(
+            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_ORDER_ID,
+            DEFAULT_ORDER_ITEM_ID,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_ARRIVAL_ID,
+            DEFAULT_SENDER_ID,
+            DEFAULT_RECEIVER_ID,
+            companyName,
+            DEFAULT_COMPANY_ADDRESS,
+            DEFAULT_RECEIVER_SLACK_ID
+        );
+    }
 
-  public static List<OrderItemDto> createOrderItemDtoList() {
-    List<OrderItemDto> orderItems = new ArrayList<>();
-    orderItems.add(createOrderItemDto());
-    return orderItems;
-  }
+    // 슬랙 ID만 다르게 (유효성 테스트용)
+    public static Delivery createDeliveryWithSlackId(String slackId) {
+        return buildDelivery(
+            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_ORDER_ID,
+            DEFAULT_ORDER_ITEM_ID,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_ARRIVAL_ID,
+            DEFAULT_SENDER_ID,
+            DEFAULT_RECEIVER_ID,
+            DEFAULT_COMPANY_NAME,
+            DEFAULT_COMPANY_ADDRESS,
+            slackId
+        );
+    }
 
-  public static List<OrderItemDto> createOrderItemDtoListWithDeliveryId() {
-    List<OrderItemDto> orderItems = new ArrayList<>();
-    orderItems.add(
-        createOrderItemDto(DEFAULT_ORDER_ITEM_ID, DEFAULT_HUB_ID_UUID, DEFAULT_PRODUCT_ID,
-            DEFAULT_DELIVERY_ID, DEFAULT_QUANTITY));
-    return orderItems;
-  }
+    // 배송자 ID만 다르게 (유효성 테스트용)
+    public static Delivery createDeliveryWithVendorDriverId(Long vendorDriverId) {
+        return buildDelivery(
+            vendorDriverId,
+            DEFAULT_ORDER_ID,
+            DEFAULT_ORDER_ITEM_ID,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_ARRIVAL_ID,
+            DEFAULT_SENDER_ID,
+            DEFAULT_RECEIVER_ID,
+            DEFAULT_COMPANY_NAME,
+            DEFAULT_COMPANY_ADDRESS,
+            DEFAULT_RECEIVER_SLACK_ID
+        );
+    }
+
+    // 수령업체 이름만 다르게 (유효성 테스트용)
+    public static Delivery createDeliveryWithReceiverName(String receiverName) {
+        return buildDelivery(
+            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_ORDER_ID,
+            DEFAULT_ORDER_ITEM_ID,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_ARRIVAL_ID,
+            DEFAULT_SENDER_ID,
+            DEFAULT_RECEIVER_ID,
+            receiverName,
+            DEFAULT_COMPANY_ADDRESS,
+            DEFAULT_RECEIVER_SLACK_ID
+        );
+    }
+
+    public static DeliveryCreateRequest createDeliveryRequest(List<OrderItem> orderItems) {
+        return new DeliveryCreateRequest(
+            DEFAULT_ORDER_ID,
+            DEFAULT_SUPPLIER_ID,
+            DEFAULT_CUSTOMER_ID,
+            "2025-11-05 14:00까지 납품 요청",
+            orderItems,
+            DEFAULT_IDEMPOTENCY_KEY
+        );
+    }
+
+
 }

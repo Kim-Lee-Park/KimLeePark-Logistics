@@ -16,10 +16,29 @@ public class IdempotencyKeyTest extends MockTest {
     String key = "key";
     UUID orderId = UUID.randomUUID();
 
-    // when: 배송 생성
-    IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId);
+    // when: 멱등키 생성
+    IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId, IdempotencyStatus.PENDING);
 
-    // then: 배송 상태값 검증
+    // then: 멱등키 상태값 검증
     assertThat(idempotencyKey.getStatus()).isEqualTo(IdempotencyStatus.PENDING);
   }
+
+
+  @Test
+    void 멱등키_상태변경_검증(){
+
+      // given: 멱등키 등록 데이터 준비
+      String key = "key";
+      UUID orderId = UUID.randomUUID();
+
+      // when: 멱등키 생성
+      IdempotencyKey idempotencyKey = IdempotencyKey.create(key, orderId, IdempotencyStatus.COMPLETED);
+
+      idempotencyKey.updateStatus(IdempotencyStatus.COMPLETED);
+
+      // then: 멱등키 상태 검증
+      assertThat(idempotencyKey.getStatus()).isEqualTo(IdempotencyStatus.COMPLETED);
+
+  }
+
 }

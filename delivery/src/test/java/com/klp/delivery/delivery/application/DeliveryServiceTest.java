@@ -4,19 +4,17 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_HUB_ID_UUID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ITEM_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_VENDOR_DRIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,7 +63,7 @@ public class DeliveryServiceTest extends MockTest {
     String receiverName = DEFAULT_COMPANY_NAME;
     String address = DEFAULT_COMPANY_ADDRESS;
     String receiverSlackId = DEFAULT_RECEIVER_SLACK_ID;
-    UUID vendorDriverId = DEFAULT_VENDOR_DRIVER_ID;
+    Long vendorDriverId = 1234L;
 
     DeliveryCommand command = new DeliveryCommand(
         orderId, orderItemId, hubId, departureId, arrivalId, receiverId,
