@@ -59,18 +59,6 @@ class UserControllerTest {
     }
 
     @Nested
-    @DisplayName("유저 정보 변경 요청 목록 조회 테스트")
-    class getChangeRequestsTest {
-
-    }
-
-    @Nested
-    @DisplayName("본인 정보 변경 요청 테스트")
-    class requestInfoChangeTest {
-
-    }
-
-    @Nested
     @DisplayName("유저 목록 조회 테스트")
     class getUserListTest {
 
