@@ -1,4 +1,4 @@
-package com.klp.user.infrastructure.exception;
+package com.klp.global.exception;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.common.exception.ErrorResponse;

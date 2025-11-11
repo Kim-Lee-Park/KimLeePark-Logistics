@@ -1,6 +1,6 @@
-package com.klp.user.infrastructure.security.filter;
+package com.klp.global.security.filter;
 
-import com.klp.user.infrastructure.security.model.UserDetailsImpl;
+import com.klp.global.security.model.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

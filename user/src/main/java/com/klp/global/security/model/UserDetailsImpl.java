@@ -1,4 +1,4 @@
-package com.klp.user.infrastructure.security.model;
+package com.klp.global.security.model;
 
 import java.util.Collection;
 import java.util.List;
