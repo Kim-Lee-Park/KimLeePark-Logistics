@@ -3,7 +3,7 @@ package com.klp.authservice.auth.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.authservice.auth.AuthErrorCode;
+import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.common.exception.BusinessException;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +16,7 @@ class BlackListTokenTest {
 
     private static final String VALID_TOKEN = "blackList.token.data";
     private static final LocalDateTime VALID_EXPIRATION = LocalDateTime.now().plusHours(1);
-    
+
     @Test
     @DisplayName("블랙리스트 토큰 생성 성공")
     void createBlackListToken_success() {

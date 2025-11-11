@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.infrastructure.jpa.model;
+package com.klp.authservice.common.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

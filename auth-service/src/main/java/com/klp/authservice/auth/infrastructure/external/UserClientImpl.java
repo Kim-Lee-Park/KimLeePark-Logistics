@@ -1,7 +1,7 @@
 package com.klp.authservice.auth.infrastructure.external;
 
-import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.client.UserClient;
+import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.common.exception.BusinessException;

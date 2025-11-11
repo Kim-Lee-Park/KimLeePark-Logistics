@@ -1,6 +1,5 @@
 package com.klp.authservice.auth.application;
 
-import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.client.UserClient;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
@@ -8,6 +7,7 @@ import com.klp.authservice.auth.domain.entity.BlackListToken;
 import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
+import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;

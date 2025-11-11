@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
@@ -21,11 +20,12 @@ import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
-import com.klp.authservice.auth.infrastructure.exception.GlobalExceptionHandler;
+import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.jwt.JwtConstants;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
-import com.klp.authservice.auth.infrastructure.security.config.SecurityConfig;
-import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
+import com.klp.authservice.global.exception.GlobalExceptionHandler;
+import com.klp.authservice.global.security.config.SecurityConfig;
+import com.klp.authservice.global.security.filter.AuthorizationFilter;
 import com.klp.common.exception.BusinessException;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;

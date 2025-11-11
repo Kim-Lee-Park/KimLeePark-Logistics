@@ -1,7 +1,7 @@
 package com.klp.authservice.auth.domain.entity;
 
-import com.klp.authservice.auth.AuthErrorCode;
-import com.klp.authservice.auth.infrastructure.jpa.model.BaseEntity;
+import com.klp.authservice.auth.exception.AuthErrorCode;
+import com.klp.authservice.common.model.BaseEntity;
 import com.klp.common.exception.BusinessException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,7 +38,7 @@ public class BlackListToken extends BaseEntity {
 
     public static BlackListToken create(String token, LocalDateTime expiration) {
         validateBlackListToken(token, expiration);
-        
+
         return new BlackListToken(token, expiration);
     }
 

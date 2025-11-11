@@ -1,4 +1,4 @@
-package com.klp.authservice.auth;
+package com.klp.authservice.auth.exception;
 
 import com.klp.common.exception.ErrorCode;
 import lombok.Getter;
