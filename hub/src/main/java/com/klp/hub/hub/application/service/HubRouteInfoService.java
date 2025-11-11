@@ -1,19 +1,17 @@
 package com.klp.hub.hub.application.service;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.common.util.DistanceTimeUtil;
+import com.klp.hub.hub.util.DistanceTimeUtil;
 import com.klp.hub.hub.application.command.hubRouteInfo.RegisterHubRouteInfoCommand;
 import com.klp.hub.hub.application.command.hubRouteInfo.UpdateHubRouteInfoCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
-import com.klp.hub.hub.domain.model.QHubRouteInfo;
 import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
 import com.klp.hub.hub.exception.HubRouteInfoErrorCode;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoListResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.RegisterHubRouteInfoResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.UpdatedHubRouteInfoResponse;
-import com.querydsl.core.BooleanBuilder;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

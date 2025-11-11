@@ -1,8 +1,7 @@
 package com.klp.hub.hub.application.scheduler;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.common.util.DistanceTimeUtil;
-import com.klp.hub.hub.application.service.HubRouteInfoService;
+import com.klp.hub.hub.util.DistanceTimeUtil;
 import com.klp.hub.hub.application.service.HubService;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
@@ -11,7 +10,6 @@ import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
 import com.klp.hub.hub.infrastructure.dto.RoutePairDto;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

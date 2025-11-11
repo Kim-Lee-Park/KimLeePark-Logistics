@@ -4,17 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.common.util.DistanceTimeUtil;
 import com.klp.hub.hub.application.command.hubRouteInfo.RegisterHubRouteInfoCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
 import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
 import com.klp.hub.hub.exception.HubErrorCode;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.RegisterHubRouteInfoResponse;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

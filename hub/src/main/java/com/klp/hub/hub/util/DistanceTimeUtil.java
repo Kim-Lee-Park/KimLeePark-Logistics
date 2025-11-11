@@ -1,4 +1,4 @@
-package com.klp.hub.common.util;
+package com.klp.hub.hub.util;
 
 public final class DistanceTimeUtil {
 
