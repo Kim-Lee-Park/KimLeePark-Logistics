@@ -15,6 +15,9 @@ public record DeliveryCreateRequest(
     @NotNull(message = "orderId는 필수입니다.")
     UUID orderId,
 
+    @NotBlank(message = "idempotencyKey는 필수입니다.")
+    String idempotencykey,
+
     @NotNull(message = "supplierId는 필수입니다.")
     UUID supplierId,
 
@@ -25,10 +28,7 @@ public record DeliveryCreateRequest(
 
     @NotEmpty(message = "orderItems는 필수이며 최소 1개 이상이어야 합니다.")
     @Valid
-    List<OrderItem> orderItems,
-
-    @NotBlank(message = "idempotencyKey는 필수입니다.")
-    String idempotencykey
+    List<OrderItem> orderItems
 ) {
 
     public OrderToDeliveryCommand toOrderToDeliveryCommand() {
