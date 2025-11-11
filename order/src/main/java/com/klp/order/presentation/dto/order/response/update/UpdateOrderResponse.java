@@ -1,4 +1,4 @@
-package com.klp.order.presentation.dto.order.response;
+package com.klp.order.presentation.dto.order.response.update;
 
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public record CreateOrderResponse(
+public record UpdateOrderResponse(
     UUID orderId,
     Long supplierId,
     Long customerId,
@@ -20,17 +20,15 @@ public record CreateOrderResponse(
     LocalDateTime createdAt,
     Long createdBy,
     LocalDateTime updatedAt,
-    Long updatedBy,
-    LocalDateTime deletedAt,
-    Long deletedBy
+    Long updatedBy
 ) {
 
-    public static CreateOrderResponse from(Order order) {
+    public static UpdateOrderResponse from(Order order) {
         List<OrderItemResponse> orderItemResponses = order.getOrderItems().stream()
             .map(OrderItemResponse::from)
             .collect(Collectors.toList());
 
-        return new CreateOrderResponse(
+        return new UpdateOrderResponse(
             order.getOrderId(),
             order.getSupplierId(),
             order.getCustomerId(),
@@ -41,9 +39,7 @@ public record CreateOrderResponse(
             order.getCreatedAt(),
             order.getCreatedBy(),
             order.getUpdatedAt(),
-            order.getUpdatedBy(),
-            order.getDeletedAt(),
-            order.getDeletedBy()
+            order.getUpdatedBy()
         );
     }
 }

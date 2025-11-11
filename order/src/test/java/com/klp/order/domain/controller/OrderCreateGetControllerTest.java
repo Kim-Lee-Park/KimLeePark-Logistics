@@ -17,7 +17,7 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.exception.OrderErrorCode;
 import com.klp.order.presentation.controller.OrderController;
-import com.klp.order.presentation.dto.order.request.CreateOrderRequest;
+import com.klp.order.presentation.dto.order.request.create.CreateOrderRequest;
 import com.klp.order.presentation.dto.orderitem.request.OrderItemRequest;
 import java.util.List;
 import java.util.UUID;

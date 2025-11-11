@@ -1,17 +1,21 @@
 package com.klp.order.presentation.controller;
 
 import com.klp.order.application.command.CreateOrderCommand;
+import com.klp.order.application.command.UpdateOrderCommand;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.presentation.dto.order.request.CreateOrderRequest;
-import com.klp.order.presentation.dto.order.response.CreateOrderResponse;
-import com.klp.order.presentation.dto.order.response.GetOneOrderResponse;
+import com.klp.order.presentation.dto.order.request.create.CreateOrderRequest;
+import com.klp.order.presentation.dto.order.request.update.UpdateOrderRequest;
+import com.klp.order.presentation.dto.order.response.create.CreateOrderResponse;
+import com.klp.order.presentation.dto.order.response.get.GetOneOrderResponse;
+import com.klp.order.presentation.dto.order.response.update.UpdateOrderResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,6 +48,18 @@ public class OrderController {
     ) {
         Order order = orderService.findById(orderId);
         GetOneOrderResponse response = GetOneOrderResponse.from(order);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{orderId}")
+    public ResponseEntity<UpdateOrderResponse> updateOrder(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody UpdateOrderRequest request
+    ) {
+        UpdateOrderCommand command = request.toCommand();
+        Order order = orderService.updateOrder(orderId, command);
+        UpdateOrderResponse response = UpdateOrderResponse.from(order);
 
         return ResponseEntity.ok(response);
     }

@@ -1,4 +1,4 @@
-package com.klp.order.presentation.dto.order.response;
+package com.klp.order.presentation.dto.order.response.get;
 
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;

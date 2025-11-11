@@ -14,7 +14,8 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.exception.OrderErrorCode;
 import com.klp.order.presentation.controller.OrderController;
-import com.klp.order.presentation.dto.order.request.CreateOrderRequest;
+import com.klp.order.presentation.dto.order.request.create.CreateOrderRequest;
+import com.klp.order.presentation.dto.order.request.update.UpdateOrderRequest;
 import com.klp.order.presentation.dto.orderitem.request.OrderItemRequest;
 import java.util.List;
 import java.util.UUID;
@@ -88,6 +89,7 @@ public class OrderUpdateControllerTest {
     @DisplayName("주문 수정 - 정상")
     void updateOrder_Success() throws Exception {
         // given
+        savedOrder = createOrder(1L, 2L, "요구사항", itemCommands);
         UUID testOrderId = UUID.randomUUID();
 
         List<OrderItemRequest> updatedOrderItemRequests = List.of(
