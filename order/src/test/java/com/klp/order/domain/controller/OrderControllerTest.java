@@ -3,16 +3,19 @@ package com.klp.order.domain.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.global.exception.OrderErrorCode;
 import com.klp.order.presentation.controller.OrderController;
 import com.klp.order.presentation.dto.order.request.CreateOrderRequest;
 import com.klp.order.presentation.dto.orderitem.request.OrderItemRequest;
@@ -184,6 +187,54 @@ class OrderControllerTest {
         mockMvc.perform(post("/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("주문 단일 조회 - 성공")
+    void getOrders_Success() throws Exception {
+        //given
+        savedOrder = createOrder(1L, 2L, "요구사항", itemCommands);
+        UUID testOrderId = UUID.randomUUID();
+        ReflectionTestUtils.setField(savedOrder, "orderId", testOrderId);
+
+        UUID orderId = savedOrder.getOrderId();
+        given(orderService.findById(orderId))
+            .willReturn(savedOrder);
+
+        //when&then
+        mockMvc.perform(get("/v1/orders/{orderId}", orderId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.orderId").value(orderId.toString()))
+            .andExpect(jsonPath("$.supplierId").value(1))
+            .andExpect(jsonPath("$.customerId").value(2))
+            .andExpect(jsonPath("$.comment").value("요구사항"))
+            .andExpect(jsonPath("$.orderStatus").value("ING"))
+            .andExpect(jsonPath("$.cancellation").isEmpty())
+            .andExpect(jsonPath("$.orderItems").isArray())
+            .andExpect(jsonPath("$.orderItems.length()").value(2))
+            .andExpect(jsonPath("$.orderItems[0].productId").exists())
+            .andExpect(jsonPath("$.orderItems[0].quantity").value(10))
+            .andExpect(jsonPath("$.orderItems[0].deliveryId").isEmpty())
+            .andExpect(jsonPath("$.orderItems[1].quantity").value(5))
+            .andExpect(jsonPath("$.createdAt").exists())
+            .andExpect(jsonPath("$.updatedAt").exists())
+            .andExpect(jsonPath("$.deleteddAt").exists());
+
+    }
+
+    @Test
+    @DisplayName("주문 단일 조회 - 실패 - 존재하지 않는 주문")
+    void getOrder_Fail_OrderNotFound() throws Exception {
+        // given
+        UUID nonExistentId = UUID.randomUUID();
+        given(orderService.findById(nonExistentId))
+            .willThrow(new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        // when & then
+        mockMvc.perform(get("/v1/orders/{orderId}", nonExistentId)
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
     }
 }
