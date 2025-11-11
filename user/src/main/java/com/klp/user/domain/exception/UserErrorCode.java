@@ -17,7 +17,9 @@ public enum UserErrorCode implements ErrorCode {
 
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "지원하지 않는 회원 권한입니다"),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "이미 승인된 상태입니다"),
-    ALREADY_REJECTED(HttpStatus.CONFLICT, "이미 승인 거절된 상태입니다.");
+    ALREADY_REJECTED(HttpStatus.CONFLICT, "이미 승인 거절된 상태입니다"),
+
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 유저가 존재하지 않습니다");
 
     private final HttpStatus status;
     private final String message;

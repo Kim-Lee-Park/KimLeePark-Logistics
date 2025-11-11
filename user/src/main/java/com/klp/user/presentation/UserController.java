@@ -8,8 +8,8 @@ import com.klp.user.presentation.dto.response.UserDetailResponse;
 import com.klp.user.presentation.dto.response.UserInfoResponse;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
 import jakarta.validation.Valid;
-import java.awt.print.Pageable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,15 +43,30 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('MASTER')")
-    public ResponseEntity<PageResponse<UserInfoResponse>> getUserList(Pageable pageable) {
-        PageResponse<UserInfoResponse> response = userService.getUserList(pageable);
+    public ResponseEntity<PageResponse<UserInfoResponse>> getUserList(
+        @RequestParam(required = false) String keyword,
+        Pageable pageable
+    ) {
+        PageResponse<UserInfoResponse> response = userService.getUserList(keyword, pageable);
 
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('MASTER')")
+    public ResponseEntity<UserDetailResponse> getUserDetails(
+        @PathVariable Long userId
+    ) {
+        UserDetailResponse response = userService.getUserDetails(userId);
         return ResponseEntity.ok().body(response);
     }
 
     @PatchMapping("/{userId}")
     @PreAuthorize("hasRole('MASTER')")
-    public ResponseEntity<?> updateUserInfo(@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<Void> updateUserInfo(
+        @PathVariable Long userId,
+        @Valid @RequestBody UserUpdateRequest request
+    ) {
         userService.updateUserInfo(userId, request);
 
         return ResponseEntity.ok().build();

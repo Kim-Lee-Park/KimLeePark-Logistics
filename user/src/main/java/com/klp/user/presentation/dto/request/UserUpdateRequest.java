@@ -6,7 +6,7 @@ public record UserUpdateRequest(
     String username,
     String password,
     String slackId,
-    String affiliationName,
+    String phone,
     UserRole role
 ) {
 
