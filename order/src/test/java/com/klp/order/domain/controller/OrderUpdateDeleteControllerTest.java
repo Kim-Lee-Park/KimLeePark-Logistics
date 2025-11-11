@@ -2,6 +2,7 @@ package com.klp.order.domain.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,7 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
     controllers = OrderController.class,
     excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @DisplayName("OrderCreateGetController 테스트")
-public class OrderUpdateControllerTest {
+public class OrderUpdateDeleteControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -264,4 +265,69 @@ public class OrderUpdateControllerTest {
                 .content(objectMapper.writeValueAsString(updateRequest)))
             .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("주문 삭제 - 정상")
+    void deleteOrder_Success() throws Exception {
+        // given
+        UUID testOrderId = UUID.randomUUID();
+        Long deletedBy = 100L;
+
+        savedOrder = createOrder(1L, 2L, "요구사항", itemCommands);
+        ReflectionTestUtils.setField(savedOrder, "orderId", testOrderId);
+        savedOrder.delete(deletedBy);
+
+        given(orderService.deleteOrder(any(UUID.class), any(Long.class)))
+            .willReturn(savedOrder);
+
+        // when & then
+        mockMvc.perform(delete("/v1/orders/" + testOrderId)
+                .header("X-User-Id", deletedBy.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.message").value("주문이 성공적으로 삭제되었습니다."))
+            .andExpect(jsonPath("$.orderId").value(testOrderId.toString()))
+            .andExpect(jsonPath("$.deletedBy").value(deletedBy))
+            .andExpect(jsonPath("$.deletedAt").exists());
+    }
+
+    @Test
+    @DisplayName("주문 삭제 - 실패 - 존재하지 않는 주문")
+    void deleteOrder_Fail_OrderNotFound() throws Exception {
+        // given
+        UUID nonExistentId = UUID.randomUUID();
+        Long deletedBy = 100L;
+
+        given(orderService.deleteOrder(any(UUID.class), any(Long.class)))
+            .willThrow(new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        // when & then
+        mockMvc.perform(delete("/v1/orders/" + nonExistentId)
+                .header("X-User-Id", deletedBy.toString()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("주문 삭제 - 실패 - deletedBy null")
+    void deleteOrder_Fail_DeletedByNull() throws Exception {
+        // given
+        UUID testOrderId = UUID.randomUUID();
+
+        // when & then
+        mockMvc.perform(delete("/v1/orders/" + testOrderId))
+            .andExpect(status().isBadRequest());
+    }
+
+//    @Test
+//    @DisplayName("주문 삭제 - 실패 - deletedBy가 헤더에 없음")
+//    void deleteOrder_Fail_DeletedByHeaderMissing() throws Exception {
+//        // given
+//        UUID testOrderId = UUID.randomUUID();
+//
+//        given(orderService.deleteOrder(any(UUID.class), any()))
+//            .willThrow(new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED));
+//
+//        // when & then
+//        mockMvc.perform(delete("/v1/orders/" + testOrderId))
+//            .andExpect(status().isBadRequest());
+//    }
 }

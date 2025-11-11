@@ -63,4 +63,15 @@ public class OrderController {
 
         return ResponseEntity.ok(response);
     }
+
+//    @DeleteMapping("/{orderId}")
+//    public ResponseEntity<DeleteOrderResponse> deleteOrder(
+//        @PathVariable UUID orderId,
+//        @RequestHeader("X-User-Id") Long deletedBy
+//    ) {
+//        Order order = orderService.deleteOrder(orderId, deletedBy);
+//        DeleteOrderResponse response = DeleteOrderResponse.from(order);
+//
+//        return ResponseEntity.ok(response);
+//    }
 }
