@@ -4,11 +4,14 @@ import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.client.UserClient;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
+import com.klp.authservice.auth.domain.entity.BlackListToken;
+import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.common.exception.BusinessException;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ public class AuthService {
     private final UserClient userClient;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider accessTokenProvider;
+    private final BlackListTokenRepository blackListTokenRepository;
 
     /**
      * 회원가입: 유저 이름 중복 확인 요청 -> 패스워드 암호화 -> 유저 생성 요청
@@ -52,6 +56,23 @@ public class AuthService {
         return new LoginResponse(dto.userId(), dto.userName(), dto.role(), accessToken);
     }
 
+    public void logout(String accessToken) {
+        accessTokenProvider.validateToken(accessToken);
+
+        String role = accessTokenProvider.getRole(accessToken);
+
+        if (isAdmin(role)) {
+            if (blackListTokenRepository.existsByToken(accessToken)) {
+                throw new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED);
+            }
+
+            LocalDateTime expiration = accessTokenProvider.getExpiration(accessToken);
+
+            BlackListToken blackListToken = BlackListToken.create(accessToken, expiration);
+            blackListTokenRepository.save(blackListToken);
+        }
+    }
+
     private boolean checkDuplicateUserName(String userName) {
         return userClient.checkUserNameAvailable(userName);
     }
@@ -60,5 +81,9 @@ public class AuthService {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new BusinessException(AuthErrorCode.INVALID_PASSWORD);
         }
+    }
+
+    private boolean isAdmin(String role) {
+        return "MASTER".equals(role) || "HUB".equals(role);
     }
 }

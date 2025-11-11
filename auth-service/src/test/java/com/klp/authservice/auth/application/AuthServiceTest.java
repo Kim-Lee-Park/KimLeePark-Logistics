@@ -13,12 +13,15 @@ import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.client.UserClient;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
+import com.klp.authservice.auth.domain.entity.BlackListToken;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
+import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.common.exception.BusinessException;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,9 @@ class AuthServiceTest {
 
     @Mock
     private TokenProvider accessTokenProvider;
+
+    @Mock
+    private BlackListTokenRepository blackListTokenRepository;
 
     @InjectMocks
     private AuthService authService;
@@ -209,6 +215,103 @@ class AuthServiceTest {
             verify(userClient).getUserByUserName(userName);
             verify(passwordEncoder).matches(password, encodedPassword);
             verify(accessTokenProvider, never()).generate(any(), any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Logout 메소드 테스트")
+    class LogoutTest {
+
+        @Test
+        @DisplayName("로그아웃에 성공한다. MASTER 유저의 토큰은 블랙리스트 토큰으로 등록된다")
+        void logout_master_success() {
+            // given
+            String accessToken = "valid.access.token";
+            String role = "MASTER";
+            LocalDateTime expiration = LocalDateTime.now().plusHours(1);
+
+            when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
+            when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
+            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(expiration);
+
+            // when
+            authService.logout(accessToken);
+
+            // then
+            verify(accessTokenProvider).getRole(accessToken);
+            verify(accessTokenProvider).getExpiration(accessToken);
+            verify(blackListTokenRepository).save(any(BlackListToken.class));
+        }
+
+        @Test
+        @DisplayName("로그아웃에 성공한다. HUB 유저의 토큰은 블랙리스트 토큰으로 등록된다")
+        void logout_hub_success() {
+            // given
+            String accessToken = "valid.access.token";
+            String role = "HUB";
+            LocalDateTime expiration = LocalDateTime.now().plusHours(1);
+
+            when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
+            when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
+            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(expiration);
+
+            // when
+            authService.logout(accessToken);
+
+            // then
+            verify(blackListTokenRepository).save(any(BlackListToken.class));
+        }
+
+        @Test
+        @DisplayName("로그아웃에 성공한다. MASTER, HUB 권한이 아닌 유저의 토큰은 블랙리스트 토큰으로 등록되지 않는다")
+        void logout_normal_success() {
+            // given
+            String accessToken = "valid.access.token";
+            String role = "COMPANY";
+
+            when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
+
+            // when
+            authService.logout(accessToken);
+
+            // then
+            verify(accessTokenProvider).getRole(accessToken);
+            verify(blackListTokenRepository, never()).save(any());
+            verify(accessTokenProvider, never()).getExpiration(any());
+        }
+
+        @Test
+        @DisplayName("이미 블랙리스트에 있는 토큰은 중복 저장하지 않는다")
+        void alreadyBlacklisted_fail() {
+            // given
+            String role = "MASTER";
+            String accessToken = "valid.access.token";
+
+            when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
+            when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
+            when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> authService.logout(accessToken))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED.getMessage());
+
+            verify(blackListTokenRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 토큰으로 로그아웃 실패")
+        void invalidToken_fail() {
+            // given
+            String invalidToken = "invalid.token";
+
+            when(accessTokenProvider.validateToken(invalidToken))
+                .thenThrow(new BusinessException(AuthErrorCode.INVALID_TOKEN));
+
+            // when & then
+            assertThatThrownBy(() -> authService.logout(invalidToken))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
         }
     }
 }

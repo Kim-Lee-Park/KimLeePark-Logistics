@@ -2,12 +2,14 @@ package com.klp.authservice.auth.entrypoint;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
@@ -21,12 +23,14 @@ import com.klp.authservice.auth.infrastructure.jwt.JwtConstants;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.infrastructure.security.config.SecurityConfig;
 import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
+import com.klp.common.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -588,6 +592,49 @@ class AuthControllerTest {
                         .content(mapper.writeValueAsString(loginRequest)))
                     .andExpect(status().isBadRequest());
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("로그아웃 테스트")
+    class logoutTest {
+
+        @Test
+        @DisplayName("로그아웃에 성공하고 RefreshToken 쿠키가 무효화된다")
+        void logout_success() throws Exception {
+            // given
+            String accessToken = "valid.access.token";
+
+            doNothing().when(authService).logout(accessToken);
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/logout")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(cookie().maxAge(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, 0));
+        }
+
+        @Test
+        @DisplayName("Authorization 헤더가 없으면 실패한다")
+        void noAuthorizationHeader_fail() throws Exception {
+            // when & then
+            mockMvc.perform(post("/v1/auth/logout"))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 토큰으로 실패한다")
+        void invalidToken_fail() throws Exception {
+            // given
+            String invalidToken = "invalid.token";
+
+            doThrow(new BusinessException(AuthErrorCode.INVALID_TOKEN))
+                .when(authService).logout(invalidToken);
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/logout")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
+                .andExpect(status().isUnauthorized());
         }
     }
 }

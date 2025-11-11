@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +23,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final TokenProvider refreshTokenProvider;
+
+    private static final int AUTHORIZATION_PREFIX_LENGTH = 7;
 
     @PostMapping("/signUp")
     public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequest request) {
@@ -40,5 +43,18 @@ public class AuthController {
         return ResponseEntity.ok()
             .headers(headers)
             .body(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization) {
+        String accessToken = authorization.substring(AUTHORIZATION_PREFIX_LENGTH);
+        authService.logout(accessToken);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.invalidate().toString());
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .build();
     }
 }
