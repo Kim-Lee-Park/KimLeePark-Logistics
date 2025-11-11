@@ -7,6 +7,7 @@ import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.entity.BlackListToken;
 import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
+import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
@@ -23,6 +24,7 @@ public class AuthService {
     private final UserClient userClient;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider accessTokenProvider;
+    private final TokenProvider refreshTokenProvider;
     private final BlackListTokenRepository blackListTokenRepository;
 
     /**
@@ -71,6 +73,28 @@ public class AuthService {
             BlackListToken blackListToken = BlackListToken.create(accessToken, expiration);
             blackListTokenRepository.save(blackListToken);
         }
+    }
+
+    public ReissueResponse reissue(String refreshToken) {
+        if (!refreshTokenProvider.validateToken(refreshToken)) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
+
+        if (blackListTokenRepository.existsByToken(refreshToken)) {
+            throw new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED);
+        }
+
+        String userId = refreshTokenProvider.getUserId(refreshToken);
+        String userName = refreshTokenProvider.getUserName(refreshToken);
+        String role = refreshTokenProvider.getRole(refreshToken);
+        LocalDateTime expiration = refreshTokenProvider.getExpiration(refreshToken);
+
+        String newAccessToken = accessTokenProvider.generate(Long.valueOf(userId), userName, role);
+
+        BlackListToken blackListToken = BlackListToken.create(refreshToken, expiration);
+        blackListTokenRepository.save(blackListToken);
+
+        return new ReissueResponse(Long.valueOf(userId), userName, role, newAccessToken);
     }
 
     private boolean checkDuplicateUserName(String userName) {

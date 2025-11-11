@@ -60,6 +60,28 @@ public class RefreshTokenProvider implements TokenProvider {
     }
 
     @Override
+    public String getUserId(String token) {
+        return Jwts
+            .parser()
+            .verifyWith(refreshSecretKey)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .getSubject();
+    }
+
+    @Override
+    public String getUserName(String token) {
+        return Jwts
+            .parser()
+            .verifyWith(refreshSecretKey)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get(JwtConstants.USERNAME_CLAIM, String.class);
+    }
+
+    @Override
     public String getRole(String token) {
         return Jwts
             .parser()

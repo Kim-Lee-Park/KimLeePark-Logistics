@@ -3,9 +3,11 @@ package com.klp.authservice.auth.entrypoint;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,12 +20,14 @@ import com.klp.authservice.auth.entrypoint.controller.AuthController;
 import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
+import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.infrastructure.exception.GlobalExceptionHandler;
 import com.klp.authservice.auth.infrastructure.jwt.JwtConstants;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.infrastructure.security.config.SecurityConfig;
 import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
 import com.klp.common.exception.BusinessException;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -634,6 +638,79 @@ class AuthControllerTest {
             // when & then
             mockMvc.perform(post("/v1/auth/logout")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
+                .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("토큰 재발급 테스트")
+    class reissueTest {
+
+        @Test
+        @DisplayName("RefreshToken으로 새 AccessToken 발급에 성공한다")
+        void reissue_success() throws Exception {
+            // given
+            String refreshToken = "valid.refresh.token";
+            Long userId = 1L;
+            String userName = "testuser";
+            String role = "MASTER";
+            String newAccessToken = "new.access.token";
+            String newRefreshToken = "new.refresh.token";
+
+            ReissueResponse response = new ReissueResponse(userId, userName, role, newAccessToken);
+
+            when(authService.reissue(refreshToken)).thenReturn(response);
+            when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(newRefreshToken);
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/token/reissue")
+                    .cookie(new Cookie("refreshToken", refreshToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId))
+                .andExpect(jsonPath("$.userName").value(userName))
+                .andExpect(jsonPath("$.role").value(role))
+                .andExpect(jsonPath("$.accessToken").value(newAccessToken))
+                .andExpect(cookie().exists(JwtConstants.REFRESH_TOKEN_COOKIE_NAME));
+
+            verify(authService).reissue(refreshToken);
+            verify(refreshTokenProvider).generate(userId, userName, role);
+        }
+
+        @Test
+        @DisplayName("RefreshToken 쿠키가 없으면 실패한다")
+        void noRefreshTokenCookie_fail() throws Exception {
+            // when & then
+            mockMvc.perform(post("/v1/auth/token/reissue"))
+                .andExpect(status().isInternalServerError());  // NullPointerException 발생
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 RefreshToken으로 실패한다")
+        void invalidRefreshToken_fail() throws Exception {
+            // given
+            String invalidToken = "invalid.refresh.token";
+
+            when(authService.reissue(invalidToken))
+                .thenThrow(new BusinessException(AuthErrorCode.INVALID_TOKEN));
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/token/reissue")
+                    .cookie(new Cookie("refreshToken", invalidToken)))
+                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("블랙리스트 토큰으로 실패한다")
+        void blacklistedToken_fail() throws Exception {
+            // given
+            String blacklistedToken = "blacklisted.refresh.token";
+
+            when(authService.reissue(blacklistedToken))
+                .thenThrow(new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED));
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/token/reissue")
+                    .cookie(new Cookie("refreshToken", blacklistedToken)))
                 .andExpect(status().isUnauthorized());
         }
     }

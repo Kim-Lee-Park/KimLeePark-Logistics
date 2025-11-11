@@ -8,6 +8,10 @@ public interface TokenProvider {
 
     boolean validateToken(String token);
 
+    String getUserId(String token);
+
+    String getUserName(String token);
+
     String getRole(String token);
 
     LocalDateTime getExpiration(String token);

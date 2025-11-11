@@ -17,16 +17,17 @@ import com.klp.authservice.auth.domain.entity.BlackListToken;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
 import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
+import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.common.exception.BusinessException;
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,10 +45,24 @@ class AuthServiceTest {
     private TokenProvider accessTokenProvider;
 
     @Mock
+    private TokenProvider refreshTokenProvider;
+
+    @Mock
     private BlackListTokenRepository blackListTokenRepository;
 
-    @InjectMocks
     private AuthService authService;
+
+    @BeforeEach
+    void setUp() {
+        authService = new AuthService(
+            userClient,
+            passwordEncoder,
+            accessTokenProvider,
+            refreshTokenProvider,
+            blackListTokenRepository
+        );
+    }
+
 
     @Nested
     @DisplayName("SignUp 메소드 실패 테스트")
@@ -312,6 +327,78 @@ class AuthServiceTest {
             assertThatThrownBy(() -> authService.logout(invalidToken))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Reissue 메소드 테스트")
+    class ReissueTest {
+
+        @Test
+        @DisplayName("유효한 RT로 새 AT,RT 발급에 성공한다")
+        void reissue_success() {
+            // given
+            String refreshToken = "valid.refresh.token";
+            Long userId = 1L;
+            String userName = "testuser";
+            String role = "MASTER";
+            String newAccessToken = "new.access.token";
+
+            when(refreshTokenProvider.validateToken(refreshToken)).thenReturn(true);
+            when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
+            when(refreshTokenProvider.getUserId(refreshToken)).thenReturn(String.valueOf(userId));
+            when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(userName);
+            when(refreshTokenProvider.getRole(refreshToken)).thenReturn(role);
+            when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(LocalDateTime.now().plusDays(7));
+            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(
+                newAccessToken);
+
+            // when
+            ReissueResponse response = authService.reissue(refreshToken);
+
+            // then
+            assertThat(response.userId()).isEqualTo(userId);
+            assertThat(response.userName()).isEqualTo(userName);
+            assertThat(response.role()).isEqualTo(role);
+            assertThat(response.accessToken()).isEqualTo(newAccessToken);
+
+            verify(refreshTokenProvider).validateToken(refreshToken);
+            verify(blackListTokenRepository).existsByToken(refreshToken);
+            verify(refreshTokenProvider).getUserId(refreshToken);
+            verify(refreshTokenProvider).getUserName(refreshToken);
+            verify(refreshTokenProvider).getRole(refreshToken);
+            verify(refreshTokenProvider).getExpiration(refreshToken);
+            verify(blackListTokenRepository).save(any(BlackListToken.class));
+            verify(accessTokenProvider).generate(userId, userName, role);
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 RT로는 새 토큰 발급에 실패한다")
+        void invalidRefreshToken_fail() {
+            // given
+            String invalidToken = "invalid.refresh.token";
+
+            when(refreshTokenProvider.validateToken(invalidToken)).thenReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> authService.reissue(invalidToken))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
+        }
+
+        @Test
+        @DisplayName("금지된 토큰이 존재한다면 새 토큰 발급에 실패한다")
+        void blackListTokenExist_fail() {
+            // given
+            String blacklistedToken = "blacklisted.refresh.token";
+
+            when(refreshTokenProvider.validateToken(blacklistedToken)).thenReturn(true);
+            when(blackListTokenRepository.existsByToken(blacklistedToken)).thenReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> authService.reissue(blacklistedToken))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED.getMessage());
         }
     }
 }

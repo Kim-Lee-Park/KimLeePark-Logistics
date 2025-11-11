@@ -4,9 +4,13 @@ import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
+import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -56,5 +60,23 @@ public class AuthController {
         return ResponseEntity.ok()
             .headers(headers)
             .build();
+    }
+
+    @PostMapping("/token/reissue")
+    public ResponseEntity<ReissueResponse> reissue(HttpServletRequest request) {
+        String refreshToken = Arrays.stream(request.getCookies())
+            .filter(cookie -> "refreshToken".equals(cookie.getName()))
+            .findFirst()
+            .map(Cookie::getValue)
+            .orElse(null);
+
+        ReissueResponse response = authService.reissue(refreshToken);
+        String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(newRefreshToken).toString());
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(response);
     }
 }
