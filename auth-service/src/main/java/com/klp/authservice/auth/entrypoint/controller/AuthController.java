@@ -1,16 +1,18 @@
 package com.klp.authservice.auth.entrypoint.controller;
 
+import com.klp.authservice.auth.AuthErrorCode;
 import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
+import com.klp.authservice.auth.infrastructure.jwt.JwtParser;
 import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
+import com.klp.authservice.auth.infrastructure.jwt.TokenExtractor;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
-import jakarta.servlet.http.Cookie;
+import com.klp.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +30,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final TokenProvider refreshTokenProvider;
-
-    private static final int AUTHORIZATION_PREFIX_LENGTH = 7;
 
     @PostMapping("/signUp")
     public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequest request) {
@@ -53,7 +53,9 @@ public class AuthController {
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization) {
-        String accessToken = authorization.substring(AUTHORIZATION_PREFIX_LENGTH);
+        String accessToken = JwtParser.extractAccessToken(authorization)
+            .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_NOT_FOUND));
+
         authService.logout(accessToken);
 
         HttpHeaders headers = new HttpHeaders();
@@ -66,11 +68,8 @@ public class AuthController {
 
     @PostMapping("/token/reissue")
     public ResponseEntity<ReissueResponse> reissue(HttpServletRequest request) {
-        String refreshToken = Arrays.stream(request.getCookies())
-            .filter(cookie -> "refreshToken".equals(cookie.getName()))
-            .findFirst()
-            .map(Cookie::getValue)
-            .orElse(null);
+        String refreshToken = TokenExtractor.extractRefreshToken(request)
+            .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_NOT_FOUND));
 
         ReissueResponse response = authService.reissue(refreshToken);
         String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());

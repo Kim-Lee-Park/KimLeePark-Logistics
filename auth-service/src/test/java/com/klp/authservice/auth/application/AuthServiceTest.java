@@ -285,6 +285,7 @@ class AuthServiceTest {
             String accessToken = "valid.access.token";
             String role = "COMPANY";
 
+            when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
             when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
 
             // when

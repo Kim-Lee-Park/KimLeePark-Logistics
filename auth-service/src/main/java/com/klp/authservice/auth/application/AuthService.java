@@ -59,7 +59,9 @@ public class AuthService {
     }
 
     public void logout(String accessToken) {
-        accessTokenProvider.validateToken(accessToken);
+        if (!accessTokenProvider.validateToken(accessToken)) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
 
         String role = accessTokenProvider.getRole(accessToken);
 
@@ -70,31 +72,23 @@ public class AuthService {
 
             LocalDateTime expiration = accessTokenProvider.getExpiration(accessToken);
 
-            BlackListToken blackListToken = BlackListToken.create(accessToken, expiration);
-            blackListTokenRepository.save(blackListToken);
+            addBlacklist(accessToken, expiration);
         }
     }
 
     public ReissueResponse reissue(String refreshToken) {
-        if (!refreshTokenProvider.validateToken(refreshToken)) {
-            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
-        }
+        validateRefreshToken(refreshToken);
 
-        if (blackListTokenRepository.existsByToken(refreshToken)) {
-            throw new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED);
-        }
-
-        String userId = refreshTokenProvider.getUserId(refreshToken);
+        Long userId = Long.valueOf(refreshTokenProvider.getUserId(refreshToken));
         String userName = refreshTokenProvider.getUserName(refreshToken);
         String role = refreshTokenProvider.getRole(refreshToken);
         LocalDateTime expiration = refreshTokenProvider.getExpiration(refreshToken);
 
-        String newAccessToken = accessTokenProvider.generate(Long.valueOf(userId), userName, role);
+        String newAccessToken = accessTokenProvider.generate(userId, userName, role);
 
-        BlackListToken blackListToken = BlackListToken.create(refreshToken, expiration);
-        blackListTokenRepository.save(blackListToken);
+        addBlacklist(refreshToken, expiration);
 
-        return new ReissueResponse(Long.valueOf(userId), userName, role, newAccessToken);
+        return new ReissueResponse(userId, userName, role, newAccessToken);
     }
 
     private boolean checkDuplicateUserName(String userName) {
@@ -109,5 +103,20 @@ public class AuthService {
 
     private boolean isAdmin(String role) {
         return "MASTER".equals(role) || "HUB".equals(role);
+    }
+
+    private void validateRefreshToken(String refreshToken) {
+        if (!refreshTokenProvider.validateToken(refreshToken)) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
+
+        if (blackListTokenRepository.existsByToken(refreshToken)) {
+            throw new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED);
+        }
+    }
+
+    private void addBlacklist(String token, LocalDateTime expiration) {
+        BlackListToken blackListToken = BlackListToken.create(token, expiration);
+        blackListTokenRepository.save(blackListToken);
     }
 }

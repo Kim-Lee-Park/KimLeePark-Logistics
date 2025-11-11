@@ -14,4 +14,6 @@ public final class JwtConstants {
     public static final String ACCESS_TOKEN_TYPE = "access";
     public static final String REFRESH_TOKEN_TYPE = "refresh";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "Refresh-Token";
+    public static final String TOKEN_PREFIX = "Bearer ";
+    public static final int TOKEN_PREFIX_LENGTH = 7;
 }

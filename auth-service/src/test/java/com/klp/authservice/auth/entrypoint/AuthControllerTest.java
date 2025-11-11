@@ -666,7 +666,7 @@ class AuthControllerTest {
 
             // when & then
             mockMvc.perform(post("/v1/auth/token/reissue")
-                    .cookie(new Cookie("refreshToken", refreshToken)))
+                    .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(userId))
                 .andExpect(jsonPath("$.userName").value(userName))
@@ -683,7 +683,7 @@ class AuthControllerTest {
         void noRefreshTokenCookie_fail() throws Exception {
             // when & then
             mockMvc.perform(post("/v1/auth/token/reissue"))
-                .andExpect(status().isInternalServerError());  // NullPointerException 발생
+                .andExpect(status().isUnauthorized());
         }
 
         @Test
