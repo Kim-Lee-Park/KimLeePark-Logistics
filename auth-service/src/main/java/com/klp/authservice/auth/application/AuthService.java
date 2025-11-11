@@ -73,6 +73,7 @@ public class AuthService {
         }
     }
 
+    @Transactional
     public ReissueResponse reissue(String accessToken, String refreshToken) {
         validateRefreshToken(refreshToken);
 
