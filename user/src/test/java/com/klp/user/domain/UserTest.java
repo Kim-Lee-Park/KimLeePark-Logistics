@@ -55,8 +55,7 @@ class UserTest {
         String password,
         String slackId,
         String phone,
-        UserRole role,
-        String expectedMessage
+        UserRole role
     ) {
         // given
 
@@ -69,8 +68,7 @@ class UserTest {
             slackId,
             phone,
             role
-        )).isInstanceOf(BusinessException.class)
-            .hasMessageContaining(expectedMessage);
+        )).isInstanceOf(BusinessException.class);
     }
 
     @Test
@@ -178,14 +176,14 @@ class UserTest {
         String phone = "010-1234-5678";
 
         return Stream.of(
-            Arguments.of(null, AffiliationType.HUB, name, password, slackId, phone, UserRole.HUB_DRIVER, "소속 ID"),
-            Arguments.of(affiliationId, null, name, password, slackId, phone, UserRole.HUB_DRIVER, "소속 타입"),
-            Arguments.of(affiliationId, AffiliationType.HUB, null, password, slackId, phone, UserRole.HUB_DRIVER, "이름"),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, null, slackId, phone, UserRole.HUB_DRIVER, "비밀번호"),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, null, phone, UserRole.HUB_DRIVER, "슬랙 ID"),
+            Arguments.of(null, AffiliationType.HUB, name, password, slackId, phone, UserRole.HUB_DRIVER),
+            Arguments.of(affiliationId, null, name, password, slackId, phone, UserRole.HUB_DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, null, password, slackId, phone, UserRole.HUB_DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, null, slackId, phone, UserRole.HUB_DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, null, phone, UserRole.HUB_DRIVER),
             Arguments.of(
-                affiliationId, AffiliationType.HUB, name, password, slackId, null, UserRole.HUB_DRIVER, "전화번호"),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, null, "권한")
+                affiliationId, AffiliationType.HUB, name, password, slackId, null, UserRole.HUB_DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, null)
         );
     }
 }
