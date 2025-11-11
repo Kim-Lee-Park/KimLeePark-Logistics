@@ -196,12 +196,11 @@ public class DeliveryFixture {
 
     public static DeliveryCreateRequest createDeliveryRequest(List<OrderItem> orderItems) {
         return new DeliveryCreateRequest(
-            DEFAULT_ORDER_ID,
-            DEFAULT_SUPPLIER_ID,
-            DEFAULT_CUSTOMER_ID,
-            "2025-11-05 14:00까지 납품 요청",
-            orderItems,
-            DEFAULT_IDEMPOTENCY_KEY
+            DEFAULT_ORDER_ID.toString(),
+            DEFAULT_SUPPLIER_ID.toString(),
+            DEFAULT_CUSTOMER_ID.toString(),
+            DEFAULT_IDEMPOTENCY_KEY,
+            orderItems
         );
     }
 

@@ -16,12 +16,6 @@ public record OrderToDeliveryCommand(
         UUID hubId
     ) {
 
-        public static OrderItemCommand from(DeliveryCreateRequest.OrderItem item) {
-            return new OrderItemCommand(
-                item.orderItemId(),
-                item.hubId()
-            );
-        }
 
     }
 }

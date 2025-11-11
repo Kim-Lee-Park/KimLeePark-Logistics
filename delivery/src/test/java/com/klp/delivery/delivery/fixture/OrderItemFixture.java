@@ -44,15 +44,15 @@ public class OrderItemFixture {
 
     public static OrderItem createOrderItem() {
         return new OrderItem(
-            DEFAULT_ORDER_ITEM_ID,
-            DEFAULT_HUB_ID_UUID
+            DEFAULT_ORDER_ITEM_ID.toString(),
+            DEFAULT_HUB_ID_UUID.toString()
         );
     }
 
 
     // 파라미터 기반 OrderItem 생성
     public static OrderItem createOrderItem(UUID orderItemId, UUID hubId) {
-        return new OrderItem(orderItemId, hubId);
+        return new OrderItem(orderItemId.toString(), hubId.toString());
     }
 
 

@@ -13,18 +13,16 @@ import java.util.UUID;
 
 public record DeliveryCreateRequest(
     @NotNull(message = "orderId는 필수입니다.")
-    UUID orderId,
+    String orderId,
 
     @NotBlank(message = "idempotencyKey는 필수입니다.")
     String idempotencykey,
 
     @NotNull(message = "supplierId는 필수입니다.")
-    UUID supplierId,
+    String supplierId,
 
     @NotNull(message = "customerId는 필수입니다.")
-    UUID customerId,
-
-    String comment,
+    String customerId,
 
     @NotEmpty(message = "orderItems는 필수이며 최소 1개 이상이어야 합니다.")
     @Valid
@@ -33,11 +31,14 @@ public record DeliveryCreateRequest(
 
     public OrderToDeliveryCommand toOrderToDeliveryCommand() {
         return new OrderToDeliveryCommand(
-            orderId,
-            supplierId,
-            customerId,
+            UUID.fromString(orderId),
+            UUID.fromString(supplierId),
+            UUID.fromString(customerId),
             orderItems.stream()
-                .map(OrderItemCommand::from)
+                .map(item -> new OrderItemCommand(
+                    UUID.fromString(item.orderItemId()),
+                    UUID.fromString(item.hubId())
+                ))
                 .toList()
         );
     }
@@ -45,7 +46,7 @@ public record DeliveryCreateRequest(
     public IdempotencyCommand toIdempotencyCommand() {
         return new IdempotencyCommand(
             idempotencykey,
-            orderId,
+            UUID.fromString(orderId),
             IdempotencyStatus.PENDING
         );
     }
@@ -53,10 +54,10 @@ public record DeliveryCreateRequest(
 
     public record OrderItem(
         @NotNull(message = "orderItemId는 필수입니다.")
-        UUID orderItemId,
+        String orderItemId,
 
         @NotNull(message = "hubId는 필수입니다.")
-        UUID hubId
+        String hubId
     ) {
 
     }
