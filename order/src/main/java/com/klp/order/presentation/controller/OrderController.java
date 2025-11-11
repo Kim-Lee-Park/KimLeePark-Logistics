@@ -7,11 +7,13 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.presentation.dto.order.request.cancel.CancelOrderRequest;
 import com.klp.order.presentation.dto.order.request.create.CreateOrderRequest;
+import com.klp.order.presentation.dto.order.request.update.ChangeOrderStatusRequest;
 import com.klp.order.presentation.dto.order.request.update.UpdateOrderRequest;
 import com.klp.order.presentation.dto.order.response.cancel.CancelOrderResponse;
 import com.klp.order.presentation.dto.order.response.create.CreateOrderResponse;
 import com.klp.order.presentation.dto.order.response.delete.DeleteOrderResponse;
 import com.klp.order.presentation.dto.order.response.get.GetOneOrderResponse;
+import com.klp.order.presentation.dto.order.response.update.ChangeOrderStatusResponse;
 import com.klp.order.presentation.dto.order.response.update.UpdateOrderResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -93,4 +95,16 @@ public class OrderController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<ChangeOrderStatusResponse> changeOrderStatus(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody ChangeOrderStatusRequest request
+    ) {
+        Order order = orderService.changeOrderStatus(orderId, request.orderStatus());
+        ChangeOrderStatusResponse response = ChangeOrderStatusResponse.from(order);
+
+        return ResponseEntity.ok(response);
+    }
+
 }
