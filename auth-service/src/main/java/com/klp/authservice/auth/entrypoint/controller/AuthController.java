@@ -6,7 +6,6 @@ import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
 import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
 import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
 import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
-import com.klp.authservice.auth.infrastructure.jwt.JwtParser;
 import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
 import com.klp.authservice.auth.infrastructure.jwt.TokenExtractor;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
@@ -19,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,11 +50,13 @@ public class AuthController {
 
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization) {
-        String accessToken = JwtParser.extractAccessToken(authorization)
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String accessToken = TokenExtractor.extractAccessToken(request)
             .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_NOT_FOUND));
+        String refreshToken = TokenExtractor.extractRefreshToken(request)
+            .orElse(null);
 
-        authService.logout(accessToken);
+        authService.logout(accessToken, refreshToken);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.invalidate().toString());
@@ -68,10 +68,13 @@ public class AuthController {
 
     @PostMapping("/token/reissue")
     public ResponseEntity<ReissueResponse> reissue(HttpServletRequest request) {
+        String accessToken = TokenExtractor.extractAccessToken(request)
+            .orElse(null);
         String refreshToken = TokenExtractor.extractRefreshToken(request)
             .orElseThrow(() -> new BusinessException(AuthErrorCode.TOKEN_NOT_FOUND));
 
-        ReissueResponse response = authService.reissue(refreshToken);
+        ReissueResponse response = authService.reissue(accessToken, refreshToken);
+
         String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(newRefreshToken).toString());

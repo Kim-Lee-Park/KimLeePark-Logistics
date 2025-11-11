@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,8 @@ public class AuthService {
         return new LoginResponse(dto.userId(), dto.userName(), dto.role(), accessToken);
     }
 
-    public void logout(String accessToken) {
+    @Transactional
+    public void logout(String accessToken, String refreshToken) {
         if (!accessTokenProvider.validateToken(accessToken)) {
             throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
         }
@@ -66,27 +68,24 @@ public class AuthService {
         String role = accessTokenProvider.getRole(accessToken);
 
         if (isAdmin(role)) {
-            if (blackListTokenRepository.existsByToken(accessToken)) {
-                throw new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED);
-            }
-
-            LocalDateTime expiration = accessTokenProvider.getExpiration(accessToken);
-
-            addBlacklist(accessToken, expiration);
+            addBlacklist(accessToken, accessTokenProvider.getExpiration(accessToken));
+            addBlacklist(refreshToken, refreshTokenProvider.getExpiration(refreshToken));
         }
     }
 
-    public ReissueResponse reissue(String refreshToken) {
+    public ReissueResponse reissue(String accessToken, String refreshToken) {
         validateRefreshToken(refreshToken);
 
         Long userId = Long.valueOf(refreshTokenProvider.getUserId(refreshToken));
         String userName = refreshTokenProvider.getUserName(refreshToken);
         String role = refreshTokenProvider.getRole(refreshToken);
-        LocalDateTime expiration = refreshTokenProvider.getExpiration(refreshToken);
 
         String newAccessToken = accessTokenProvider.generate(userId, userName, role);
 
-        addBlacklist(refreshToken, expiration);
+        addBlacklist(refreshToken, refreshTokenProvider.getExpiration(refreshToken));
+        if (accessToken != null && !accessToken.isBlank()) {
+            addBlacklist(accessToken, accessTokenProvider.getExpiration(accessToken));
+        }
 
         return new ReissueResponse(userId, userName, role, newAccessToken);
     }
@@ -116,6 +115,10 @@ public class AuthService {
     }
 
     private void addBlacklist(String token, LocalDateTime expiration) {
+        if (blackListTokenRepository.existsByToken(token)) {
+            return;
+        }
+
         BlackListToken blackListToken = BlackListToken.create(token, expiration);
         blackListTokenRepository.save(blackListToken);
     }

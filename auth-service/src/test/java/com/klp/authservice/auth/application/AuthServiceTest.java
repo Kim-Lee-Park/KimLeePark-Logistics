@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -238,44 +239,57 @@ class AuthServiceTest {
     class LogoutTest {
 
         @Test
-        @DisplayName("로그아웃에 성공한다. MASTER 유저의 토큰은 블랙리스트 토큰으로 등록된다")
+        @DisplayName("로그아웃에 성공한다. MASTER 유저의 AT, RT 모두 블랙리스트 토큰으로 등록된다")
         void logout_master_success() {
             // given
             String accessToken = "valid.access.token";
+            String refreshToken = "valid.refresh.token";
             String role = "MASTER";
-            LocalDateTime expiration = LocalDateTime.now().plusHours(1);
+            LocalDateTime accessExpiration = LocalDateTime.now().plusHours(1);
+            LocalDateTime refreshExpiration = LocalDateTime.now().plusDays(7);
 
             when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
             when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
             when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(false);
-            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(expiration);
+            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(accessExpiration);
+
+            when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
+            when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(refreshExpiration);
 
             // when
-            authService.logout(accessToken);
+            authService.logout(accessToken, refreshToken);
 
             // then
+            verify(accessTokenProvider).validateToken(accessToken);
             verify(accessTokenProvider).getRole(accessToken);
             verify(accessTokenProvider).getExpiration(accessToken);
-            verify(blackListTokenRepository).save(any(BlackListToken.class));
+            verify(refreshTokenProvider).getExpiration(refreshToken);
+            verify(blackListTokenRepository, times(2)).save(any(BlackListToken.class));
         }
 
         @Test
-        @DisplayName("로그아웃에 성공한다. HUB 유저의 토큰은 블랙리스트 토큰으로 등록된다")
+        @DisplayName("로그아웃에 성공한다. HUB 유저의 AT, RT 모두 블랙리스트 토큰으로 등록된다")
         void logout_hub_success() {
             // given
             String accessToken = "valid.access.token";
+            String refreshToken = "valid.refresh.token";
             String role = "HUB";
-            LocalDateTime expiration = LocalDateTime.now().plusHours(1);
+            LocalDateTime accessExpiration = LocalDateTime.now().plusHours(1);
+            LocalDateTime refreshExpiration = LocalDateTime.now().plusDays(7);
 
             when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
             when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
-            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(expiration);
+            when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(false);
+            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(accessExpiration);
+
+            when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
+            when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(refreshExpiration);
 
             // when
-            authService.logout(accessToken);
+            authService.logout(accessToken, refreshToken);
 
             // then
-            verify(blackListTokenRepository).save(any(BlackListToken.class));
+            verify(blackListTokenRepository, times(2)).save(any(BlackListToken.class));
         }
 
         @Test
@@ -283,36 +297,40 @@ class AuthServiceTest {
         void logout_normal_success() {
             // given
             String accessToken = "valid.access.token";
+            String refreshToken = "valid.refresh.token";
             String role = "COMPANY";
 
             when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
             when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
 
             // when
-            authService.logout(accessToken);
+            authService.logout(accessToken, refreshToken);
 
             // then
+            verify(accessTokenProvider).validateToken(accessToken);
             verify(accessTokenProvider).getRole(accessToken);
             verify(blackListTokenRepository, never()).save(any());
             verify(accessTokenProvider, never()).getExpiration(any());
+            verify(refreshTokenProvider, never()).getExpiration(any());
         }
 
         @Test
         @DisplayName("이미 블랙리스트에 있는 토큰은 중복 저장하지 않는다")
-        void alreadyBlacklisted_fail() {
+        void alreadyBlacklisted_success() {
             // given
-            String role = "MASTER";
             String accessToken = "valid.access.token";
+            String refreshToken = "valid.refresh.token";
+            String role = "MASTER";
 
             when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
             when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
             when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(true);
+            when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(true);
 
-            // when & then
-            assertThatThrownBy(() -> authService.logout(accessToken))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED.getMessage());
+            // when
+            authService.logout(accessToken, refreshToken);
 
+            // then
             verify(blackListTokenRepository, never()).save(any());
         }
 
@@ -321,12 +339,12 @@ class AuthServiceTest {
         void invalidToken_fail() {
             // given
             String invalidToken = "invalid.token";
+            String refreshToken = "valid.refresh.token";
 
-            when(accessTokenProvider.validateToken(invalidToken))
-                .thenThrow(new BusinessException(AuthErrorCode.INVALID_TOKEN));
+            when(accessTokenProvider.validateToken(invalidToken)).thenReturn(false);
 
             // when & then
-            assertThatThrownBy(() -> authService.logout(invalidToken))
+            assertThatThrownBy(() -> authService.logout(invalidToken, refreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
         }
@@ -337,26 +355,31 @@ class AuthServiceTest {
     class ReissueTest {
 
         @Test
-        @DisplayName("유효한 RT로 새 AT,RT 발급에 성공한다")
-        void reissue_success() {
+        @DisplayName("유효한 AT, RT로 새 AT 발급에 성공한다. 기존 AT, RT 모두 블랙리스트 등록")
+        void reissue_with_both_tokens_success() {
             // given
+            String accessToken = "old.access.token";
             String refreshToken = "valid.refresh.token";
             Long userId = 1L;
             String userName = "testuser";
             String role = "MASTER";
             String newAccessToken = "new.access.token";
+            LocalDateTime refreshExpiration = LocalDateTime.now().plusDays(7);
+            LocalDateTime accessExpiration = LocalDateTime.now().plusHours(1);
 
             when(refreshTokenProvider.validateToken(refreshToken)).thenReturn(true);
             when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
             when(refreshTokenProvider.getUserId(refreshToken)).thenReturn(String.valueOf(userId));
             when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(userName);
             when(refreshTokenProvider.getRole(refreshToken)).thenReturn(role);
-            when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(LocalDateTime.now().plusDays(7));
-            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(
-                newAccessToken);
+            when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(refreshExpiration);
+            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(newAccessToken);
+
+            when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(false);
+            when(accessTokenProvider.getExpiration(accessToken)).thenReturn(accessExpiration);
 
             // when
-            ReissueResponse response = authService.reissue(refreshToken);
+            ReissueResponse response = authService.reissue(accessToken, refreshToken);
 
             // then
             assertThat(response.userId()).isEqualTo(userId);
@@ -365,12 +388,52 @@ class AuthServiceTest {
             assertThat(response.accessToken()).isEqualTo(newAccessToken);
 
             verify(refreshTokenProvider).validateToken(refreshToken);
-            verify(blackListTokenRepository).existsByToken(refreshToken);
             verify(refreshTokenProvider).getUserId(refreshToken);
             verify(refreshTokenProvider).getUserName(refreshToken);
             verify(refreshTokenProvider).getRole(refreshToken);
             verify(refreshTokenProvider).getExpiration(refreshToken);
-            verify(blackListTokenRepository).save(any(BlackListToken.class));
+            verify(accessTokenProvider).getExpiration(accessToken);
+            verify(blackListTokenRepository, times(2)).existsByToken(refreshToken);
+            verify(blackListTokenRepository, times(1)).existsByToken(accessToken);
+            verify(blackListTokenRepository, times(2)).save(any(BlackListToken.class));
+            verify(accessTokenProvider).generate(userId, userName, role);
+        }
+
+        @Test
+        @DisplayName("AT 없이 RT만으로 새 AT 발급에 성공한다. RT만 블랙리스트 등록")
+        void reissue_without_accessToken_success() {
+            // given
+            String refreshToken = "valid.refresh.token";
+            Long userId = 1L;
+            String userName = "testuser";
+            String role = "MASTER";
+            String newAccessToken = "new.access.token";
+            LocalDateTime refreshExpiration = LocalDateTime.now().plusDays(7);
+
+            when(refreshTokenProvider.validateToken(refreshToken)).thenReturn(true);
+            when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
+            when(refreshTokenProvider.getUserId(refreshToken)).thenReturn(String.valueOf(userId));
+            when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(userName);
+            when(refreshTokenProvider.getRole(refreshToken)).thenReturn(role);
+            when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(refreshExpiration);
+            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(newAccessToken);
+
+            // when
+            ReissueResponse response = authService.reissue(null, refreshToken);
+
+            // then
+            assertThat(response.userId()).isEqualTo(userId);
+            assertThat(response.userName()).isEqualTo(userName);
+            assertThat(response.role()).isEqualTo(role);
+            assertThat(response.accessToken()).isEqualTo(newAccessToken);
+
+            verify(refreshTokenProvider).validateToken(refreshToken);
+            verify(refreshTokenProvider).getUserId(refreshToken);
+            verify(refreshTokenProvider).getUserName(refreshToken);
+            verify(refreshTokenProvider).getRole(refreshToken);
+            verify(refreshTokenProvider).getExpiration(refreshToken);
+            verify(blackListTokenRepository, times(2)).existsByToken(refreshToken);
+            verify(blackListTokenRepository, times(1)).save(any(BlackListToken.class));
             verify(accessTokenProvider).generate(userId, userName, role);
         }
 
@@ -378,27 +441,29 @@ class AuthServiceTest {
         @DisplayName("유효하지 않은 RT로는 새 토큰 발급에 실패한다")
         void invalidRefreshToken_fail() {
             // given
+            String accessToken = "old.access.token";
             String invalidToken = "invalid.refresh.token";
 
             when(refreshTokenProvider.validateToken(invalidToken)).thenReturn(false);
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(invalidToken))
+            assertThatThrownBy(() -> authService.reissue(accessToken, invalidToken))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.INVALID_TOKEN.getMessage());
         }
 
         @Test
-        @DisplayName("금지된 토큰이 존재한다면 새 토큰 발급에 실패한다")
+        @DisplayName("금지된 RT로는 새 토큰 발급에 실패한다")
         void blackListTokenExist_fail() {
             // given
+            String accessToken = "old.access.token";
             String blacklistedToken = "blacklisted.refresh.token";
 
             when(refreshTokenProvider.validateToken(blacklistedToken)).thenReturn(true);
             when(blackListTokenRepository.existsByToken(blacklistedToken)).thenReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(blacklistedToken))
+            assertThatThrownBy(() -> authService.reissue(accessToken, blacklistedToken))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED.getMessage());
         }

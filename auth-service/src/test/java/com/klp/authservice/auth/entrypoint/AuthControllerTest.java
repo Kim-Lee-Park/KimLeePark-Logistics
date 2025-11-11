@@ -606,18 +606,39 @@ class AuthControllerTest {
     class logoutTest {
 
         @Test
-        @DisplayName("로그아웃에 성공하고 RefreshToken 쿠키가 무효화된다")
-        void logout_success() throws Exception {
+        @DisplayName("AT, RT와 함께 로그아웃에 성공하고 RefreshToken 쿠키가 무효화된다")
+        void logout_with_both_tokens_success() throws Exception {
+            // given
+            String accessToken = "valid.access.token";
+            String refreshToken = "valid.refresh.token";
+
+            doNothing().when(authService).logout(accessToken, refreshToken);
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/logout")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken)))
+                .andExpect(status().isOk())
+                .andExpect(cookie().maxAge(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, 0));
+
+            verify(authService).logout(accessToken, refreshToken);
+        }
+
+        @Test
+        @DisplayName("RT 없이 AT만으로도 로그아웃에 성공한다")
+        void logout_without_refreshToken_success() throws Exception {
             // given
             String accessToken = "valid.access.token";
 
-            doNothing().when(authService).logout(accessToken);
+            doNothing().when(authService).logout(accessToken, null);
 
             // when & then
             mockMvc.perform(post("/v1/auth/logout")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(cookie().maxAge(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, 0));
+
+            verify(authService).logout(accessToken, null);
         }
 
         @Test
@@ -625,7 +646,7 @@ class AuthControllerTest {
         void noAuthorizationHeader_fail() throws Exception {
             // when & then
             mockMvc.perform(post("/v1/auth/logout"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -633,13 +654,15 @@ class AuthControllerTest {
         void invalidToken_fail() throws Exception {
             // given
             String invalidToken = "invalid.token";
+            String refreshToken = "valid.refresh.token";
 
             doThrow(new BusinessException(AuthErrorCode.INVALID_TOKEN))
-                .when(authService).logout(invalidToken);
+                .when(authService).logout(invalidToken, refreshToken);
 
             // when & then
             mockMvc.perform(post("/v1/auth/logout")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken)
+                    .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken)))
                 .andExpect(status().isUnauthorized());
         }
     }
@@ -649,8 +672,40 @@ class AuthControllerTest {
     class reissueTest {
 
         @Test
-        @DisplayName("RefreshToken으로 새 AccessToken 발급에 성공한다")
-        void reissue_success() throws Exception {
+        @DisplayName("AT, RT로 새 AccessToken 발급에 성공한다")
+        void reissue_with_both_tokens_success() throws Exception {
+            // given
+            String accessToken = "old.access.token";
+            String refreshToken = "valid.refresh.token";
+            Long userId = 1L;
+            String userName = "testuser";
+            String role = "MASTER";
+            String newAccessToken = "new.access.token";
+            String newRefreshToken = "new.refresh.token";
+
+            ReissueResponse response = new ReissueResponse(userId, userName, role, newAccessToken);
+
+            when(authService.reissue(accessToken, refreshToken)).thenReturn(response);
+            when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(newRefreshToken);
+
+            // when & then
+            mockMvc.perform(post("/v1/auth/token/reissue")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId))
+                .andExpect(jsonPath("$.userName").value(userName))
+                .andExpect(jsonPath("$.role").value(role))
+                .andExpect(jsonPath("$.accessToken").value(newAccessToken))
+                .andExpect(cookie().exists(JwtConstants.REFRESH_TOKEN_COOKIE_NAME));
+
+            verify(authService).reissue(accessToken, refreshToken);
+            verify(refreshTokenProvider).generate(userId, userName, role);
+        }
+
+        @Test
+        @DisplayName("AT 없이 RT만으로 새 AccessToken 발급에 성공한다")
+        void reissue_without_accessToken_success() throws Exception {
             // given
             String refreshToken = "valid.refresh.token";
             Long userId = 1L;
@@ -661,7 +716,7 @@ class AuthControllerTest {
 
             ReissueResponse response = new ReissueResponse(userId, userName, role, newAccessToken);
 
-            when(authService.reissue(refreshToken)).thenReturn(response);
+            when(authService.reissue(null, refreshToken)).thenReturn(response);
             when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(newRefreshToken);
 
             // when & then
@@ -674,7 +729,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value(newAccessToken))
                 .andExpect(cookie().exists(JwtConstants.REFRESH_TOKEN_COOKIE_NAME));
 
-            verify(authService).reissue(refreshToken);
+            verify(authService).reissue(null, refreshToken);
             verify(refreshTokenProvider).generate(userId, userName, role);
         }
 
@@ -690,14 +745,16 @@ class AuthControllerTest {
         @DisplayName("유효하지 않은 RefreshToken으로 실패한다")
         void invalidRefreshToken_fail() throws Exception {
             // given
+            String accessToken = "old.access.token";
             String invalidToken = "invalid.refresh.token";
 
-            when(authService.reissue(invalidToken))
+            when(authService.reissue(accessToken, invalidToken))
                 .thenThrow(new BusinessException(AuthErrorCode.INVALID_TOKEN));
 
             // when & then
             mockMvc.perform(post("/v1/auth/token/reissue")
-                    .cookie(new Cookie("refreshToken", invalidToken)))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, invalidToken)))
                 .andExpect(status().isUnauthorized());
         }
 
@@ -705,14 +762,16 @@ class AuthControllerTest {
         @DisplayName("블랙리스트 토큰으로 실패한다")
         void blacklistedToken_fail() throws Exception {
             // given
+            String accessToken = "old.access.token";
             String blacklistedToken = "blacklisted.refresh.token";
 
-            when(authService.reissue(blacklistedToken))
+            when(authService.reissue(accessToken, blacklistedToken))
                 .thenThrow(new BusinessException(AuthErrorCode.TOKEN_ALREADY_BLACKLISTED));
 
             // when & then
             mockMvc.perform(post("/v1/auth/token/reissue")
-                    .cookie(new Cookie("refreshToken", blacklistedToken)))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, blacklistedToken)))
                 .andExpect(status().isUnauthorized());
         }
     }
