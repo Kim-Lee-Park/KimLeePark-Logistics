@@ -17,6 +17,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -27,6 +28,7 @@ public class DeliveryFacade {
     private final IdempotencyKeyService idempotencyKeyService;
 
 
+    @Transactional
     public DeliveryResponse createDelivery(OrderToDeliveryCommand orderCommand, IdempotencyCommand idempotencyCommand) {
         log.info("배송 생성 시작: orderId={}", orderCommand.orderId());
 
