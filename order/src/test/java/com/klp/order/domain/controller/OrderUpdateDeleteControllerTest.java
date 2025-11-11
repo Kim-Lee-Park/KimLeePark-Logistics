@@ -317,17 +317,17 @@ public class OrderUpdateDeleteControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-//    @Test
-//    @DisplayName("주문 삭제 - 실패 - deletedBy가 헤더에 없음")
-//    void deleteOrder_Fail_DeletedByHeaderMissing() throws Exception {
-//        // given
-//        UUID testOrderId = UUID.randomUUID();
-//
-//        given(orderService.deleteOrder(any(UUID.class), any()))
-//            .willThrow(new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED));
-//
-//        // when & then
-//        mockMvc.perform(delete("/v1/orders/" + testOrderId))
-//            .andExpect(status().isBadRequest());
-//    }
+    @Test
+    @DisplayName("주문 삭제 - 실패 - deletedBy가 헤더에 없음")
+    void deleteOrder_Fail_DeletedByHeaderMissing() throws Exception {
+        // given
+        UUID testOrderId = UUID.randomUUID();
+
+        given(orderService.deleteOrder(any(UUID.class), any()))
+            .willThrow(new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED));
+
+        // when & then
+        mockMvc.perform(delete("/v1/orders/" + testOrderId))
+            .andExpect(status().isBadRequest());
+    }
 }
