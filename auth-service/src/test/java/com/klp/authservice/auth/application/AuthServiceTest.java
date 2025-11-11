@@ -247,6 +247,7 @@ class AuthServiceTest {
 
             when(accessTokenProvider.validateToken(accessToken)).thenReturn(true);
             when(accessTokenProvider.getRole(accessToken)).thenReturn(role);
+            when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(false);
             when(accessTokenProvider.getExpiration(accessToken)).thenReturn(expiration);
 
             // when
