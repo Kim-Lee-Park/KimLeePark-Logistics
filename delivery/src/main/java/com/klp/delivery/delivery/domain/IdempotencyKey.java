@@ -39,8 +39,8 @@ public class IdempotencyKey extends BaseEntity {
     this.status = status;
   }
 
-  public static IdempotencyKey create(String key, UUID orderId) {
-    return new IdempotencyKey(key, orderId, IdempotencyStatus.PENDING);
+  public static IdempotencyKey create(String key, UUID orderId, IdempotencyStatus status) {
+    return new IdempotencyKey(key, orderId, status);
   }
 
 

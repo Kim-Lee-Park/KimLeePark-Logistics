@@ -1,7 +1,6 @@
 package com.klp.delivery.delivery.application.service;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.domain.IdempotencyKey;
 import com.klp.delivery.delivery.domain.IdempotencyKeyRepository;
@@ -29,15 +28,14 @@ public class IdempotencyKeyService {
     }
 
     idempotencyKeyRepository.save(
-        IdempotencyKey.create(command.idempotencyKey(), command.orderId()));
+        IdempotencyKey.create(command.idempotencyKey(), command.orderId(), command.status()));
   }
 
 
   public void updateIdempotencyStatus(IdempotencyCommand command) {
 
     idempotencyKeyRepository.findByIdempotencyKey(command.idempotencyKey())
-        .ifPresent(k -> k.updateStatus(IdempotencyStatus.COMPLETED));
-
+        .ifPresent(k -> k.updateStatus(command.status()));
 
   }
 }

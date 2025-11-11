@@ -1,5 +1,6 @@
 package com.klp.delivery.delivery.application.facade;
 
+import com.klp.delivery.common.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.service.DeliveryService;
@@ -32,8 +33,8 @@ public class DeliveryFacade {
     log.info("배송 생성 시작: orderId={}", orderId);
 
     // 멱등키 등록 (주문 단위로 관리)
-    IdempotencyCommand idempotencyCommand = new IdempotencyCommand(request.idempotencyKey(),
-        orderId);
+    IdempotencyCommand idempotencyCommand =new IdempotencyCommand(request.idempotencyKey(), request.orderId(), IdempotencyStatus.COMPLETED);
+
     idempotencyKeyService.registerIdempotencyKey(idempotencyCommand);
 
     try {
@@ -45,15 +46,17 @@ public class DeliveryFacade {
       List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(
           orderId, request, company, driver);
 
-      idempotencyKeyService.updateIdempotencyStatus(idempotencyCommand);
+            IdempotencyCommand updateCommand = new IdempotencyCommand(idempotencyCommand.idempotencyKey(), idempotencyCommand.orderId(), IdempotencyStatus.COMPLETED);
 
-      log.info("배송 생성 완료: orderId={}, deliveryCount={}", orderId, deliveryItems.size());
-      return new DeliveryResponse(deliveryItems);
-    } catch (Exception e) {
-      log.error("배송 생성 실패: orderId={}, error={}", orderId, e.getMessage(), e);
-      throw e;
+            idempotencyKeyService.updateIdempotencyStatus(updateCommand);
+
+            log.info("배송 생성 완료: orderId={}, deliveryCount={}", orderId, deliveryItems.size());
+            return new DeliveryResponse(deliveryItems);
+        } catch (Exception e) {
+            log.error("배송 생성 실패: orderId={}, error={}", orderId, e.getMessage(), e);
+            throw e;
+        }
     }
-  }
 
   private List<DeliveryResponse.DeliveryItemResponse> createDeliveriesForOrderItems(UUID orderId,
       DeliveryCreateRequest request, Company company, Driver driver) {
