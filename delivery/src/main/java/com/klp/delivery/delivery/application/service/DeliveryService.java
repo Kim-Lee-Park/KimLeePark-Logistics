@@ -20,62 +20,65 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DeliveryService {
 
-  private final DeliveryRepository deliveryRepository;
-  private final CompanyApiClient companyApiClient;
-  private final DriverApiClient driverApiClient;
+    private final DeliveryRepository deliveryRepository;
+    private final CompanyApiClient companyApiClient;
+    private final DriverApiClient driverApiClient;
 
-  public Company findCompany(String customerId) {
-    try {
-      return companyApiClient.findCompany(customerId);
-    } catch (BusinessException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("업체 조회 실패: {}", e.getMessage(), e);
-      throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "업체 조회에 실패했습니다.", e);
+    public Company findCompany(String customerId) {
+        try {
+            return companyApiClient.findCompany(customerId);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("업체 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "업체 조회에 실패했습니다.", e);
+        }
     }
-  }
 
-  public Driver findDriver(String customerId) {
-    try {
-      return driverApiClient.findDriver(customerId);
-    } catch (BusinessException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
-      throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.", e);
+    public Driver findDriver(String customerId) {
+        try {
+            return driverApiClient.findDriver(customerId);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.",
+                e);
+        }
     }
-  }
 
-  public Delivery registerDelivery(DeliveryCommand command) {
-    try {
-      Delivery delivery = deliveryRepository.save(
-          Delivery.create(
-              command.vendorDriverId(),
-              command.orderId(),
-              command.departureId(),
-              command.arrivalId(),
-              command.receiverId(),
-              command.receiverName(),
-              command.address(),
-              command.receiverSlackId()));
 
-      return delivery;
-    } catch (BusinessException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("배송 저장 실패: {}", e.getMessage(), e);
-      throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 저장에 실패했습니다.", e);
+    public Delivery registerDelivery(DeliveryCommand command) {
+        try {
+
+            return deliveryRepository.save(
+                Delivery.create(
+                    command.vendorDriverId(),
+                    command.orderId(),
+                    command.orderItemId(),
+                    command.departureId(),
+                    command.arrivalId(),
+                    command.senderId(),
+                    command.receiverId(),
+                    command.receiverName(),
+                    command.address(),
+                    command.receiverSlackId()));
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("배송 저장 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 저장에 실패했습니다.", e);
+        }
     }
-  }
 
-  public Delivery getDelivery(UUID deliveryId) {
-    return deliveryRepository.findByDeliveryId(deliveryId)
-        .orElseThrow(() -> new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
-  }
+    public Delivery getDelivery(UUID deliveryId) {
+        return deliveryRepository.findByDeliveryId(deliveryId)
+            .orElseThrow(() -> new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+    }
 
-  public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {
-    Delivery delivery = getDelivery(deliveryId);
-    delivery.updateStatus(status);
-    deliveryRepository.save(delivery);
-  }
+    public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {
+        Delivery delivery = getDelivery(deliveryId);
+        delivery.updateStatus(status);
+        deliveryRepository.save(delivery);
+    }
 }

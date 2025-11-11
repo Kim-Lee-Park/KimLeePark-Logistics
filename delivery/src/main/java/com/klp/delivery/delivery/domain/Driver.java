@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.domain;
 
 public record Driver(
-    String vendorDrvierId,
+    Long vendorDrvierId,
     String receiverSlackId
 ) {
 

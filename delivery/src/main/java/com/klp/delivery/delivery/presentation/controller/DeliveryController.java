@@ -35,7 +35,7 @@ public class DeliveryController {
 
     log.info("배송 생성 요청: orderId={}", request.orderId());
 
-    DeliveryResponse response = deliveryFacade.createDelivery(request.orderId(), request);
+    DeliveryResponse response = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
 
     log.info("배송 생성 성공: orderId={}, deliveryCount={}", request.orderId(),
         response.deliveries().size());
