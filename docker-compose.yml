@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: logistics
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_data:/var/lib/postgresql
+      - ./init-sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+volumes:
+  klp_postgres_data:
