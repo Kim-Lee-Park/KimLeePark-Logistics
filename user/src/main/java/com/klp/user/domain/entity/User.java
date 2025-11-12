@@ -167,5 +167,12 @@ public class User extends BaseEntity {
         this.status = UserStatus.REJECTED;
     }
 
+    public void update(String username, String password, String slackId, String phone, UserRole role) {
+        this.name = username;
+        this.password = password;
+        this.slackId = slackId;
+        this.phone = phone;
+        this.role = role;
+    }
 }
 
