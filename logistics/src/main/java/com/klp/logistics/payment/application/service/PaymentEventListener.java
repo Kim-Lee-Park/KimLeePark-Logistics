@@ -15,14 +15,11 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class PaymentEventListener {
 
     private final ExternalPaymentClient paymentClient;
-    private final PerformanceMonitor performanceMonitor;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void pay(OrderCreatedEvent event) {
-        performanceMonitor.measure("PaymentEventListener.payment", () -> {
-            log.info("결제 처리 시작 order ID : {}", event.orderId());
-            paymentClient.payment();
-            log.info("결제 처리 성공");
-        });
+        log.info("결제 처리 시작 order ID : {}", event.orderId());
+        paymentClient.payment();
+        log.info("결제 처리 성공");
     }
 }

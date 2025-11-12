@@ -18,35 +18,32 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final PerformanceMonitor performanceMonitor;
 
     @Transactional
     public OrderResponse createOrder(OrderCreateCommand command) {
-        return performanceMonitor.measure("OrderService.createOrder", () -> {
-            Order order = Order.create(
-                command.supplierId(),
-                command.customerId(),
-                command.comments(),
-                command.toOrderItemCommands()
-            );
+        Order order = Order.create(
+            command.supplierId(),
+            command.customerId(),
+            command.comments(),
+            command.toOrderItemCommands()
+        );
 
-            if (command.products().isEmpty()) {
-                throw new RuntimeException();
-            }
+        if (command.products().isEmpty()) {
+            throw new RuntimeException();
+        }
 
-            Order savedOrder = orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 
-            eventPublisher.publishEvent(new OrderCreatedEvent(
-                savedOrder.getOrderId(),
-                command.products().stream().map(product -> new OrderCreatedEvent.Product(
-                    product.productId(),
-                    product.quantity(),
-                    product.price()
-                )).toList(),
-                LocalDateTime.now()
-            ));
+        eventPublisher.publishEvent(new OrderCreatedEvent(
+            savedOrder.getOrderId(),
+            command.products().stream().map(product -> new OrderCreatedEvent.Product(
+                product.productId(),
+                product.quantity(),
+                product.price()
+            )).toList(),
+            LocalDateTime.now()
+        ));
 
-            return new OrderResponse();
-        });
+        return new OrderResponse();
     }
 }
