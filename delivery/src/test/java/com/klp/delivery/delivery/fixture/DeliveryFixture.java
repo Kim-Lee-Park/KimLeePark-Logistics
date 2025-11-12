@@ -197,9 +197,9 @@ public class DeliveryFixture {
     public static DeliveryCreateRequest createDeliveryRequest(List<OrderItem> orderItems) {
         return new DeliveryCreateRequest(
             DEFAULT_ORDER_ID.toString(),
+            DEFAULT_IDEMPOTENCY_KEY,
             DEFAULT_SUPPLIER_ID.toString(),
             DEFAULT_CUSTOMER_ID.toString(),
-            DEFAULT_IDEMPOTENCY_KEY,
             orderItems
         );
     }
