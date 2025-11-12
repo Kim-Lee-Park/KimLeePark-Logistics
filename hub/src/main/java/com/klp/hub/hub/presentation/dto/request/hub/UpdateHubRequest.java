@@ -4,8 +4,8 @@ import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 
 public record UpdateHubRequest(
     String name,
-    Long latitude,
-    Long longitude,
+    Double latitude,
+    Double longitude,
     String address
 ) {
     public UpdateHubCommand toCommand(){

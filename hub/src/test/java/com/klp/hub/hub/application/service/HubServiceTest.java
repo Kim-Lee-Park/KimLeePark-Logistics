@@ -1,6 +1,5 @@
 package com.klp.hub.hub.application.service;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
-import com.klp.hub.hub.domain.model.HubStatus;
+
 import com.klp.hub.hub.domain.repository.HubRepository;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
@@ -48,8 +47,8 @@ public class HubServiceTest {
         //given
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         when(hubRepository.existsByName("testHub")).thenReturn(true);
@@ -67,8 +66,8 @@ public class HubServiceTest {
         //given
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         when(hubRepository.existsByAddress("Address")).thenReturn(true);
@@ -87,8 +86,8 @@ public class HubServiceTest {
         //given
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         Hub saved= mock(Hub.class);
@@ -110,11 +109,11 @@ public class HubServiceTest {
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
-        Hub hub = Hub.create(command);
+        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
         ReflectionTestUtils.setField(hub, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
@@ -147,8 +146,10 @@ public class HubServiceTest {
     void getHubsSuccess(){
         //given
         Pageable pageable = PageRequest.of(0, 10);
-        Hub hub1 = Hub.create(new RegisterHubCommand("제주허브", 334455L, 126123L, "제주시 노형동"));
-        Hub hub2 = Hub.create(new RegisterHubCommand("서귀포허브", 444555L, 127333L, "서귀포시 중문동"));
+        RegisterHubCommand command1 =new RegisterHubCommand("제주허브", 334455., 126123., "제주시 노형동");
+        RegisterHubCommand command2 = new RegisterHubCommand("서귀포허브", 444555., 127333., "서귀포시 중문동");
+        Hub hub1 = Hub.create(command1.name(), command1.latitude(), command1.longitude(), command1.address());
+        Hub hub2 = Hub.create(command2.name(), command2.latitude(), command2.longitude(), command2.address());
         List<Hub> hubList = List.of(hub1, hub2);
         Page<Hub> hubs = new PageImpl<>(hubList, pageable, hubList.size());
 
@@ -173,8 +174,8 @@ public class HubServiceTest {
         UUID hubId = UUID.randomUUID();
         UpdateHubCommand command = new UpdateHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.empty());
@@ -189,17 +190,17 @@ public class HubServiceTest {
     void updateHubFailDuplicateName(){
         //given
         UUID hubId = UUID.randomUUID();
-        RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11L, 12L, "서울");
+        RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11., 12., "서울");
 
-        Hub original = Hub.create(registerHubCommand);
+        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
         ReflectionTestUtils.setField(original, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
 
         UpdateHubCommand command = new UpdateHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         when(hubRepository.existsByName(command.name())).thenReturn(true);
@@ -216,17 +217,17 @@ public class HubServiceTest {
     void updateHubFailDuplicateAddress(){
         //given
         UUID hubId = UUID.randomUUID();
-        RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11L, 12L, "서울");
+        RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11., 12., "서울");
 
-        Hub original = Hub.create(registerHubCommand);
+        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
         ReflectionTestUtils.setField(original, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
 
         UpdateHubCommand command = new UpdateHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
         when(hubRepository.existsByName(command.name())).thenReturn(false);
@@ -246,19 +247,19 @@ public class HubServiceTest {
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
-            11L,
-            12L,
+            11.,
+            12.,
             "서울특별시"
         );
-        Hub hub = Hub.create(command);
+        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
         ReflectionTestUtils.setField(hub, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
 
         UpdateHubCommand updateHubCommand = new UpdateHubCommand(
             "testHubUpdated",
-            15L,
-            151L,
+            15.,
+            151.,
             "서울특별시 updated"
         );
 

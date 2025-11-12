@@ -5,5 +5,5 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface HubRouteInfoJpaRepository extends JpaRepository<HubRouteInfo, UUID> {
-
+    boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
 }
