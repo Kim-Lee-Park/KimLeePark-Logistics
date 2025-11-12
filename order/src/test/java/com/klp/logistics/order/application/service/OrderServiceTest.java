@@ -1,0 +1,61 @@
+package com.klp.logistics.order.application.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.klp.logistics.order.application.service.dto.OrderCreateCommand;
+import com.klp.logistics.order.application.service.dto.OrderCreateCommand.Product;
+import com.klp.logistics.order.domain.entity.order.Order;
+import com.klp.logistics.order.domain.event.OrderCreatedEvent;
+import com.klp.logistics.order.infrastructure.repository.OrderRepository;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Import;
+
+@ExtendWith(MockitoExtension.class)
+@Import(ApplicationEventPublisher.class)
+class OrderServiceTest {
+
+    @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @InjectMocks
+    private OrderService orderService;
+
+    private Long supplierId = 1L;
+    private Long customerId = 1L;
+    private OrderCreateCommand.Product product = new Product(
+        UUID.randomUUID(),
+        10,
+        10
+    );
+    private String comments = "comments";
+
+    @Test
+    @DisplayName("주문을 생성하면 OrderCreatedEvent 를 발행한다")
+    void publishOrderCreatedEvent() {
+        OrderCreateCommand command = new OrderCreateCommand(supplierId, customerId,
+            List.of(product), comments);
+        Order order = mock(Order.class);
+        when(orderRepository.save(any())).thenReturn(order);
+        when(order.getOrderId()).thenReturn(UUID.randomUUID());
+
+        orderService.createOrder(command);
+
+        verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
+    }
+}
