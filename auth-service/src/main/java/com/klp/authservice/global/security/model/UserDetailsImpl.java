@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.infrastructure.security.model;
+package com.klp.authservice.global.security.model;
 
 import java.util.Collection;
 import java.util.List;

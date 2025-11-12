@@ -1,6 +1,6 @@
-package com.klp.authservice.auth.infrastructure.security.filter;
+package com.klp.authservice.global.security.filter;
 
-import com.klp.authservice.auth.infrastructure.security.model.UserDetailsImpl;
+import com.klp.authservice.global.security.model.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

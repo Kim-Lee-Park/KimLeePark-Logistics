@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.infrastructure.exception;
+package com.klp.authservice.global.exception;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.common.exception.ErrorResponse;
