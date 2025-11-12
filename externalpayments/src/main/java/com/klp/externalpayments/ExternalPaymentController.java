@@ -11,7 +11,7 @@ public class ExternalPaymentController {
     @PostMapping
     public String payment() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(600);
             return "success";
         } catch (InterruptedException e) {
             return "fail";

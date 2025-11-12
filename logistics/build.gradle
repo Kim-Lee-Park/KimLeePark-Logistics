@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.klp'
 version = '0.0.1-SNAPSHOT'
-description = 'order'
+description = 'logistics'
 
 java {
     toolchain {
