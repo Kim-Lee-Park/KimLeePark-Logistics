@@ -1,5 +1,6 @@
 package com.klp.logistics.order.application.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -57,5 +58,20 @@ class OrderServiceTest {
         orderService.createOrder(command);
 
         verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
+    }
+
+    @Test
+    @DisplayName("상품이 존재하지 않는다면 예외가 발생한다")
+    void throwEmptyProducts() {
+        OrderCreateCommand invalidCommand = new OrderCreateCommand(
+            supplierId,
+            customerId,
+            List.of(),
+            comments
+        );
+
+        assertThatThrownBy(
+            () -> orderService.createOrder(invalidCommand)
+        ).isInstanceOf(RuntimeException.class);
     }
 }

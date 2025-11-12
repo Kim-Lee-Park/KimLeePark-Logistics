@@ -26,6 +26,11 @@ public class OrderService {
             command.comments(),
             command.toOrderItemCommands()
         );
+
+        if (command.products().isEmpty()) {
+            throw new RuntimeException();
+        }
+
         Order savedOrder = orderRepository.save(order);
 
         eventPublisher.publishEvent(new OrderCreatedEvent(

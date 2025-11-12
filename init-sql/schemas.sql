@@ -1,1 +1,1 @@
-CREATE SCHEMA IF NOT EXISTS delivery_schema  AUTHORIZATION kimleepark;
+CREATE SCHEMA IF NOT EXISTS order_schema  AUTHORIZATION kimleepark;
