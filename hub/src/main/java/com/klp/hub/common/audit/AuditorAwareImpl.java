@@ -9,7 +9,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Slf4j(topic = "AuditorAwareImpl")
-@Component
 public class AuditorAwareImpl implements AuditorAware<Long> {
 
     private static final String USER_ID_HEADER = "X-User-Id";
