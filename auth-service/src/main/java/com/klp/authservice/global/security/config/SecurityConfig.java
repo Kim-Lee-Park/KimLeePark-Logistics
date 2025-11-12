@@ -1,6 +1,6 @@
-package com.klp.authservice.auth.infrastructure.security.config;
+package com.klp.authservice.global.security.config;
 
-import com.klp.authservice.auth.infrastructure.security.filter.AuthorizationFilter;
+import com.klp.authservice.global.security.filter.AuthorizationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
