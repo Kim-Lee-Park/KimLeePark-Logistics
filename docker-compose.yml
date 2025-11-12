@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18
-    container_name: postgres-klp
+    container_name: postgres-klp-logistics
     environment:
       POSTGRES_USER: kimleepark
       POSTGRES_PASSWORD: kimleepark
