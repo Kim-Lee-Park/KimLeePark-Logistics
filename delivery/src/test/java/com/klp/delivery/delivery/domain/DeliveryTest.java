@@ -91,7 +91,7 @@ public class DeliveryTest extends MockTest {
 
     @ParameterizedTest(name = "상태가 {0} → {1} 로 변경될 수 있다")
     @CsvSource({
-        "HUB_TRANSIT, ARRIVED_AT_FINAL_HUB",   // 허브 이동 중 → 최종 허브 도착
+        "IN_HUB_TRANSIT, ARRIVED_AT_FINAL_HUB",   // 허브 이동 중 → 최종 허브 도착
         "OUT_FOR_DELIVERY, DELIVERED"          // 배송 출발 → 배송 완료
     })
     void 배송상태_정상변경_검증(DeliveryStatus from, DeliveryStatus to) {
