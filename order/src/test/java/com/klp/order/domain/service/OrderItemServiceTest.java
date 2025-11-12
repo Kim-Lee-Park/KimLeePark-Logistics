@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderItemService;
 import com.klp.order.domain.entity.order.Order;
@@ -79,7 +80,7 @@ class OrderItemServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderItemService.findById(nonExistentId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 아이템을 찾을 수 없습니다.");
     }
 
@@ -187,7 +188,7 @@ class OrderItemServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderItemService.updateQuantity(orderItemId, invalidQuantity))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
 
     }
@@ -221,7 +222,7 @@ class OrderItemServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderItemService.assignDeliveryId(nonExistentId, deliveryId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 아이템을 찾을 수 없습니다.");
     }
 
@@ -253,7 +254,7 @@ class OrderItemServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderItemService.deleteOrderItem(nonExistentId, deletedBy))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 아이템을 찾을 수 없습니다.");
     }
 
@@ -307,7 +308,7 @@ class OrderItemServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderItemService.assignDeliveryIdBatch(emptyList, deliveryId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 아이템이 존재하지 않습니다.");
     }
 }

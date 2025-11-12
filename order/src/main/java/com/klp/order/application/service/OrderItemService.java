@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
@@ -70,7 +69,7 @@ public class OrderItemService {
     @Transactional
     public List<OrderItem> assignDeliveryIdBatch(List<UUID> orderItemIds, UUID deliveryId) {
         if (orderItemIds == null || orderItemIds.isEmpty()) {
-            throw new BusinessException(OrderItemErrorCode.ORDER_ITEM_NOT_FOUND);
+            throw new BusinessException(OrderItemErrorCode.ORDER_ITEMS_EMPTY);
         }
 
         List<OrderItem> updatedItems = new ArrayList<>();
