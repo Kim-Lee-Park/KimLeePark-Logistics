@@ -58,10 +58,12 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderOutboundRequest> outboundRequests = new ArrayList<>();
 
-
-    public static Order create(Long supplierId, Long customerId,
+    public static Order create(
+        Long supplierId,
+        Long customerId,
         String comment,
-        List<OrderItemCommand> itemCommands) {
+        List<OrderItemCommand> itemCommands
+    ) {
         Order order = new Order();
         order.validateSupplierId(supplierId);
         order.validateCustomerId(customerId);

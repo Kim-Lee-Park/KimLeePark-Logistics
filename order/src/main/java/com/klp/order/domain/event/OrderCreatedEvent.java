@@ -20,7 +20,7 @@ public record OrderCreatedEvent(
         }
     }
 
-    record Product(
+    public record Product(
         UUID productId,
         Integer quantity,
         Integer price
