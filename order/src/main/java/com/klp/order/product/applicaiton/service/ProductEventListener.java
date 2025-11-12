@@ -15,5 +15,6 @@ public class ProductEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void deduct(OrderCreatedEvent event) {
         log.info("재고 차감 order ID : {}", event.orderId());
+        log.info("재고 차감 성공");
     }
 }

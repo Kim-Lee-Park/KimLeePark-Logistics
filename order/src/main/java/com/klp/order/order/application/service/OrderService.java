@@ -7,10 +7,12 @@ import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -20,6 +22,7 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(OrderCreateCommand command) {
+        log.info("주문 생성 처리");
         Order order = Order.create(
             command.supplierId(),
             command.customerId(),
@@ -33,6 +36,7 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        log.info("주문 생성 완료 이벤트 발행");
         eventPublisher.publishEvent(new OrderCreatedEvent(
             savedOrder.getOrderId(),
             command.products().stream().map(product -> new OrderCreatedEvent.Product(
@@ -43,6 +47,7 @@ public class OrderService {
             LocalDateTime.now()
         ));
 
+        log.info("주문 생성 완료");
         return new OrderResponse(savedOrder.getOrderId());
     }
 }
