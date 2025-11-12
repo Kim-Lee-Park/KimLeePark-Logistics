@@ -1,6 +1,8 @@
 package com.klp.order.order.application.service.dto;
 
-public record OrderResponse(
+import java.util.UUID;
 
+public record OrderResponse(
+    UUID orderId
 ) {
 }

@@ -43,6 +43,6 @@ public class OrderService {
             LocalDateTime.now()
         ));
 
-        return new OrderResponse();
+        return new OrderResponse(savedOrder.getOrderId());
     }
 }
