@@ -2,8 +2,8 @@ package com.klp.hub.hub.application.command.hub;
 
 public record UpdateHubCommand(
     String name,
-    Long latitude,
-    Long longitude,
+    Double latitude,
+    Double longitude,
     String address
 ) {
     public Boolean nameIsNotNull(){return name != null;}

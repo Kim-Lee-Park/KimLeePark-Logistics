@@ -7,8 +7,8 @@ import java.util.UUID;
 public record UpdatedHubResponse(
     UUID hubId,
     String name,
-    Long latitude,
-    Long longitude,
+    Double latitude,
+    Double longitude,
     String address,
     HubStatus status
 ) {

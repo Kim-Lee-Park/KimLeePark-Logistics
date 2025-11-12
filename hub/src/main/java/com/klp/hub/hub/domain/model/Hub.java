@@ -1,21 +1,33 @@
 package com.klp.hub.hub.domain.model;
 
 import com.klp.hub.common.entity.BaseEntity;
-import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
-import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_hubs", schema = "hub_schema")
+@Table(name = "p_hubs",
+    schema = "hub_schema",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_hub_name",
+            columnNames = {"name"}
+        ),
+        @UniqueConstraint(
+            name = "uk_hub_address",
+            columnNames = {"address"}
+        )
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Hub extends BaseEntity {
@@ -28,39 +40,40 @@ public class Hub extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
-    private Long latitude;
+    private Double latitude;
 
     @Column(nullable = false)
-    private Long longitude;
+    private Double longitude;
 
     @Column(nullable = false)
     private String address;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private HubStatus status;
 
-    public static Hub create(RegisterHubCommand command){
+    public static Hub create(String name, Double latitude, Double longitude, String address) {
         Hub hub = new Hub();
-        hub.name= command.name();
-        hub.latitude = command.latitude();
-        hub.longitude = command.longitude();
-        hub.address = command.address();
+        hub.name= name;
+        hub.latitude = latitude;
+        hub.longitude = longitude;
+        hub.address = address;
         hub.status=HubStatus.ACTIVE;
         return hub;
     }
 
-    public void update(UpdateHubCommand command) {
-        if(command.nameIsNotNull()){
-            name = command.name();
+    public void update(String name, Double latitude, Double longitude, String address) {
+        if(name != null){
+            this.name = name;
         }
-        if(command.latitudeIsNotNull()){
-            latitude = command.latitude();
+        if(latitude != null){
+            this.latitude = latitude;
         }
-        if(command.longitudeIsNotNull()){
-            longitude = command.longitude();
+        if(longitude != null){
+            this.longitude = longitude;
         }
-        if(command.addressIsNotNull()){
-            address = command.address();
+        if(address != null){
+            this.address = address;
         }
     }
 }
