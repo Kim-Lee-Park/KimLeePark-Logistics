@@ -12,8 +12,13 @@ import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.application.service.dto.OrderResponse;
 import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
+import com.klp.order.payment.application.service.dto.PaymentCommand;
+import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
+import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
+import com.klp.order.payment.infrastructure.repository.PaymentRepository;
 import com.klp.order.product.applicaiton.service.ProductEventListener;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +43,12 @@ class PaymentEventListenerTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private PaymentService paymentService;
+
     @MockitoBean
     private ExternalPaymentClient externalPaymentClient;
 
@@ -52,6 +63,7 @@ class PaymentEventListenerTest {
     @AfterEach
     void tearDown() {
         orderRepository.deleteAll();
+        paymentRepository.deleteAll();
         reset(paymentEventListener);
 
         await()
@@ -68,21 +80,6 @@ class PaymentEventListenerTest {
         10
     );
     private String comments = "comments";
-
-    @Test
-    @DisplayName("주문 생성 이벤트를 구독하여 pay() 메서드를 수행할 수 있다")
-    void subscribeOrderCreatedEvent() {
-        OrderCreateCommand command = new OrderCreateCommand(
-            supplierId,
-            customerId,
-            List.of(product),
-            comments
-        );
-
-        orderService.createOrder(command);
-
-        verify(paymentEventListener, times(1)).pay(any(OrderCreatedEvent.class));
-    }
 
     @Test
     @DisplayName("주문 생성에 실패한 경우 결제가 시도되지 않는다")
@@ -102,7 +99,7 @@ class PaymentEventListenerTest {
 
     @Test
     @DisplayName("주문 생성에 성공한 경우 결제를 시도한다")
-    void tryPaySuccess() {
+    void subscribeOrderEventTryPay() {
         OrderCreateCommand command = new OrderCreateCommand(
             supplierId,
             customerId,
@@ -147,8 +144,8 @@ class PaymentEventListenerTest {
     }
 
     @Test
-    @DisplayName("비동기로 실행되는 이벤트 로직의 예외가 메인 스레드에 영향을 주지 않는다")
-    void nonSideEffect() {
+    @DisplayName("결제가 실패되어도 주문은 생성된다")
+    void transactionPropagation() {
         OrderCreateCommand command = new OrderCreateCommand(
             supplierId,
             customerId,
@@ -160,7 +157,26 @@ class PaymentEventListenerTest {
 
         OrderResponse response = orderService.createOrder(command);
 
+        List<Payment> payments = paymentRepository.findAll();
         assertThat(response).isNotNull();
         assertThat(response.orderId()).isNotNull();
+        assertThat(payments).isEmpty();
+    }
+
+    @Test
+    @DisplayName("외부 API 실패 시 결제가 생성되지 않는다")
+    void rollback() {
+        PaymentCommand command = new PaymentCommand(
+            UUID.randomUUID(),
+            List.of(new PaymentInfo(UUID.randomUUID(), 10, BigDecimal.TEN))
+        );
+        doThrow(new RuntimeException("결제 실패"))
+            .when(externalPaymentClient).payment();
+
+        assertThatThrownBy(
+            () -> paymentService.pay(command)
+        ).isInstanceOf(RuntimeException.class);
+        List<Payment> payments = paymentRepository.findAll();
+        assertThat(payments).isEmpty();
     }
 }

@@ -1,8 +1,9 @@
 package com.klp.order.payment.application.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.klp.order.payment.application.service.dto.PaymentCommand;
 import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
 import com.klp.order.payment.domain.entity.Payment;
+import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import com.klp.order.payment.infrastructure.repository.PaymentRepository;
 import java.math.BigDecimal;
@@ -21,13 +23,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
 
     @Mock
     private ExternalPaymentClient externalPaymentClient;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -38,6 +43,14 @@ class PaymentServiceTest {
     private UUID orderId = UUID.randomUUID();
 
     private UUID productId = UUID.randomUUID();
+
+    private List<PaymentCommand.PaymentInfo> paymentInfoList = List.of(
+        new PaymentCommand.PaymentInfo(
+            productId,
+            1,
+            BigDecimal.ZERO
+        )
+    );
 
     @Test
     @DisplayName("외부 결제 API 를 호출한다")
@@ -50,5 +63,37 @@ class PaymentServiceTest {
         paymentService.pay(command);
 
         verify(externalPaymentClient, times(1)).payment();
+    }
+
+    @Test
+    @DisplayName("결제를 성공하면 PaymentCompletedEvent 를 발행한다")
+    void publishPaymentCompletedEvent() {
+        PaymentCommand command = new PaymentCommand(
+            orderId,
+            paymentInfoList
+        );
+        Payment payment = mock(Payment.class);
+        when(paymentRepository.save(any())).thenReturn(payment);
+        when(payment.getPaymentId()).thenReturn(UUID.randomUUID());
+
+        paymentService.pay(command);
+
+        verify(eventPublisher, times(1)).publishEvent(any(PaymentCompletedEvent.class));
+    }
+
+    @Test
+    @DisplayName("결제에 실패하면 PaymentCompletedEvent 를 발행하지 않는다")
+    void verifyNever() {
+        PaymentCommand command = new PaymentCommand(
+            orderId,
+            paymentInfoList
+        );
+        when(externalPaymentClient.payment())
+            .thenThrow(RuntimeException.class);
+
+        assertThatThrownBy(
+            () -> paymentService.pay(command)
+        ).isInstanceOf(RuntimeException.class);
+        verify(eventPublisher, never()).publishEvent(any(PaymentCompletedEvent.class));
     }
 }

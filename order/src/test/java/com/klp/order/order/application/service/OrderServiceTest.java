@@ -3,6 +3,7 @@ package com.klp.order.order.application.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,7 +25,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 
 @ExtendWith(MockitoExtension.class)
-@Import(ApplicationEventPublisher.class)
 class OrderServiceTest {
 
     @Mock
@@ -48,8 +48,12 @@ class OrderServiceTest {
     @Test
     @DisplayName("주문을 생성하면 OrderCreatedEvent 를 발행한다")
     void publishOrderCreatedEvent() {
-        OrderCreateCommand command = new OrderCreateCommand(supplierId, customerId,
-            List.of(product), comments);
+        OrderCreateCommand command = new OrderCreateCommand(
+            supplierId,
+            customerId,
+            List.of(product),
+            comments
+        );
         Order order = mock(Order.class);
         when(orderRepository.save(any())).thenReturn(order);
         when(order.getOrderId()).thenReturn(UUID.randomUUID());
@@ -57,6 +61,22 @@ class OrderServiceTest {
         orderService.createOrder(command);
 
         verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
+    }
+
+    @Test
+    @DisplayName("주문 생성에 실패하면 OrderCreatedEvent 를 발행하지 않는다")
+    void verifyNever() {
+        OrderCreateCommand invalidCommand = new OrderCreateCommand(
+            supplierId,
+            customerId,
+            List.of(),
+            comments
+        );
+
+        assertThatThrownBy(
+            () -> orderService.createOrder(invalidCommand)
+        ).isInstanceOf(RuntimeException.class);
+        verify(eventPublisher, never()).publishEvent(any(OrderCreatedEvent.class));
     }
 
     @Test
