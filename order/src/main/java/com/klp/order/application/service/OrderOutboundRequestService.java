@@ -20,12 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OrderOutboundRequestService {
 
     private final OrderOutboundRequestRepository orderOutboundRequestRepository;
     private final OrderRepository orderRepository;
 
+    @Transactional(readOnly = true)
     public OrderOutboundRequestResponse findById(UUID requestId) {
         OrderOutboundRequest request = orderOutboundRequestRepository.findById(requestId)
             .orElseThrow(
@@ -34,6 +34,7 @@ public class OrderOutboundRequestService {
         return OrderOutboundRequestResponse.from(request);
     }
 
+    @Transactional(readOnly = true)
     public OrderOutboundRequestResponse findByIdempotencyKey(String idempotencyKey) {
         OrderOutboundRequest request = orderOutboundRequestRepository.findByIdempotencyKey(
                 idempotencyKey)
@@ -42,6 +43,7 @@ public class OrderOutboundRequestService {
         return OrderOutboundRequestResponse.from(request);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderOutboundRequestResponse> findAll() {
         return orderOutboundRequestRepository.findAll().stream()
             .map(OrderOutboundRequestResponse::from)
@@ -64,6 +66,7 @@ public class OrderOutboundRequestService {
         return OrderOutboundRequestResponse.from(saved);
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByIdempotencyKey(String idempotencyKey) {
         return orderOutboundRequestRepository.findByIdempotencyKey(idempotencyKey).isPresent();
     }
@@ -89,7 +92,6 @@ public class OrderOutboundRequestService {
         long timestamp = System.currentTimeMillis();
 
         return String.format("%s-%s-%s-%d",
-            orderId.toString(),
             target.name(),
             operationType.name(),
             timestamp
