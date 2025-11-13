@@ -29,6 +29,7 @@ public record PaymentCompletedEvent(
 
    public record PaidInfo(
        UUID productId,
+       Integer quantity,
        BigDecimal amount
    ) {}
 }

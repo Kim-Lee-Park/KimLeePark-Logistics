@@ -15,6 +15,10 @@ class PaymentCompletedEventTest {
 
     private UUID productId = UUID.randomUUID();
 
+    private List<PaidInfo> paidInfoList = List.of(
+        new PaidInfo(productId, 1, BigDecimal.ZERO)
+    );
+
     @Test
     @DisplayName("결제 정보 목록은 비어있을 수 없다")
     void emptyPaidInfos() {
@@ -29,7 +33,7 @@ class PaymentCompletedEventTest {
     void paymentIdIsNull() {
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(null, BigDecimal.ZERO, List.of(new PaidInfo(productId, BigDecimal.ZERO)))
+            () -> new PaymentCompletedEvent(null, BigDecimal.ZERO, paidInfoList)
         );
     }
 
@@ -38,7 +42,7 @@ class PaymentCompletedEventTest {
     void totalAmountIsNull() {
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(paymentId, null, List.of(new PaidInfo(productId, BigDecimal.ZERO)))
+            () -> new PaymentCompletedEvent(paymentId, null, paidInfoList)
         );
     }
 
@@ -49,7 +53,7 @@ class PaymentCompletedEventTest {
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(paymentId, totalAmount, List.of(new PaidInfo(productId, BigDecimal.ZERO)))
+            () -> new PaymentCompletedEvent(paymentId, totalAmount, paidInfoList)
         );
     }
 }

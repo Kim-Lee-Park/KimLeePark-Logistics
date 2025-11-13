@@ -2,10 +2,13 @@ package com.klp.order.payment.application.service;
 
 import com.klp.order.payment.application.service.dto.PaymentCommand;
 import com.klp.order.payment.domain.entity.Payment;
+import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import com.klp.order.payment.infrastructure.repository.PaymentRepository;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,17 +17,32 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaymentService {
 
     private final ExternalPaymentClient externalPaymentClient;
-
     private final PaymentRepository paymentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UUID pay(PaymentCommand command) {
-        Payment payment = new Payment(command.orderId(), command.amount());
+        BigDecimal totalAmount = command.totalAmount();
+        Payment payment = new Payment(command.orderId(), totalAmount);
 
+        // 외부 API 호출
         externalPaymentClient.payment();
 
         payment.completed();
+        Payment savedPayment = paymentRepository.save(payment);
 
-        return paymentRepository.save(payment).getPaymentId();
+        eventPublisher.publishEvent(
+            new PaymentCompletedEvent(
+                savedPayment.getPaymentId(),
+                totalAmount,
+                command.infos().stream().map(info -> new PaymentCompletedEvent.PaidInfo(
+                    info.productId(),
+                    info.quantity(),
+                    info.amount()
+                )).toList()
+            )
+        );
+
+        return savedPayment.getPaymentId();
     }
 }
