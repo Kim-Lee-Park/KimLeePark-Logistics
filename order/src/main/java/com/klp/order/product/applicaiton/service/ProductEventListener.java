@@ -1,6 +1,9 @@
 package com.klp.order.product.applicaiton.service;
 
 import com.klp.order.order.domain.event.OrderCreatedEvent;
+import com.klp.order.payment.domain.event.PaymentCompletedEvent;
+import com.klp.order.product.applicaiton.service.dto.DeductStockCommand;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -9,12 +12,16 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ProductEventListener {
+
+    private final ProductService productService;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void deduct(OrderCreatedEvent event) {
+    public void deduct(PaymentCompletedEvent event) {
         log.info("재고 차감 order ID : {}", event.orderId());
+        productService.deductStock(DeductStockCommand.from(event));
         log.info("재고 차감 성공");
     }
 }

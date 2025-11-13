@@ -4,12 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.klp.order.payment.domain.event.PaymentCompletedEvent.PaidInfo;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class PaymentCompletedEventTest {
+
+    private UUID orderId = UUID.randomUUID();
 
     private UUID paymentId = UUID.randomUUID();
 
@@ -19,12 +22,14 @@ class PaymentCompletedEventTest {
         new PaidInfo(productId, 1, BigDecimal.ZERO)
     );
 
+    private LocalDateTime occurredAt = LocalDateTime.now();
+
     @Test
     @DisplayName("결제 정보 목록은 비어있을 수 없다")
     void emptyPaidInfos() {
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(paymentId, BigDecimal.ZERO, List.of())
+            () -> new PaymentCompletedEvent(orderId, paymentId, BigDecimal.ZERO, List.of(), occurredAt)
         );
     }
 
@@ -33,7 +38,7 @@ class PaymentCompletedEventTest {
     void paymentIdIsNull() {
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(null, BigDecimal.ZERO, paidInfoList)
+            () -> new PaymentCompletedEvent(orderId, null, BigDecimal.ZERO, paidInfoList, occurredAt)
         );
     }
 
@@ -42,7 +47,7 @@ class PaymentCompletedEventTest {
     void totalAmountIsNull() {
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(paymentId, null, paidInfoList)
+            () -> new PaymentCompletedEvent(orderId, paymentId, null, paidInfoList, occurredAt)
         );
     }
 
@@ -53,7 +58,16 @@ class PaymentCompletedEventTest {
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> new PaymentCompletedEvent(paymentId, totalAmount, paidInfoList)
+            () -> new PaymentCompletedEvent(orderId, paymentId, totalAmount, paidInfoList, occurredAt)
+        );
+    }
+
+    @Test
+    @DisplayName("주문 ID 가 Null 이라면 예외가 발생한다")
+    void orderIdIsNull() {
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> new PaymentCompletedEvent(null, paymentId, BigDecimal.ZERO, paidInfoList, occurredAt)
         );
     }
 }

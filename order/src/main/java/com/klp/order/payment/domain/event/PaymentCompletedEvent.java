@@ -1,15 +1,22 @@
 package com.klp.order.payment.domain.event;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public record PaymentCompletedEvent(
     UUID paymentId,
+    UUID orderId,
     BigDecimal totalAmount,
-    List<PaidInfo> paidInfos
+    List<PaidInfo> paidInfos,
+    LocalDateTime occurredAt
 ) {
    public PaymentCompletedEvent {
+      if (orderId == null) {
+         throw new IllegalArgumentException("주문 ID 는 필수값입니다.");
+      }
+
       if (paymentId == null) {
          throw new IllegalArgumentException("결제 ID 는 필수값입니다.");
       }

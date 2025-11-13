@@ -6,6 +6,7 @@ import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import com.klp.order.payment.infrastructure.repository.PaymentRepository;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,13 +34,15 @@ public class PaymentService {
 
         eventPublisher.publishEvent(
             new PaymentCompletedEvent(
+                command.orderId(),
                 savedPayment.getPaymentId(),
                 totalAmount,
                 command.infos().stream().map(info -> new PaymentCompletedEvent.PaidInfo(
                     info.productId(),
                     info.quantity(),
                     info.amount()
-                )).toList()
+                )).toList(),
+                LocalDateTime.now()
             )
         );
 
