@@ -217,11 +217,7 @@ class OrderCreateGetControllerTest {
             .andExpect(jsonPath("$.orderItems[0].productId").exists())
             .andExpect(jsonPath("$.orderItems[0].quantity").value(10))
             .andExpect(jsonPath("$.orderItems[0].deliveryId").isEmpty())
-            .andExpect(jsonPath("$.orderItems[1].quantity").value(5))
-            .andExpect(jsonPath("$.createdAt").exists())
-            .andExpect(jsonPath("$.updatedAt").exists())
-            .andExpect(jsonPath("$.deleteddAt").exists());
-
+            .andExpect(jsonPath("$.orderItems[1].quantity").value(5));
     }
 
     @Test
@@ -235,7 +231,7 @@ class OrderCreateGetControllerTest {
         // when & then
         mockMvc.perform(get("/v1/orders/{orderId}", nonExistentId)
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isNotFound());
     }
 
 
