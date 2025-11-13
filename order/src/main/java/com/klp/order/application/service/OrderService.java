@@ -33,6 +33,7 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional(readOnly = true)
     public Order findById(UUID orderId) {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
@@ -57,14 +58,17 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional(readOnly = true)
     public List<Order> findBySupplierId(Long supplierId) {
         return orderRepository.findBySupplierId(supplierId);
     }
 
+    @Transactional(readOnly = true)
     public List<Order> findByCustomerId(Long customerId) {
         return orderRepository.findByCustomerId(customerId);
     }
 
+    @Transactional(readOnly = true)
     public List<Order> findNotDeletedOrders() {
         return orderRepository.findByDeletedAtIsNull();
     }

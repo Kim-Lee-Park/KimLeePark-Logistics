@@ -18,31 +18,33 @@ public class OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
 
-
+    @Transactional(readOnly = true)
     public OrderItem findById(UUID orderItemId) {
         return orderItemRepository.findById(orderItemId)
             .orElseThrow(() -> new BusinessException(OrderItemErrorCode.ORDER_ITEM_NOT_FOUND));
     }
 
-
+    @Transactional(readOnly = true)
     public List<OrderItem> findByOrderId(UUID orderId) {
         return orderItemRepository.findByOrder_OrderId(orderId);
     }
 
-
+    @Transactional(readOnly = true)
     public List<OrderItem> findUnassignedDeliveryItems() {
         return orderItemRepository.findByDeliveryIdIsNull();
     }
 
-
+    @Transactional(readOnly = true)
     public List<OrderItem> findNotDeletedItems() {
         return orderItemRepository.findByDeletedAtIsNull();
     }
 
+    @Transactional(readOnly = true)
     public List<OrderItem> findNotDeletedItemsByOrderId(UUID orderId) {
         return orderItemRepository.findByOrder_OrderIdAndDeletedAtIsNull(orderId);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderItem> findAll() {
         return orderItemRepository.findAll();
     }

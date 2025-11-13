@@ -16,21 +16,21 @@ public class OrderCancellationService {
 
     private final OrderCancellationRepository orderCancellationRepository;
 
-
+    @Transactional(readOnly = true)
     public OrderCancellation findById(UUID cancellationId) {
         return orderCancellationRepository.findById(cancellationId)
             .orElseThrow(
                 () -> new BusinessException(OrderCancellationErrorCode.CANCELLATION_NOT_FOUND));
     }
 
-
+    @Transactional(readOnly = true)
     public OrderCancellation findByOrderId(UUID orderId) {
         return orderCancellationRepository.findByOrder_OrderId(orderId)
             .orElseThrow(() -> new BusinessException(
                 OrderCancellationErrorCode.CANCELLATION_BY_ORDER_NOT_FOUND));
     }
 
-
+    @Transactional(readOnly = true)
     public List<OrderCancellation> findAll() {
         return orderCancellationRepository.findAll();
     }
