@@ -1,5 +1,6 @@
 package com.klp.order.payment.domain.event;
 
+import com.klp.order.common.event.DomainEvent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,7 +12,7 @@ public record PaymentCompletedEvent(
     BigDecimal totalAmount,
     List<PaidInfo> paidInfos,
     LocalDateTime occurredAt
-) {
+) implements DomainEvent {
    public PaymentCompletedEvent {
       if (orderId == null) {
          throw new IllegalArgumentException("주문 ID 는 필수값입니다.");
@@ -32,6 +33,16 @@ public record PaymentCompletedEvent(
       if (paidInfos.isEmpty()) {
          throw new IllegalArgumentException("결제 정보 목록은 비어있을 수 없습니다.");
       }
+   }
+
+   @Override
+   public String getEventId() {
+      return paymentId.toString();
+   }
+
+   @Override
+   public LocalDateTime getOccurredAt() {
+      return this.occurredAt;
    }
 
    public record PaidInfo(

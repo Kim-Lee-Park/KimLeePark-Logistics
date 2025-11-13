@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.klp.order.common.event.EventPublisher;
 import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
 import com.klp.order.payment.application.service.dto.PaymentCreateCommand.PaymentInfo;
 import com.klp.order.payment.domain.entity.Payment;
@@ -32,7 +33,7 @@ class PaymentServiceTest {
     private ExternalPaymentClient externalPaymentClient;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private EventPublisher eventPublisher;
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -78,7 +79,7 @@ class PaymentServiceTest {
 
         paymentService.pay(command);
 
-        verify(eventPublisher, times(1)).publishEvent(any(PaymentCompletedEvent.class));
+        verify(eventPublisher, times(1)).publish(any(PaymentCompletedEvent.class));
     }
 
     @Test
@@ -94,6 +95,6 @@ class PaymentServiceTest {
         assertThatThrownBy(
             () -> paymentService.pay(command)
         ).isInstanceOf(RuntimeException.class);
-        verify(eventPublisher, never()).publishEvent(any(PaymentCompletedEvent.class));
+        verify(eventPublisher, never()).publish(any(PaymentCompletedEvent.class));
     }
 }

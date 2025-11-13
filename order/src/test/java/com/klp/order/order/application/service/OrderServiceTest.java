@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.klp.order.common.event.EventPublisher;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.domain.entity.order.Order;
@@ -21,8 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Import;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -31,7 +30,7 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private EventPublisher eventPublisher;
 
     @InjectMocks
     private OrderService orderService;
@@ -60,7 +59,7 @@ class OrderServiceTest {
 
         orderService.createOrder(command);
 
-        verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
+        verify(eventPublisher, times(1)).publish(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -76,7 +75,7 @@ class OrderServiceTest {
         assertThatThrownBy(
             () -> orderService.createOrder(invalidCommand)
         ).isInstanceOf(RuntimeException.class);
-        verify(eventPublisher, never()).publishEvent(any(OrderCreatedEvent.class));
+        verify(eventPublisher, never()).publish(any(OrderCreatedEvent.class));
     }
 
     @Test

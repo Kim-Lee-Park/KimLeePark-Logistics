@@ -1,4 +1,4 @@
-package com.klp.order.config;
+package com.klp.order.common.config;
 
 import com.klp.order.notification.applicaiton.service.NotificationService;
 import java.util.concurrent.Executor;

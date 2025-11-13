@@ -1,5 +1,6 @@
 package com.klp.order.payment.application.service;
 
+import com.klp.order.common.event.EventPublisher;
 import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
 import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
@@ -9,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,7 @@ public class PaymentService {
 
     private final ExternalPaymentClient externalPaymentClient;
     private final PaymentRepository paymentRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final EventPublisher eventPublisher;
 
     @Transactional
     public UUID pay(PaymentCreateCommand command) {
@@ -32,7 +32,7 @@ public class PaymentService {
         payment.completed();
         Payment savedPayment = paymentRepository.save(payment);
 
-        eventPublisher.publishEvent(
+        eventPublisher.publish(
             new PaymentCompletedEvent(
                 command.orderId(),
                 savedPayment.getPaymentId(),

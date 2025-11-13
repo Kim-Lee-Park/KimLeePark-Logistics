@@ -1,5 +1,6 @@
 package com.klp.order.order.application.service;
 
+import com.klp.order.common.event.EventPublisher;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderResponse;
 import com.klp.order.order.domain.entity.order.Order;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final EventPublisher eventPublisher;
 
     @Transactional
     public OrderResponse createOrder(OrderCreateCommand command) {
@@ -38,7 +39,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         log.info("주문 생성 완료 이벤트 발행");
-        eventPublisher.publishEvent(new OrderCreatedEvent(
+        eventPublisher.publish(new OrderCreatedEvent(
             savedOrder.getOrderId(),
             command.products().stream().map(product -> new OrderCreatedEvent.Product(
                 product.productId(),
