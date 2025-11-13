@@ -112,7 +112,12 @@ class PaymentEventListenerTest {
 
         orderService.createOrder(command);
 
-        verify(paymentEventListener, times(1)).pay(any(OrderCreatedEvent.class));
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .untilAsserted(() -> {
+                verify(paymentEventListener, times(1))
+                    .pay(any(OrderCreatedEvent.class));
+            });
     }
 
     @Test
