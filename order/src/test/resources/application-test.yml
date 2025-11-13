@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:order-test-db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        hbm2ddl:
+          create_namespaces: true   # 스키마 자동 생성 허용
+      hibernate.format_sql: true

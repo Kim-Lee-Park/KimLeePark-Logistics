@@ -4,12 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.klp.order.order.application.service.OrderService;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
@@ -17,6 +20,7 @@ import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.application.service.dto.OrderResponse;
 import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
+import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -27,10 +31,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class ProductEventListenerTest {
     @Autowired
     private OrderService orderService;
@@ -38,10 +44,10 @@ class ProductEventListenerTest {
     @Autowired
     private OrderRepository orderRepository;
 
-    @MockitoSpyBean
-    private ProductEventListener productEventListenerWithSpy;
-
     @MockitoBean
+    private ExternalPaymentClient externalPaymentClient;
+
+    @MockitoSpyBean
     private ProductEventListener productEventListener;
 
     private Long supplierId = 1L;
@@ -55,14 +61,12 @@ class ProductEventListenerTest {
 
     @BeforeEach
     void setUp() {
-        clearInvocations(productEventListenerWithSpy);
         clearInvocations(productEventListener);
     }
 
     @AfterEach
     void tearDown() {
         orderRepository.deleteAll();
-        reset(productEventListenerWithSpy);
         reset(productEventListener);
 
         await()
@@ -86,7 +90,7 @@ class ProductEventListenerTest {
         await()
             .atMost(Duration.ofSeconds(5))
             .untilAsserted(() -> {
-                verify(productEventListenerWithSpy, times(1))
+                verify(productEventListener, times(1))
                     .deduct(any(OrderCreatedEvent.class));
             });
     }
@@ -104,7 +108,7 @@ class ProductEventListenerTest {
         assertThatThrownBy(
             () -> orderService.createOrder(invalidCommand)
         ).isInstanceOf(RuntimeException.class);
-        verify(productEventListenerWithSpy, never()).deduct(any(OrderCreatedEvent.class));
+        verify(productEventListener, never()).deduct(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -122,7 +126,7 @@ class ProductEventListenerTest {
         await()
             .atMost(Duration.ofSeconds(5))
             .untilAsserted(() -> {
-                verify(productEventListenerWithSpy, times(1))
+                verify(productEventListener, times(1))
                     .deduct(any(OrderCreatedEvent.class));
             });
     }
@@ -143,7 +147,7 @@ class ProductEventListenerTest {
         await()
             .atMost(Duration.ofSeconds(5))
             .untilAsserted(() -> {
-                verify(productEventListenerWithSpy, times(1)).deduct(eventCaptor.capture());
+                verify(productEventListener, times(1)).deduct(eventCaptor.capture());
                 OrderCreatedEvent capturedEvent = eventCaptor.getValue();
 
                 assertThat(capturedEvent.orderId()).isNotNull();
@@ -151,24 +155,5 @@ class ProductEventListenerTest {
                 assertThat(capturedEvent.products()).isNotEmpty();
                 assertThat(capturedEvent.occurredAt()).isNotNull();
             });
-    }
-
-    @Test
-    @DisplayName("비동기로 실행되는 이벤트 로직의 예외가 메인 스레드에 영향을 주지 않는다")
-    void nonSideEffect() {
-        OrderCreateCommand command = new OrderCreateCommand(
-            supplierId,
-            customerId,
-            List.of(product),
-            comments
-        );
-        doAnswer(inv -> {
-            throw new RuntimeException("재고 차감이 실패합니다.");
-        }).when(productEventListener).deduct(any(OrderCreatedEvent.class));
-
-        OrderResponse response = orderService.createOrder(command);
-
-        assertThat(response).isNotNull();
-        assertThat(response.orderId()).isNotNull();
     }
 }

@@ -3,6 +3,7 @@ package com.klp.order.payment.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 
 import com.klp.order.order.application.service.OrderService;
@@ -11,6 +12,7 @@ import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.application.service.dto.OrderResponse;
 import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
+import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import com.klp.order.product.applicaiton.service.ProductEventListener;
 import java.time.Duration;
 import java.util.List;
@@ -22,10 +24,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class PaymentEventListenerTest {
 
     @Autowired
@@ -34,25 +38,20 @@ class PaymentEventListenerTest {
     @Autowired
     private OrderRepository orderRepository;
 
-    @MockitoSpyBean
-    private PaymentEventListener paymentEventListenerWithSpy;
-
     @MockitoBean
-    private PaymentEventListener paymentEventListener;
+    private ExternalPaymentClient externalPaymentClient;
 
-    @Autowired
-    private ProductEventListener productEventListener;
+    @MockitoSpyBean
+    private PaymentEventListener paymentEventListener;
 
     @BeforeEach
     void setUp() {
-        clearInvocations(paymentEventListenerWithSpy);
         clearInvocations(paymentEventListener);
     }
 
     @AfterEach
     void tearDown() {
         orderRepository.deleteAll();
-        reset(paymentEventListenerWithSpy);
         reset(paymentEventListener);
 
         await()
@@ -82,7 +81,7 @@ class PaymentEventListenerTest {
 
         orderService.createOrder(command);
 
-        verify(paymentEventListenerWithSpy, times(1)).pay(any(OrderCreatedEvent.class));
+        verify(paymentEventListener, times(1)).pay(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -98,7 +97,7 @@ class PaymentEventListenerTest {
         assertThatThrownBy(
             () -> orderService.createOrder(invalidCommand)
         ).isInstanceOf(RuntimeException.class);
-        verify(paymentEventListenerWithSpy, never()).pay(any(OrderCreatedEvent.class));
+        verify(paymentEventListener, never()).pay(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -113,7 +112,7 @@ class PaymentEventListenerTest {
 
         orderService.createOrder(command);
 
-        verify(paymentEventListenerWithSpy, times(1)).pay(any(OrderCreatedEvent.class));
+        verify(paymentEventListener, times(1)).pay(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -132,7 +131,7 @@ class PaymentEventListenerTest {
         await()
             .atMost(Duration.ofSeconds(5))
             .untilAsserted(() -> {
-                verify(paymentEventListenerWithSpy, times(1)).pay(eventCaptor.capture());
+                verify(paymentEventListener, times(1)).pay(eventCaptor.capture());
                 OrderCreatedEvent capturedEvent = eventCaptor.getValue();
 
                 assertThat(capturedEvent.orderId()).isNotNull();
@@ -151,9 +150,8 @@ class PaymentEventListenerTest {
             List.of(product),
             comments
         );
-        doAnswer(inv -> {
-            throw new RuntimeException("결제 실패");
-        }).when(paymentEventListener).pay(any(OrderCreatedEvent.class));
+        doThrow(new RuntimeException("결제 실패"))
+            .when(externalPaymentClient).payment();
 
         OrderResponse response = orderService.createOrder(command);
 

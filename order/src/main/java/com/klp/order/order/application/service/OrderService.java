@@ -31,7 +31,8 @@ public class OrderService {
         );
 
         if (command.products().isEmpty()) {
-            throw new RuntimeException();
+            log.info("상품이 존재하지 않습니다.");
+            throw new RuntimeException("상품이 존재하지 않습니다.");
         }
 
         Order savedOrder = orderRepository.save(order);

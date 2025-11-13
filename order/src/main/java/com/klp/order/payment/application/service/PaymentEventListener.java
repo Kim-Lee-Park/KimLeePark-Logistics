@@ -20,6 +20,7 @@ public class PaymentEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void pay(OrderCreatedEvent event) {
         log.info("결제 처리 시작 order ID : {}", event.orderId());
+        log.info("Thread name : {}", Thread.currentThread().getName());
         paymentClient.payment();
         log.info("결제 처리 성공");
     }
