@@ -3,7 +3,8 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.order.command.OrderItemCommand;
+import com.klp.common.exception.BusinessException;
+import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.util.List;
@@ -53,7 +54,7 @@ public class OrderItemTest {
 
         // when & then
         assertThatThrownBy(() -> OrderItem.of(order, command))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("상품 ID는 필수입니다.");
     }
 
@@ -62,11 +63,11 @@ public class OrderItemTest {
     void createOrderItem_Fail_Quantity_is_Zero_or_Negative() {
         // when & then
         assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, 0)))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
 
         assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, -5)))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
     }
 
@@ -78,7 +79,7 @@ public class OrderItemTest {
 
         // when & then
         assertThatThrownBy(() -> OrderItem.of(null, command))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문은 필수입니다.");
     }
 
@@ -121,11 +122,11 @@ public class OrderItemTest {
 
         // when & then
         assertThatThrownBy(() -> orderItem.updateQuantity(0))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
 
         assertThatThrownBy(() -> orderItem.updateQuantity(-5))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
     }
 }
