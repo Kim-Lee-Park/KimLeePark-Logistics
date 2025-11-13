@@ -4,10 +4,10 @@ package com.klp.delivery.delivery.application.service;
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
-import com.klp.delivery.delivery.domain.Company;
-import com.klp.delivery.delivery.domain.Delivery;
-import com.klp.delivery.delivery.domain.DeliveryRepository;
-import com.klp.delivery.delivery.domain.Driver;
+import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
+import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class DeliveryService {
     private final CompanyApiClient companyApiClient;
     private final DriverApiClient driverApiClient;
 
-    public Company findCompany(String customerId) {
+    public CompanyCommand findCompany(String customerId) {
         try {
             return companyApiClient.findCompany(customerId);
         } catch (BusinessException e) {
@@ -35,7 +35,7 @@ public class DeliveryService {
         }
     }
 
-    public Driver findDriver(String customerId) {
+    public DriverCommand findDriver(String customerId) {
         try {
             return driverApiClient.findDriver(customerId);
         } catch (BusinessException e) {

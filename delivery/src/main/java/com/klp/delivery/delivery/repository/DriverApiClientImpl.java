@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.repository;
 
 import com.klp.delivery.delivery.application.service.DriverApiClient;
-import com.klp.delivery.delivery.domain.Driver;
+import com.klp.delivery.delivery.application.command.DriverCommand;
 import org.springframework.stereotype.Component;
 
 
@@ -10,7 +10,7 @@ public class DriverApiClientImpl implements DriverApiClient {
 
 
   @Override
-  public Driver findDriver(String receiverId) {
+  public DriverCommand findDriver(String receiverId) {
     return null;
   }
 }

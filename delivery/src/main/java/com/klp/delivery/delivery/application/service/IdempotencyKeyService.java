@@ -2,8 +2,8 @@ package com.klp.delivery.delivery.application.service;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
-import com.klp.delivery.delivery.domain.IdempotencyKey;
-import com.klp.delivery.delivery.domain.IdempotencyKeyRepository;
+import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
+import com.klp.delivery.delivery.domain.repository.IdempotencyKeyRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

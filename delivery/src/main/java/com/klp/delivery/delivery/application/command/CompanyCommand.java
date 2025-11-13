@@ -1,6 +1,6 @@
-package com.klp.delivery.delivery.domain;
+package com.klp.delivery.delivery.application.command;
 
-public record Company(
+public record CompanyCommand(
     String companyId,
     String hubId,
     String type,

@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.fixture;
 
-import com.klp.delivery.delivery.domain.Company;
-import com.klp.delivery.delivery.domain.Delivery;
-import com.klp.delivery.delivery.domain.Driver;
+import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.application.command.DriverCommand;
+import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;
 import java.util.List;
@@ -31,8 +31,8 @@ public class DeliveryFixture {
   public static String DEFAULT_IDEMPOTENCY_KEY = "멱등키123";
 
 
-  public static Company createCompany() {
-    return new Company(
+  public static CompanyCommand createCompany() {
+    return new CompanyCommand(
         DEFAULT_RECEIVER_ID.toString(),
         DEFAULT_HUB_ID,
         "CUSTOMER",
@@ -41,8 +41,8 @@ public class DeliveryFixture {
     );
   }
 
-  public static Company createCompany(UUID receiverId, String hubId, String name, String address) {
-    return new Company(
+  public static CompanyCommand createCompany(UUID receiverId, String hubId, String name, String address) {
+    return new CompanyCommand(
         receiverId.toString(),
         hubId,
         "CUSTOMER",
@@ -51,12 +51,12 @@ public class DeliveryFixture {
     );
   }
 
-  public static Driver createDriver() {
-    return new Driver(DEFAULT_VENDOR_DRIVER_ID_STR, DEFAULT_RECEIVER_SLACK_ID);
+  public static DriverCommand createDriver() {
+    return new DriverCommand(DEFAULT_VENDOR_DRIVER_ID_STR, DEFAULT_RECEIVER_SLACK_ID);
   }
 
-  public static Driver createDriver(Long vendorDriverId, String receiverSlackId) {
-    return new Driver(vendorDriverId, receiverSlackId);
+  public static DriverCommand createDriver(Long vendorDriverId, String receiverSlackId) {
+    return new DriverCommand(vendorDriverId, receiverSlackId);
   }
 
     private static Delivery buildDelivery(

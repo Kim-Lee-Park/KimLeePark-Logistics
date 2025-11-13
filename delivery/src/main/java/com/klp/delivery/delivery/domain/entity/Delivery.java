@@ -1,4 +1,4 @@
-package com.klp.delivery.delivery.domain;
+package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.BaseEntity;

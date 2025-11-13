@@ -28,7 +28,7 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
-import com.klp.delivery.delivery.domain.Delivery;
+import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;

@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.repository;
 
-import com.klp.delivery.delivery.domain.Delivery;
-import com.klp.delivery.delivery.domain.DeliveryRepository;
+import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

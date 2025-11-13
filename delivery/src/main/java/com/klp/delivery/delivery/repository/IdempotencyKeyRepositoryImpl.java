@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.repository;
 
-import com.klp.delivery.delivery.domain.IdempotencyKey;
-import com.klp.delivery.delivery.domain.IdempotencyKeyRepository;
+import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
+import com.klp.delivery.delivery.domain.repository.IdempotencyKeyRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

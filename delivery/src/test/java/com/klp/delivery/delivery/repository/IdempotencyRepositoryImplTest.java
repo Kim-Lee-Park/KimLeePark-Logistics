@@ -4,7 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.klp.delivery.common.IdempotencyStatus;
 import com.klp.delivery.common.JpaAuditingConfig;
-import com.klp.delivery.delivery.domain.IdempotencyKey;
+import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
 import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;

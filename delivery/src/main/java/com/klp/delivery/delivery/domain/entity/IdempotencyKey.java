@@ -1,4 +1,4 @@
-package com.klp.delivery.delivery.domain;
+package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.delivery.common.BaseEntity;
 import com.klp.delivery.common.IdempotencyStatus;

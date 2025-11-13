@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.application.service;
 
-import com.klp.delivery.delivery.domain.Company;
+import com.klp.delivery.delivery.application.command.CompanyCommand;
 
 public interface CompanyApiClient {
 
-  Company findCompany(String companyId);
+  CompanyCommand findCompany(String companyId);
 }

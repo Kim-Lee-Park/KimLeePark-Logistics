@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.repository;
 
 import com.klp.delivery.delivery.application.service.CompanyApiClient;
-import com.klp.delivery.delivery.domain.Company;
+import com.klp.delivery.delivery.application.command.CompanyCommand;
 import org.springframework.stereotype.Component;
 
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class CompanyApiClientImpl implements CompanyApiClient {
 
   @Override
-  public Company findCompany(String companyId) {
+  public CompanyCommand findCompany(String companyId) {
     return null;
   }
 }

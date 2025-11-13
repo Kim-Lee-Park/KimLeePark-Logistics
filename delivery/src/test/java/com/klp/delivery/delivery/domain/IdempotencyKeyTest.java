@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.klp.delivery.common.IdempotencyStatus;
 import com.klp.delivery.delivery.MockTest;
+import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 

@@ -6,9 +6,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.klp.delivery.common.DeliveryStatus;
 import com.klp.delivery.common.JpaAuditingConfig;
-import com.klp.delivery.delivery.domain.Delivery;
+import com.klp.delivery.delivery.domain.entity.Delivery;
 import java.util.Optional;
-import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

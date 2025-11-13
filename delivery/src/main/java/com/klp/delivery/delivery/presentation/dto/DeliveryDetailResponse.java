@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.presentation.dto;
 
 import com.klp.delivery.common.DeliveryStatus;
-import com.klp.delivery.delivery.domain.Delivery;
+import com.klp.delivery.delivery.domain.entity.Delivery;
 import java.util.UUID;
 
 public record DeliveryDetailResponse(

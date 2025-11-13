@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.application.service;
 
-import com.klp.delivery.delivery.domain.Driver;
+import com.klp.delivery.delivery.application.command.DriverCommand;
 
 public interface DriverApiClient {
 
-  Driver findDriver(String receiverId);
+  DriverCommand findDriver(String receiverId);
 }

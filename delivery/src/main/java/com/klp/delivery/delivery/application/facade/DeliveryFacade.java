@@ -7,9 +7,9 @@ import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
-import com.klp.delivery.delivery.domain.Company;
-import com.klp.delivery.delivery.domain.Delivery;
-import com.klp.delivery.delivery.domain.Driver;
+import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +37,15 @@ public class DeliveryFacade {
 
         try {
 
-            Company company = deliveryService.findCompany(orderCommand.receiverId().toString());
+            CompanyCommand companyCommand = deliveryService.findCompany(orderCommand.receiverId().toString());
 
             // TODO: 배송 담당자 api 생성 확정 후 로직 변경
-            Driver driver = deliveryService.findDriver(company.hubId());
+            DriverCommand driverCommand = deliveryService.findDriver(companyCommand.hubId());
 
 
             // 항목별 배송 생성
-            List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(orderCommand, company, driver);
+            List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(orderCommand,
+                companyCommand, driverCommand);
 
 
             IdempotencyCommand updateCommand = new IdempotencyCommand(idempotencyCommand.idempotencyKey(), idempotencyCommand.orderId(), IdempotencyStatus.COMPLETED);
@@ -60,10 +61,10 @@ public class DeliveryFacade {
     }
 
     private List<DeliveryResponse.DeliveryItemResponse> createDeliveriesForOrderItems(
-        OrderToDeliveryCommand orderCommand, Company company, Driver driver) {
+        OrderToDeliveryCommand orderCommand, CompanyCommand companyCommand, DriverCommand driverCommand) {
 
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = new ArrayList<>();
-        UUID arrivalId = UUID.fromString(company.hubId());
+        UUID arrivalId = UUID.fromString(companyCommand.hubId());
 
 
         for (OrderItemCommand orderItem : orderCommand.items()) {
@@ -75,10 +76,10 @@ public class DeliveryFacade {
                 arrivalId,
                 orderCommand.senderId(),
                 orderCommand.receiverId(),
-                company.name(),
-                company.address(),
-                driver.receiverSlackId(),
-                driver.vendorDrvierId()
+                companyCommand.name(),
+                companyCommand.address(),
+                driverCommand.receiverSlackId(),
+                driverCommand.vendorDrvierId()
             );
 
             Delivery delivery = deliveryService.registerDelivery(deliveryCommand);
