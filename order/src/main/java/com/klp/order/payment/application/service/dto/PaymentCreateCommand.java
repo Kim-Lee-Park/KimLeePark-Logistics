@@ -5,12 +5,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-public record PaymentCommand(
+public record PaymentCreateCommand(
     UUID orderId,
     List<PaymentInfo> infos
 ) {
-    public static PaymentCommand from(OrderCreatedEvent event) {
-        return new PaymentCommand(
+    public static PaymentCreateCommand from(OrderCreatedEvent event) {
+        return new PaymentCreateCommand(
             event.orderId(),
             event.products().stream().map(PaymentInfo::from).toList()
         );

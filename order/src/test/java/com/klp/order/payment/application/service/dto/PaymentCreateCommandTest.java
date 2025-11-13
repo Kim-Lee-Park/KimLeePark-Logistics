@@ -1,16 +1,15 @@
 package com.klp.order.payment.application.service.dto;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand.PaymentInfo;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class PaymentCommandTest {
+class PaymentCreateCommandTest {
     private UUID orderId = UUID.randomUUID();
 
     private UUID productId1 = UUID.randomUUID();
@@ -23,7 +22,7 @@ class PaymentCommandTest {
         Integer quantity2 = 20;
         BigDecimal price1 = BigDecimal.valueOf(100);
         BigDecimal price2 = BigDecimal.valueOf(200);
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             List.of(
                 new PaymentInfo(productId1, quantity1, price1),

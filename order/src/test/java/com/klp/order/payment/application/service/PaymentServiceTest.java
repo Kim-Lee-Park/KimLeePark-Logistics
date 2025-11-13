@@ -8,8 +8,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.order.payment.application.service.dto.PaymentCommand;
-import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand.PaymentInfo;
 import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
@@ -44,8 +44,8 @@ class PaymentServiceTest {
 
     private UUID productId = UUID.randomUUID();
 
-    private List<PaymentCommand.PaymentInfo> paymentInfoList = List.of(
-        new PaymentCommand.PaymentInfo(
+    private List<PaymentCreateCommand.PaymentInfo> paymentInfoList = List.of(
+        new PaymentCreateCommand.PaymentInfo(
             productId,
             1,
             BigDecimal.ZERO
@@ -55,7 +55,7 @@ class PaymentServiceTest {
     @Test
     @DisplayName("외부 결제 API 를 호출한다")
     void callExternalPayment() {
-        PaymentCommand command = new PaymentCommand(orderId, List.of(new PaymentInfo(productId, 10, BigDecimal.ZERO)));
+        PaymentCreateCommand command = new PaymentCreateCommand(orderId, List.of(new PaymentInfo(productId, 10, BigDecimal.ZERO)));
         Payment payment = mock(Payment.class);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(payment.getPaymentId()).thenReturn(UUID.randomUUID());
@@ -68,7 +68,7 @@ class PaymentServiceTest {
     @Test
     @DisplayName("결제를 성공하면 PaymentCompletedEvent 를 발행한다")
     void publishPaymentCompletedEvent() {
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             paymentInfoList
         );
@@ -84,7 +84,7 @@ class PaymentServiceTest {
     @Test
     @DisplayName("결제에 실패하면 PaymentCompletedEvent 를 발행하지 않는다")
     void verifyNever() {
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             paymentInfoList
         );

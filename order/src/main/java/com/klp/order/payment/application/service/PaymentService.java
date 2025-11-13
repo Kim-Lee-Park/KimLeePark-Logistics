@@ -1,6 +1,6 @@
 package com.klp.order.payment.application.service;
 
-import com.klp.order.payment.application.service.dto.PaymentCommand;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
 import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
@@ -22,7 +22,7 @@ public class PaymentService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public UUID pay(PaymentCommand command) {
+    public UUID pay(PaymentCreateCommand command) {
         BigDecimal totalAmount = command.totalAmount();
         Payment payment = new Payment(command.orderId(), totalAmount);
 

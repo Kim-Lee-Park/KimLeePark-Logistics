@@ -12,12 +12,11 @@ import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.application.service.dto.OrderResponse;
 import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
-import com.klp.order.payment.application.service.dto.PaymentCommand;
-import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand.PaymentInfo;
 import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import com.klp.order.payment.infrastructure.repository.PaymentRepository;
-import com.klp.order.product.applicaiton.service.ProductEventListener;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
@@ -166,7 +165,7 @@ class PaymentEventListenerTest {
     @Test
     @DisplayName("외부 API 실패 시 결제가 생성되지 않는다")
     void rollback() {
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             UUID.randomUUID(),
             List.of(new PaymentInfo(UUID.randomUUID(), 10, BigDecimal.TEN))
         );

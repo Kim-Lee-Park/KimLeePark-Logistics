@@ -1,6 +1,5 @@
 package com.klp.order.product.applicaiton.service;
 
-import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.product.applicaiton.service.dto.DeductStockCommand;
 import lombok.RequiredArgsConstructor;

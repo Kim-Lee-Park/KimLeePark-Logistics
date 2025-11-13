@@ -1,8 +1,7 @@
 package com.klp.order.payment.application.service;
 
 import com.klp.order.order.domain.event.OrderCreatedEvent;
-import com.klp.order.payment.application.service.dto.PaymentCommand;
-import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -25,7 +24,7 @@ public class PaymentEventListener {
     public void pay(OrderCreatedEvent event) {
         log.info("결제 처리 시작 order ID : {}", event.orderId());
         log.info("Thread name : {}", Thread.currentThread().getName());
-        paymentService.pay(PaymentCommand.from(event));
+        paymentService.pay(PaymentCreateCommand.from(event));
         log.info("결제 처리 성공");
     }
 }

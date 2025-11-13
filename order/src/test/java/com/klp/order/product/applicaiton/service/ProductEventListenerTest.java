@@ -13,8 +13,8 @@ import static org.mockito.Mockito.verify;
 
 import com.klp.order.order.infrastructure.repository.OrderRepository;
 import com.klp.order.payment.application.service.PaymentService;
-import com.klp.order.payment.application.service.dto.PaymentCommand;
-import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
+import com.klp.order.payment.application.service.dto.PaymentCreateCommand.PaymentInfo;
 import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
@@ -93,7 +93,7 @@ class ProductEventListenerTest {
     @Test
     @DisplayName("결제 완료 이벤트를 구독하여 deduct() 를 수행할 수 있다")
     void subscribePaymentCompletedEvent() {
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             paymentInfos
         );
@@ -111,7 +111,7 @@ class ProductEventListenerTest {
     @Test
     @DisplayName("결제에 실패한 경우 재고 차감이 시도되지 않는다")
     void throwOrderCreatedEvent() {
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             paymentInfos
         );
@@ -129,7 +129,7 @@ class ProductEventListenerTest {
     void asyncEventHandle() {
         ArgumentCaptor<PaymentCompletedEvent> eventCaptor = ArgumentCaptor.forClass(
             PaymentCompletedEvent.class);
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             paymentInfos
         );
@@ -156,7 +156,7 @@ class ProductEventListenerTest {
         Product savedProduct = productRepository.save(
             new Product("상품명", stock)
         );
-        PaymentCommand command = new PaymentCommand(
+        PaymentCreateCommand command = new PaymentCreateCommand(
             orderId,
             List.of(
                 new PaymentInfo(
