@@ -30,21 +30,21 @@ public class Payment {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    @Comment("결제 금액")
-    @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
+    @Comment("총 결제 금액")
+    @Column(name = "total_amount", nullable = false)
+    private BigDecimal totalAmount;
 
     @Comment("결제 상태")
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private PaymentStatus status;
 
-    public Payment(UUID orderId, BigDecimal amount) {
-        if (amount == null) {
+    public Payment(UUID orderId, BigDecimal totalAmount) {
+        if (totalAmount == null) {
             throw new IllegalArgumentException("결제 금액은 필수값입니다.");
         }
 
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("결제 금액은 0 이상이어야 합니다.");
         }
 
@@ -52,7 +52,7 @@ public class Payment {
             throw new IllegalArgumentException("주문 ID 는 필수값입니다");
         }
 
-        this.amount = amount;
+        this.totalAmount = totalAmount;
         this.orderId = orderId;
         this.status = PaymentStatus.PENDING;
     }
