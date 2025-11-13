@@ -86,7 +86,7 @@ public class OrderOutBoundRequestTest {
             order, idempotencyKey, null, operation
         ))
             .isInstanceOf(BusinessException.class)
-            .hasMessage("요청 대상은 필수입니다.");
+            .hasMessage("타겟은 필수입니다.");
     }
 
     @Test
