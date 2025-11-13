@@ -4,28 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import com.klp.order.order.application.service.OrderService;
-import com.klp.order.order.application.service.dto.OrderCreateCommand;
-import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
-import com.klp.order.order.application.service.dto.OrderResponse;
-import com.klp.order.order.domain.event.OrderCreatedEvent;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
 import com.klp.order.payment.application.service.PaymentService;
 import com.klp.order.payment.application.service.dto.PaymentCommand;
 import com.klp.order.payment.application.service.dto.PaymentCommand.PaymentInfo;
+import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
-import com.klp.order.payment.domain.event.PaymentCompletedEvent.PaidInfo;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
+import com.klp.order.payment.infrastructure.repository.PaymentRepository;
+import com.klp.order.product.domain.entity.Product;
+import com.klp.order.product.infrastructure.repository.ProductRepository;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
@@ -49,6 +45,15 @@ class ProductEventListenerTest {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @MockitoBean
     private ExternalPaymentClient externalPaymentClient;
@@ -76,6 +81,7 @@ class ProductEventListenerTest {
     @AfterEach
     void tearDown() {
         orderRepository.deleteAll();
+        productRepository.deleteAll();
         reset(productEventListener);
 
         await()
@@ -141,5 +147,31 @@ class ProductEventListenerTest {
                 assertThat(capturedEvent.paidInfos()).isNotEmpty();
                 assertThat(capturedEvent.occurredAt()).isNotNull();
             });
+    }
+
+    @Test
+    @DisplayName("재고 차감에 실패하여도 결제는 생성된다")
+    void transactionPropagation() {
+        Integer stock = 1;
+        Product savedProduct = productRepository.save(
+            new Product("상품명", stock)
+        );
+        PaymentCommand command = new PaymentCommand(
+            orderId,
+            List.of(
+                new PaymentInfo(
+                    savedProduct.getProductId(),
+                    2,
+                    BigDecimal.ZERO
+                )
+            )
+        );
+
+        paymentService.pay(command);
+
+        Product product = productRepository.findById(savedProduct.getProductId()).orElseThrow();
+        assertThat(product.getStock()).isEqualTo(stock);
+        List<Payment> payments = paymentRepository.findAll();
+        assertThat(payments).isNotEmpty();
     }
 }
