@@ -2,12 +2,12 @@ package com.klp.order.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.klp.order.command.OrderItemCommand;
+import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.global.AuditConfig;
+import com.klp.order.global.config.AuditConfig;
 import com.klp.order.infrastructure.repository.OrderJpaRepository;
 import com.klp.order.infrastructure.repository.OrderOutboundRequestJpaRepository;
 import java.util.ArrayList;

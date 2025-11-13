@@ -3,7 +3,8 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.order.command.OrderItemCommand;
+import com.klp.common.exception.BusinessException;
+import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.idempotencykey.Target;
@@ -62,7 +63,7 @@ public class OrderOutBoundRequestTest {
         assertThatThrownBy(() -> OrderOutboundRequest.create(
             order, null, target, operation
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("멱등키는 필수입니다.");
     }
 
@@ -73,7 +74,7 @@ public class OrderOutBoundRequestTest {
         assertThatThrownBy(() -> OrderOutboundRequest.create(
             null, idempotencyKey, target, operation
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 정보는 필수입니다.");
     }
 
@@ -84,8 +85,8 @@ public class OrderOutBoundRequestTest {
         assertThatThrownBy(() -> OrderOutboundRequest.create(
             order, idempotencyKey, null, operation
         ))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("요청 대상은 필수입니다.");
+            .isInstanceOf(BusinessException.class)
+            .hasMessage("타겟은 필수입니다.");
     }
 
     @Test
@@ -95,7 +96,7 @@ public class OrderOutBoundRequestTest {
         assertThatThrownBy(() -> OrderOutboundRequest.create(
             order, idempotencyKey, target, null
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("요청 작업은 필수입니다.");
     }
 
