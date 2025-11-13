@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.OrderItemCommand;
@@ -94,7 +95,7 @@ class OrderServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(invalidCommand))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("공급 업체 ID는 필수입니다.");
 
     }
@@ -112,7 +113,7 @@ class OrderServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(invalidCommand))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("수령 업체 ID는 필수입니다.");
 
     }
@@ -130,7 +131,7 @@ class OrderServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderService.createOrder(invalidCommand))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 상품은 필수입니다.");
 
     }
@@ -160,7 +161,7 @@ class OrderServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderService.findById(nonExistentId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문을 찾을 수 없습니다.");
 
     }
@@ -291,7 +292,7 @@ class OrderServiceTest {
 
         //when
         assertThatThrownBy(() -> orderService.changeOrderStatus(orderId, newStatus))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("변경할 주문 상태가 존재해야 합니다.");
     }
 
@@ -317,7 +318,7 @@ class OrderServiceTest {
         Long deletedBy = null;
         //when
         assertThatThrownBy(() -> orderService.deleteOrder(orderId, deletedBy))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("삭제자는 필수 정보 입니다.");
     }
 }

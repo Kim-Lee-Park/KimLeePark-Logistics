@@ -8,6 +8,7 @@ import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,25 +29,29 @@ import org.springframework.web.bind.annotation.RestController;
 public class HubController {
     private final HubService hubService;
 
+    //허브 등록
     @PostMapping("")
     public ResponseEntity<RegisterHubResponse> registerHub(
-        @RequestBody RegisterHubRequest request
+        @Valid @RequestBody RegisterHubRequest request
     ){
         RegisterHubResponse response=hubService.registerHub(request.toCommand());
         URI uri=URI.create("/v1/hubs/"+response.hubId());
         return ResponseEntity.created(uri).body(response);
     }
 
+    //허브 단일 조회
     @GetMapping("/{hubId}")
     public ResponseEntity<GetHubDetailResponse> getHubDetail(@PathVariable UUID hubId){
         return ResponseEntity.ok().body(hubService.getHubDetail(hubId));
     }
 
+    //허브 목록 조회
     @GetMapping("")
     public ResponseEntity<GetHubListResponse> getHubs(Pageable pageable){
         return ResponseEntity.ok().body(hubService.getHubs(pageable));
     }
 
+    //허브 수정
     @PatchMapping("/{hubId}")
     public ResponseEntity<UpdatedHubResponse> updateHub(@PathVariable UUID hubId,
         @RequestBody UpdateHubRequest request){
@@ -54,6 +59,7 @@ public class HubController {
         return ResponseEntity.ok().body(response);
     }
 
+    //허브 삭제
     @DeleteMapping("/{hubId}")
     public ResponseEntity<Void> deleteHub(@PathVariable UUID hubId){
         return ResponseEntity.ok().build();

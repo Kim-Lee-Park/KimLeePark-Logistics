@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
@@ -99,7 +100,7 @@ class OrderOutboundRequestServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService.findById(nonExistentId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("요청 정보를 찾을 수 없습니다.");
     }
 
@@ -134,7 +135,7 @@ class OrderOutboundRequestServiceTest {
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService
             .findByIdempotencyKey(nonExistentKey))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("해당 멱등키의 요청을 찾을 수 없습니다.");
     }
 
@@ -199,7 +200,7 @@ class OrderOutboundRequestServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService.save(command))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문을 찾을 수 없습니다.");
     }
 
@@ -270,8 +271,8 @@ class OrderOutboundRequestServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderOutboundRequestService.saveIfNotExists(command))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("이미 존재하는 멱등키입니다.");
+            .isInstanceOf(BusinessException.class)
+            .hasMessage("이미 존재하는 멱등키 입니다.");
     }
 
     @Test
@@ -301,7 +302,7 @@ class OrderOutboundRequestServiceTest {
         assertThatThrownBy(() -> orderOutboundRequestService.generateIdempotencyKey(
             null, Target.DELIVERY, OperationType.MAKING
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 ID는 필수입니다.");
     }
 
@@ -312,7 +313,7 @@ class OrderOutboundRequestServiceTest {
         assertThatThrownBy(() -> orderOutboundRequestService.generateIdempotencyKey(
             UUID.randomUUID(), null, OperationType.MAKING
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("타겟은 필수입니다.");
     }
 
@@ -323,7 +324,7 @@ class OrderOutboundRequestServiceTest {
         assertThatThrownBy(() -> orderOutboundRequestService.generateIdempotencyKey(
             UUID.randomUUID(), Target.DELIVERY, null
         ))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("작업 타입은 필수입니다.");
     }
 }

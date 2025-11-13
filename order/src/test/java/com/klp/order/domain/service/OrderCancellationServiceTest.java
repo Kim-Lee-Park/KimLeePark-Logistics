@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderCancellationService;
 import com.klp.order.domain.entity.cancel.CancelType;
@@ -83,7 +84,7 @@ class OrderCancellationServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderCancellationService.findById(nonExistentId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("주문 취소 정보를 찾을 수 없습니다.");
 
     }
@@ -118,7 +119,7 @@ class OrderCancellationServiceTest {
 
         // when & then
         assertThatThrownBy(() -> orderCancellationService.findByOrderId(nonCancelledOrderId))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("해당 주문의 취소 정보를 찾을 수 없습니다.");
     }
 
@@ -168,7 +169,7 @@ class OrderCancellationServiceTest {
     void save_Fail_NullCancellation() {
         // when & then
         assertThatThrownBy(() -> orderCancellationService.save(null))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(BusinessException.class)
             .hasMessage("취소 정보는 필수입니다.");
     }
 

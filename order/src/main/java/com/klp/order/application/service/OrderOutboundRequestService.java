@@ -13,7 +13,6 @@ import com.klp.order.global.exception.OrderOutboundRequestErrorCode;
 import com.klp.order.presentation.dto.OrderOutboundRequestResponse;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,7 @@ public class OrderOutboundRequestService {
     public OrderOutboundRequestResponse findById(UUID requestId) {
         OrderOutboundRequest request = orderOutboundRequestRepository.findById(requestId)
             .orElseThrow(
-                () -> new BusinessException(OrderOutboundRequestErrorCode.REQUEST_REQUIRED));
+                () -> new BusinessException(OrderOutboundRequestErrorCode.REQUEST_NOT_FOUND));
 
         return OrderOutboundRequestResponse.from(request);
     }
@@ -47,7 +46,7 @@ public class OrderOutboundRequestService {
     public List<OrderOutboundRequestResponse> findAll() {
         return orderOutboundRequestRepository.findAll().stream()
             .map(OrderOutboundRequestResponse::from)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Transactional
@@ -92,6 +91,7 @@ public class OrderOutboundRequestService {
         long timestamp = System.currentTimeMillis();
 
         return String.format("%s-%s-%s-%d",
+            orderId,
             target.name(),
             operationType.name(),
             timestamp
