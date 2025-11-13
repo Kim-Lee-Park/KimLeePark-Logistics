@@ -1,5 +1,6 @@
 package com.klp.order.payment.domain.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
@@ -27,6 +28,24 @@ class PaymentTest {
     @DisplayName("주문 ID 가 Null 이면 예외가 발생한다")
     void orderId_is_null() {
         assertThrows(IllegalArgumentException.class, () -> paymentByOrderId(null));
+    }
+
+    @Test
+    @DisplayName("결제가 생성되면 결제 상태는 PENDING 이다")
+    void createPaymentIsPending() {
+        Payment payment = new Payment(orderId, BigDecimal.ZERO);
+
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("결제가 완료되면 결제 상태는 COMPLETED 이다")
+    void completed() {
+        Payment payment = new Payment(orderId, BigDecimal.ZERO);
+
+        payment.completed();
+
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
     }
 
     private Payment payment(BigDecimal amount) {

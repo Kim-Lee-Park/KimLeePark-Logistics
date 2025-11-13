@@ -2,6 +2,8 @@ package com.klp.order.payment.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +34,11 @@ public class Payment {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
+    @Comment("결제 상태")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private PaymentStatus status;
+
     public Payment(UUID orderId, BigDecimal amount) {
         if (amount == null) {
             throw new IllegalArgumentException("결제 금액은 필수값입니다.");
@@ -47,5 +54,10 @@ public class Payment {
 
         this.amount = amount;
         this.orderId = orderId;
+        this.status = PaymentStatus.PENDING;
+    }
+
+    public void completed() {
+        this.status = PaymentStatus.COMPLETED;
     }
 }
