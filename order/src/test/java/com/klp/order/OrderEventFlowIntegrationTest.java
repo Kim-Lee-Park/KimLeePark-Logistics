@@ -3,8 +3,12 @@ package com.klp.order;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import com.klp.order.notification.applicaiton.service.NotificationService;
 import com.klp.order.order.application.service.OrderService;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderResponse;
@@ -25,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -45,6 +48,9 @@ public class OrderEventFlowIntegrationTest {
 
     @MockitoBean
     private ExternalPaymentClient externalPaymentClient;
+
+    @MockitoBean
+    private NotificationService notificationService;
 
     private Long supplierId = 1L;
 
@@ -184,6 +190,83 @@ public class OrderEventFlowIntegrationTest {
 
         Order order = orderRepository.findById(response.orderId()).orElseThrow();
         assertThat(order).isNotNull();
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                Payment payment = paymentRepository.findByOrderId(order.getOrderId()).orElseThrow();
+                assertThat(payment).isNotNull();
+            });
+
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                Product product = productRepository.findById(savedProduct.getProductId())
+                    .orElseThrow();
+                assertThat(product.getStock()).isEqualTo(initStock);
+            });
+    }
+
+    @Test
+    @DisplayName("결제 실패시 비동기 예외 핸들러가 알림을 발송한다")
+    void paymentFailedWithNotification() {
+        int initStock = 1;
+        int price = 1000;
+        int decreaseStock = 1;
+        Product savedProduct = createProduct(initStock);
+        OrderCreateCommand orderCreateCommand = createOrderCommand(
+            savedProduct,
+            decreaseStock,
+            price
+        );
+        doThrow(new RuntimeException("결제 실패"))
+            .when(externalPaymentClient).payment();
+
+        OrderResponse response = orderService.createOrder(orderCreateCommand);
+
+        Order order = orderRepository.findById(response.orderId()).orElseThrow();
+        assertThat(order).isNotNull();
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                verify(notificationService, times(1))
+                    .notification(contains("비동기 예외 알림"));
+            });
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                List<Payment> payments = paymentRepository.findAll();
+                assertThat(payments).isEmpty();
+            });
+    }
+
+    @Test
+    @DisplayName("재고 차감 실패시 비동기 예외 핸들러가 알림을 발송한다")
+    void decreaseStockFailedWithNotification() {
+        int initStock = 1;
+        int price = 1000;
+        int decreaseStock = 2;
+        Product savedProduct = createProduct(initStock);
+        OrderCreateCommand orderCreateCommand = createOrderCommand(
+            savedProduct,
+            decreaseStock,
+            price
+        );
+
+        OrderResponse response = orderService.createOrder(orderCreateCommand);
+
+        Order order = orderRepository.findById(response.orderId()).orElseThrow();
+        assertThat(order).isNotNull();
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                verify(notificationService, times(1))
+                    .notification(contains("비동기 예외 알림"));
+            });
         await()
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
