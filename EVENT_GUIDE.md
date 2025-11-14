@@ -2,6 +2,10 @@
 
 - 불변성을 보장하는 `record` 로 이벤트 객체를 만들어야 한다
 
+**[2025.11.13]**
+
+- Event 객체는 `DomainEvent` Interface 를 구현해야 한다 
+
 </br>
 
 ## 이벤트 네이밍 규칙
@@ -9,6 +13,13 @@
 - 과거형 사용 (ex. OrderCreatedEvent, PaymentCompletedEvent)
   - 이미 완료된 이벤트로 표현하도록 해야한다
 - `{도메인명}{과거형동작}{Event}`
+
+</br>
+
+## 이벤트 발행
+
+- 이벤트 발행은 `EventPublisher` Interface 를 통해 구현해야 합니다
+  - ex) 실제 구현체 `SrpingEventPublisher (EventPublisher impl)`
 
 </br>
 
