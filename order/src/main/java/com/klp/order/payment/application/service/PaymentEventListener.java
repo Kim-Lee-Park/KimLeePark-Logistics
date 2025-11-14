@@ -19,7 +19,6 @@ public class PaymentEventListener {
     private final PaymentService paymentService;
 
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void pay(OrderCreatedEvent event) {
         log.info("결제 처리 시작 order ID : {}", event.orderId());

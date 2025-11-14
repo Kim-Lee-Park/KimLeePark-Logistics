@@ -19,7 +19,6 @@ public class ProductEventListener {
     private final ProductService productService;
 
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void deduct(PaymentCompletedEvent event) {
         log.info("재고 차감 order ID : {}", event.orderId());
