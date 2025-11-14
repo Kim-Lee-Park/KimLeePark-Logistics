@@ -4,7 +4,6 @@ import com.klp.hub.hub.domain.model.HubRouteInfo;
 import com.klp.hub.hub.domain.model.QHubRouteInfo;
 import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
 import com.klp.hub.hub.infrastructure.dto.RoutePairDto;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -87,5 +86,10 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
     @Override
     public boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId) {
         return hubRouteInfoJpaRepository.existsByDepartureIdAndArrivalId(departureId, arrivalId);
+    }
+
+    @Override
+    public List<HubRouteInfo> getAllHubRouteInfos() {
+        return hubRouteInfoJpaRepository.findByDeletedAtIsNull();
     }
 }

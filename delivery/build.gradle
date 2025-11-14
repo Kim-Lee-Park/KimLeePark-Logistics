@@ -56,6 +56,12 @@ dependencies {
 
     //공통 모듈
     implementation 'com.klp.common:common-module:1.0.0'
+
+    //openfeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 dependencyManagement {

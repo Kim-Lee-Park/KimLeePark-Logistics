@@ -2,7 +2,6 @@ package com.klp.hub.hub.presentation.dto.response.hubrouteinfo;
 
 import com.klp.hub.common.dto.PageableDto;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
-import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -44,4 +43,18 @@ public record GetHubRouteInfoListResponse(
         Long durationMin,
         Double distanceKm
     ){}
+
+    public static GetHubRouteInfoListResponse from(List<HubRouteInfo> list) {
+        List<HubRouteInfoSummaryResponse> routeInfos = list.stream()
+            .map(info -> new HubRouteInfoSummaryResponse(
+                info.getHubRouteId(),
+                info.getDepartureId(),
+                info.getArrivalId(),
+                info.getDurationMin(),
+                info.getDistanceKm()
+            ))
+            .toList();
+
+        return new GetHubRouteInfoListResponse(routeInfos,null);
+    }
 }

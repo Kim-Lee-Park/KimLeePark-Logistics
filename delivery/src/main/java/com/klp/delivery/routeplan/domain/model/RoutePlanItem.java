@@ -1,6 +1,7 @@
 package com.klp.delivery.routeplan.domain.model;
 
 import com.klp.delivery.common.entity.BaseEntity;
+import com.klp.delivery.routeplan.domain.vo.RouteInfoVo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -41,4 +41,27 @@ public class RoutePlanItem extends BaseEntity {
 
     @Column(nullable = false)
     private Integer sequence;
+
+    public static RoutePlanItem create(UUID departureId, UUID arrivalId, long totalDurationMin,
+        double totalDistanceKm, int sequence,RoutePlan routePlan) {
+        RoutePlanItem routePlanItem = new RoutePlanItem();
+        routePlanItem.departureId = departureId;
+        routePlanItem.arrivalId = arrivalId;
+        routePlanItem.durationMin = totalDurationMin;
+        routePlanItem.distanceKm = totalDistanceKm;
+        routePlanItem.sequence = sequence;
+        routePlanItem.routePlan = routePlan;
+        return routePlanItem;
+    }
+
+    public static RoutePlanItem from(RouteInfoVo info, int i, RoutePlan routePlan) {
+        RoutePlanItem routePlanItem = new RoutePlanItem();
+        routePlanItem.departureId=info.departureId();
+        routePlanItem.arrivalId=info.arrivalId();
+        routePlanItem.durationMin = info.durationMin();
+        routePlanItem.distanceKm = info.distanceKm();
+        routePlanItem.sequence = i;
+        routePlanItem.routePlan = routePlan;
+        return routePlanItem;
+    }
 }
