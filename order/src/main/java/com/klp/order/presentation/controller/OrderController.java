@@ -45,7 +45,7 @@ public class OrderController {
         Order order = orderService.createOrder(command);
         CreateOrderResponse response = CreateOrderResponse.from(order);
 
-        URI location = URI.create("/v1/orders/" + response.orderId());
+        URI location = URI.create("/v1/orders");
 
         return ResponseEntity.created(location).body(response);
     }
