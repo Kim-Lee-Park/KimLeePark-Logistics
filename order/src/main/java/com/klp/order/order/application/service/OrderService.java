@@ -1,15 +1,20 @@
 package com.klp.order.order.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.common.event.EventPublisher;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderResponse;
 import com.klp.order.order.domain.entity.order.Order;
+import com.klp.order.outbox.domain.entity.EventType;
+import com.klp.order.outbox.domain.entity.OutboxEvent;
 import com.klp.order.order.domain.event.OrderCreatedEvent;
+import com.klp.order.order.domain.event.OrderCreatedEvent.Product;
 import com.klp.order.order.infrastructure.repository.OrderRepository;
+import com.klp.order.outbox.infrastructure.repository.OutboxRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +25,8 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final EventPublisher eventPublisher;
+    private final ObjectMapper objectMapper;
+    private final OutboxRepository outboxRepository;
 
     @Transactional
     public OrderResponse createOrder(OrderCreateCommand command) {
@@ -39,15 +46,22 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         log.info("주문 생성 완료 이벤트 발행");
-        eventPublisher.publish(new OrderCreatedEvent(
+        OrderCreatedEvent event = new OrderCreatedEvent(
             savedOrder.getOrderId(),
-            command.products().stream().map(product -> new OrderCreatedEvent.Product(
+            command.products().stream().map(product -> new Product(
                 product.productId(),
                 product.quantity(),
                 product.price()
             )).toList(),
             LocalDateTime.now()
-        ));
+        );
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            outboxRepository.save(new OutboxEvent(EventType.ORDER_CREATED, payload));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+//        eventPublisher.publish(event);
 
         log.info("주문 생성 완료");
         return new OrderResponse(savedOrder.getOrderId());

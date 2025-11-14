@@ -22,6 +22,7 @@ public class PaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void pay(OrderCreatedEvent event) {
+        // 서버 크래시 발생시 메시지 유실 가능성이 있음
         log.info("결제 처리 시작 order ID : {}", event.orderId());
         log.info("Thread name : {}", Thread.currentThread().getName());
         paymentService.pay(PaymentCreateCommand.from(event));
