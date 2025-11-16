@@ -10,11 +10,14 @@ import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanListResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,5 +109,12 @@ public class RoutePlanService {
                 return new BusinessException(RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND);
             });
         return GetRoutePlanDetailResponse.from(routePlan);
+    }
+
+    //경로 계획 목록 조회
+    @Transactional(readOnly = true)
+    public GetRoutePlanListResponse getRoutePlans(UUID depId, UUID arrId, Pageable pageable){
+        Page<RoutePlan> routePlans = routePlanRepository.findAll(depId, arrId, pageable);
+        return GetRoutePlanListResponse.from(routePlans);
     }
 }

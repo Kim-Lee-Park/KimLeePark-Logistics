@@ -68,7 +68,7 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
     }
 
     @Override
-    public List<RoutePairDto> findExistingParisIn(List<UUID> hubIds) {
+    public List<RoutePairDto> findExistingPairsIn(List<UUID> hubIds) {
         QHubRouteInfo qRouteInfo = QHubRouteInfo.hubRouteInfo;
 
         return queryFactory

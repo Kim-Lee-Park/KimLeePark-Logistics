@@ -3,6 +3,7 @@ package com.klp.delivery.routeplan.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.klp.delivery.global.config.AuditConfig;
+import com.klp.delivery.global.config.QuerydslConfig;
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
@@ -15,11 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({RoutePlanRepositoryImpl.class, AuditConfig.class})
+@Import({RoutePlanRepositoryImpl.class, AuditConfig.class, QuerydslConfig.class})
 public class RoutePlanRepositoryImplTest {
     @Autowired
     private RoutePlanRepository routePlanRepository;
@@ -104,5 +108,20 @@ public class RoutePlanRepositoryImplTest {
         Optional<RoutePlan> found=routePlanRepository.getRouteInfoById(routePlan.getRoutePlanId());
         // then
         assertThat(found).isPresent();
+    }
+
+    @Test
+    @DisplayName("경로 계획 목록 조회")
+    void findAll_success() {
+        // given
+        RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
+        routePlanRepository.save(routePlan);
+        entityManager.flush();
+        Pageable pageable= PageRequest.of(0,10);
+        // when
+        Page<RoutePlan> routePlans = routePlanRepository.findAll(null,null,pageable);
+        // then
+        assertThat(routePlans).isNotNull();
+        assertThat(routePlans.get().count()).isEqualTo(1);
     }
 }

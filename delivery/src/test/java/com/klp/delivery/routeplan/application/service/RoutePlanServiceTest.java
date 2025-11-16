@@ -20,6 +20,7 @@ import com.klp.delivery.routeplan.fixture.HubFixture;
 import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanListResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +30,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -280,5 +284,21 @@ public class RoutePlanServiceTest {
         GetRoutePlanDetailResponse response = routePlanService.getRoutePlan(routePlanId);
         // then
         assertThat(response).isNotNull();
+    }
+
+    @Test
+    @DisplayName("경로 계획 목록 조회")
+    void get_All_success() {
+        // given
+        UUID depId=RoutePlanFixture.DEPARTURE_ID;
+        UUID arrId=RoutePlanFixture.ARRIVAL_ID;
+        Pageable pageable= PageRequest.of(0, 10);
+        RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
+        given(routePlanRepository.findAll(depId,arrId,pageable)).willReturn(new PageImpl<>(List.of(routePlan),pageable,1));
+        // when
+        GetRoutePlanListResponse response = routePlanService.getRoutePlans(depId,arrId,pageable);
+        // then
+        assertThat(response.routePlans()).hasSize(1);
+        assertThat(response.pageable().totalElements()).isEqualTo(1);
     }
 }

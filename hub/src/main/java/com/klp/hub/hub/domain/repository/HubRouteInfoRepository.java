@@ -15,7 +15,7 @@ public interface HubRouteInfoRepository {
 
     Page<HubRouteInfo> getHubRoutes(UUID depId, UUID arrId, Pageable pageable);
 
-    List<RoutePairDto> findExistingParisIn(List<UUID> hubIds);
+    List<RoutePairDto> findExistingPairsIn(List<UUID> hubIds);
 
     boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
 
