@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class RoutePlanService {
     private final HubClientService hubClientService;
     private final HubRouteInfoClientService routeInfoClientService;
     private final RoutePlanPolicy routePlanPolicy;
+
+    private static final String CACHE_NAME = "route-plan";
 
     //경로 계획 생성
     @Transactional
@@ -90,6 +93,7 @@ public class RoutePlanService {
     }
 
     //출발 ID, 도착 ID로 조회
+    @Cacheable(cacheNames = CACHE_NAME,key = "{#depId, #arrId}")
     @Transactional(readOnly = true)
     public GetRoutePlanDetailResponse getRoutePlan(UUID depId, UUID arrId) {
         RoutePlan routePlan= routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(depId,arrId)
@@ -101,6 +105,7 @@ public class RoutePlanService {
     }
 
     //경로 계획 ID로 조회
+    @Cacheable(cacheNames = CACHE_NAME,key = "#routePlanId")
     @Transactional(readOnly = true)
     public GetRoutePlanDetailResponse getRoutePlan(UUID routePlanId) {
         RoutePlan routePlan = routePlanRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId)
