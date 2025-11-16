@@ -17,8 +17,11 @@ import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.klp.delivery.routeplan.domain.vo.RouteInfoVo;
 import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
 import com.klp.delivery.routeplan.fixture.HubFixture;
+import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -250,5 +253,32 @@ public class RoutePlanServiceTest {
         verify(routePlanPolicy).isDirectAllowed(directHubRoute.distanceKm());
         verify(routeInfoClientService).getHubRouteInfos();
         verify(routePlanRepository).save(any(RoutePlan.class));
+    }
+
+    @Test
+    @DisplayName("출발 허브ID, 도착허브ID로 조회")
+    void get_byDepartureIdAndArrivalId_success() {
+        // given
+        UUID depId=RoutePlanFixture.DEPARTURE_ID;
+        UUID arrId=RoutePlanFixture.ARRIVAL_ID;
+        RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
+        given(routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(depId, arrId)).willReturn(Optional.of(routePlan));
+        // when
+        GetRoutePlanDetailResponse response=routePlanService.getRoutePlan(depId,arrId);
+        // then
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    @DisplayName("경로 계획 ID로 조회")
+    void get_byRoutePlanId_success() {
+        // given
+        UUID routePlanId=RoutePlanFixture.ROUTE_PLAN_ID;
+        RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
+        given(routePlanRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId)).willReturn(Optional.of(routePlan));
+        // when
+        GetRoutePlanDetailResponse response = routePlanService.getRoutePlan(routePlanId);
+        // then
+        assertThat(response).isNotNull();
     }
 }

@@ -9,7 +9,11 @@ public interface RoutePlanRepository {
 
     void softDeleteByDepartureAndArrival(UUID departureId, UUID arrivalId);
 
-    Optional<RoutePlan> findDeletedAtIsNotNullByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
+    Optional<RoutePlan> findByDepartureIdAndArrivalIdAndDeletedAtIsNull(UUID departureId, UUID arrivalId);
 
     boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
+
+    Optional<RoutePlan> getRouteInfoById(UUID routePlanId);
+
+    Optional<RoutePlan> findByRoutePlanIdAndDeletedAtIsNull(UUID routePlanId);
 }

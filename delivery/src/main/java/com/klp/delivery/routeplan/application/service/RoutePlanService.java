@@ -9,7 +9,10 @@ import com.klp.delivery.routeplan.domain.policy.RoutePlanPolicy;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,5 +84,27 @@ public class RoutePlanService {
             routePlan = RoutePlan.plan(command.departureId(),command.arrivalId(),hubRouteInfo.toVo(),routeInfos.stream().map(HubRouteInfo::toVo).toList());
         }
         return new CreateRoutePlanResponse(routePlanRepository.save(routePlan).getRoutePlanId());
+    }
+
+    //출발 ID, 도착 ID로 조회
+    @Transactional(readOnly = true)
+    public GetRoutePlanDetailResponse getRoutePlan(UUID depId, UUID arrId) {
+        RoutePlan routePlan= routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(depId,arrId)
+            .orElseThrow(()->{
+                log.warn("[RoutePlanService] 경로 계획 조회 실패 - departureHubId: {}, arrivalHubId: {} 존재하지 않음",depId,arrId);
+                return new BusinessException(RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND);
+            });
+        return GetRoutePlanDetailResponse.from(routePlan);
+    }
+
+    //경로 계획 ID로 조회
+    @Transactional(readOnly = true)
+    public GetRoutePlanDetailResponse getRoutePlan(UUID routePlanId) {
+        RoutePlan routePlan = routePlanRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId)
+            .orElseThrow(()->{
+                log.warn("[RoutePlanService] 경로 계획 조회 실패 - routPlanId: {} 존재하지 않음",routePlanId);
+                return new BusinessException(RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND);
+            });
+        return GetRoutePlanDetailResponse.from(routePlan);
     }
 }

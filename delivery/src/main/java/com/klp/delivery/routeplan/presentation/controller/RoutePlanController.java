@@ -3,10 +3,14 @@ package com.klp.delivery.routeplan.presentation.controller;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
 import com.klp.delivery.routeplan.presentation.dto.request.CreateRoutePlanRequest;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/routes")
+@RequestMapping("/v1/routes/plans")
 public class RoutePlanController {
     private final RoutePlanService routePlanService;
 
     //경로 계획 생성
-    @PostMapping("/plans")
+    @PostMapping("")
     public ResponseEntity<CreateRoutePlanResponse> createRoutePlan(
         @Valid @RequestBody CreateRoutePlanRequest request){
         CreateRoutePlanResponse response = routePlanService.createRoutePlan(request.toCommand());
@@ -27,4 +31,15 @@ public class RoutePlanController {
         return ResponseEntity.created(location).body(response);
     }
 
+    //출발 ID, 도착 ID로 조회
+    @GetMapping("/{departureId}/{arrivalId}")
+    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID departureId, @PathVariable UUID arrivalId){
+        return ResponseEntity.ok(routePlanService.getRoutePlan(departureId, arrivalId));
+    }
+
+    //경로 계획 ID로 조회
+    @GetMapping("/{routePlanId}")
+    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID routePlanId){
+        return ResponseEntity.ok(routePlanService.getRoutePlan(routePlanId));
+    }
 }

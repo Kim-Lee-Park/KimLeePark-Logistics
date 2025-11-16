@@ -2,6 +2,7 @@ package com.klp.delivery.routeplan.presentation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -14,6 +15,8 @@ import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
 import com.klp.delivery.routeplan.presentation.controller.RoutePlanController;
 import com.klp.delivery.routeplan.presentation.dto.request.CreateRoutePlanRequest;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +57,38 @@ public class RoutePlanControllerTest {
             .andExpect(header().string("Location", "/v1/routes/plans/" + RoutePlanFixture.ROUTE_PLAN_ID))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.routePlanId").value(RoutePlanFixture.ROUTE_PLAN_ID.toString()));
+    }
+
+    @Test
+    @DisplayName("출발 ID, 도착 ID로 조회")
+    void get_byDepartureIdAndArrivalId_success() throws Exception {
+        // given
+        given(routePlanService.getRoutePlan(any(),any()))
+            .willReturn(GetRoutePlanDetailResponse.from(RoutePlanFixture.createRoutePlan()));
+
+        UUID depId = RoutePlanFixture.DEPARTURE_ID;
+        UUID arrId = RoutePlanFixture.ARRIVAL_ID;
+        // when
+
+        // then
+        mockMvc.perform(get(BASE_URL+"/plans/"+depId+"/"+arrId))
+            .andExpect(status().is2xxSuccessful())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("경로 계획 ID로 조회")
+    void get_byRoutePlanId_success() throws Exception {
+        // given
+        given(routePlanService.getRoutePlan(any()))
+            .willReturn(GetRoutePlanDetailResponse.from(RoutePlanFixture.createRoutePlan()));
+
+        UUID routePlanId = RoutePlanFixture.ROUTE_PLAN_ID;
+        // when
+
+        // then
+        mockMvc.perform(get(BASE_URL+"/plans/"+routePlanId))
+            .andExpect(status().is2xxSuccessful())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }

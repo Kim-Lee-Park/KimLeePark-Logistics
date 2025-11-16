@@ -23,13 +23,23 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
     }
 
     @Override
-    public Optional<RoutePlan> findDeletedAtIsNotNullByDepartureIdAndArrivalId(UUID departureId,
+    public Optional<RoutePlan> findByDepartureIdAndArrivalIdAndDeletedAtIsNull(UUID departureId,
         UUID arrivalId) {
-        return routePlanJpaRepository.findDeletedAtIsNotNullByDepartureIdAndArrivalId(departureId, arrivalId);
+        return routePlanJpaRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(departureId, arrivalId);
     }
 
     @Override
     public boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId) {
         return routePlanJpaRepository.existsByDepartureIdAndArrivalId(departureId, arrivalId);
+    }
+
+    @Override
+    public Optional<RoutePlan> getRouteInfoById(UUID routePlanId) {
+        return routePlanJpaRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId);
+    }
+
+    @Override
+    public Optional<RoutePlan> findByRoutePlanIdAndDeletedAtIsNull(UUID routePlanId) {
+        return routePlanJpaRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId);
     }
 }

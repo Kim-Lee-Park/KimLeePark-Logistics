@@ -9,6 +9,7 @@ import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
 import com.klp.delivery.routeplan.infrastructure.repository.RoutePlanRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class RoutePlanRepositoryImplTest {
         entityManager.flush();
 
         //when
-        Optional<RoutePlan> foundRoutePlan=routePlanRepository.findDeletedAtIsNotNullByDepartureIdAndArrivalId(routePlan.getDepartureId(),routePlan.getArrivalId());
+        Optional<RoutePlan> foundRoutePlan=routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(routePlan.getDepartureId(),routePlan.getArrivalId());
 
         //then
         assertThat(foundRoutePlan).isPresent();
@@ -72,7 +73,7 @@ public class RoutePlanRepositoryImplTest {
         entityManager.clear();
 
         //then
-        Optional<RoutePlan> found = routePlanRepository.findDeletedAtIsNotNullByDepartureIdAndArrivalId(
+        Optional<RoutePlan> found = routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(
             routePlan.getDepartureId(), routePlan.getArrivalId());
         assertThat(found).isPresent();
         assertThat(found.get().getDeletedAt()).isNotNull();
@@ -90,5 +91,18 @@ public class RoutePlanRepositoryImplTest {
         boolean result=routePlanRepository.existsByDepartureIdAndArrivalId(routePlan.getDepartureId(), routePlan.getArrivalId());
         // then
         assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("경로 계획 ID로 조회")
+    void find_byRouteInfoId_success() {
+        // given
+        RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
+        routePlanRepository.save(routePlan);
+        entityManager.flush();
+        // when
+        Optional<RoutePlan> found=routePlanRepository.getRouteInfoById(routePlan.getRoutePlanId());
+        // then
+        assertThat(found).isPresent();
     }
 }

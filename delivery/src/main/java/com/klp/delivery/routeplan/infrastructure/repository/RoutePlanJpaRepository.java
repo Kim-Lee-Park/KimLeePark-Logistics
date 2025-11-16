@@ -14,7 +14,9 @@ public interface RoutePlanJpaRepository extends JpaRepository<RoutePlan, UUID> {
         "where r.departureId = :dep and r.arrivalId = :arr")
     void softDeleteByDepartureAndArrival(@Param("dep") UUID dep, @Param("arr") UUID arr);
 
-    Optional<RoutePlan> findDeletedAtIsNotNullByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
+    Optional<RoutePlan> findByDepartureIdAndArrivalIdAndDeletedAtIsNull(UUID departureId, UUID arrivalId);
 
     boolean existsByDepartureIdAndArrivalId(UUID dep, UUID arr);
+
+    Optional<RoutePlan> findByRoutePlanIdAndDeletedAtIsNull(UUID id);
 }

@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,14 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Entity
-@Table(name = "p_route_plans", schema = "delivery_schema")
+@Table(name = "p_route_plans",
+    schema = "delivery_schema",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_route_plan_departure_arrival",
+            columnNames = {"departure_id", "arrival_id"}
+        )
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Slf4j
