@@ -1,6 +1,6 @@
-package com.klp.hub.global.config;
+package com.klp.delivery.global.config;
 
-import com.klp.hub.common.audit.AuditorAwareImpl;
+import com.klp.delivery.common.audit.AuditorAwareImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
