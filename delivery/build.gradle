@@ -27,7 +27,7 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    
+
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
@@ -56,6 +56,15 @@ dependencies {
 
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //공통 모듈
+    implementation 'com.klp.common:common-module:1.0.0'
+
+    //openfeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // h2 (for test)
     testImplementation("com.h2database:h2")

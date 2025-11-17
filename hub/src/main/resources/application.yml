@@ -2,6 +2,8 @@ server:
   port: 8030
 
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   application:
     name: hub-service
   datasource:
@@ -16,8 +18,28 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: true  # JPA 테이블 생성 이후 data.sql 실행
+  sql:
+    init:
+      mode: always                # always / embedded / never
+      encoding: UTF-8
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+scheduler:
+  route-infos:
+    fixed-rate: ${SCHEDULER_ROUTE_INFOS_FIXED_RATE:PT2H}        # 2시간마다 실행 (ISO-8601 표기: PT2H = 2 Hours)
+    initial-delay: ${SCHEDULER_ROUTE_INFOS_INITIAL_DELAY:PT0S}     # 앱 실행 직후 바로 실행, 필요 시 PT5M 등으로 지연 가능
+
+shedlock:
+  route-infos:
+    at-least: ${SHEDLOCK_ROUTE_INFOS_AT_LEAST:1m}
+    at-most: ${SHEDLOCK_ROUTE_INFOS_AT_MOST:30m}
+
+logging:
+  level:
+    root: INFO             # 전체 기본 레벨
+    com.klp.hub: DEBUG     # 특정 패키지(예: com.klp.hub 이하)는 DEBUG로 출력

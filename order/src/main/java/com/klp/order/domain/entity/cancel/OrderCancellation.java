@@ -1,6 +1,8 @@
 package com.klp.order.domain.entity.cancel;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.global.exception.OrderCancellationErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -62,19 +64,20 @@ public class OrderCancellation {
 
     private static void validateOrder(Order order) {
         if (order == null) {
-            throw new IllegalArgumentException("주문 정보는 필수입니다.");
+            throw new BusinessException(OrderCancellationErrorCode.ORDER_INFO_REQUIRED);
+
         }
     }
 
     private static void validateCancelledBy(Long cancelledBy) {
         if (cancelledBy == null) {
-            throw new IllegalArgumentException("취소자 정보는 필수입니다.");
+            throw new BusinessException(OrderCancellationErrorCode.CANCELLED_BY_REQUIRED);
         }
     }
 
     private static void validateCancelType(CancelType cancelType) {
         if (cancelType == null) {
-            throw new IllegalArgumentException("취소 유형은 필수입니다.");
+            throw new BusinessException(OrderCancellationErrorCode.CANCEL_TYPE_REQUIRED);
         }
     }
 }

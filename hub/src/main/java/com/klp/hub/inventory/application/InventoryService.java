@@ -1,14 +1,23 @@
 package com.klp.hub.inventory.application;
 
+import com.klp.common.exception.BusinessException;
+import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
+import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
+import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
+import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
+import com.klp.hub.inventory.exception.InventoryErrorCode;
+import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -21,21 +30,72 @@ public class InventoryService {
     public InventoryResponse getByProductId(UUID productId) {
         Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow(() -> {
             log.error("해당 상품의 재고를 찾을 수 없습니다. productId={}", productId);
-            // FIXME: 도메인 예외가 추가되면 수정 필요
-            return new RuntimeException();
+            return new BusinessException(InventoryErrorCode.NOT_FOUND_INVENTORY);
         });
 
         return new InventoryResponse(
-                productId,
-                inventory.getId(),
-                inventory.getQuantity()
+            productId,
+            inventory.getId(),
+            inventory.getHubId(),
+            inventory.getQuantity()
         );
     }
 
     @Transactional
     public UUID create(UUID productId, UUID hubId, Integer quantity) {
-        Inventory savedInventory = inventoryRepository.save(new Inventory(productId, hubId, quantity));
-        return savedInventory.getId();
+        try {
+            Inventory savedInventory = inventoryRepository.save(
+                new Inventory(productId, hubId, quantity)
+            );
+            return savedInventory.getId();
+        } catch (UniqueConstraintException exception) {
+            log.error("이미 해당 재고가 존재합니다.");
+            throw new BusinessException(InventoryErrorCode.INVENTORY_ALREADY_EXISTS);
+        }
+    }
+
+    /**
+     * 상품의 재고를 일괄 차감시킨다
+     */
+    @Transactional
+    public InventoryDeductResponse deduct(InventoryDeductCommand command) {
+        boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
+        if (!acquired) {
+            log.warn("이미 처리된 요청입니다.");
+            return InventoryDeductResponse.already();
+        }
+
+        List<InventoryDeduct> plans = InventoryUpdatePlanner.planDeduct(
+            command.products()
+        );
+        int updated = inventoryRepository.deductAll(plans);
+        if (updated != command.size()) {
+            log.error("재고가 부족합니다.");
+            throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
+        }
+        return InventoryDeductResponse.success();
+    }
+
+    /**
+     * 상품의 재고를 일괄 증가시킨다
+     */
+    @Transactional
+    public InventoryReplenishResponse replenish(InventoryReplenishCommand command) {
+        boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
+        if (!acquired) {
+            log.warn("이미 처리된 요청입니다.");
+            return InventoryReplenishResponse.already();
+        }
+
+        List<InventoryReplenish> plans = InventoryUpdatePlanner.planReplenish(
+            command.products()
+        );
+        int updated = inventoryRepository.replenishAll(plans);
+        if (updated != command.size()) {
+            log.error("증가하려는 일부 재고를 찾을 수 없습니다.");
+            throw new BusinessException(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND);
+        }
+        return InventoryReplenishResponse.success();
     }
 
     @Transactional
@@ -50,8 +110,7 @@ public class InventoryService {
     private Inventory getById(UUID inventoryId) {
         return inventoryRepository.findById(inventoryId).orElseThrow(() -> {
             log.error("재고가 존재하지 않습니다. inventoryId = {}", inventoryId);
-            // FIXME: 도메인 예외 전까지 임시 예외처리
-            throw new RuntimeException();
+            return new BusinessException(InventoryErrorCode.NOT_FOUND_INVENTORY);
         });
     }
 }
