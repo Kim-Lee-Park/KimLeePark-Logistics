@@ -65,6 +65,7 @@ public class OrderOutboundRequestService {
         return OrderOutboundRequestResponse.from(saved);
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByIdempotencyKey(String idempotencyKey) {
         return orderOutboundRequestRepository.findByIdempotencyKey(idempotencyKey).isPresent();
     }
