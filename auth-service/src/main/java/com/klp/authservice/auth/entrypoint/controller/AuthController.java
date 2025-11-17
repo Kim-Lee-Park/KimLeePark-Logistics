@@ -39,7 +39,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request.toCommand());
 
-        String refreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
+        String refreshToken = refreshTokenProvider.generate(response.userId(), response.username(), response.role());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(refreshToken).toString());
 
@@ -75,7 +75,7 @@ public class AuthController {
 
         ReissueResponse response = authService.reissue(accessToken, refreshToken);
 
-        String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
+        String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.username(), response.role());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(newRefreshToken).toString());
 

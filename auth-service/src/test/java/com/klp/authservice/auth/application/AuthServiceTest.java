@@ -73,15 +73,15 @@ class AuthServiceTest {
         @DisplayName("회원 이름이 중복일 시 회원가입에 실패한다")
         void duplicationUserName_fail() {
             // given
-            String userName = "testuser";
+            String username = "testuser";
             String password = "Password1!";
             String slackId = " slackId";
             String affiliationName = "testCompany";
             AffiliationType affiliationType = AffiliationType.COMPANY;
-            SignUpCommand command = new SignUpCommand(userName, password, slackId, affiliationName, affiliationType);
+            SignUpCommand command = new SignUpCommand(username, password, slackId, affiliationName, affiliationType);
 
             // when
-            when(userClient.checkUserNameAvailable(userName)).thenReturn(true);
+            when(userClient.checkUsernameAvailable(username)).thenReturn(true);
 
             // then
             assertThatThrownBy(() -> authService.signUp(command))
@@ -99,16 +99,16 @@ class AuthServiceTest {
         @DisplayName("UserClient 호출 실패 시 예외가 발생한다")
         void userClientCall_fail() {
             // given
-            String userName = "testuser";
+            String username = "testuser";
             String password = "Password1!";
             String slackId = " slackId";
             String affiliationName = "testCompany";
             AffiliationType affiliationType = AffiliationType.COMPANY;
-            SignUpCommand command = new SignUpCommand(userName, password, slackId, affiliationName, affiliationType);
+            SignUpCommand command = new SignUpCommand(username, password, slackId, affiliationName, affiliationType);
 
             // when
             doThrow(new RuntimeException("UserClient 호출 오류"))
-                .when(userClient).checkUserNameAvailable(any());
+                .when(userClient).checkUsernameAvailable(any());
 
             // then
             assertThatThrownBy(() -> authService.signUp(command))
@@ -125,17 +125,17 @@ class AuthServiceTest {
         @DisplayName("회원가입에 성공한다")
         void signUp_success() {
             // given
-            String userName = "testuser";
+            String username = "testuser";
             String password = "Password1!";
             String slackId = " slackId";
             String affiliationName = "testCompany";
             String encodedPassword = "encodedPassword";
             AffiliationType affiliationType = AffiliationType.COMPANY;
-            SignUpCommand command = new SignUpCommand(userName, password, slackId, affiliationName, affiliationType);
-            UserCreateRequest request = new UserCreateRequest(userName, encodedPassword, slackId, affiliationName,
+            SignUpCommand command = new SignUpCommand(username, password, slackId, affiliationName, affiliationType);
+            UserCreateRequest request = new UserCreateRequest(username, encodedPassword, slackId, affiliationName,
                 affiliationType);
 
-            when(userClient.checkUserNameAvailable(userName)).thenReturn(false);
+            when(userClient.checkUsernameAvailable(username)).thenReturn(false);
             when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
             doNothing().when(userClient).createUser(request);
 
@@ -143,7 +143,7 @@ class AuthServiceTest {
             authService.signUp(command);
 
             // then
-            verify(userClient).checkUserNameAvailable(userName);
+            verify(userClient).checkUsernameAvailable(username);
             verify(userClient).createUser(request);
         }
     }
@@ -156,31 +156,31 @@ class AuthServiceTest {
         @DisplayName("로그인에 성공한다")
         void login_success() {
             // given
-            String userName = "testuser";
+            String username = "testuser";
             String password = "Password1!";
             String encodedPassword = "encodedPassword";
             String role = "MASTER";
             String accessToken = "access.token.data";
             Long userId = 1L;
 
-            LoginCommand command = new LoginCommand(userName, password);
-            UserDataDTO dto = new UserDataDTO(userId, userName, encodedPassword, role);
+            LoginCommand command = new LoginCommand(username, password);
+            UserDataDTO dto = new UserDataDTO(userId, username, encodedPassword, role);
 
-            when(userClient.getUserByUserName(userName)).thenReturn(dto);
+            when(userClient.getUserByUsername(username)).thenReturn(dto);
             when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
-            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(accessToken);
+            when(accessTokenProvider.generate(userId, username, role)).thenReturn(accessToken);
 
             // when
             LoginResponse response = authService.login(command);
 
             // then
-            assertThat(response.userName()).isEqualTo(userName);
+            assertThat(response.username()).isEqualTo(username);
             assertThat(response.role()).isEqualTo(role);
             assertThat(response.accessToken()).isEqualTo(accessToken);
 
-            verify(userClient).getUserByUserName(userName);
+            verify(userClient).getUserByUsername(username);
             verify(passwordEncoder).matches(password, encodedPassword);
-            verify(accessTokenProvider).generate(userId, userName, role);
+            verify(accessTokenProvider).generate(userId, username, role);
 
         }
 
@@ -188,12 +188,12 @@ class AuthServiceTest {
         @DisplayName("존재하지 않는 사용자는 로그인에 실패한다")
         void notExistUser_fail() {
             // given
-            String userName = "notExistUser";
+            String username = "notExistUser";
             String password = "Password1!";
-            LoginCommand command = new LoginCommand(userName, password);
+            LoginCommand command = new LoginCommand(username, password);
 
             // when
-            when(userClient.getUserByUserName(userName))
+            when(userClient.getUserByUsername(username))
                 .thenThrow(new BusinessException(AuthErrorCode.USER_NOT_FOUND));
 
             // then
@@ -201,7 +201,7 @@ class AuthServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.USER_NOT_FOUND.getMessage());
 
-            verify(userClient).getUserByUserName(userName);
+            verify(userClient).getUserByUsername(username);
             verify(passwordEncoder, never()).matches(any(), any());
             verify(accessTokenProvider, never()).generate(any(), any(), any());
         }
@@ -211,16 +211,16 @@ class AuthServiceTest {
         void passwordMismatch_fail() {
             // given
             Long userId = 1L;
-            String userName = "testuser";
+            String username = "testuser";
             String password = "WrongPassword!";
             String encodedPassword = "encodedPassword";
             String role = "MASTER";
 
-            LoginCommand command = new LoginCommand(userName, password);
-            UserDataDTO userResponse = new UserDataDTO(userId, userName, encodedPassword, role);
+            LoginCommand command = new LoginCommand(username, password);
+            UserDataDTO userResponse = new UserDataDTO(userId, username, encodedPassword, role);
 
             // when
-            when(userClient.getUserByUserName(userName)).thenReturn(userResponse);
+            when(userClient.getUserByUsername(username)).thenReturn(userResponse);
             when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
 
             // then
@@ -228,7 +228,7 @@ class AuthServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(AuthErrorCode.INVALID_PASSWORD.getMessage());
 
-            verify(userClient).getUserByUserName(userName);
+            verify(userClient).getUserByUsername(username);
             verify(passwordEncoder).matches(password, encodedPassword);
             verify(accessTokenProvider, never()).generate(any(), any(), any());
         }
@@ -361,7 +361,7 @@ class AuthServiceTest {
             String accessToken = "old.access.token";
             String refreshToken = "valid.refresh.token";
             Long userId = 1L;
-            String userName = "testuser";
+            String username = "testuser";
             String role = "MASTER";
             String newAccessToken = "new.access.token";
             LocalDateTime refreshExpiration = LocalDateTime.now().plusDays(7);
@@ -370,10 +370,10 @@ class AuthServiceTest {
             when(refreshTokenProvider.validateToken(refreshToken)).thenReturn(true);
             when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
             when(refreshTokenProvider.getUserId(refreshToken)).thenReturn(String.valueOf(userId));
-            when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(userName);
+            when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(username);
             when(refreshTokenProvider.getRole(refreshToken)).thenReturn(role);
             when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(refreshExpiration);
-            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(newAccessToken);
+            when(accessTokenProvider.generate(userId, username, role)).thenReturn(newAccessToken);
 
             when(blackListTokenRepository.existsByToken(accessToken)).thenReturn(false);
             when(accessTokenProvider.getExpiration(accessToken)).thenReturn(accessExpiration);
@@ -383,7 +383,7 @@ class AuthServiceTest {
 
             // then
             assertThat(response.userId()).isEqualTo(userId);
-            assertThat(response.userName()).isEqualTo(userName);
+            assertThat(response.username()).isEqualTo(username);
             assertThat(response.role()).isEqualTo(role);
             assertThat(response.accessToken()).isEqualTo(newAccessToken);
 
@@ -396,7 +396,7 @@ class AuthServiceTest {
             verify(blackListTokenRepository, times(2)).existsByToken(refreshToken);
             verify(blackListTokenRepository, times(1)).existsByToken(accessToken);
             verify(blackListTokenRepository, times(2)).save(any(BlackListToken.class));
-            verify(accessTokenProvider).generate(userId, userName, role);
+            verify(accessTokenProvider).generate(userId, username, role);
         }
 
         @Test
@@ -405,7 +405,7 @@ class AuthServiceTest {
             // given
             String refreshToken = "valid.refresh.token";
             Long userId = 1L;
-            String userName = "testuser";
+            String username = "testuser";
             String role = "MASTER";
             String newAccessToken = "new.access.token";
             LocalDateTime refreshExpiration = LocalDateTime.now().plusDays(7);
@@ -413,17 +413,17 @@ class AuthServiceTest {
             when(refreshTokenProvider.validateToken(refreshToken)).thenReturn(true);
             when(blackListTokenRepository.existsByToken(refreshToken)).thenReturn(false);
             when(refreshTokenProvider.getUserId(refreshToken)).thenReturn(String.valueOf(userId));
-            when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(userName);
+            when(refreshTokenProvider.getUserName(refreshToken)).thenReturn(username);
             when(refreshTokenProvider.getRole(refreshToken)).thenReturn(role);
             when(refreshTokenProvider.getExpiration(refreshToken)).thenReturn(refreshExpiration);
-            when(accessTokenProvider.generate(userId, userName, role)).thenReturn(newAccessToken);
+            when(accessTokenProvider.generate(userId, username, role)).thenReturn(newAccessToken);
 
             // when
             ReissueResponse response = authService.reissue(null, refreshToken);
 
             // then
             assertThat(response.userId()).isEqualTo(userId);
-            assertThat(response.userName()).isEqualTo(userName);
+            assertThat(response.username()).isEqualTo(username);
             assertThat(response.role()).isEqualTo(role);
             assertThat(response.accessToken()).isEqualTo(newAccessToken);
 
@@ -434,7 +434,7 @@ class AuthServiceTest {
             verify(refreshTokenProvider).getExpiration(refreshToken);
             verify(blackListTokenRepository, times(2)).existsByToken(refreshToken);
             verify(blackListTokenRepository, times(1)).save(any(BlackListToken.class));
-            verify(accessTokenProvider).generate(userId, userName, role);
+            verify(accessTokenProvider).generate(userId, username, role);
         }
 
         @Test

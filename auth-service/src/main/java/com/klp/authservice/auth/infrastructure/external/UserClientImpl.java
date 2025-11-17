@@ -23,7 +23,7 @@ public class UserClientImpl implements UserClient {
      * 요청에 대한 응답이 200이면 true, 409면 false, 이외는 예외로 처리
      */
     @Override
-    public boolean checkUserNameAvailable(String userName) {
+    public boolean checkUsernameAvailable(String userName) {
         try {
             userRestClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/v1/users/exists")
@@ -66,7 +66,7 @@ public class UserClientImpl implements UserClient {
     }
 
     @Override
-    public UserDataDTO getUserByUserName(String userName) {
+    public UserDataDTO getUserByUsername(String userName) {
         try {
             return userRestClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/v1/users")

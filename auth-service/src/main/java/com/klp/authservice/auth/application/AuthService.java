@@ -32,14 +32,14 @@ public class AuthService {
      * 회원가입: 유저 이름 중복 확인 요청 -> 패스워드 암호화 -> 유저 생성 요청
      */
     public void signUp(SignUpCommand command) {
-        if (checkDuplicateUserName(command.userName())) {
+        if (checkDuplicateUserName(command.username())) {
             throw new BusinessException(AuthErrorCode.USERNAME_IS_EXIST);
         }
 
         String encodedPassword = passwordEncoder.encode(command.password());
 
         UserCreateRequest request = new UserCreateRequest(
-            command.userName(),
+            command.username(),
             encodedPassword,
             command.slackId(),
             command.affiliationName(),
@@ -50,7 +50,7 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginCommand command) {
-        UserDataDTO dto = userClient.getUserByUserName(command.userName());
+        UserDataDTO dto = userClient.getUserByUsername(command.username());
 
         validatePassword(command.password(), dto.password());
 
@@ -92,7 +92,7 @@ public class AuthService {
     }
 
     private boolean checkDuplicateUserName(String userName) {
-        return userClient.checkUserNameAvailable(userName);
+        return userClient.checkUsernameAvailable(userName);
     }
 
     private void validatePassword(String rawPassword, String encodedPassword) {

@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Pattern;
 public record SignUpRequest(
     @NotBlank(message = "유저 이름은 필수 입니다")
     @Pattern(regexp = "^[a-z0-9]{4,10}$", message = "유저 이름은 4자 이상, 10자 이하이며 알파벳 소문자, 숫자로만 구성 가능합니다")
-    String userName,
+    String username,
 
     @NotBlank(message = "패스워드는 필수 입니다")
     @Pattern(
@@ -29,6 +29,6 @@ public record SignUpRequest(
 ) {
 
     public SignUpCommand toCommand() {
-        return new SignUpCommand(userName, password, slackId, affiliationName, affiliationType);
+        return new SignUpCommand(username, password, slackId, affiliationName, affiliationType);
     }
 }
