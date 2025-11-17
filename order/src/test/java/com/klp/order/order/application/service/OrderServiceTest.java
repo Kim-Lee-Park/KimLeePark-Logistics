@@ -2,6 +2,7 @@ package com.klp.order.order.application.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.klp.order.common.event.EventPublisher;
 import com.klp.order.common.event.EventStoreService;
+import com.klp.order.common.event.domain.EventType;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.domain.entity.order.Order;
@@ -81,7 +83,7 @@ class OrderServiceTest {
 
         orderService.createOrder(command);
 
-        verify(eventStoreService, times(1)).saveEvent(any(), any(), any());
+        verify(eventStoreService, times(1)).saveEvent(any(), eq(EventType.ORDER_CREATED), any());
     }
 
     @Test

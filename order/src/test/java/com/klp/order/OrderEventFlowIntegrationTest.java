@@ -8,6 +8,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.klp.order.common.event.EventStoreRepository;
+import com.klp.order.common.event.domain.EventStore;
+import com.klp.order.common.event.domain.EventType;
 import com.klp.order.notification.applicaiton.service.NotificationService;
 import com.klp.order.order.application.service.OrderService;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
@@ -46,6 +49,9 @@ public class OrderEventFlowIntegrationTest {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private EventStoreRepository eventStoreRepository;
+
     @MockitoBean
     private ExternalPaymentClient externalPaymentClient;
 
@@ -63,6 +69,7 @@ public class OrderEventFlowIntegrationTest {
         orderRepository.deleteAll();
         paymentRepository.deleteAll();
         productRepository.deleteAll();
+        eventStoreRepository.deleteAll();
     }
 
     @Test
@@ -86,11 +93,20 @@ public class OrderEventFlowIntegrationTest {
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
             .untilAsserted(() -> {
+                List<EventStore> eventStoreList = eventStoreRepository.findAll();
+                assertThat(eventStoreList).isNotEmpty();
+                assertThat(eventStoreList).hasSize(2);
+                assertThat(eventStoreList).anyMatch(es -> es.getEventType() == EventType.ORDER_CREATED);
+                assertThat(eventStoreList).anyMatch(es -> es.getEventType() == EventType.PAYMENT_COMPLETED);
+            });
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
                 Payment payment = paymentRepository.findByOrderId(order.getOrderId()).orElseThrow();
                 assertThat(payment).isNotNull();
                 assertThat(payment.getTotalAmount().compareTo(new BigDecimal(price))).isZero();
             });
-
         await()
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
@@ -119,6 +135,13 @@ public class OrderEventFlowIntegrationTest {
             .isInstanceOf(RuntimeException.class);
         List<Order> orders = orderRepository.findAll();
         assertThat(orders).isEmpty();
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                List<EventStore> eventStoreList = eventStoreRepository.findAll();
+                assertThat(eventStoreList).isEmpty();
+            });
         await()
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
@@ -159,6 +182,15 @@ public class OrderEventFlowIntegrationTest {
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
             .untilAsserted(() -> {
+                List<EventStore> eventStoreList = eventStoreRepository.findAll();
+                assertThat(eventStoreList).isNotEmpty();
+                assertThat(eventStoreList).hasSize(1);
+                assertThat(eventStoreList).anyMatch(es -> es.getEventType() == EventType.ORDER_CREATED);
+            });
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
                 List<Payment> payments = paymentRepository.findAll();
                 assertThat(payments).isEmpty();
             });
@@ -190,6 +222,16 @@ public class OrderEventFlowIntegrationTest {
 
         Order order = orderRepository.findById(response.orderId()).orElseThrow();
         assertThat(order).isNotNull();
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                List<EventStore> eventStoreList = eventStoreRepository.findAll();
+                assertThat(eventStoreList).isNotEmpty();
+                assertThat(eventStoreList).hasSize(2);
+                assertThat(eventStoreList).anyMatch(es -> es.getEventType() == EventType.ORDER_CREATED);
+                assertThat(eventStoreList).anyMatch(es -> es.getEventType() == EventType.PAYMENT_COMPLETED);
+            });
         await()
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
@@ -227,6 +269,15 @@ public class OrderEventFlowIntegrationTest {
 
         Order order = orderRepository.findById(response.orderId()).orElseThrow();
         assertThat(order).isNotNull();
+        await()
+            .atMost(Duration.ofSeconds(5))
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted(() -> {
+                List<EventStore> eventStoreList = eventStoreRepository.findAll();
+                assertThat(eventStoreList).isNotEmpty();
+                assertThat(eventStoreList).hasSize(1);
+                assertThat(eventStoreList).anyMatch(es -> es.getEventType() == EventType.ORDER_CREATED);
+            });
         await()
             .atMost(Duration.ofSeconds(5))
             .pollInterval(Duration.ofMillis(100))
