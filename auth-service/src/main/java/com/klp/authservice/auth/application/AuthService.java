@@ -7,7 +7,8 @@ import com.klp.authservice.auth.domain.entity.BlackListToken;
 import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
-import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataResponse;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
 import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
@@ -50,7 +51,7 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginCommand command) {
-        UserDataDTO dto = userClient.getUserByUsername(command.username());
+        UserDataResponse dto = userClient.getUserByUsername(command.username());
 
         validatePassword(command.password(), dto.password());
 
@@ -92,7 +93,9 @@ public class AuthService {
     }
 
     private boolean checkDuplicateUserName(String userName) {
-        return userClient.checkUsernameAvailable(userName);
+        UsernameDuplicateResponse response = userClient.checkUsernameAvailable(userName);
+
+        return response.available();
     }
 
     private void validatePassword(String rawPassword, String encodedPassword) {

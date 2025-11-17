@@ -18,7 +18,8 @@ import com.klp.authservice.auth.domain.enums.AffiliationType;
 import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
-import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataResponse;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
 import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
@@ -81,7 +82,8 @@ class AuthServiceTest {
             SignUpCommand command = new SignUpCommand(username, password, slackId, affiliationName, affiliationType);
 
             // when
-            when(userClient.checkUsernameAvailable(username)).thenReturn(true);
+            UsernameDuplicateResponse dto = new UsernameDuplicateResponse(true);
+            when(userClient.checkUsernameAvailable(username)).thenReturn(dto);
 
             // then
             assertThatThrownBy(() -> authService.signUp(command))
@@ -135,7 +137,8 @@ class AuthServiceTest {
             UserCreateRequest request = new UserCreateRequest(username, encodedPassword, slackId, affiliationName,
                 affiliationType);
 
-            when(userClient.checkUsernameAvailable(username)).thenReturn(false);
+            UsernameDuplicateResponse dto = new UsernameDuplicateResponse(false);
+            when(userClient.checkUsernameAvailable(username)).thenReturn(dto);
             when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
             doNothing().when(userClient).createUser(request);
 
@@ -164,7 +167,7 @@ class AuthServiceTest {
             Long userId = 1L;
 
             LoginCommand command = new LoginCommand(username, password);
-            UserDataDTO dto = new UserDataDTO(userId, username, encodedPassword, role);
+            UserDataResponse dto = new UserDataResponse(userId, username, encodedPassword, role);
 
             when(userClient.getUserByUsername(username)).thenReturn(dto);
             when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
@@ -217,7 +220,7 @@ class AuthServiceTest {
             String role = "MASTER";
 
             LoginCommand command = new LoginCommand(username, password);
-            UserDataDTO userResponse = new UserDataDTO(userId, username, encodedPassword, role);
+            UserDataResponse userResponse = new UserDataResponse(userId, username, encodedPassword, role);
 
             // when
             when(userClient.getUserByUsername(username)).thenReturn(userResponse);
