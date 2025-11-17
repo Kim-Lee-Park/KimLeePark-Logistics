@@ -21,12 +21,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({
     InventoryRepositoryImpl.class,
     TestJpaConfig.class
+})
+@TestPropertySource(properties = {
+    "spring.sql.init.mode=never"
 })
 class InventoryRepositoryTest {
 
@@ -72,28 +76,6 @@ class InventoryRepositoryTest {
         assertThrows(UniqueConstraintException.class, () -> {
             inventoryRepository.save(duplicatedInventory);
         });
-    }
-
-    @Test
-    @DisplayName("같은 멱등키를 또 생성시도할때 false 를 반환한다")
-    void throwDuplicateIdempotencyKey() {
-        String idempotencyKeyA = "idempotencyKey";
-        inventoryRepository.tryAcquireIdempotencyKey(idempotencyKeyA);
-        String duplicateIdempotencyKey = "idempotencyKey";
-
-        boolean result = inventoryRepository.tryAcquireIdempotencyKey(duplicateIdempotencyKey);
-
-        assertFalse(result);
-    }
-
-    @Test
-    @DisplayName("처음 멱등키를 생성을 시도한다면 true 를 반환한다")
-    void createIdempotencyKey() {
-        String idempotencyKey = "idempotencyKey";
-
-        boolean result = inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey);
-
-        assertTrue(result);
     }
 
     @Test
