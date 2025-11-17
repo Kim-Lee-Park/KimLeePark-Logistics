@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.klp'
@@ -46,4 +47,46 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    reports {
+        html.required = true
+        xml.required = true
+        csv.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    // 메인 애플리케이션
+                    '**/OrderApplication.class',
+
+                    // 설정 클래스들
+                    '**/config/*Config.class',
+
+                    // 기본 엔티티
+                    '**/global/entity/BaseEntity.class',
+
+                    // DTO 클래스들 (Command, Response 등)
+                    '**/dto/**',
+
+                    // Enum 타입들
+                    '**/*Status.class',
+                    '**/*Type.class',
+
+                    '**/util/**',
+
+                    // Repository 인터페이스들
+                    '**/*Repository.class',
+
+                    // 이벤트 인프라
+                    '**/event/EventPublisher.class',
+                    '**/event/SpringEventPublisher.class',
+                    '**/event/DomainEvent.class'
+            ])
+        }))
+    }
 }
