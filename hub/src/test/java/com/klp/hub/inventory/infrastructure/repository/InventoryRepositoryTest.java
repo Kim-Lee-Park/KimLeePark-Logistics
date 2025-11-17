@@ -79,6 +79,28 @@ class InventoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("같은 멱등키를 또 생성시도할때 false 를 반환한다")
+    void throwDuplicateIdempotencyKey() {
+        String idempotencyKeyA = "idempotencyKey";
+        inventoryRepository.tryAcquireIdempotencyKey(idempotencyKeyA);
+        String duplicateIdempotencyKey = "idempotencyKey";
+
+        boolean result = inventoryRepository.tryAcquireIdempotencyKey(duplicateIdempotencyKey);
+
+        assertFalse(result);
+    }
+
+    @Test
+    @DisplayName("처음 멱등키를 생성을 시도한다면 true 를 반환한다")
+    void createIdempotencyKey() {
+        String idempotencyKey = "idempotencyKey";
+
+        boolean result = inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey);
+
+        assertTrue(result);
+    }
+
+    @Test
     @DisplayName("재고가 충분하다면 재고를 차감한다")
     void deduct() {
         int quantity = 10;
