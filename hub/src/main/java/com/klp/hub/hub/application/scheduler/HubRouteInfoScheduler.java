@@ -1,13 +1,13 @@
 package com.klp.hub.hub.application.scheduler;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.hub.util.DistanceTimeUtil;
 import com.klp.hub.hub.application.service.HubService;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
 import com.klp.hub.hub.domain.repository.HubRepository;
 import com.klp.hub.hub.domain.repository.HubRouteInfoRepository;
 import com.klp.hub.hub.infrastructure.dto.RoutePairDto;
+import com.klp.hub.hub.util.DistanceTimeUtil;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,17 +43,20 @@ public class HubRouteInfoScheduler {
     @SchedulerLock(
         name = "generateMissingHubRouteInfos",
         lockAtLeastFor = "${shedlock.route-infos.at-least}",
-        lockAtMostFor  = "${shedlock.route-infos.at-most}"
+        lockAtMostFor = "${shedlock.route-infos.at-most}"
     )
     public void generateMissingRoutes() {
-        log.info("[{}] HubRouteInfoScheduler started at {}", LocalDateTime.now(), Thread.currentThread().getName());
+        log.info("[{}] HubRouteInfoScheduler started at {}", LocalDateTime.now(),
+            Thread.currentThread().getName());
         long start = System.currentTimeMillis();
         int createdCount = 0;
 
         List<UUID> hubIds = hubRepository.getActiveHubIds();
-        if (hubIds.size() < 2) return;
+        if (hubIds.size() < 2) {
+            return;
+        }
 
-        Set<RoutePairDto> existing = new HashSet<>(routeInfoRepository.findExistingParisIn(hubIds));
+        Set<RoutePairDto> existing = new HashSet<>(routeInfoRepository.findExistingPairsIn(hubIds));
 
         // 전체 순서쌍(출발!=도착) 생성 → 차집합으로 미존재 목록 계산
         List<RoutePairDto> missing = new ArrayList<>();
@@ -69,7 +72,7 @@ public class HubRouteInfoScheduler {
         }
         log.debug("missing size : {}", missing.size());
 
-        Map<UUID, Hub> hubCache=hubService.getHubByIds(hubIds).stream()
+        Map<UUID, Hub> hubCache = hubService.getHubByIds(hubIds).stream()
             .collect(Collectors.toMap(Hub::getHubId, Function.identity()));
 
         for (RoutePairDto pair : missing) {
@@ -77,18 +80,24 @@ public class HubRouteInfoScheduler {
                 Hub departureHub = hubCache.get(pair.departureId());
                 Hub arrivalHub = hubCache.get(pair.arrivalId());
 
-                Long durationMin = DistanceTimeUtil.estimateDurationMinutes(departureHub.getLatitude(),departureHub.getLongitude(),arrivalHub.getLatitude(),arrivalHub.getLongitude());
-                Double distanceKm = DistanceTimeUtil.calculateDistanceKm(departureHub.getLatitude(),departureHub.getLongitude(),arrivalHub.getLatitude(),arrivalHub.getLongitude());
+                Long durationMin = DistanceTimeUtil.estimateDurationMinutes(
+                    departureHub.getLatitude(), departureHub.getLongitude(),
+                    arrivalHub.getLatitude(), arrivalHub.getLongitude());
+                Double distanceKm = DistanceTimeUtil.calculateDistanceKm(departureHub.getLatitude(),
+                    departureHub.getLongitude(), arrivalHub.getLatitude(),
+                    arrivalHub.getLongitude());
 
-                HubRouteInfo routeInfo = HubRouteInfo.create(pair.departureId(),pair.arrivalId(),durationMin,distanceKm);
+                HubRouteInfo routeInfo = HubRouteInfo.create(pair.departureId(), pair.arrivalId(),
+                    durationMin, distanceKm);
                 hubRouteInfoRepository.save(routeInfo);
                 createdCount++;
             } catch (BusinessException e) {
-                log.warn("ErrorCode : {}, Message: {}",e.getErrorCode(),e.getMessage());
+                log.warn("ErrorCode : {}, Message: {}", e.getErrorCode(), e.getMessage());
             } catch (DataIntegrityViolationException e) {
-                log.warn("유니크 제약 조건 위반 departureId: {}, arrivalId: {}",pair.departureId(),pair.arrivalId());
+                log.warn("유니크 제약 조건 위반 departureId: {}, arrivalId: {}", pair.departureId(),
+                    pair.arrivalId());
             } catch (Exception e) {
-                 log.warn("Route create failed: {} -> {}", pair.departureId(), pair.arrivalId(), e);
+                log.warn("Route create failed: {} -> {}", pair.departureId(), pair.arrivalId(), e);
             }
         }
 
