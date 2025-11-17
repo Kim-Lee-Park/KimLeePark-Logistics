@@ -1,6 +1,9 @@
 package com.klp.order.application.client;
 
 
+import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest;
+import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
+import com.klp.order.application.client.dto.inventory.response.GetProductResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "hub-service", url = "http://localhost:8030")
 public interface InventoryClient {
 
-    @PostMapping("/v1/inventory/decrease")
-    void stockDecrease(@RequestBody DecreaseStockRequest request);
+    @PostMapping("/v1/inventories/deduct")
+    DeductInventoryResponse deductInventory(@RequestBody DeductInventoryRequest request);
 
-    @GetMapping("/v1/product/{productId}")
+    @GetMapping("/v1/products/{productId}")
     GetProductResponse getProductInfo(@PathVariable UUID productId);
 }

@@ -23,7 +23,9 @@ public enum OrderErrorCode implements ErrorCode {
     CANNOT_CHANGE_CANCELLED_ORDER_STATUS(HttpStatus.BAD_REQUEST, "취소된 주문은 상태를 변경할 수 없습니다."),
     CANNOT_CANCEL_DELIVERY_ASSIGNED(HttpStatus.BAD_REQUEST, "배송이 할당된 주문은 취소할 수 없습니다."),
     CANNOT_CANCEL_COMPLETED_ORDER(HttpStatus.BAD_REQUEST, "완료된 주문은 취소할 수 없습니다."),
-    ALREADY_CANCELLED_ORDER(HttpStatus.BAD_REQUEST, "이미 취소된 주문입니다.");
+    ALREADY_CANCELLED_ORDER(HttpStatus.BAD_REQUEST, "이미 취소된 주문입니다."),
+
+    INVENTORY_DEDUCTION_FAILED(HttpStatus.BAD_REQUEST, "재고 차감에 실패 하였습니다.");
 
     private final HttpStatus status;
     private final String message;

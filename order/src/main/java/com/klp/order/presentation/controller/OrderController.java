@@ -1,5 +1,6 @@
 package com.klp.order.presentation.controller;
 
+import com.klp.order.application.client.facade.OrderFacade;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
@@ -36,13 +37,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderFacade orderFacade;
 
     @PostMapping
     public ResponseEntity<CreateOrderResponse> createOrder(
         @Valid @RequestBody CreateOrderRequest request
     ) {
         CreateOrderCommand command = request.toCommand();
-        Order order = orderService.createOrder(command);
+        Order order = orderFacade.createOrder(command);
         CreateOrderResponse response = CreateOrderResponse.from(order);
 
         URI location = URI.create("/v1/orders");
