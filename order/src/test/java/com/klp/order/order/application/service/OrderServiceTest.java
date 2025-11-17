@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.order.common.event.EventPublisher;
+import com.klp.order.common.event.EventStoreService;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;
 import com.klp.order.order.domain.entity.order.Order;
@@ -31,6 +32,9 @@ class OrderServiceTest {
 
     @Mock
     private EventPublisher eventPublisher;
+
+    @Mock
+    private EventStoreService eventStoreService;
 
     @InjectMocks
     private OrderService orderService;
@@ -63,6 +67,24 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("주문 생성에 성공하면 OrderCreatedEvent 를 이벤트 스토어에 저장한다")
+    void saveEvent() {
+        OrderCreateCommand command = new OrderCreateCommand(
+            supplierId,
+            customerId,
+            List.of(product),
+            comments
+        );
+        Order order = mock(Order.class);
+        when(orderRepository.save(any())).thenReturn(order);
+        when(order.getOrderId()).thenReturn(UUID.randomUUID());
+
+        orderService.createOrder(command);
+
+        verify(eventStoreService, times(1)).saveEvent(any(), any(), any());
+    }
+
+    @Test
     @DisplayName("주문 생성에 실패하면 OrderCreatedEvent 를 발행하지 않는다")
     void verifyNever() {
         OrderCreateCommand invalidCommand = new OrderCreateCommand(
@@ -76,6 +98,22 @@ class OrderServiceTest {
             () -> orderService.createOrder(invalidCommand)
         ).isInstanceOf(RuntimeException.class);
         verify(eventPublisher, never()).publish(any(OrderCreatedEvent.class));
+    }
+
+    @Test
+    @DisplayName("주문 생성에 실패하면 OrderCreatedEvent 를 이벤트 스토어에 저장하지 않는다")
+    void eventStoreVerifyNever() {
+        OrderCreateCommand invalidCommand = new OrderCreateCommand(
+            supplierId,
+            customerId,
+            List.of(),
+            comments
+        );
+
+        assertThatThrownBy(
+            () -> orderService.createOrder(invalidCommand)
+        ).isInstanceOf(RuntimeException.class);
+        verify(eventStoreService, never()).saveEvent(any(), any(), any());
     }
 
     @Test

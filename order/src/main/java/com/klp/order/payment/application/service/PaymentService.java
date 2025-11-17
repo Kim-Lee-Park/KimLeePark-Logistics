@@ -1,9 +1,12 @@
 package com.klp.order.payment.application.service;
 
 import com.klp.order.common.event.EventPublisher;
+import com.klp.order.common.event.EventStoreService;
+import com.klp.order.common.event.domain.EventType;
 import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
 import com.klp.order.payment.domain.entity.Payment;
 import com.klp.order.payment.domain.event.PaymentCompletedEvent;
+import com.klp.order.payment.domain.event.PaymentCompletedEvent.PaidInfo;
 import com.klp.order.payment.infrastructure.clients.ExternalPaymentClient;
 import com.klp.order.payment.infrastructure.repository.PaymentRepository;
 import java.math.BigDecimal;
@@ -20,6 +23,7 @@ public class PaymentService {
     private final ExternalPaymentClient externalPaymentClient;
     private final PaymentRepository paymentRepository;
     private final EventPublisher eventPublisher;
+    private final EventStoreService eventStoreService;
 
     @Transactional
     public UUID pay(PaymentCreateCommand command) {
@@ -32,19 +36,19 @@ public class PaymentService {
         payment.completed();
         Payment savedPayment = paymentRepository.save(payment);
 
-        eventPublisher.publish(
-            new PaymentCompletedEvent(
-                command.orderId(),
-                savedPayment.getPaymentId(),
-                totalAmount,
-                command.infos().stream().map(info -> new PaymentCompletedEvent.PaidInfo(
-                    info.productId(),
-                    info.quantity(),
-                    info.amount()
-                )).toList(),
-                LocalDateTime.now()
-            )
+        PaymentCompletedEvent event = new PaymentCompletedEvent(
+            command.orderId(),
+            savedPayment.getPaymentId(),
+            totalAmount,
+            command.infos().stream().map(info -> new PaidInfo(
+                info.productId(),
+                info.quantity(),
+                info.amount()
+            )).toList(),
+            LocalDateTime.now()
         );
+        eventPublisher.publish(event);
+        eventStoreService.saveEvent(event, EventType.PAYMENT_COMPLETED, event.occurredAt());
 
         return savedPayment.getPaymentId();
     }
