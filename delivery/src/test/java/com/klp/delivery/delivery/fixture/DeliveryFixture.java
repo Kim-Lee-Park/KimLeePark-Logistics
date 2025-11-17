@@ -1,5 +1,8 @@
 package com.klp.delivery.delivery.fixture;
 
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommands;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
+
 import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -12,17 +15,18 @@ public class DeliveryFixture {
 
   public static UUID DEFAULT_ORDER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");               // 주문 ID
   public static UUID DEFAULT_DEPARTURE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");           // 출발 허브 ID
-  public static UUID DEFAULT_RECEIVER_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");            // 수령업체 ID
-  public static UUID DEFAULT_SENDER_ID = UUID.fromString("00000000-0000-0000-0000-000000000004");              // 발송업체 ID
+  public static UUID DEFAULT_ARRIVAL_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");             // 도착 허브 ID
+  public static UUID DEFAULT_RECEIVER_ID = UUID.fromString("00000000-0000-0000-0000-000000000004");            // 수령업체 ID
+  public static UUID DEFAULT_SENDER_ID = UUID.fromString("00000000-0000-0000-0000-000000000005");              // 발송업체 ID
   public static Long DEFAULT_VENDOR_DRIVER_ID = 1234L;
 
-  public static UUID DEFAULT_DELIVERY_ID = UUID.fromString("00000000-0000-0000-0000-000000000006");             // 출발 허브 ID
-  public static UUID DEFAULT_ARRIVAL_ID = UUID.fromString("00000000-0000-0000-0000-000000000005");              // 도착 허브 ID
-  public static UUID DEFAULT_ORDER_ITEM_ID = UUID.fromString("00000000-0000-0000-0000-000000000007");           // 주문 아이템 ID
+
+  public static UUID DEFAULT_DELIVERY_ID_FIRST = UUID.fromString("00000000-0000-0000-0000-000000000006");      // 배송 ID
+  public static UUID DEFAULT_DELIVERY_ID_SECOND  = UUID.fromString("00000000-0000-0000-0000-000000000007");    // 다른 배송 ID
 
   public static String DEFAULT_COMPANY_NAME = "테스트업체";
   public static String DEFAULT_COMPANY_ADDRESS = "서울특별시 강남구 테헤란로 123";
-  public static String DEFAULT_HUB_ID = DEFAULT_DELIVERY_ID.toString();                                                // 기본 허브 ID
+  public static String DEFAULT_HUB_ID = DEFAULT_DEPARTURE_ID.toString();                                                // 기본 허브 ID
   public static String DEFAULT_RECEIVER_SLACK_ID = "U123456";
   public static Long DEFAULT_VENDOR_DRIVER_ID_STR = DEFAULT_VENDOR_DRIVER_ID;
 
@@ -59,10 +63,10 @@ public class DeliveryFixture {
     return new DriverCommand(vendorDriverId, receiverSlackId);
   }
 
+
     private static Delivery buildDelivery(
         Long vendorDriverId,
         UUID orderId,
-        UUID orderItemId,
         UUID departureId,
         UUID arrivalId,
         UUID senderId,
@@ -74,35 +78,51 @@ public class DeliveryFixture {
         return Delivery.create(
             vendorDriverId,
             orderId,
-            orderItemId,
             departureId,
             arrivalId,
             senderId,
             receiverId,
             companyName,
             companyAddress,
-            receiverSlackId
+            receiverSlackId,
+            orderItemCommandsDefault()
         );
     }
-
-  public static Delivery createDelivery() {
+  // 아이템2개 같은 허브
+  public static Delivery defaultDelivery() {
     return Delivery.create(
         DEFAULT_VENDOR_DRIVER_ID,
         DEFAULT_ORDER_ID,
-        DEFAULT_ORDER_ITEM_ID,
         DEFAULT_DEPARTURE_ID,
         DEFAULT_ARRIVAL_ID,
         DEFAULT_SENDER_ID,
         DEFAULT_RECEIVER_ID,
         DEFAULT_COMPANY_NAME,
         DEFAULT_COMPANY_ADDRESS,
-        DEFAULT_RECEIVER_SLACK_ID
+        DEFAULT_RECEIVER_SLACK_ID,
+        orderItemCommandsDefault()
     );
   }
 
-  //  기본 배송 객체 생성 후, 리플렉션으로 deliveryId를 지정
+    public static Delivery multiHubDelivery() {
+        return Delivery.create(
+            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_ORDER_ID,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_ARRIVAL_ID,
+            DEFAULT_SENDER_ID,
+            DEFAULT_RECEIVER_ID,
+            DEFAULT_COMPANY_NAME,
+            DEFAULT_COMPANY_ADDRESS,
+            DEFAULT_RECEIVER_SLACK_ID,
+            orderItemCommands()
+        );
+    }
+
+
+    //  기본 배송 객체 생성 후, 리플렉션으로 deliveryId를 지정
   public static Delivery createDelivery(UUID deliveryId) {
-    Delivery delivery = createDelivery();
+    Delivery delivery = defaultDelivery();
     try {
       var field = Delivery.class.getDeclaredField("deliveryId");
       field.setAccessible(true);
@@ -119,7 +139,6 @@ public class DeliveryFixture {
         return buildDelivery(
             DEFAULT_VENDOR_DRIVER_ID,
             DEFAULT_ORDER_ID,
-            DEFAULT_ORDER_ITEM_ID,
             DEFAULT_DEPARTURE_ID,
             DEFAULT_ARRIVAL_ID,
             DEFAULT_SENDER_ID,
@@ -130,28 +149,12 @@ public class DeliveryFixture {
         );
     }
 
-    // 회사명만 다르게 (유효성 테스트용)
-    public static Delivery createDeliveryWithCompanyName(String companyName) {
-        return buildDelivery(
-            DEFAULT_VENDOR_DRIVER_ID,
-            DEFAULT_ORDER_ID,
-            DEFAULT_ORDER_ITEM_ID,
-            DEFAULT_DEPARTURE_ID,
-            DEFAULT_ARRIVAL_ID,
-            DEFAULT_SENDER_ID,
-            DEFAULT_RECEIVER_ID,
-            companyName,
-            DEFAULT_COMPANY_ADDRESS,
-            DEFAULT_RECEIVER_SLACK_ID
-        );
-    }
 
     // 슬랙 ID만 다르게 (유효성 테스트용)
     public static Delivery createDeliveryWithSlackId(String slackId) {
         return buildDelivery(
             DEFAULT_VENDOR_DRIVER_ID,
             DEFAULT_ORDER_ID,
-            DEFAULT_ORDER_ITEM_ID,
             DEFAULT_DEPARTURE_ID,
             DEFAULT_ARRIVAL_ID,
             DEFAULT_SENDER_ID,
@@ -167,7 +170,6 @@ public class DeliveryFixture {
         return buildDelivery(
             vendorDriverId,
             DEFAULT_ORDER_ID,
-            DEFAULT_ORDER_ITEM_ID,
             DEFAULT_DEPARTURE_ID,
             DEFAULT_ARRIVAL_ID,
             DEFAULT_SENDER_ID,
@@ -183,7 +185,6 @@ public class DeliveryFixture {
         return buildDelivery(
             DEFAULT_VENDOR_DRIVER_ID,
             DEFAULT_ORDER_ID,
-            DEFAULT_ORDER_ITEM_ID,
             DEFAULT_DEPARTURE_ID,
             DEFAULT_ARRIVAL_ID,
             DEFAULT_SENDER_ID,

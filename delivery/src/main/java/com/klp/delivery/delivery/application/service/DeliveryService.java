@@ -5,10 +5,12 @@ import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,21 +50,23 @@ public class DeliveryService {
     }
 
 
-    public Delivery registerDelivery(DeliveryCommand command) {
+    public Delivery registerDelivery(DeliveryCommand command, List<OrderItemCommand> items) {
         try {
 
             return deliveryRepository.save(
                 Delivery.create(
                     command.vendorDriverId(),
                     command.orderId(),
-                    command.orderItemId(),
                     command.departureId(),
                     command.arrivalId(),
                     command.senderId(),
                     command.receiverId(),
                     command.receiverName(),
                     command.address(),
-                    command.receiverSlackId()));
+                    command.receiverSlackId(),
+                    items
+                )
+            );
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {

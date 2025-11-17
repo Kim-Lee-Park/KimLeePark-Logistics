@@ -37,9 +37,8 @@ public class DeliveryController {
 
     DeliveryResponse response = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
 
-    log.info("배송 생성 성공: orderId={}, deliveryCount={}", request.orderId(),
-        response.deliveries().size());
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    log.info("배송 생성 성공: orderId={}, deliveryCount={}", request.orderId(), response.items().size());
+    return ResponseEntity.ok().body(response);
   }
 
   @GetMapping("/{deliveryId}")

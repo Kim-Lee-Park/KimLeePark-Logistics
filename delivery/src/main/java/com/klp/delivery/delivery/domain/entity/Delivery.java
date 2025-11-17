@@ -3,7 +3,9 @@ package com.klp.delivery.delivery.domain.entity;
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.BaseEntity;
 import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +13,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -41,10 +46,6 @@ public class Delivery extends BaseEntity {
     @Comment("주문 ID")
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
-
-    @Comment("주문 아이템 ID")
-    @Column(name = "order_item_id", nullable = false)
-    private UUID orderItemId;
 
     @Comment("출발 허브 ID")
     @Column(name = "departure_id", nullable = false)
@@ -82,12 +83,14 @@ public class Delivery extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
 
-    public Delivery(Long vendorDrvierId, UUID orderId, UUID orderItemId, UUID departureId, UUID arrivalId,
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL)
+    List<DeliveryItem> deliveryItems = new ArrayList<>();
+
+    public Delivery(Long vendorDrvierId, UUID orderId, UUID departureId, UUID arrivalId,
         UUID senderId, UUID receiverId, String receiverName, String address, String receiverSlackId,
-        DeliveryStatus status) {
+        DeliveryStatus status, List<OrderItemCommand> orderItem) {
         this.vendorDrvierId = vendorDrvierId;
         this.orderId = orderId;
-        this.orderItemId = orderItemId;
         this.departureId = departureId;
         this.arrivalId = arrivalId;
         this.senderId = senderId;
@@ -96,14 +99,19 @@ public class Delivery extends BaseEntity {
         this.address = address;
         this.receiverSlackId = receiverSlackId;
         this.status = status;
+        for(OrderItemCommand deliveryItem : orderItem){
+            DeliveryItem item = DeliveryItem.create(this, deliveryItem.orderItemId());
+            addDeliveryItem(item);
+        }
     }
 
-    public static Delivery create(Long vendorDriverId, UUID orderId, UUID orderItemId, UUID departureId,
+    public static Delivery create(Long vendorDriverId, UUID orderId, UUID departureId,
         UUID arrivalId, UUID senderId, UUID receiverId, String receiverName, String address,
-        String receiverSlackId) {
+        String receiverSlackId, List<OrderItemCommand> items) {
         validateDeliveryData(vendorDriverId, receiverName, address, receiverSlackId);
-        return new Delivery(vendorDriverId, orderId, orderItemId, departureId, arrivalId, senderId, receiverId,
-            receiverName, address, receiverSlackId, DeliveryStatus.CREATED);
+        return new Delivery(vendorDriverId, orderId, departureId, arrivalId, senderId, receiverId,
+            receiverName, address, receiverSlackId, DeliveryStatus.CREATED, items);
+
     }
 
     private static void validateDeliveryData(Long vendorDriverId, String receiverName,
@@ -125,6 +133,12 @@ public class Delivery extends BaseEntity {
 
     public void updateStatus(DeliveryStatus status) {
         this.status = status;
+    }
+
+    // 연관관계 설정
+    public void addDeliveryItem(DeliveryItem item) {
+        deliveryItems.add(item);
+        item.assignTo(this);
     }
 
 }

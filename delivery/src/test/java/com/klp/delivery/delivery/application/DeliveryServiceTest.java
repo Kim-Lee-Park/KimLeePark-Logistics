@@ -5,13 +5,13 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ITEM_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
-import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,12 +22,14 @@ import static org.mockito.Mockito.when;
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
+import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.service.CompanyApiClient;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,10 +57,9 @@ public class DeliveryServiceTest extends MockTest {
   void 배송_생성_성공() {
     // given: 배송 등록 데이터 준비
     UUID orderId = DEFAULT_ORDER_ID;
-    UUID orderItemId = DEFAULT_ORDER_ITEM_ID;
-    UUID hubId = DEFAULT_HUB_ID_UUID;
     UUID departureId = DEFAULT_DEPARTURE_ID;
     UUID arrivalId = DEFAULT_ARRIVAL_ID;
+    UUID senderId = DEFAULT_SENDER_ID;
     UUID receiverId = DEFAULT_RECEIVER_ID;
     String receiverName = DEFAULT_COMPANY_NAME;
     String address = DEFAULT_COMPANY_ADDRESS;
@@ -66,14 +67,14 @@ public class DeliveryServiceTest extends MockTest {
     Long vendorDriverId = 1234L;
 
     DeliveryCommand command = new DeliveryCommand(
-        orderId, orderItemId, hubId, departureId, arrivalId, receiverId,
+        orderId, departureId, arrivalId, senderId, receiverId,
         receiverName, address, receiverSlackId, vendorDriverId);
 
-    Delivery delivery = createDelivery();
+      Delivery delivery = defaultDelivery();
     when(deliveryRepository.save(any(Delivery.class))).thenReturn(delivery);
-
+      List<OrderItemCommand> items =  orderItemCommandsDefault();
     // when: 배송 생성
-    Delivery result = deliveryService.registerDelivery(command);
+    Delivery result = deliveryService.registerDelivery(command, items);
 
     // then: 생성 검증
     verify(deliveryRepository, times(1)).save(any(Delivery.class));

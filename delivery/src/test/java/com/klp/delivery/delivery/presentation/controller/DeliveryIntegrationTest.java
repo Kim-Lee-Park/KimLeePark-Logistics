@@ -1,14 +1,11 @@
 package com.klp.delivery.delivery.presentation.controller;
 
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_CUSTOMER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_IDEMPOTENCY_KEY;
+
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SUPPLIER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createOrderItemDtoList;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,14 +13,17 @@ import static org.hamcrest.Matchers.equalTo;
 import com.klp.delivery.common.DeliveryStatus;
 import com.klp.delivery.delivery.application.service.CompanyApiClient;
 import com.klp.delivery.delivery.application.service.DriverApiClient;
-import com.klp.delivery.delivery.domain.Delivery;
-import com.klp.delivery.delivery.domain.DeliveryRepository;
+import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
+import groovy.util.logging.Slf4j;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -34,13 +34,15 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Transactional
 @Import(DeliveryIntegrationTest.TestConfig.class)
 class DeliveryIntegrationTest {
 
-  @LocalServerPort
+    private static final Logger log = LoggerFactory.getLogger(DeliveryIntegrationTest.class);
+    @LocalServerPort
   private int port;
 
   @Autowired
@@ -65,20 +67,13 @@ class DeliveryIntegrationTest {
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    RestAssured.basePath = "/api";
+    RestAssured.basePath = "/v1";
   }
 
   @Test
   void 배송생성_조회_E2E() {
     // given
-    DeliveryCreateRequest request = new DeliveryCreateRequest(
-        DEFAULT_ORDER_ID,
-        DEFAULT_SUPPLIER_ID,
-        DEFAULT_CUSTOMER_ID,
-        "2025-11-05 14:00까지 납품 요청",
-        createOrderItemDtoList(),
-        DEFAULT_IDEMPOTENCY_KEY
-    );
+      DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
     // when: 배송 생성
     String deliveryId = given()
@@ -87,9 +82,10 @@ class DeliveryIntegrationTest {
     .when()
         .post("/deliveries")
     .then()
-        .statusCode(201)
+        .statusCode(200)
         .extract()
-        .path("deliveries[0].deliveryId");
+        .path("items[0].deliveryId");
+
 
     // then: 생성된 배송 조회
     given()

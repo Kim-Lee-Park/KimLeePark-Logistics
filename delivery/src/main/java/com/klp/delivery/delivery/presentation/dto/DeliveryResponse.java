@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 public record DeliveryResponse(
-    List<DeliveryItemResponse> deliveries
+    UUID orderId,
+    List<DeliveryItemResponse> items
 ) {
   public record DeliveryItemResponse(
       UUID orderItemId,

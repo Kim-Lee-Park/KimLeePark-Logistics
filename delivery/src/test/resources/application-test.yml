@@ -4,6 +4,10 @@ spring:
     username: kimleepark
     password: kimleepark
     driver-class-name: org.postgresql.Driver
+
+  cloud:
+    discovery:
+      enabled: false         #eureka 비활성황
   jpa:
     hibernate:
       ddl-auto: create-drop

@@ -2,17 +2,19 @@ package com.klp.delivery.delivery.presentation.controller;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_CUSTOMER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_IDEMPOTENCY_KEY;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ITEM_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SUPPLIER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createOrderItemDtoList;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_FIRST;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_SECOND;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_SECOND;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_THIRD;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -31,7 +33,8 @@ import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.DeliveryStatus;
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.application.service.DeliveryService;
-import com.klp.delivery.delivery.domain.Delivery;
+import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
+import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
@@ -50,161 +53,160 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(controllers = DeliveryController.class)
 class DeliveryControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Autowired
-  private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private DeliveryFacade deliveryFacade;
+    @MockitoBean
+    private DeliveryFacade deliveryFacade;
 
-  @MockitoBean
-  private DeliveryService deliveryService;
+    @MockitoBean
+    private DeliveryService deliveryService;
 
-  @Test
-  void 배송생성_성공_201Created() throws Exception {
-    // given: 배송 생성 요청 데이터
-    DeliveryCreateRequest request = new DeliveryCreateRequest(
-        DEFAULT_ORDER_ID,
-        DEFAULT_SUPPLIER_ID,
-        DEFAULT_CUSTOMER_ID,
-        "2025-11-05 14:00까지 납품 요청",
-        createOrderItemDtoList(),
-        DEFAULT_IDEMPOTENCY_KEY
-    );
+    @MockitoBean
+    private IdempotencyKeyService idempotencyKeyService;
 
-    List<DeliveryResponse.DeliveryItemResponse> deliveryItems = List.of(
-        new DeliveryResponse.DeliveryItemResponse(DEFAULT_ORDER_ITEM_ID, DEFAULT_DELIVERY_ID)
-    );
-    DeliveryResponse response = new DeliveryResponse(deliveryItems);
+    @Test
+    void 배송생성_성공_200Created() throws Exception {
 
-    when(deliveryFacade.createDelivery(DEFAULT_ORDER_ID, request)).thenReturn(response);
+        // given: 여러 아이템을 가진 배송 생성 요청 데이터 준비
+        // orderItem3개 / hubId 2개
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
-    // when: 배송 생성 요청
-    mockMvc.perform(post("/api/deliveries")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.deliveries").isArray())
-        .andExpect(jsonPath("$.deliveries[0].orderItemId").value(DEFAULT_ORDER_ITEM_ID.toString()))
-        .andExpect(jsonPath("$.deliveries[0].deliveryId").value(DEFAULT_DELIVERY_ID.toString()));
+        List<DeliveryResponse.DeliveryItemResponse> deliveryItems = List.of(
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND)
+        );
 
-    // then: Facade 호출 검증
-    verify(deliveryFacade).createDelivery(DEFAULT_ORDER_ID, request);
-  }
+        DeliveryResponse response = new DeliveryResponse(DEFAULT_ORDER_ID, deliveryItems);
 
-  @Test
-  void 배송생성_중복멱등키_예외발생() {
-    // given: 배송 생성 요청 데이터
-    DeliveryCreateRequest request = new DeliveryCreateRequest(
-        DEFAULT_ORDER_ID,
-        DEFAULT_SUPPLIER_ID,
-        DEFAULT_CUSTOMER_ID,
-        "2025-11-05 14:00까지 납품 요청",
-        createOrderItemDtoList(),
-        DEFAULT_IDEMPOTENCY_KEY
-    );
+        when(deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand())).thenReturn(response);
 
-    doThrow(new BusinessException(DeliveryErrorCode.DUPLICATE_IDEMPOTENCY_KEY))
-        .when(deliveryFacade).createDelivery(DEFAULT_ORDER_ID, request);
+        // when: 배송 생성 요청
+        mockMvc.perform(post("/v1/deliveries")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.items").isArray());
 
-    // when & then: 배송 생성 요청 시 예외 발생
-    Assertions.assertThrows(Exception.class, () -> {
-      mockMvc.perform(post("/api/deliveries")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)));
-    });
+        // then: Facade 호출 검증
+        verify(deliveryFacade).createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand());
+    }
 
-    // then: Facade 호출 검증
-    verify(deliveryFacade).createDelivery(DEFAULT_ORDER_ID, request);
-  }
+    @Test
+    void 배송생성_중복멱등키_예외발생() {
+        // given: 배송 생성 요청 데이터
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
-  @Test
-  void 배송생성_외부API실패_예외발생() {
-    // given: 배송 생성 요청 데이터
-    DeliveryCreateRequest request = new DeliveryCreateRequest(
-        DEFAULT_ORDER_ID,
-        DEFAULT_SUPPLIER_ID,
-        DEFAULT_CUSTOMER_ID,
-        "2025-11-05 14:00까지 납품 요청",
-        createOrderItemDtoList(),
-        DEFAULT_IDEMPOTENCY_KEY
-    );
+        doThrow(new BusinessException(DeliveryErrorCode.DUPLICATE_IDEMPOTENCY_KEY))
+            .when(deliveryFacade)
+            .createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
 
-    doThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR))
-        .when(deliveryFacade).createDelivery(DEFAULT_ORDER_ID, request);
+        // when & then: 배송 생성 요청 시 예외 발생
+        Assertions.assertThrows(Exception.class, () -> {
+            mockMvc.perform(post("/v1/deliveries")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+        });
 
-    // when & then: 배송 생성 요청 시 예외 발생
-    Assertions.assertThrows(Exception.class, () -> {
-      mockMvc.perform(post("/api/deliveries")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(request)));
-    });
+        // then: Facade 호출 검증
+        verify(deliveryFacade).createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand());
+    }
 
-    // then: Facade 호출 검증
-    verify(deliveryFacade).createDelivery(DEFAULT_ORDER_ID, request);
-  }
+    @Test
+    void 배송생성_외부API실패_예외발생() {
+        // given: 배송 생성 요청 데이터
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
-  @Test
-  void 배송조회_성공_200OK() throws Exception {
-    // given: 배송 데이터 준비
-    Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID);
+        doThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR))
+            .when(deliveryFacade)
+            .createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
 
-    when(deliveryService.getDelivery(DEFAULT_DELIVERY_ID)).thenReturn(delivery);
+        // when & then: 배송 생성 요청 시 예외 발생
+        Assertions.assertThrows(Exception.class, () -> {
+            mockMvc.perform(post("/v1/deliveries")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+        });
 
-    // when: 배송 조회 요청
-    mockMvc.perform(get("/api/deliveries/{deliveryId}", DEFAULT_DELIVERY_ID))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.deliveryId").value(DEFAULT_DELIVERY_ID.toString()))
-        .andExpect(jsonPath("$.orderId").value(DEFAULT_ORDER_ID.toString()))
-        .andExpect(jsonPath("$.departureId").value(DEFAULT_DEPARTURE_ID.toString()))
-        .andExpect(jsonPath("$.receiverId").value(DEFAULT_RECEIVER_ID.toString()))
-        .andExpect(jsonPath("$.receiverName").value(DEFAULT_COMPANY_NAME))
-        .andExpect(jsonPath("$.address").value(DEFAULT_COMPANY_ADDRESS))
-        .andExpect(jsonPath("$.receiverSlackId").value(DEFAULT_RECEIVER_SLACK_ID))
-        .andExpect(jsonPath("$.status").value(DeliveryStatus.CREATED.name()));
+        // then: Facade 호출 검증
+        verify(deliveryFacade).createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand());
+    }
 
-    // then: 배송 조회 서비스 호출 검증
-    verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID);
-  }
+    @Test
+    void 배송조회_성공_200OK() throws Exception {
+        // given: 배송 데이터 준비
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
-  @Test
-  void 배송조회_배송없음_예외발생() {
-    // given: 배송이 존재하지 않는 경우
-    when(deliveryService.getDelivery(DEFAULT_DELIVERY_ID))
-        .thenThrow(new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+        List<DeliveryResponse.DeliveryItemResponse> deliveryItems = List.of(
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND)
+        );
 
-    // when & then: 배송 조회 요청 시 예외 발생
-    Assertions.assertThrows(Exception.class, () -> {
-      mockMvc.perform(get("/api/deliveries/{deliveryId}", DEFAULT_DELIVERY_ID));
-    });
+        Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID_FIRST);
 
-    // then: 배송 조회 서비스 호출 검증
-    verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID);
-  }
+        when(deliveryService.getDelivery(DEFAULT_DELIVERY_ID_FIRST)).thenReturn(delivery);
+
+        // when: 배송 조회 요청
+        mockMvc.perform(get("/v1/deliveries/{deliveryId}", delivery.getDeliveryId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.deliveryId").value(DEFAULT_DELIVERY_ID_FIRST.toString()))
+            .andExpect(jsonPath("$.orderId").value(DEFAULT_ORDER_ID.toString()))
+            .andExpect(jsonPath("$.departureId").value(DEFAULT_DEPARTURE_ID.toString()))
+            .andExpect(jsonPath("$.receiverId").value(DEFAULT_RECEIVER_ID.toString()))
+            .andExpect(jsonPath("$.receiverName").value(DEFAULT_COMPANY_NAME))
+            .andExpect(jsonPath("$.address").value(DEFAULT_COMPANY_ADDRESS))
+            .andExpect(jsonPath("$.receiverSlackId").value(DEFAULT_RECEIVER_SLACK_ID))
+            .andExpect(jsonPath("$.status").value(DeliveryStatus.CREATED.name()));
+
+        // then: 배송 조회 서비스 호출 검증
+        verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID_FIRST);
+    }
+
+    @Test
+    void 배송조회_배송없음_예외발생() {
+        // given: 배송이 존재하지 않는 경우
+        when(deliveryService.getDelivery(DEFAULT_DELIVERY_ID_FIRST))
+            .thenThrow(new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+        // when & then: 배송 조회 요청 시 예외 발생
+        Assertions.assertThrows(Exception.class, () -> {
+            mockMvc.perform(get("/v1/deliveries/{deliveryId}", DEFAULT_DELIVERY_ID_FIRST));
+        });
+
+        // then: 배송 조회 서비스 호출 검증
+        verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID_FIRST);
+    }
 
   @Test
   void 배송상태변경_성공_204NoContent() throws Exception {
     // given: 배송 상태 변경 요청 데이터
     DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(
-        DeliveryStatus.AT_HUB_WAITING
+        DeliveryStatus.IN_HUB_TRANSIT
     );
 
     doNothing().when(deliveryService)
-        .updateDeliveryStatus(DEFAULT_DELIVERY_ID, DeliveryStatus.AT_HUB_WAITING);
+        .updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, DeliveryStatus.IN_HUB_TRANSIT);
 
     // when: 배송 상태 변경 요청
-    mockMvc.perform(patch("/api/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID)
+    mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
     // then: 배송 상태 변경 서비스 호출 검증
-    verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID,
-        DeliveryStatus.AT_HUB_WAITING);
+    verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST,
+        DeliveryStatus.IN_HUB_TRANSIT);
   }
 
   @Test
@@ -213,7 +215,7 @@ class DeliveryControllerTest {
     String requestJson = "{\"status\": null}";
 
     // when: 배송 상태 변경 요청
-    mockMvc.perform(patch("/api/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID)
+    mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson))
         .andExpect(status().isBadRequest());
@@ -228,16 +230,16 @@ class DeliveryControllerTest {
     // given: 배송 상태 변경 요청 데이터
     DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(status);
 
-    doNothing().when(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID, status);
+    doNothing().when(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
 
     // when: 배송 상태 변경 요청
-    mockMvc.perform(patch("/api/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID)
+    mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
     // then: 배송 상태 변경 서비스 호출 검증
-    verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID, status);
+    verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
   }
 }
 

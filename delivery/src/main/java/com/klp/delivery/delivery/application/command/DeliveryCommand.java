@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public record DeliveryCommand(
     UUID orderId,
-    UUID orderItemId,
     UUID departureId,
     UUID arrivalId,
     UUID senderId,

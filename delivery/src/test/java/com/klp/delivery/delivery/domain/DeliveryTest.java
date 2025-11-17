@@ -1,9 +1,9 @@
 package com.klp.delivery.delivery.domain;
 
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryWithAddress;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryWithReceiverName;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryWithSlackId;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -25,7 +25,7 @@ public class DeliveryTest extends MockTest {
     @Test
     void 배송_생성시_배송상태는_CREATED_설정_검증() {
         // given: 배송 등록 데이터 준비
-        Delivery delivery = createDelivery();
+        Delivery delivery = defaultDelivery();
 
         // then: 배송 상태값 검증
         assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
@@ -96,7 +96,7 @@ public class DeliveryTest extends MockTest {
     })
     void 배송상태_정상변경_검증(DeliveryStatus from, DeliveryStatus to) {
         // given
-        Delivery delivery = createDelivery();
+        Delivery delivery = defaultDelivery();
 
         // when
         delivery.updateStatus(from);

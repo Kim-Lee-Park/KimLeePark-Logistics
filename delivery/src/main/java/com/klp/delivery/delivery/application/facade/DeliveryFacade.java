@@ -10,10 +10,13 @@ import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.application.command.DriverCommand;
+import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,7 +56,7 @@ public class DeliveryFacade {
             idempotencyKeyService.updateIdempotencyStatus(updateCommand);
 
             log.info("배송 생성 완료: orderId={}, deliveryCount={}", orderCommand.orderId(), deliveryItems.size());
-            return new DeliveryResponse(deliveryItems);
+            return new DeliveryResponse(orderCommand.orderId(), deliveryItems);
         } catch (Exception e) {
             log.error("배송 생성 실패: orderId={}, error={}", orderCommand.orderId(), e.getMessage(), e);
             throw e;
@@ -66,13 +69,16 @@ public class DeliveryFacade {
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = new ArrayList<>();
         UUID arrivalId = UUID.fromString(companyCommand.hubId());
 
+        Map<UUID,List<OrderItemCommand>> list = orderCommand.items().stream().collect(Collectors.groupingBy(OrderItemCommand::hubId));
 
-        for (OrderItemCommand orderItem : orderCommand.items()) {
+        for(Map.Entry<UUID,List<OrderItemCommand>> entry : list.entrySet()){
+
+            UUID hubId = entry.getKey();
+            List<OrderItemCommand> orderItems = entry.getValue();
 
             DeliveryCommand deliveryCommand = new DeliveryCommand(
                 orderCommand.orderId(),
-                orderItem.orderItemId(),
-                orderItem.hubId(),
+                hubId,
                 arrivalId,
                 orderCommand.senderId(),
                 orderCommand.receiverId(),
@@ -82,12 +88,16 @@ public class DeliveryFacade {
                 driverCommand.vendorDrvierId()
             );
 
-            Delivery delivery = deliveryService.registerDelivery(deliveryCommand);
+            Delivery delivery = deliveryService.registerDelivery(deliveryCommand, orderItems);
 
-            deliveryItems.add(new DeliveryResponse.DeliveryItemResponse(
-                orderItem.orderItemId(),
-                delivery.getDeliveryId()
-            ));
+            for(DeliveryItem item: delivery.getDeliveryItems()){
+                deliveryItems.add(new DeliveryResponse.DeliveryItemResponse(
+                    item.getOrderItemId(),
+                    delivery.getDeliveryId()
+                ));
+
+                log.info("OrderId={}, OrderItemId={}, DeliveryId={}", delivery.getOrderId(), item.getOrderItemId(), delivery.getDeliveryId());
+            }
 
             // TODO: 각 배송 생성 시 경로 생성 이벤트 발행 (비동기)
             // deliveryService.publishDeliveryCreatedEvent(delivery);

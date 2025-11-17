@@ -9,17 +9,28 @@ import java.util.UUID;
 public class OrderItemFixture {
 
 
-    public static UUID DEFAULT_HUB_ID_UUID = UUID.fromString("00000000-0000-0000-0000-000000000006");
-    public static UUID DEFAULT_ORDER_ITEM_ID = UUID.fromString("00000000-0000-0000-0000-000000000007");
-    public static UUID DEFAULT_PRODUCT_ID = UUID.fromString("00000000-0000-0000-0000-000000000008");
+    public static UUID DEFAULT_HUB_ID_UUID_FIRST = DeliveryFixture.DEFAULT_DEPARTURE_ID;                                    // 출발 허브 ID
+    public static UUID DEFAULT_HUB_ID_UUID_SECOND = UUID.fromString("00000000-0000-0000-0000-000000000007");          // 다른 출발 허브 ID
 
+    public static UUID ORDER_ITEM_ID_FIRST = UUID.fromString("00000000-0000-0000-0000-000000000008");
+    public static UUID ORDER_ITEM_ID_SECOND = UUID.fromString("00000000-0000-0000-0000-000000000009");
+    public static UUID ORDER_ITEM_ID_THIRD = UUID.fromString("00000000-0000-0000-0000-000000000010");
 
 
     // 단일 아이템 기본 생성
     public static OrderItemCommand OrderItemCommand() {
-        return new OrderItemCommand(DEFAULT_ORDER_ITEM_ID, DEFAULT_HUB_ID_UUID);
+        return new OrderItemCommand(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST);
     }
 
+    public static List<OrderItemCommand> orderItemCommandsDefault() {
+       return List.of(OrderItemCommand(), OrderItemCommand(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST));
+    }
+
+    public static List<OrderItemCommand> orderItemCommands() {
+        return List.of(OrderItemCommand(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST),
+            OrderItemCommand(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST),
+            OrderItemCommand(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND));
+    }
 
     // 파라미터 기반 아이템 생성
     public static OrderItemCommand OrderItemCommand(UUID orderItemId, UUID hubId) {
@@ -34,18 +45,10 @@ public class OrderItemFixture {
         return orderItems;
     }
 
-
-    // deliveryId 포함된 아이템 리스트 (저장 후 검증용)
-    public static List<OrderItemCommand> OrderItemCommandListWithDeliveryId() {
-        List<OrderItemCommand> orderItems = new ArrayList<>();
-        orderItems.add(OrderItemCommand(DEFAULT_ORDER_ITEM_ID, DEFAULT_HUB_ID_UUID));
-        return orderItems;
-    }
-
     public static OrderItem createOrderItem() {
         return new OrderItem(
-            DEFAULT_ORDER_ITEM_ID.toString(),
-            DEFAULT_HUB_ID_UUID.toString()
+            ORDER_ITEM_ID_FIRST.toString(),
+            DEFAULT_HUB_ID_UUID_FIRST.toString()
         );
     }
 
@@ -55,11 +58,11 @@ public class OrderItemFixture {
         return new OrderItem(orderItemId.toString(), hubId.toString());
     }
 
-
-    // 단일 OrderItem 리스트 (기본)
-    public static List<OrderItem> createOrderItemList() {
+    public static List<OrderItem> createOrderItems() {
         List<OrderItem> items = new ArrayList<>();
         items.add(createOrderItem());
+        items.add(createOrderItem(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST));
+        items.add(createOrderItem(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND));
         return items;
     }
 
@@ -68,7 +71,7 @@ public class OrderItemFixture {
     public static List<OrderItem> createOrderItemListWithDeliveryId() {
         List<OrderItem> items = new ArrayList<>();
         items.add(
-            createOrderItem(DEFAULT_ORDER_ITEM_ID, DEFAULT_HUB_ID_UUID)
+            createOrderItem(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST)
         );
         return items;
     }
