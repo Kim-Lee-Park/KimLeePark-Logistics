@@ -1,4 +1,4 @@
-package com.klp.delivery.delivery.repository;
+package com.klp.delivery.delivery.infrastructure.client;
 
 import com.klp.delivery.delivery.application.service.CompanyApiClient;
 import com.klp.delivery.delivery.application.command.CompanyCommand;

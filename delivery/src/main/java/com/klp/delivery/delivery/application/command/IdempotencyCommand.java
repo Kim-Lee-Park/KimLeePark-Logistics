@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.application.command;
 
-import com.klp.delivery.common.IdempotencyStatus;
+import com.klp.delivery.common.enums.IdempotencyStatus;
 import java.util.UUID;
 
 public record IdempotencyCommand(

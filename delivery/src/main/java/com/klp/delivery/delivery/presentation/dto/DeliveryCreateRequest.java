@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.presentation.dto;
 
-import com.klp.delivery.common.IdempotencyStatus;
+import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;

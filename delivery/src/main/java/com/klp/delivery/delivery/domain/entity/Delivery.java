@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.BaseEntity;
-import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.common.entity.BaseEntity;
+import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import jakarta.persistence.CascadeType;

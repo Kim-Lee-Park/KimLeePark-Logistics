@@ -1,10 +1,11 @@
-package com.klp.delivery.delivery.repository;
+package com.klp.delivery.delivery.infrastructure;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.klp.delivery.common.IdempotencyStatus;
-import com.klp.delivery.common.JpaAuditingConfig;
+import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
+import com.klp.delivery.delivery.infrastructure.repository.IdempotencyKeyRepositoryImpl;
+import com.klp.delivery.global.config.AuditConfig;
 import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
@@ -16,7 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({IdempotencyKeyRepositoryImpl.class, JpaAuditingConfig.class})
+@Import({IdempotencyKeyRepositoryImpl.class, AuditConfig.class})
 public class IdempotencyRepositoryImplTest {
 
 
@@ -68,7 +69,7 @@ public class IdempotencyRepositoryImplTest {
     assertThat(result.get().getIdempotencyKey()).isNotNull();
     assertThat(result.get().getOrderId()).isEqualTo(orderId);
     assertThat(result.get().getStatus()).isEqualTo(
-        com.klp.delivery.common.IdempotencyStatus.PENDING);
+        com.klp.delivery.common.enums.IdempotencyStatus.PENDING);
 
   }
 

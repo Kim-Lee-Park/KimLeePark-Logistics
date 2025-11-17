@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.domain;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.klp.delivery.common.IdempotencyStatus;
+import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
 import java.util.UUID;

@@ -1,11 +1,13 @@
-package com.klp.delivery.delivery.repository;
+package com.klp.delivery.delivery.infrastructure;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.klp.delivery.common.JpaAuditingConfig;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
+import com.klp.delivery.delivery.infrastructure.repository.DeliveryItemRepositoryImpl;
+import com.klp.delivery.delivery.infrastructure.repository.DeliveryRepositoryImpl;
+import com.klp.delivery.global.config.AuditConfig;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({DeliveryItemRepositoryImpl.class, DeliveryRepositoryImpl.class, JpaAuditingConfig.class})
+@Import({DeliveryItemRepositoryImpl.class, DeliveryRepositoryImpl.class, AuditConfig.class})
 public class DeliveryItemRepositoryImplTest {
 
     @Autowired

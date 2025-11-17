@@ -1,4 +1,4 @@
-package com.klp.delivery.delivery.repository;
+package com.klp.delivery.delivery.infrastructure.repository;
 
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import java.util.Optional;

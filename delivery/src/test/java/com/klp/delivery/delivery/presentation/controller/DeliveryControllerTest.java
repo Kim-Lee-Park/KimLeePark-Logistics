@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;

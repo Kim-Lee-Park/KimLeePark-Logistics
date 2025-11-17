@@ -1,14 +1,15 @@
-package com.klp.delivery.delivery.repository;
+package com.klp.delivery.delivery.infrastructure;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_SECOND;
 
-import com.klp.delivery.common.DeliveryStatus;
-import com.klp.delivery.common.JpaAuditingConfig;
+import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
+import com.klp.delivery.delivery.infrastructure.repository.DeliveryRepositoryImpl;
+import com.klp.delivery.global.config.AuditConfig;
 import groovy.util.logging.Slf4j;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Slf4j
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({DeliveryRepositoryImpl.class, JpaAuditingConfig.class})
+@Import({DeliveryRepositoryImpl.class, AuditConfig.class})
 public class DeliveryRepositoryImplTest {
 
 

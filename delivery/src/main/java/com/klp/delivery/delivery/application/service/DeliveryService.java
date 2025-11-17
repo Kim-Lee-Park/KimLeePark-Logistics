@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.application.service;
 
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;

@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.application.facade;
 
-import com.klp.delivery.common.IdempotencyStatus;
+import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;

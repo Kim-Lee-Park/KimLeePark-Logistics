@@ -10,7 +10,7 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.klp.delivery.common.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.service.CompanyApiClient;
 import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;

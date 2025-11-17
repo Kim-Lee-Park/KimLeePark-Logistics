@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.domain.entity;
 
-import com.klp.delivery.common.BaseEntity;
+import com.klp.delivery.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
