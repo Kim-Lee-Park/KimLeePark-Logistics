@@ -1,14 +1,14 @@
-package com.klp.authservice.auth.entrypoint.controller;
+package com.klp.authservice.auth.presentation.controller;
 
 import com.klp.authservice.auth.application.AuthService;
-import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
-import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
-import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
-import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
 import com.klp.authservice.auth.infrastructure.jwt.TokenExtractor;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
+import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
+import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
+import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
 import com.klp.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

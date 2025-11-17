@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.entrypoint;
+package com.klp.authservice.auth.presentation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -15,14 +15,14 @@ import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
-import com.klp.authservice.auth.entrypoint.controller.AuthController;
-import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
-import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
-import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
-import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.jwt.JwtConstants;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import com.klp.authservice.auth.presentation.controller.AuthController;
+import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
+import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
+import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
+import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
 import com.klp.authservice.global.exception.GlobalExceptionHandler;
 import com.klp.authservice.global.security.config.SecurityConfig;
 import com.klp.authservice.global.security.filter.AuthorizationFilter;

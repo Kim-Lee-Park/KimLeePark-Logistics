@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.entrypoint.dto.request;
+package com.klp.authservice.auth.presentation.dto.request;
 
 import com.klp.authservice.auth.application.command.LoginCommand;
 import jakarta.validation.constraints.NotBlank;

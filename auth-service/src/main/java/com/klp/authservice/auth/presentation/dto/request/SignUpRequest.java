@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.entrypoint.dto.request;
+package com.klp.authservice.auth.presentation.dto.request;
 
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
