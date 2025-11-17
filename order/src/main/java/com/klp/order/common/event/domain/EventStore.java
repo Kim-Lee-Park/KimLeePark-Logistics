@@ -14,6 +14,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "p_event_store", schema = "event_schema")
@@ -31,6 +34,11 @@ public class EventStore {
     @Column(name = "event_type", nullable = false)
     private EventType eventType;
 
+    @Comment("이벤트 객체")
+    @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private String payload;
+
     @Comment("발행 시간")
     @Column(name = "published_at", nullable = false)
     private LocalDateTime publishedAt;
@@ -39,7 +47,7 @@ public class EventStore {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    public EventStore(EventType eventType, LocalDateTime publishedAt) {
+    public EventStore(String payload, EventType eventType, LocalDateTime publishedAt) {
         if (eventType == null) {
             throw new IllegalArgumentException("이벤트 타입은 필수값입니다.");
         }
@@ -48,6 +56,11 @@ public class EventStore {
             throw new IllegalArgumentException("발행 시간은 필수값입니다.");
         }
 
+        if (payload == null) {
+            throw new IllegalArgumentException("Payload 는 필수값입니다.");
+        }
+
+        this.payload = payload;
         this.eventType = eventType;
         this.publishedAt = publishedAt;
         this.createdAt = LocalDateTime.now();

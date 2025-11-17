@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 class EventStoreTest {
 
+    private String payload = "payload";
+
     private EventType eventType = EventType.ORDER_CREATED;
 
     private LocalDateTime publishedAt = LocalDateTime.now();
@@ -15,12 +17,21 @@ class EventStoreTest {
     @Test
     @DisplayName("이벤트 타입이 Null 이라면 예외가 발생한다")
     void eventTypeIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new EventStore(null, publishedAt));
+        EventType eventType = null;
+        assertThrows(IllegalArgumentException.class, () -> new EventStore(payload, eventType, publishedAt));
     }
 
     @Test
     @DisplayName("발행 시간이 Null 이라면 예외가 발생한다")
     void publishedAtIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new EventStore(eventType, null));
+        LocalDateTime publishedAt = null;
+        assertThrows(IllegalArgumentException.class, () -> new EventStore(payload, eventType, publishedAt));
+    }
+
+    @Test
+    @DisplayName("payload 객체가 Null 이라면 예외가 발생한다")
+    void payloadIsNull() {
+        String payload = null;
+        assertThrows(IllegalArgumentException.class, () -> new EventStore(payload, eventType, publishedAt));
     }
 }
