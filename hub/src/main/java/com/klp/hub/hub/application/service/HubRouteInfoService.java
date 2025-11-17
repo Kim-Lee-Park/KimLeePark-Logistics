@@ -12,6 +12,7 @@ import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoDet
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoListResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.RegisterHubRouteInfoResponse;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.UpdatedHubRouteInfoResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,5 +89,13 @@ public class HubRouteInfoService {
                 log.warn("HUB ROUTE INFO NOT_EXISTS hubRouteInfoId: {}",hubRouteInfoId);
                 return new BusinessException(HubRouteInfoErrorCode.NOT_EXISTS);
             });
+    }
+
+    //모든 허브간 이동 정보 조회
+    @Transactional(readOnly = true)
+    public GetHubRouteInfoListResponse getAllHubRouteInfos() {
+        List<HubRouteInfo> routeInfos=hubRouteInfoRepository.getAllHubRouteInfos();
+        log.debug("모든 허브 이동 정보 조회 리스트 사이즈: {}",routeInfos.size());
+        return GetHubRouteInfoListResponse.from(routeInfos);
     }
 }
