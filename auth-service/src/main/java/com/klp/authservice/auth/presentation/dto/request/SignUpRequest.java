@@ -21,6 +21,10 @@ public record SignUpRequest(
     @NotBlank(message = "슬랙 ID는 필수 입니다")
     String slackId,
 
+    @NotBlank(message = "전화번호는 필수 입니다")
+    @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다")
+    String phone,
+
     @NotBlank(message = "소속 업체명(또는 허브명)은 필수 입니다")
     String affiliationName,
 
