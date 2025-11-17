@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.klp.order.common.event.EventStoreRepository;
+import com.klp.order.common.event.infrastructure.repository.EventStoreRepository;
 import com.klp.order.common.event.domain.EventStore;
 import com.klp.order.common.event.domain.EventType;
 import com.klp.order.notification.applicaiton.service.NotificationService;

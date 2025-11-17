@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.order.common.event.EventPublisher;
-import com.klp.order.common.event.EventStoreService;
+import com.klp.order.common.event.application.service.EventStoreService;
 import com.klp.order.common.event.domain.EventType;
 import com.klp.order.payment.application.service.dto.PaymentCreateCommand;
 import com.klp.order.payment.application.service.dto.PaymentCreateCommand.PaymentInfo;
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {

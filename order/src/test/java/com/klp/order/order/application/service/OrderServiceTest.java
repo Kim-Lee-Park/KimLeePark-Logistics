@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.order.common.event.EventPublisher;
-import com.klp.order.common.event.EventStoreService;
+import com.klp.order.common.event.application.service.EventStoreService;
 import com.klp.order.common.event.domain.EventType;
 import com.klp.order.order.application.service.dto.OrderCreateCommand;
 import com.klp.order.order.application.service.dto.OrderCreateCommand.Product;

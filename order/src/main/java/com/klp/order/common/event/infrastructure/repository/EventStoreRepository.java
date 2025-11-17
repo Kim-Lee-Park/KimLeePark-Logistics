@@ -1,4 +1,4 @@
-package com.klp.order.common.event;
+package com.klp.order.common.event.infrastructure.repository;
 
 import com.klp.order.common.event.domain.EventStore;
 import java.util.UUID;

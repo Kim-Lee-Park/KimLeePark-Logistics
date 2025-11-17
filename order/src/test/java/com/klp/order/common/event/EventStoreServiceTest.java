@@ -10,8 +10,10 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.order.common.event.application.service.EventStoreService;
 import com.klp.order.common.event.domain.EventStore;
 import com.klp.order.common.event.domain.EventType;
+import com.klp.order.common.event.infrastructure.repository.EventStoreRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
