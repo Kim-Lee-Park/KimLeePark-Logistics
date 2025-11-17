@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.common.exception.BusinessException;
+import com.klp.order.application.client.facade.OrderFacade;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderService;
@@ -46,6 +47,9 @@ class OrderCreateGetControllerTest {
 
     @MockitoBean
     private OrderService orderService;
+
+    @MockitoBean
+    private OrderFacade orderFacade;
 
     private CreateOrderRequest createOrderRequest;
     private Order savedOrder;
@@ -95,7 +99,7 @@ class OrderCreateGetControllerTest {
         UUID testOrderId = UUID.randomUUID();
         ReflectionTestUtils.setField(savedOrder, "orderId", testOrderId);
 
-        given(orderService.createOrder(any(CreateOrderCommand.class)))
+        given(orderFacade.createOrder(any(CreateOrderCommand.class)))
             .willReturn(savedOrder);
 
         // when & then

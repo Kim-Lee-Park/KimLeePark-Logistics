@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.common.exception.BusinessException;
+import com.klp.order.application.client.facade.OrderFacade;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderService;
@@ -45,6 +46,9 @@ public class OrderCancelControllerTest {
 
     @MockitoBean
     private OrderService orderService;
+
+    @MockitoBean
+    private OrderFacade orderFacade;
 
     private CreateOrderRequest createOrderRequest;
     private Order savedOrder;
