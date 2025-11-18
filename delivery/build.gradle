@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
 
+    // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -43,9 +44,7 @@ dependencies {
     annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.0:jpa'
 
     // h2 (for test)
-    testImplementation("com.h2database:h2")
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "com.h2database:h2"
 
     //eureka
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
@@ -63,18 +62,8 @@ dependencies {
     //openfeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
-    // validation
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // h2 (for test)
-    testImplementation("com.h2database:h2")
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
     // REST Assured for E2E testing
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
-
-    implementation 'com.klp.common:common-module:1.0.0'
 }
 
 dependencyManagement {
