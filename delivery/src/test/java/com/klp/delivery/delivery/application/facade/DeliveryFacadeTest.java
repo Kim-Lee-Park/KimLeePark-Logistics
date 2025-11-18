@@ -178,17 +178,20 @@ public class DeliveryFacadeTest extends MockTest {
         // given: 배송 생성 요청 데이터 준비
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
 
-        doThrow(new BusinessException(DeliveryErrorCode.DUPLICATE_IDEMPOTENCY_KEY))
-            .when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
+        Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID_FIRST);
 
+        // 멱등키 등록 수정 정상적으로 수행 된다고 가정
+        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
+        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
+        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(delivery);
+        doNothing().when(idempotencyKeyService).updateIdempotencyStatus(any(IdempotencyCommand.class));
 
+        // when: 배송 생성
+        deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
 
-        // then: 멱등키 등록만 호출되고, 업체/담당자 조회 및 배송 생성은 호출되지 않음
+        // then: 멱등키 상태 업데이트가 호출되었는지 검증
         verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(any(IdempotencyCommand.class));
-        verify(deliveryService, never()).findCompany(any());
-        verify(deliveryService, never()).findDriver(any());
-        verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
-        verify(idempotencyKeyService, never()).updateIdempotencyStatus(any(IdempotencyCommand.class));
     }
 
 

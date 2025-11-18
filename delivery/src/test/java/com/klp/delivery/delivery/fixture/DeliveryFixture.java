@@ -1,10 +1,10 @@
 package com.klp.delivery.delivery.fixture;
 
-import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommands;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
 
 import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.application.command.DriverCommand;
+import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;
@@ -104,18 +104,18 @@ public class DeliveryFixture {
     );
   }
 
-    public static Delivery multiHubDelivery() {
+    public static Delivery deliveryWithCustomHubId(List<OrderItemCommand> items) {
         return Delivery.create(
             DEFAULT_VENDOR_DRIVER_ID,
             DEFAULT_ORDER_ID,
-            DEFAULT_DEPARTURE_ID,
+            items.get(0).hubId(),
             DEFAULT_ARRIVAL_ID,
             DEFAULT_SENDER_ID,
             DEFAULT_RECEIVER_ID,
             DEFAULT_COMPANY_NAME,
             DEFAULT_COMPANY_ADDRESS,
             DEFAULT_RECEIVER_SLACK_ID,
-            orderItemCommands()
+            items
         );
     }
 

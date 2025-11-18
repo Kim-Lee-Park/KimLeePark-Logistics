@@ -1,6 +1,9 @@
 package com.klp.delivery.delivery.infrastructure;
 
+
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_SECOND;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -68,29 +71,21 @@ public class DeliveryItemRepositoryImplTest {
     void 배송ID로_배송아이템_조회_성공() {
         // given: 배송 생성 및 저장
         Delivery delivery = defaultDelivery();
-        Delivery savedDelivery = deliveryRepository.save(delivery);
-        UUID deliveryId = savedDelivery.getDeliveryId();
 
-        UUID orderItemId1 = UUID.randomUUID();
-        UUID orderItemId2 = UUID.randomUUID();
-
-        DeliveryItem deliveryItem1 = DeliveryItem.create(savedDelivery, orderItemId1);
-        DeliveryItem deliveryItem2 = DeliveryItem.create(savedDelivery, orderItemId2);
-
-        List<DeliveryItem> deliveryItems = Arrays.asList(deliveryItem1, deliveryItem2);
-        deliveryItemRepository.saveAll(deliveryItems);
+        // when: 배송 저장 (CascadeType.ALL로 인해 아이템도 함께 저장)
+        Delivery saved = deliveryRepository.save(delivery);
 
         // when: 배송 ID로 배송 아이템 조회
-        List<DeliveryItem> result = deliveryItemRepository.findAllByDeliveryId(deliveryId);
+        List<DeliveryItem> result = deliveryItemRepository.findAllByDeliveryId(saved.getDeliveryId());
 
         // then: 저장된 모든 DeliveryItem의 deliveryId가 같고 주문 아이템들 검증
         assertThat(result).isNotNull().hasSize(2);
 
         assertThat(result).extracting(item -> item.getDelivery().getDeliveryId())
-            .containsOnly(deliveryId);
+            .containsOnly(saved.getDeliveryId());
 
         assertThat(result).extracting(DeliveryItem::getOrderItemId)
-            .containsExactlyInAnyOrder(orderItemId1, orderItemId2);
+            .containsExactlyInAnyOrder(ORDER_ITEM_ID_FIRST, ORDER_ITEM_ID_SECOND);
     }
 
     @Test

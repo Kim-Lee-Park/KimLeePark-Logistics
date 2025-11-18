@@ -26,12 +26,6 @@ public class OrderItemFixture {
        return List.of(OrderItemCommand(), OrderItemCommand(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST));
     }
 
-    public static List<OrderItemCommand> orderItemCommands() {
-        return List.of(OrderItemCommand(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST),
-            OrderItemCommand(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST),
-            OrderItemCommand(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND));
-    }
-
     // 파라미터 기반 아이템 생성
     public static OrderItemCommand OrderItemCommand(UUID orderItemId, UUID hubId) {
         return new OrderItemCommand(orderItemId, hubId);

@@ -2,6 +2,7 @@ package com.klp.delivery.delivery.infrastructure.repository;
 
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -23,4 +24,9 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
   public Optional<Delivery> findByDeliveryId(UUID deliveryId) {
     return deliveryJpaRepository.findByDeliveryId(deliveryId);
   }
+
+    @Override
+    public List<Delivery> findDeliveryByOrderId(UUID orderId) {
+        return deliveryJpaRepository.findByOrderId(orderId);
+    }
 }
