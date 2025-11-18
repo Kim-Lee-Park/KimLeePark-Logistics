@@ -2,7 +2,6 @@ package com.klp.hub.hub.domain.repository;
 
 import com.klp.hub.hub.domain.model.HubRouteInfo;
 import com.klp.hub.hub.infrastructure.dto.RoutePairDto;
-import com.querydsl.core.BooleanBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +15,9 @@ public interface HubRouteInfoRepository {
 
     Page<HubRouteInfo> getHubRoutes(UUID depId, UUID arrId, Pageable pageable);
 
-    List<RoutePairDto> findExistingParisIn(List<UUID> hubIds);
+    List<RoutePairDto> findExistingPairsIn(List<UUID> hubIds);
 
     boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
+
+    List<HubRouteInfo> getAllHubRouteInfos();
 }

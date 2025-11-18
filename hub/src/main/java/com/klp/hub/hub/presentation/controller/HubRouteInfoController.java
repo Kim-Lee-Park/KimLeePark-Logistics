@@ -67,4 +67,11 @@ public class HubRouteInfoController {
         hubRouteInfoService.deleteHubRouteInfo(routeInfoId);
         return ResponseEntity.ok().build();
     }
+
+    //모든 허브간 이동 정보 조회 ( 페이지네이션 X )
+    //TODO: MASTER 권한
+    @GetMapping("/all")
+    public ResponseEntity<GetHubRouteInfoListResponse> getHubRouteInfos(){
+        return ResponseEntity.ok(hubRouteInfoService.getAllHubRouteInfos());
+    }
 }

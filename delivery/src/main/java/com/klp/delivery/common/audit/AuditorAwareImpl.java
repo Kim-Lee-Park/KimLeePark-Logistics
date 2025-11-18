@@ -1,10 +1,9 @@
-package com.klp.hub.common.audit;
+package com.klp.delivery.common.audit;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -42,4 +41,3 @@ public class AuditorAwareImpl implements AuditorAware<Long> {
         }
     }
 }
-
