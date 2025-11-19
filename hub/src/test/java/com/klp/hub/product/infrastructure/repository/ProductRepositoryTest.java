@@ -1,5 +1,9 @@
 package com.klp.hub.product.infrastructure.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.klp.hub.TestJpaConfig;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
@@ -9,6 +13,8 @@ import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +23,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.springframework.test.context.TestPropertySource;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({
-        QuerydslConfig.class,
-        ProductRepositoryImpl.class,
-        TestJpaConfig.class
+    QuerydslConfig.class,
+    ProductRepositoryImpl.class,
+    TestJpaConfig.class
+})
+@TestPropertySource(properties = {
+    "spring.sql.init.mode=never"
 })
 class ProductRepositoryTest {
 

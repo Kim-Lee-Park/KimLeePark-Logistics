@@ -1,28 +1,31 @@
 package com.klp.hub.company.infrastructure.repository;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.klp.hub.TestJpaConfig;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import jakarta.persistence.EntityManager;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.springframework.test.context.TestPropertySource;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({
-        CompanyRepositoryImpl.class,
-        TestJpaConfig.class
+    CompanyRepositoryImpl.class,
+    TestJpaConfig.class
+})
+@TestPropertySource(properties = {
+    "spring.sql.init.mode=never"
 })
 class CompanyRepositoryTest {
 
