@@ -2,11 +2,11 @@ package com.klp.order.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.klp.order.command.OrderItemCommand;
+import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.global.AuditConfig;
+import com.klp.order.global.config.AuditConfig;
 import com.klp.order.infrastructure.repository.OrderCancellationJpaRepository;
 import com.klp.order.infrastructure.repository.OrderJpaRepository;
 import java.util.ArrayList;
