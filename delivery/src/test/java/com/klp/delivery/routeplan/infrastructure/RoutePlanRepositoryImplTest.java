@@ -10,7 +10,6 @@ import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
 import com.klp.delivery.routeplan.infrastructure.repository.RoutePlanRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 @Import({RoutePlanRepositoryImpl.class, AuditConfig.class, QuerydslConfig.class})
 public class RoutePlanRepositoryImplTest {
+
     @Autowired
     private RoutePlanRepository routePlanRepository;
     @Autowired
@@ -37,12 +37,12 @@ public class RoutePlanRepositoryImplTest {
 
     @Test
     @DisplayName("경로 계획 저장")
-    void save(){
+    void save() {
         //given
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
 
         //when
-        routePlan=routePlanRepository.save(routePlan);
+        routePlan = routePlanRepository.save(routePlan);
         entityManager.flush();
 
         //then
@@ -51,14 +51,15 @@ public class RoutePlanRepositoryImplTest {
 
     @Test
     @DisplayName("출발 허브ID,도착 허브ID로 경로 계획 조회")
-    void find_byDepartureIdAndArrivalId_success(){
+    void find_byDepartureIdAndArrivalId_success() {
         //given
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
-        routePlan=routePlanRepository.save(routePlan);
+        routePlan = routePlanRepository.save(routePlan);
         entityManager.flush();
 
         //when
-        Optional<RoutePlan> foundRoutePlan=routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(routePlan.getDepartureId(),routePlan.getArrivalId());
+        Optional<RoutePlan> foundRoutePlan = routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(
+            routePlan.getDepartureId(), routePlan.getArrivalId());
 
         //then
         assertThat(foundRoutePlan).isPresent();
@@ -66,21 +67,21 @@ public class RoutePlanRepositoryImplTest {
 
     @Test
     @DisplayName("출발 허브 ID, 도착 허브 ID 해당하는 경로 계획 삭제")
-    void delete_whereDepartureIdAndArrivalId_success(){
+    void delete_whereDepartureIdAndArrivalId_success() {
         //given
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
         routePlanRepository.save(routePlan);
         entityManager.flush();
 
         //when
-        routePlanRepository.softDeleteByDepartureAndArrival(routePlan.getDepartureId(), routePlan.getArrivalId());
+        routePlanRepository.softDeleteByDepartureAndArrival(routePlan.getDepartureId(),
+            routePlan.getArrivalId());
         entityManager.clear();
 
         //then
-        Optional<RoutePlan> found = routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(
-            routePlan.getDepartureId(), routePlan.getArrivalId());
-        assertThat(found).isPresent();
-        assertThat(found.get().getDeletedAt()).isNotNull();
+        RoutePlan deleted = entityManager.find(RoutePlan.class, routePlan.getRoutePlanId());
+        assertThat(deleted).isNotNull();
+        assertThat(deleted.getDeletedAt()).isNotNull();
     }
 
     @Test
@@ -92,7 +93,8 @@ public class RoutePlanRepositoryImplTest {
         entityManager.flush();
 
         // when
-        boolean result=routePlanRepository.existsByDepartureIdAndArrivalId(routePlan.getDepartureId(), routePlan.getArrivalId());
+        boolean result = routePlanRepository.existsByDepartureIdAndArrivalId(
+            routePlan.getDepartureId(), routePlan.getArrivalId());
         // then
         assertThat(result).isTrue();
     }
@@ -105,7 +107,8 @@ public class RoutePlanRepositoryImplTest {
         routePlanRepository.save(routePlan);
         entityManager.flush();
         // when
-        Optional<RoutePlan> found=routePlanRepository.getRouteInfoById(routePlan.getRoutePlanId());
+        Optional<RoutePlan> found = routePlanRepository.getRoutePlanById(
+            routePlan.getRoutePlanId());
         // then
         assertThat(found).isPresent();
     }
@@ -117,9 +120,9 @@ public class RoutePlanRepositoryImplTest {
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
         routePlanRepository.save(routePlan);
         entityManager.flush();
-        Pageable pageable= PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
         // when
-        Page<RoutePlan> routePlans = routePlanRepository.findAll(null,null,pageable);
+        Page<RoutePlan> routePlans = routePlanRepository.findAll(null, null, pageable);
         // then
         assertThat(routePlans).isNotNull();
         assertThat(routePlans.get().count()).isEqualTo(1);

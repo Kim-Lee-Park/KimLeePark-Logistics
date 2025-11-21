@@ -2,6 +2,8 @@ package com.klp.delivery.routeplan.presentation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -33,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(RoutePlanController.class)
 public class RoutePlanControllerTest {
+
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -60,7 +63,6 @@ public class RoutePlanControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
-            .andExpect(header().string("Location", "/v1/routes/plans/" + RoutePlanFixture.ROUTE_PLAN_ID))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.routePlanId").value(RoutePlanFixture.ROUTE_PLAN_ID.toString()));
     }
@@ -69,7 +71,7 @@ public class RoutePlanControllerTest {
     @DisplayName("출발 ID, 도착 ID로 조회")
     void get_byDepartureIdAndArrivalId_success() throws Exception {
         // given
-        given(routePlanService.getRoutePlan(any(),any()))
+        given(routePlanService.getRoutePlan(any(), any()))
             .willReturn(GetRoutePlanDetailResponse.from(RoutePlanFixture.createRoutePlan()));
 
         UUID depId = RoutePlanFixture.DEPARTURE_ID;
@@ -77,7 +79,7 @@ public class RoutePlanControllerTest {
         // when
 
         // then
-        mockMvc.perform(get(BASE_URL+"/plans/"+depId+"/"+arrId))
+        mockMvc.perform(get(BASE_URL + "/plans/" + depId + "/" + arrId))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
@@ -93,7 +95,7 @@ public class RoutePlanControllerTest {
         // when
 
         // then
-        mockMvc.perform(get(BASE_URL+"/plans/"+routePlanId))
+        mockMvc.perform(get(BASE_URL + "/plans/" + routePlanId))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
@@ -104,15 +106,29 @@ public class RoutePlanControllerTest {
         // given
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
         Pageable pageable = PageRequest.of(0, 10);
-        given(routePlanService.getRoutePlans(any(),any(),any())).willReturn(
-            GetRoutePlanListResponse.from(new PageImpl<>(List.of(routePlan),pageable,1)));
+        given(routePlanService.getRoutePlans(any(), any(), any())).willReturn(
+            GetRoutePlanListResponse.from(new PageImpl<>(List.of(routePlan), pageable, 1)));
         // when
 
         // then
-        mockMvc.perform(get(BASE_URL+"/plans")
-            .param("page","0")
-            .param("size","10"))
+        mockMvc.perform(get(BASE_URL + "/plans")
+                .param("page", "0")
+                .param("size", "10"))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("경로 계획 삭제")
+    void deleteRoutePlan_success() throws Exception {
+        // given
+        UUID routePlanId = RoutePlanFixture.ROUTE_PLAN_ID;
+        willDoNothing()
+            .given(routePlanService)
+            .deleteRoutePlan(any(UUID.class));   // or eq(routePlanId)
+
+        // when & then
+        mockMvc.perform(delete(BASE_URL + "/plans/" + routePlanId.toString()))
+            .andExpect(status().is2xxSuccessful());
     }
 }

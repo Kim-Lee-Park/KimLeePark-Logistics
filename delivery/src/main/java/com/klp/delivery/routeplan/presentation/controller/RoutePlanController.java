@@ -11,6 +11,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,26 +24,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/routes/plans")
 public class RoutePlanController {
+
     private final RoutePlanService routePlanService;
 
     //경로 계획 생성
     @PostMapping("")
     public ResponseEntity<CreateRoutePlanResponse> createRoutePlan(
-        @Valid @RequestBody CreateRoutePlanRequest request){
+        @Valid @RequestBody CreateRoutePlanRequest request) {
         CreateRoutePlanResponse response = routePlanService.createRoutePlan(request.toCommand());
-        URI location=URI.create("/v1/routes/plans/"+response.routePlanId());
+        URI location = URI.create("/v1/routes/plans/" + response.routePlanId());
         return ResponseEntity.created(location).body(response);
     }
 
     //출발 ID, 도착 ID로 조회
     @GetMapping("/{departureId}/{arrivalId}")
-    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID departureId, @PathVariable UUID arrivalId){
+    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID departureId,
+        @PathVariable UUID arrivalId) {
         return ResponseEntity.ok(routePlanService.getRoutePlan(departureId, arrivalId));
     }
 
     //경로 계획 ID로 조회
     @GetMapping("/{routePlanId}")
-    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID routePlanId){
+    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID routePlanId) {
         return ResponseEntity.ok(routePlanService.getRoutePlan(routePlanId));
     }
 
@@ -52,7 +55,14 @@ public class RoutePlanController {
         @RequestParam(required = false) UUID depId,
         @RequestParam(required = false) UUID arrId,
         Pageable pageable
-    ){
+    ) {
         return ResponseEntity.ok(routePlanService.getRoutePlans(depId, arrId, pageable));
+    }
+
+    //경로 계획 삭제
+    @DeleteMapping("/{routePlanId}")
+    public ResponseEntity<Void> deleteRoutePlan(@PathVariable UUID routePlanId) {
+        routePlanService.deleteRoutePlan(routePlanId);
+        return ResponseEntity.ok().build();
     }
 }
