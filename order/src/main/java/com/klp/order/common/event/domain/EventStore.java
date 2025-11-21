@@ -19,7 +19,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "p_event_store", schema = "event_schema")
+@Table(name = "p_event_store")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventStore {

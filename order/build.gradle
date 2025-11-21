@@ -39,6 +39,8 @@ dependencies {
     // awaitility
     testImplementation("org.awaitility:awaitility:4.2.0")
 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     // h2 (for test)
     testImplementation("com.h2database:h2")
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
