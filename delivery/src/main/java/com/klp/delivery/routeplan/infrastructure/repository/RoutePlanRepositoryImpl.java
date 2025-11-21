@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class RoutePlanRepositoryImpl implements RoutePlanRepository {
+
     private final RoutePlanJpaRepository routePlanJpaRepository;
     private final JPAQueryFactory queryFactory;
 
@@ -37,7 +38,8 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
     @Override
     public Optional<RoutePlan> findByDepartureIdAndArrivalIdAndDeletedAtIsNull(UUID departureId,
         UUID arrivalId) {
-        return routePlanJpaRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(departureId, arrivalId);
+        return routePlanJpaRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(departureId,
+            arrivalId);
     }
 
     @Override
@@ -46,7 +48,7 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
     }
 
     @Override
-    public Optional<RoutePlan> getRouteInfoById(UUID routePlanId) {
+    public Optional<RoutePlan> getRoutePlanById(UUID routePlanId) {
         return routePlanJpaRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId);
     }
 
@@ -66,16 +68,18 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
                 qRoutePlan.deletedAt.isNull()
             );
 
-        if(pageable.getSort().isSorted()) {
-            PathBuilder<QRoutePlan> entityPath = new PathBuilder<>(QRoutePlan.class,qRoutePlan.getMetadata());
-            for(Sort.Order order:pageable.getSort()) {
+        if (pageable.getSort().isSorted()) {
+            PathBuilder<QRoutePlan> entityPath = new PathBuilder<>(QRoutePlan.class,
+                qRoutePlan.getMetadata());
+            for (Sort.Order order : pageable.getSort()) {
                 String property = order.getProperty();
                 Order direction = order.isAscending() ? Order.ASC : Order.DESC;
-                query.orderBy(new OrderSpecifier<>(direction,entityPath.getComparable(property,
+                query.orderBy(new OrderSpecifier<>(direction, entityPath.getComparable(property,
                     Comparable.class)));
             }
+        } else {
+            query.orderBy(qRoutePlan.createdAt.desc());
         }
-        else query.orderBy(qRoutePlan.createdAt.desc());
 
         long total = query.fetchCount();
         List<RoutePlan> content = query
