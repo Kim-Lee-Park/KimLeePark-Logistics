@@ -211,7 +211,28 @@ EC2 인스턴스를 묶어서 자동으로 증감시키는 단위를 뜻한다
 
 ## Security Group 도식화
 
-넣어주세용~
+![보안그룹관계](../imgs/security_relation.drawio.png)
+
+### Subnet Table 
+
+- VPC CIDR 범위 : `10.0.0.0/16` → 65,536개 수용 
+
+| Subnet 이름            | AZ                  | CIDR         | 가용 IP | 용도                                 |
+|------------------------|----------------------|--------------|--------|---------------------------------------|
+| Public Subnet AZ1      | ap-northeast-2a      | `10.0.1.0/24` | 251    | ALB, NAT Gateway, Bastion Host        |
+| Public Subnet AZ2      | ap-northeast-2c      | `10.0.3.0/24` | 251    | ALB (2AZ 구성)                        |
+| Private App Subnet AZ1 | ap-northeast-2a      | `10.0.2.0/24` | 251    | ECS Fargate (Order/Payment/Product)   |
+| Private DB Subnet AZ1  | ap-northeast-2a      | `10.0.10.0/24` | 251    | RDS Primary                            |
+| Private DB Subnet AZ2  | ap-northeast-2c      | `10.0.20.0/24` | 251    | RDS Standby (Multi-AZ)                |
+
+### Route Table
+
+| Route Table 이름      | 연결 Subnet                                       | 목적지(Route) | Target           | 설명                                                                 |
+|------------------------|---------------------------------------------------|----------------|------------------|----------------------------------------------------------------------|
+| Public-RT             | `10.0.1.0/24 (AZ1)`, `20.0.3.0/24 (AZ2)`              |`0.0.0.0/0`      | Internet Gateway | Public(Subnet) → 인터넷 통신 (ALB, NAT, Bastion)                     |
+| Private-App-RT        | `10.0.2.0/24 (AZ1)`                                  | `0.0.0.0/0`      | NAT Gateway      | ECS → NAT 통해서만 외부 호출(예: API, 업데이트)                      |
+| Private-DB-RT         | `10.0.10.0/24 (AZ1)`, `10.0.20.0/24 (AZ2)`            |`0.0.0.0/0`      | NAT Gateway      | RDS → 인터넷 직접 통신 불가, 패치/백업 등만 NAT 통해 Outbound 가능   |
+
 
 ## Defense In Depth (심층 방어) 전략
 
