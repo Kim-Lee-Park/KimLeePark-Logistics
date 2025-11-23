@@ -5,11 +5,14 @@ import com.klp.delivery.routeplan.application.command.CreateRoutePlanCommand;
 import com.klp.delivery.routeplan.application.command.HubInfo;
 import com.klp.delivery.routeplan.application.command.HubRouteInfo;
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
+import com.klp.delivery.routeplan.domain.model.RoutePlanItem;
 import com.klp.delivery.routeplan.domain.policy.RoutePlanPolicy;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
+import com.klp.delivery.routeplan.exception.RoutePlanItemErrorCode;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanItemDetailResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanListResponse;
 import java.util.List;
 import java.util.UUID;
@@ -143,6 +146,23 @@ public class RoutePlanService {
             .orElseThrow(() -> {
                 log.warn("[RoutePlanService] 경로 계획 조회 실패 - routPlanId: {} 존재하지 않음", routePlanId);
                 return new BusinessException(RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND);
+            });
+    }
+
+    //경로 계획 구간 정보 ID로 조회
+    @Transactional(readOnly = true)
+    public GetRoutePlanItemDetailResponse getRoutePlanItem(UUID planId, UUID routePlanItemId) {
+        return GetRoutePlanItemDetailResponse.from(getRoutePlanItemById(routePlanItemId), planId);
+    }
+
+    //경로 계획 구간 정보 조회 서비스 내부용
+    @Transactional(readOnly = true)
+    public RoutePlanItem getRoutePlanItemById(UUID routePlanItemId) {
+        return routePlanRepository.findRoutePlanItemById(routePlanItemId)
+            .orElseThrow(() -> {
+                log.warn("[RoutePlanService] 경로 계획 구간 정보 조회 실패 - routPlanItemId: {} 존재하지 않음",
+                    routePlanItemId);
+                return new BusinessException(RoutePlanItemErrorCode.NO_ROUTE_PLAN_ITEM_FOUND);
             });
     }
 }

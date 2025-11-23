@@ -2,6 +2,7 @@ package com.klp.delivery.routeplan.infrastructure.repository;
 
 import com.klp.delivery.routeplan.domain.model.QRoutePlan;
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
+import com.klp.delivery.routeplan.domain.model.RoutePlanItem;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -24,6 +25,7 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
 
     private final RoutePlanJpaRepository routePlanJpaRepository;
     private final JPAQueryFactory queryFactory;
+    private final RoutePlanItemJpaRepository routePlanItemJpaRepository;
 
     @Override
     public RoutePlan save(RoutePlan routePlan) {
@@ -88,5 +90,10 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
             .fetch();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Optional<RoutePlanItem> findRoutePlanItemById(UUID routePlanId) {
+        return routePlanItemJpaRepository.findByRoutePlanItemIdAndDeletedAtIsNull(routePlanId);
     }
 }
