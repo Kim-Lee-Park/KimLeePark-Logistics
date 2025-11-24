@@ -9,6 +9,7 @@ import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
+import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
@@ -25,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
+
+    private final DistributedLockManager lockManager;
 
     @Transactional(readOnly = true)
     public InventoryResponse getByProductId(UUID productId) {
@@ -59,7 +62,14 @@ public class InventoryService {
      */
     @Transactional
     public InventoryDeductResponse deduct(InventoryDeductCommand command) {
-        boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(command.idempotencyKey());
+        String idempotencyKey = command.idempotencyKey();
+        boolean locked = lockManager.tryLock(idempotencyKey);
+        if (!locked) {
+            log.warn("이미 해당 멱등키로 재고 차감 진행 중 [Redis 락 획득 실패] idempotencyKey = {}", idempotencyKey);
+            throw new BusinessException(InventoryErrorCode.IDEMPOTENCY_ALREADY_PROCESSING);
+        }
+
+        boolean acquired = inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey);
         if (!acquired) {
             log.warn("이미 처리된 요청입니다.");
             return InventoryDeductResponse.already();
