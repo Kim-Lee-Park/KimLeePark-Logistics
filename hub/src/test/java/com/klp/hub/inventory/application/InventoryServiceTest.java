@@ -17,6 +17,7 @@ import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
+import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
@@ -133,7 +134,7 @@ class InventoryServiceTest {
     class Deduct {
 
         @Test
-        @DisplayName("재고 차감 요청시 이미 처리된 요청이라면 ALREADY 를 반환한다")
+        @DisplayName("재고 차감 요청시 이미 요청이 성공했다면 ALREADY 를 반환한다")
         void idempotency() {
             String idempotencyKey = "idempotencyKey";
             InventoryDeductCommand command = new InventoryDeductCommand(
@@ -141,8 +142,8 @@ class InventoryServiceTest {
                 List.of(new Product(productId, hubId, 10))
             );
             when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
-            when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey))
-                .thenReturn(false);
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
+                .thenReturn(alreadyUsedIdempotency());
 
             InventoryDeductResponse response = inventoryService.deduct(command);
 
@@ -158,7 +159,9 @@ class InventoryServiceTest {
                 List.of(new Product(productId, hubId, quantity))
             );
             when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
-            when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
             when(inventoryRepository.deductAll(
                 InventoryUpdatePlanner.planDeduct(command.products()))
             ).thenReturn(1);
@@ -178,7 +181,9 @@ class InventoryServiceTest {
                 List.of(new Product(productId, hubId, quantity))
             );
             when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
-            when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
             when(inventoryRepository.deductAll(
                 InventoryUpdatePlanner.planDeduct(command.products()))
             ).thenReturn(0);
@@ -214,7 +219,10 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
             );
-            when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
             when(inventoryRepository.replenishAll(
                 InventoryUpdatePlanner.planReplenish(command.products()))
             ).thenReturn(1);
@@ -233,7 +241,10 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
             );
-            when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
             when(inventoryRepository.replenishAll(
                 InventoryUpdatePlanner.planReplenish(command.products()))
             ).thenReturn(0);
@@ -243,5 +254,43 @@ class InventoryServiceTest {
                 .getErrorCode();
             assertEquals(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND, errorCode);
         }
+
+        @Test
+        @DisplayName("재고 증가 요청시 이미 요청이 성공했다면 ALREADY 를 반환한다")
+        void idempotency() {
+            String idempotencyKey = "idempotencyKey";
+            InventoryReplenishCommand command = new InventoryReplenishCommand(
+                idempotencyKey,
+                List.of(new InventoryReplenishCommand.Product(productId, hubId, 10))
+            );
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
+                .thenReturn(alreadyUsedIdempotency());
+
+            InventoryReplenishResponse response = inventoryService.replenish(command);
+
+            assertEquals(Status.ALREADY_REPLENISHED, response.status());
+        }
+
+        @Test
+        @DisplayName("분산락을 통한 락 획득 실패 시 예외가 발생한다")
+        void lockFailed() {
+            int quantity = 10;
+            InventoryReplenishCommand command = new InventoryReplenishCommand(
+                idempotencyKey,
+                List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
+            );
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(false);
+
+            assertThrows(BusinessException.class, () -> inventoryService.replenish(command));
+        }
+    }
+
+    private InventoryIdempotencyStatus alreadyUsedIdempotency() {
+        return InventoryIdempotencyStatus.SUCCESS;
+    }
+
+    private InventoryIdempotencyStatus inProgressIdempotency() {
+        return InventoryIdempotencyStatus.IN_PROGRESS;
     }
 }

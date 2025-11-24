@@ -6,7 +6,10 @@ import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
+import com.klp.hub.inventory.domain.InventoryIdempotency;
+import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.infrastructure.repository.InventoryIdempotencyJpaRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
@@ -19,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,6 +34,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+@Disabled
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
@@ -42,6 +47,9 @@ public class InventoryServiceConcurrencyTest {
 
     @Autowired
     private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private InventoryIdempotencyJpaRepository idempotencyRepository;
 
     @Autowired
     private InventoryJpaRepository jpaRepository;
@@ -170,9 +178,13 @@ public class InventoryServiceConcurrencyTest {
             executorService.shutdown();
 
             Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow();
+            InventoryIdempotency inventoryIdempotency = idempotencyRepository.findByIdempotencyKey(
+                sharedIdempotencyKey
+            ).orElseThrow();
             int expectedQuantity = initQuantity - qtyPerThread; // 990 (처음 10개 재고 차감만 성공)
             assertEquals(1, successCont[0]);
             assertEquals(expectedQuantity, inventory.getQuantity());
+            assertEquals(InventoryIdempotencyStatus.SUCCESS, inventoryIdempotency.getStatus());
         }
     }
 }

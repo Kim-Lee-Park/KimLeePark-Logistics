@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.domain.repository;
 
 import com.klp.hub.inventory.domain.Inventory;
+import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import java.util.List;
@@ -15,7 +16,9 @@ public interface InventoryRepository {
 
     Inventory save(Inventory inventory);
 
-    boolean tryAcquireIdempotencyKey(String idempotencyKey);
+    InventoryIdempotencyStatus acquireIdempotencyKey(String idempotencyKey);
+
+    void idempotencySuccess(String idempotencyKey);
 
     int deductAll(List<InventoryDeduct> inventoryDeducts);
 

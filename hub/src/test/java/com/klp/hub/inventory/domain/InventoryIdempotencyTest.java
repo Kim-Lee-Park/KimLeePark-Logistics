@@ -1,9 +1,10 @@
 package com.klp.hub.inventory.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.klp.hub.inventory.exception.InventoryErrorCode;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,25 +24,13 @@ class InventoryIdempotencyTest {
     }
 
     @Test
-    @DisplayName("재고 멱등 엔티티가 생성되면 상태는 PENDING 이다")
+    @DisplayName("재고 멱등 엔티티가 생성되면 상태는 IN_PROGRESS 이다")
     void pending() {
         InventoryIdempotency inventoryIdempotency = new InventoryIdempotency(
             UUID.randomUUID().toString()
         );
 
-        assertEquals(InventoryIdempotencyStatus.PENDING, inventoryIdempotency.getStatus());
-    }
-
-    @Test
-    @DisplayName("요청이 비즈니스 로직에 의해 실패하면 상태는 FAILED 이다")
-    void failed() {
-        InventoryIdempotency inventoryIdempotency = new InventoryIdempotency(
-            UUID.randomUUID().toString()
-        );
-
-        inventoryIdempotency.failed(InventoryErrorCode.INSUFFICIENT_STOCK.name());
-
-        assertEquals(InventoryIdempotencyStatus.FAILED, inventoryIdempotency.getStatus());
+        assertEquals(InventoryIdempotencyStatus.IN_PROGRESS, inventoryIdempotency.getStatus());
     }
 
     @Test
@@ -54,5 +43,27 @@ class InventoryIdempotencyTest {
         inventoryIdempotency.success();
 
         assertEquals(InventoryIdempotencyStatus.SUCCESS, inventoryIdempotency.getStatus());
+    }
+
+    @Test
+    @DisplayName("이미 성공한 멱등키라면 isUsed 가 true 이다")
+    void isUsedTrue() {
+        InventoryIdempotency inventoryIdempotency = new InventoryIdempotency(
+            UUID.randomUUID().toString()
+        );
+
+        inventoryIdempotency.success();
+
+        assertTrue(inventoryIdempotency.isUsed());
+    }
+
+    @Test
+    @DisplayName("처리중인 멱등키라면 isUsed 가 false 이다")
+    void isUsedFalse() {
+        InventoryIdempotency inventoryIdempotency = new InventoryIdempotency(
+            UUID.randomUUID().toString()
+        );
+
+        assertFalse(inventoryIdempotency.isUsed());
     }
 }

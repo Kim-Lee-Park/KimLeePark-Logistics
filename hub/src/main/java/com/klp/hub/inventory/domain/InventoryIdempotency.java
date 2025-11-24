@@ -43,24 +43,19 @@ public class InventoryIdempotency {
     @Column(name = "status", nullable = false)
     private InventoryIdempotencyStatus status;
 
-    @Comment("에러 코드")
-    @Column(name = "error_code")
-    private String errorCode;
-
     public InventoryIdempotency(String idempotencyKey) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             throw new IllegalArgumentException("멱등키는 필수값 입니다.");
         }
         this.idempotencyKey = idempotencyKey;
-        this.status = InventoryIdempotencyStatus.PENDING;
-    }
-
-    public void failed(String errorCode) {
-        this.status = InventoryIdempotencyStatus.FAILED;
-        this.errorCode = errorCode;
+        this.status = InventoryIdempotencyStatus.IN_PROGRESS;
     }
 
     public void success() {
         this.status = InventoryIdempotencyStatus.SUCCESS;
+    }
+
+    public boolean isUsed() {
+        return status.isUsed();
     }
 }
