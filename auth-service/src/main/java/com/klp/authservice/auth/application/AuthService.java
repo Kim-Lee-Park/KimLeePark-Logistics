@@ -15,16 +15,16 @@ import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
 import com.klp.common.exception.BusinessException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserClient userClient;
-    private final PasswordEncoder passwordEncoder;
     private final TokenProvider accessTokenProvider;
     private final TokenProvider refreshTokenProvider;
     private final BlackListTokenRepository blackListTokenRepository;
@@ -37,11 +37,9 @@ public class AuthService {
             throw new BusinessException(AuthErrorCode.USERNAME_IS_EXIST);
         }
 
-        String encodedPassword = passwordEncoder.encode(command.password());
-
         UserCreateRequest request = new UserCreateRequest(
             command.username(),
-            encodedPassword,
+            command.password(),
             command.slackId(),
             command.phone(),
             command.role(),
@@ -52,10 +50,11 @@ public class AuthService {
         userClient.createUser(request);
     }
 
+    /**
+     * 로그인: 유저 자격 증명 검증 요청 -> 액세스 토큰 생성
+     */
     public LoginResponse login(LoginCommand command) {
-        UserDataResponse dto = userClient.getUserByUsername(command.username());
-
-        validatePassword(command.password(), dto.password());
+        UserDataResponse dto = userClient.validateUserCredentials(command.username(), command.password());
 
         String accessToken = accessTokenProvider.generate(dto.userId(), dto.userName(), dto.role());
 
@@ -98,12 +97,6 @@ public class AuthService {
         UsernameDuplicateResponse response = userClient.checkUsernameAvailable(userName);
 
         return response.available();
-    }
-
-    private void validatePassword(String rawPassword, String encodedPassword) {
-        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new BusinessException(AuthErrorCode.INVALID_PASSWORD);
-        }
     }
 
     private boolean isAdmin(String role) {

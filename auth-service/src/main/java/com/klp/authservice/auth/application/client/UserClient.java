@@ -17,7 +17,7 @@ public interface UserClient {
     void createUser(UserCreateRequest request);
 
     /**
-     * userName으로 유저 정보를 가져오는 요청
+     * username, password로 유저가 유효한 유저인지 확인하고 유저 정볼르 가져오는 요청
      */
-    UserDataResponse getUserByUsername(String username);
+    UserDataResponse validateUserCredentials(String username, String password);
 }

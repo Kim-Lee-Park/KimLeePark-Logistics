@@ -2,6 +2,7 @@ package com.klp.authservice.auth.infrastructure.external;
 
 import com.klp.authservice.auth.infrastructure.external.config.UserFeignClientConfig;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
+import com.klp.authservice.auth.infrastructure.external.dto.request.ValidateUserRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -14,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface UserFeignClient {
 
     @GetMapping("/v1/users/check")
-    UsernameDuplicateResponse checkUsernameAvailable(@RequestParam("username") String userName);
+    UsernameDuplicateResponse checkUsernameAvailable(@RequestParam("username") String username);
 
-    @PostMapping("/v1/users")
+    @PostMapping("/v1/users/pending")
     void createUser(@RequestBody UserCreateRequest request);
 
-    @GetMapping("/v1/users")
-    UserDataResponse getUserByUsername(@RequestParam("username") String userName);
+    @PostMapping("/v1/users/validate-credentials")
+    UserDataResponse getUserByUsername(@RequestBody ValidateUserRequest request);
 }

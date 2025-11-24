@@ -2,6 +2,7 @@ package com.klp.authservice.auth.infrastructure.external;
 
 import com.klp.authservice.auth.application.client.UserClient;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
+import com.klp.authservice.auth.infrastructure.external.dto.request.ValidateUserRequest;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataResponse;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,8 @@ public class UserClientImpl implements UserClient {
     }
 
     @Override
-    public UserDataResponse getUserByUsername(String userName) {
-        return userFeignClient.getUserByUsername(userName);
+    public UserDataResponse validateUserCredentials(String username, String password) {
+        ValidateUserRequest request = new ValidateUserRequest(username, password);
+        return userFeignClient.getUserByUsername(request);
     }
 }
