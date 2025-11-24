@@ -26,35 +26,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class DeliveryController {
 
-  private final DeliveryFacade deliveryFacade;
-  private final DeliveryService deliveryService;
+    private final DeliveryFacade deliveryFacade;
+    private final DeliveryService deliveryService;
 
-  @PostMapping
-  public ResponseEntity<DeliveryResponse> createDelivery(
-      @Valid @RequestBody DeliveryCreateRequest request) {
+    @PostMapping
+    public ResponseEntity<DeliveryResponse> createDelivery(
+        @Valid @RequestBody DeliveryCreateRequest request) {
 
-    log.info("배송 생성 요청: orderId={}", request.orderId());
+        log.info("배송 생성 요청: orderId={}", request.orderId());
 
-    DeliveryResponse response = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
+        DeliveryResponse response = deliveryFacade.createDelivery(
+            request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
 
-    log.info("배송 생성 성공: orderId={}, deliveryCount={}", request.orderId(), response.items().size());
-    return ResponseEntity.ok().body(response);
-  }
+        log.info("배송 생성 성공: orderId={}, deliveryCount={}", request.orderId(),
+            response.items().size());
+        return ResponseEntity.ok().body(response);
+    }
 
-  @GetMapping("/{deliveryId}")
-  public ResponseEntity<DeliveryDetailResponse> getDelivery(@PathVariable UUID deliveryId) {
-      Delivery delivery = deliveryService.getDelivery(deliveryId);
-    DeliveryDetailResponse response = DeliveryDetailResponse.from(delivery);
-    return ResponseEntity.ok(response);
-  }
+    @GetMapping("/{deliveryId}")
+    public ResponseEntity<DeliveryDetailResponse> getDelivery(@PathVariable UUID deliveryId) {
+        Delivery delivery = deliveryService.getDelivery(deliveryId);
+        DeliveryDetailResponse response = DeliveryDetailResponse.from(delivery);
+        return ResponseEntity.ok(response);
+    }
 
-  @PatchMapping("/{deliveryId}/status")
-  public ResponseEntity<Void> updateDeliveryStatus(
-      @PathVariable UUID deliveryId,
-      @Valid @RequestBody DeliveryStatusUpdateRequest request) {
-    deliveryService.updateDeliveryStatus(deliveryId, request.status());
-    return ResponseEntity.noContent().build();
-  }
+    @PatchMapping("/{deliveryId}/status")
+    public ResponseEntity<Void> updateDeliveryStatus(
+        @PathVariable UUID deliveryId,
+        @Valid @RequestBody DeliveryStatusUpdateRequest request) {
+        deliveryService.updateDeliveryStatus(deliveryId, request.status());
+        return ResponseEntity.noContent().build();
+    }
 
 }
 

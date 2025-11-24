@@ -99,7 +99,7 @@ public class Delivery extends BaseEntity {
         this.address = address;
         this.receiverSlackId = receiverSlackId;
         this.status = status;
-        for(OrderItemCommand deliveryItem : orderItem){
+        for (OrderItemCommand deliveryItem : orderItem) {
             DeliveryItem item = DeliveryItem.create(this, deliveryItem.orderItemId());
             addDeliveryItem(item);
         }

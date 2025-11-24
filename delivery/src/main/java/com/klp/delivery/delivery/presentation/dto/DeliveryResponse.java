@@ -7,9 +7,11 @@ public record DeliveryResponse(
     UUID orderId,
     List<DeliveryItemResponse> items
 ) {
-  public record DeliveryItemResponse(
-      UUID orderItemId,
-      UUID deliveryId
-  ) {
-  }
+
+    public record DeliveryItemResponse(
+        UUID orderItemId,
+        UUID deliveryId
+    ) {
+
+    }
 }

@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 public class DriverApiClientImpl implements DriverApiClient {
 
 
-  @Override
-  public DriverCommand findDriver(String receiverId) {
-    return null;
-  }
+    @Override
+    public DriverCommand findDriver(String receiverId) {
+        return null;
+    }
 }

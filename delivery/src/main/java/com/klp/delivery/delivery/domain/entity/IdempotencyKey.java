@@ -20,33 +20,33 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IdempotencyKey extends BaseEntity {
 
-  @Id
-  @Column(name = "idempotency_key", nullable = false)
-  @Comment("멱등키")
-  private String idempotencyKey;
+    @Id
+    @Column(name = "idempotency_key", nullable = false)
+    @Comment("멱등키")
+    private String idempotencyKey;
 
-  @Column(name = "order_id", nullable = false)
-  @Comment("주문ID")
-  private UUID orderId;
+    @Column(name = "order_id", nullable = false)
+    @Comment("주문ID")
+    private UUID orderId;
 
-  @Comment("진행상태")
-  @Enumerated(EnumType.STRING)
-  IdempotencyStatus status;
+    @Comment("진행상태")
+    @Enumerated(EnumType.STRING)
+    IdempotencyStatus status;
 
-  public IdempotencyKey(String idempotencyKey, UUID orderId, IdempotencyStatus status) {
-    this.idempotencyKey = idempotencyKey;
-    this.orderId = orderId;
-    this.status = status;
-  }
+    public IdempotencyKey(String idempotencyKey, UUID orderId, IdempotencyStatus status) {
+        this.idempotencyKey = idempotencyKey;
+        this.orderId = orderId;
+        this.status = status;
+    }
 
-  public static IdempotencyKey create(String key, UUID orderId, IdempotencyStatus status) {
-    return new IdempotencyKey(key, orderId, status);
-  }
+    public static IdempotencyKey create(String key, UUID orderId, IdempotencyStatus status) {
+        return new IdempotencyKey(key, orderId, status);
+    }
 
 
-  public void updateStatus(IdempotencyStatus status) {
-    this.status = status;
-  }
+    public void updateStatus(IdempotencyStatus status) {
+        this.status = status;
+    }
 
 
 }

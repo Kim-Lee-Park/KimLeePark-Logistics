@@ -42,61 +42,60 @@ import org.springframework.transaction.annotation.Transactional;
 class DeliveryIntegrationTest {
 
     @LocalServerPort
-  private int port;
+    private int port;
 
-  @Autowired
-  private DeliveryRepository deliveryRepository;
+    @Autowired
+    private DeliveryRepository deliveryRepository;
 
-  @TestConfiguration
-  static class TestConfig {
+    @TestConfiguration
+    static class TestConfig {
 
-    @Bean
-    @Primary
-    public CompanyApiClient companyApiClient() {
-      return companyId -> createCompany();
+        @Bean
+        @Primary
+        public CompanyApiClient companyApiClient() {
+            return companyId -> createCompany();
+        }
+
+        @Bean
+        @Primary
+        public DriverApiClient driverApiClient() {
+            return receiverId -> createDriver();
+        }
     }
 
-    @Bean
-    @Primary
-    public DriverApiClient driverApiClient() {
-      return receiverId -> createDriver();
+    @BeforeEach
+    void setUp() {
+        RestAssured.port = port;
+        RestAssured.basePath = "/v1";
     }
-  }
 
-  @BeforeEach
-  void setUp() {
-    RestAssured.port = port;
-    RestAssured.basePath = "/v1";
-  }
+    @Test
+    void 배송생성_조회_E2E() {
+        // given
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
-  @Test
-  void 배송생성_조회_E2E() {
-    // given
-      DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
+        // when: 배송 생성
+        String deliveryId = given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/deliveries")
+            .then()
+            .statusCode(200)
+            .extract()
+            .path("items[0].deliveryId");
 
-    // when: 배송 생성
-    String deliveryId = given()
-        .contentType(ContentType.JSON)
-        .body(request)
-    .when()
-        .post("/deliveries")
-    .then()
-        .statusCode(200)
-        .extract()
-        .path("items[0].deliveryId");
+        // then: 생성된 배송 조회
+        given()
+            .when()
+            .get("/deliveries/{deliveryId}", deliveryId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo(DeliveryStatus.CREATED.name()));
 
-
-    // then: 생성된 배송 조회
-    given()
-    .when()
-        .get("/deliveries/{deliveryId}", deliveryId)
-    .then()
-        .statusCode(200)
-        .body("status", equalTo(DeliveryStatus.CREATED.name()));
-
-    // DB 저장 확인
-    Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
-    assertThat(savedDelivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
-    assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
-  }
+        // DB 저장 확인
+        Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
+        assertThat(savedDelivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
+        assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+    }
 }

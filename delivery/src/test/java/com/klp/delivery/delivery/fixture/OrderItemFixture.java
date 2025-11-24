@@ -10,11 +10,15 @@ public class OrderItemFixture {
 
 
     public static UUID DEFAULT_HUB_ID_UUID_FIRST = DeliveryFixture.DEFAULT_DEPARTURE_ID;                                    // 출발 허브 ID
-    public static UUID DEFAULT_HUB_ID_UUID_SECOND = UUID.fromString("00000000-0000-0000-0000-000000000007");          // 다른 출발 허브 ID
+    public static UUID DEFAULT_HUB_ID_UUID_SECOND = UUID.fromString(
+        "00000000-0000-0000-0000-000000000007");          // 다른 출발 허브 ID
 
-    public static UUID ORDER_ITEM_ID_FIRST = UUID.fromString("00000000-0000-0000-0000-000000000008");
-    public static UUID ORDER_ITEM_ID_SECOND = UUID.fromString("00000000-0000-0000-0000-000000000009");
-    public static UUID ORDER_ITEM_ID_THIRD = UUID.fromString("00000000-0000-0000-0000-000000000010");
+    public static UUID ORDER_ITEM_ID_FIRST = UUID.fromString(
+        "00000000-0000-0000-0000-000000000008");
+    public static UUID ORDER_ITEM_ID_SECOND = UUID.fromString(
+        "00000000-0000-0000-0000-000000000009");
+    public static UUID ORDER_ITEM_ID_THIRD = UUID.fromString(
+        "00000000-0000-0000-0000-000000000010");
 
 
     // 단일 아이템 기본 생성
@@ -23,7 +27,8 @@ public class OrderItemFixture {
     }
 
     public static List<OrderItemCommand> orderItemCommandsDefault() {
-       return List.of(OrderItemCommand(), OrderItemCommand(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST));
+        return List.of(OrderItemCommand(),
+            OrderItemCommand(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST));
     }
 
     // 파라미터 기반 아이템 생성

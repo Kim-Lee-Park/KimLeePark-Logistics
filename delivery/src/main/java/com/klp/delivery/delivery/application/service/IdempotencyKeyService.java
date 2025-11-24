@@ -18,27 +18,27 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IdempotencyKeyService {
 
-  private final IdempotencyKeyRepository idempotencyKeyRepository;
+    private final IdempotencyKeyRepository idempotencyKeyRepository;
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void registerIdempotencyKey(IdempotencyCommand command) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void registerIdempotencyKey(IdempotencyCommand command) {
 
-    Optional<IdempotencyKey> key = idempotencyKeyRepository.findByIdempotencyKey(
-        command.idempotencyKey());
+        Optional<IdempotencyKey> key = idempotencyKeyRepository.findByIdempotencyKey(
+            command.idempotencyKey());
 
-    if (key.isPresent()) {
-      throw new BusinessException(DeliveryErrorCode.DUPLICATE_IDEMPOTENCY_KEY);
+        if (key.isPresent()) {
+            throw new BusinessException(DeliveryErrorCode.DUPLICATE_IDEMPOTENCY_KEY);
+        }
+
+        idempotencyKeyRepository.save(
+            IdempotencyKey.create(command.idempotencyKey(), command.orderId(), command.status()));
     }
 
-    idempotencyKeyRepository.save(
-        IdempotencyKey.create(command.idempotencyKey(), command.orderId(), command.status()));
-  }
 
+    public void updateIdempotencyStatus(IdempotencyCommand command) {
 
-  public void updateIdempotencyStatus(IdempotencyCommand command) {
+        idempotencyKeyRepository.findByIdempotencyKey(command.idempotencyKey())
+            .ifPresent(k -> k.updateStatus(command.status()));
 
-    idempotencyKeyRepository.findByIdempotencyKey(command.idempotencyKey())
-        .ifPresent(k -> k.updateStatus(command.status()));
-
-  }
+    }
 }

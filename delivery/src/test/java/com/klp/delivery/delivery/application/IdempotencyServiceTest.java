@@ -24,79 +24,84 @@ import org.mockito.Mockito;
 
 public class IdempotencyServiceTest extends MockTest {
 
-  @InjectMocks
-  IdempotencyKeyService idempotencyKeyService;
+    @InjectMocks
+    IdempotencyKeyService idempotencyKeyService;
 
-  @Mock
-  IdempotencyKeyRepository idempotencyKeyRepository;
-
-
-  @Test
-  void 동일_멱등키로_배송_요청시_배송_생성_실패() {
-    // given: 이미 존재하는 멱등키
-    String idempotencyKey = "멱등키123";
-    UUID orderId = UUID.randomUUID();
-    IdempotencyKey existingKey = IdempotencyKey.create(idempotencyKey, orderId, IdempotencyStatus.PENDING);
-    IdempotencyCommand command = new IdempotencyCommand(
-        idempotencyKey, 
-        orderId, 
-        IdempotencyStatus.PENDING
-    );
-    
-    when(idempotencyKeyRepository.findByIdempotencyKey(idempotencyKey))
-        .thenReturn(Optional.of(existingKey));
-
-    // when & then: 중복 멱등키로 인한 예외 발생 검증
-    Assertions.assertThrows(
-        BusinessException.class,
-        () -> idempotencyKeyService.registerIdempotencyKey(command)
-    );
-    
-    // then: 멱등키 조회는 호출되었지만 저장은 호출되지 않음
-    verify(idempotencyKeyRepository, times(1)).findByIdempotencyKey(idempotencyKey);
-    verify(idempotencyKeyRepository, never()).save(any(IdempotencyKey.class));
-  }
+    @Mock
+    IdempotencyKeyRepository idempotencyKeyRepository;
 
 
-  @Test
-  void 멱등키_생성_성공() {
+    @Test
+    void 동일_멱등키로_배송_요청시_배송_생성_실패() {
+        // given: 이미 존재하는 멱등키
+        String idempotencyKey = "멱등키123";
+        UUID orderId = UUID.randomUUID();
+        IdempotencyKey existingKey = IdempotencyKey.create(idempotencyKey, orderId,
+            IdempotencyStatus.PENDING);
+        IdempotencyCommand command = new IdempotencyCommand(
+            idempotencyKey,
+            orderId,
+            IdempotencyStatus.PENDING
+        );
 
-    // given 멱등키 생성
-    String idemKey = "key";
-    UUID orderId = UUID.randomUUID();
-    IdempotencyCommand command = new IdempotencyCommand(idemKey, orderId, IdempotencyStatus.PENDING);
+        when(idempotencyKeyRepository.findByIdempotencyKey(idempotencyKey))
+            .thenReturn(Optional.of(existingKey));
 
-    Mockito.doReturn(Optional.empty()).when(idempotencyKeyRepository).findByIdempotencyKey(idemKey);
+        // when & then: 중복 멱등키로 인한 예외 발생 검증
+        Assertions.assertThrows(
+            BusinessException.class,
+            () -> idempotencyKeyService.registerIdempotencyKey(command)
+        );
 
-    // when: 멱등키 생성 요청
-    idempotencyKeyService.registerIdempotencyKey(command);
-
-    // then: 멱등키 저장 호출 검증
-    verify(idempotencyKeyRepository, times(1)).save(any(IdempotencyKey.class));
-
-  }
+        // then: 멱등키 조회는 호출되었지만 저장은 호출되지 않음
+        verify(idempotencyKeyRepository, times(1)).findByIdempotencyKey(idempotencyKey);
+        verify(idempotencyKeyRepository, never()).save(any(IdempotencyKey.class));
+    }
 
 
-  @Test
-  void 멱등키_상태변경_성공() {
+    @Test
+    void 멱등키_생성_성공() {
 
-    // given 멱등키 생성
-    String idemKey = "key";
-    UUID orderId = UUID.randomUUID();
+        // given 멱등키 생성
+        String idemKey = "key";
+        UUID orderId = UUID.randomUUID();
+        IdempotencyCommand command = new IdempotencyCommand(idemKey, orderId,
+            IdempotencyStatus.PENDING);
 
-    IdempotencyCommand command = new IdempotencyCommand(idemKey, orderId, IdempotencyStatus.COMPLETED);
+        Mockito.doReturn(Optional.empty()).when(idempotencyKeyRepository)
+            .findByIdempotencyKey(idemKey);
 
-    IdempotencyKey key = IdempotencyKey.create(command.idempotencyKey(), command.orderId(), command.status());
+        // when: 멱등키 생성 요청
+        idempotencyKeyService.registerIdempotencyKey(command);
 
-    when(idempotencyKeyRepository.findByIdempotencyKey(idemKey)).thenReturn(Optional.of(key));
+        // then: 멱등키 저장 호출 검증
+        verify(idempotencyKeyRepository, times(1)).save(any(IdempotencyKey.class));
 
-    // when: 멱등키 상태 변경
-    idempotencyKeyService.updateIdempotencyStatus(command);
+    }
 
-    // then: 멱등키 조회 및 상태 변경 검증
-    verify(idempotencyKeyRepository, times(1)).findByIdempotencyKey(idemKey);
-    assertThat(key.getStatus()).isEqualTo(IdempotencyStatus.COMPLETED);
-  }
+
+    @Test
+    void 멱등키_상태변경_성공() {
+
+        // given 멱등키 생성
+        String idemKey = "key";
+        UUID orderId = UUID.randomUUID();
+
+        IdempotencyCommand command = new IdempotencyCommand(idemKey, orderId,
+            IdempotencyStatus.COMPLETED);
+
+        IdempotencyKey key = IdempotencyKey.create(command.idempotencyKey(), command.orderId(),
+            command.status());
+
+        when(idempotencyKeyRepository.findByIdempotencyKey(idemKey)).thenReturn(Optional.of(key));
+
+        // when: 멱등키 상태 변경
+        idempotencyKeyService.updateIdempotencyStatus(command);
+
+        // then: 멱등키 조회 및 상태 변경 검증
+        verify(idempotencyKeyRepository, times(1)).findByIdempotencyKey(idemKey);
+        assertThat(key.getStatus()).isEqualTo(IdempotencyStatus.COMPLETED);
+    }
 
 
 }

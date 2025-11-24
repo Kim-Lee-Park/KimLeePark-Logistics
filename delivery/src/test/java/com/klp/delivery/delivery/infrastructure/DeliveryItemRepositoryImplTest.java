@@ -76,7 +76,8 @@ public class DeliveryItemRepositoryImplTest {
         Delivery saved = deliveryRepository.save(delivery);
 
         // when: 배송 ID로 배송 아이템 조회
-        List<DeliveryItem> result = deliveryItemRepository.findAllByDeliveryId(saved.getDeliveryId());
+        List<DeliveryItem> result = deliveryItemRepository.findAllByDeliveryId(
+            saved.getDeliveryId());
 
         // then: 저장된 모든 DeliveryItem의 deliveryId가 같고 주문 아이템들 검증
         assertThat(result).isNotNull().hasSize(2);
@@ -101,7 +102,8 @@ public class DeliveryItemRepositoryImplTest {
         DeliveryItem deliveryItem2 = DeliveryItem.create(savedDelivery, orderItemId2);
 
         // when: 배송 아이템 저장
-        List<DeliveryItem> result = deliveryItemRepository.saveAll(List.of(deliveryItem1, deliveryItem2));
+        List<DeliveryItem> result = deliveryItemRepository.saveAll(
+            List.of(deliveryItem1, deliveryItem2));
 
         // then: 배송과 연관관계가 정상적으로 저장되었는지 검증
         assertThat(result).isNotNull().hasSize(2);

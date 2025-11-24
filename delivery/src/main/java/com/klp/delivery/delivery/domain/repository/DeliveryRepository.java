@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public interface DeliveryRepository {
 
-  Delivery save(Delivery delivery);
+    Delivery save(Delivery delivery);
 
-  Delivery findByDeliveryId(UUID deliveryId);
+    Delivery findByDeliveryId(UUID deliveryId);
 
-  List<Delivery> findDeliveryByOrderId(UUID orderId);
+    List<Delivery> findDeliveryByOrderId(UUID orderId);
 
 }

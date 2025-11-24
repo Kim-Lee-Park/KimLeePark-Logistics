@@ -4,5 +4,5 @@ import com.klp.delivery.delivery.application.command.CompanyCommand;
 
 public interface CompanyApiClient {
 
-  CompanyCommand findCompany(String companyId);
+    CompanyCommand findCompany(String companyId);
 }

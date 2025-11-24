@@ -14,18 +14,19 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class DeliveryRepositoryImpl implements DeliveryRepository {
 
-  private final DeliveryJpaRepository deliveryJpaRepository;
+    private final DeliveryJpaRepository deliveryJpaRepository;
 
 
-  @Override
-  public Delivery save(Delivery delivery) {
-    return deliveryJpaRepository.save(delivery);
-  }
+    @Override
+    public Delivery save(Delivery delivery) {
+        return deliveryJpaRepository.save(delivery);
+    }
 
-  @Override
-  public Delivery findByDeliveryId(UUID deliveryId) {
-    return deliveryJpaRepository.findByDeliveryId(deliveryId).orElseThrow(() -> new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
-  }
+    @Override
+    public Delivery findByDeliveryId(UUID deliveryId) {
+        return deliveryJpaRepository.findByDeliveryId(deliveryId)
+            .orElseThrow(() -> new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+    }
 
     @Override
     public List<Delivery> findDeliveryByOrderId(UUID orderId) {

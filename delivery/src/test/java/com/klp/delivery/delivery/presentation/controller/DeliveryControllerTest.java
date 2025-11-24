@@ -76,9 +76,12 @@ class DeliveryControllerTest {
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = List.of(
-            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST),
-            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST),
-            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND)
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_FIRST,
+                DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_SECOND,
+                DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_THIRD,
+                DEFAULT_HUB_ID_UUID_SECOND)
         );
 
         DeliveryResponse response = new DeliveryResponse(DEFAULT_ORDER_ID, deliveryItems);
@@ -147,9 +150,12 @@ class DeliveryControllerTest {
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = List.of(
-            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_FIRST, DEFAULT_HUB_ID_UUID_FIRST),
-            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_SECOND, DEFAULT_HUB_ID_UUID_FIRST),
-            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND)
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_FIRST,
+                DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_SECOND,
+                DEFAULT_HUB_ID_UUID_FIRST),
+            new DeliveryResponse.DeliveryItemResponse(ORDER_ITEM_ID_THIRD,
+                DEFAULT_HUB_ID_UUID_SECOND)
         );
 
         Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID_FIRST);
@@ -188,58 +194,58 @@ class DeliveryControllerTest {
         verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID_FIRST);
     }
 
-  @Test
-  void 배송상태변경_성공_204NoContent() throws Exception {
-    // given: 배송 상태 변경 요청 데이터
-    DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(
-        DeliveryStatus.IN_HUB_TRANSIT
-    );
+    @Test
+    void 배송상태변경_성공_204NoContent() throws Exception {
+        // given: 배송 상태 변경 요청 데이터
+        DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(
+            DeliveryStatus.IN_HUB_TRANSIT
+        );
 
-    doNothing().when(deliveryService)
-        .updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, DeliveryStatus.IN_HUB_TRANSIT);
+        doNothing().when(deliveryService)
+            .updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, DeliveryStatus.IN_HUB_TRANSIT);
 
-    // when: 배송 상태 변경 요청
-    mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNoContent());
+        // when: 배송 상태 변경 요청
+        mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNoContent());
 
-    // then: 배송 상태 변경 서비스 호출 검증
-    verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST,
-        DeliveryStatus.IN_HUB_TRANSIT);
-  }
+        // then: 배송 상태 변경 서비스 호출 검증
+        verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST,
+            DeliveryStatus.IN_HUB_TRANSIT);
+    }
 
-  @Test
-  void 배송상태변경_status가null_400BadRequest() throws Exception {
-    // given: status가 null인 요청 데이터
-    String requestJson = "{\"status\": null}";
+    @Test
+    void 배송상태변경_status가null_400BadRequest() throws Exception {
+        // given: status가 null인 요청 데이터
+        String requestJson = "{\"status\": null}";
 
-    // when: 배송 상태 변경 요청
-    mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestJson))
-        .andExpect(status().isBadRequest());
+        // when: 배송 상태 변경 요청
+        mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+            .andExpect(status().isBadRequest());
 
-    // then: 배송 상태 변경 서비스가 호출되지 않음
-    verify(deliveryService, never()).updateDeliveryStatus(any(), any());
-  }
+        // then: 배송 상태 변경 서비스가 호출되지 않음
+        verify(deliveryService, never()).updateDeliveryStatus(any(), any());
+    }
 
-  @ParameterizedTest
-  @EnumSource(DeliveryStatus.class)
-  void 배송상태변경_모든상태변경_성공(DeliveryStatus status) throws Exception {
-    // given: 배송 상태 변경 요청 데이터
-    DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(status);
+    @ParameterizedTest
+    @EnumSource(DeliveryStatus.class)
+    void 배송상태변경_모든상태변경_성공(DeliveryStatus status) throws Exception {
+        // given: 배송 상태 변경 요청 데이터
+        DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(status);
 
-    doNothing().when(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
+        doNothing().when(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
 
-    // when: 배송 상태 변경 요청
-    mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNoContent());
+        // when: 배송 상태 변경 요청
+        mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNoContent());
 
-    // then: 배송 상태 변경 서비스 호출 검증
-    verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
-  }
+        // then: 배송 상태 변경 서비스 호출 검증
+        verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
+    }
 }
 

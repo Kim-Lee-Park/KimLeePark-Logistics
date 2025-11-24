@@ -40,14 +40,14 @@ import org.mockito.Mock;
 
 public class DeliveryFacadeTest extends MockTest {
 
-  @InjectMocks
-  DeliveryFacade deliveryFacade;
+    @InjectMocks
+    DeliveryFacade deliveryFacade;
 
-  @Mock
-  DeliveryService deliveryService;
+    @Mock
+    DeliveryService deliveryService;
 
-  @Mock
-  IdempotencyKeyService idempotencyKeyService;
+    @Mock
+    IdempotencyKeyService idempotencyKeyService;
 
     @Test
     void 배송생성_성공_단일아이템() {
@@ -56,14 +56,19 @@ public class DeliveryFacadeTest extends MockTest {
 
         Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID_FIRST);
 
-        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
-        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
+        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
+            createCompany());
         when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
-        when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(delivery);
-        doNothing().when(idempotencyKeyService).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
+            delivery);
+        doNothing().when(idempotencyKeyService)
+            .updateIdempotencyStatus(any(IdempotencyCommand.class));
 
         // when: 배송 생성
-        DeliveryResponse result = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
+        DeliveryResponse result = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand());
 
         // then: 생성 검증
         assertThat(result).isNotNull();
@@ -72,11 +77,13 @@ public class DeliveryFacadeTest extends MockTest {
         assertThat(result.items().get(0).deliveryId()).isEqualTo(DEFAULT_DELIVERY_ID_FIRST);
 
         // then: 멱등키 등록, 업체/담당자 조회, 배송 생성, 멱등키 업데이트 검증
-        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
+            any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
         verify(deliveryService, times(1)).findDriver(DEFAULT_HUB_ID);
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
-        verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(
+            any(IdempotencyCommand.class));
     }
 
     @Test
@@ -86,18 +93,22 @@ public class DeliveryFacadeTest extends MockTest {
         // orderItem3개 / hubId 2개
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
 
-        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
-        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
+        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
+            createCompany());
         when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenAnswer(invocation -> createDeliveryFromCommand(
                 invocation.getArgument(0),
                 invocation.getArgument(1)
             ));
-        doNothing().when(idempotencyKeyService).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        doNothing().when(idempotencyKeyService)
+            .updateIdempotencyStatus(any(IdempotencyCommand.class));
 
         // when: 배송 생성
-        DeliveryResponse result = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
+        DeliveryResponse result = deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand());
 
         // then: 생성 검증
         assertThat(result).isNotNull();
@@ -125,7 +136,8 @@ public class DeliveryFacadeTest extends MockTest {
             .when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
 
         // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand()))
+        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand()))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -134,11 +146,13 @@ public class DeliveryFacadeTest extends MockTest {
             });
 
         // then: 멱등키 등록만 호출되고, 업체/담당자 조회 및 배송 생성은 호출되지 않음
-        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
+            any(IdempotencyCommand.class));
         verify(deliveryService, never()).findCompany(any());
         verify(deliveryService, never()).findDriver(any());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
-        verify(idempotencyKeyService, never()).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, never()).updateIdempotencyStatus(
+            any(IdempotencyCommand.class));
     }
 
     @Test
@@ -149,17 +163,23 @@ public class DeliveryFacadeTest extends MockTest {
         Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID_FIRST);
 
         // 멱등키 등록 수정 정상적으로 수행 된다고 가정
-        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
-        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
+        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
+            createCompany());
         when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
-        when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(delivery);
-        doNothing().when(idempotencyKeyService).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
+            delivery);
+        doNothing().when(idempotencyKeyService)
+            .updateIdempotencyStatus(any(IdempotencyCommand.class));
 
         // when: 배송 생성
-        deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand());
+        deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand());
 
         // then: 멱등키 상태 업데이트가 호출되었는지 검증
-        verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(
+            any(IdempotencyCommand.class));
     }
 
 
@@ -168,12 +188,14 @@ public class DeliveryFacadeTest extends MockTest {
         // given: 배송 생성 요청 데이터 준비
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
 
-        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString()))
             .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
 
         // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand()))
+        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand()))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -182,11 +204,13 @@ public class DeliveryFacadeTest extends MockTest {
             });
 
         // then: 멱등키 등록 및 업체 조회는 호출되지만, 담당자 조회 및 배송 생성은 호출되지 않음
-        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
+            any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
         verify(deliveryService, never()).findDriver(any());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
-        verify(idempotencyKeyService, never()).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, never()).updateIdempotencyStatus(
+            any(IdempotencyCommand.class));
     }
 
     @Test
@@ -194,12 +218,16 @@ public class DeliveryFacadeTest extends MockTest {
         // given: 배송 생성 요청 데이터 준비
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
 
-        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
         // when & then: 예외 발생 검증
-        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
-        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
+        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
+            createCompany());
+        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenThrow(
+            new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
         assertThatThrownBy(() ->
-            deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand())
+            deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+                request.toIdempotencyCommand())
         )
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
@@ -209,11 +237,13 @@ public class DeliveryFacadeTest extends MockTest {
             });
 
         // then: 멱등키 등록, 업체 조회, 담당자 조회는 호출되지만, 배송 생성은 호출되지 않음
-        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
+            any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
         verify(deliveryService, times(1)).findDriver(DEFAULT_HUB_ID.toString());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
-        verify(idempotencyKeyService, never()).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, never()).updateIdempotencyStatus(
+            any(IdempotencyCommand.class));
     }
 
     @Test
@@ -221,14 +251,17 @@ public class DeliveryFacadeTest extends MockTest {
         // given: 배송 생성 요청 데이터 준비
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
 
-        doNothing().when(idempotencyKeyService).registerIdempotencyKey(any(IdempotencyCommand.class));
-        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
+        when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
+            createCompany());
         when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
 
         // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(), request.toIdempotencyCommand()))
+        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand()))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -237,11 +270,13 @@ public class DeliveryFacadeTest extends MockTest {
             });
 
         // then: 멱등키 등록, 업체/담당자 조회, 배송 생성은 호출되지만, 멱등키 업데이트는 호출되지 않음
-        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
+            any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
         verify(deliveryService, times(1)).findDriver(DEFAULT_HUB_ID.toString());
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
-        verify(idempotencyKeyService, never()).updateIdempotencyStatus(any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, never()).updateIdempotencyStatus(
+            any(IdempotencyCommand.class));
     }
 
 

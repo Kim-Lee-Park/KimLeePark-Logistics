@@ -21,7 +21,6 @@ public class DeliveryItemRepositoryImpl implements DeliveryItemRepository {
     }
 
 
-
     @Override
     public List<DeliveryItem> findAllByDeliveryId(UUID deliveryId) {
 

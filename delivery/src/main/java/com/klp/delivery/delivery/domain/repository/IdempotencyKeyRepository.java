@@ -5,8 +5,8 @@ import java.util.Optional;
 
 public interface IdempotencyKeyRepository {
 
-  IdempotencyKey save(IdempotencyKey idempotencyKey);
+    IdempotencyKey save(IdempotencyKey idempotencyKey);
 
-  Optional<IdempotencyKey> findByIdempotencyKey(String key);
+    Optional<IdempotencyKey> findByIdempotencyKey(String key);
 
 }

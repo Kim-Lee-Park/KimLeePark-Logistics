@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CompanyApiClientImpl implements CompanyApiClient {
 
-  @Override
-  public CompanyCommand findCompany(String companyId) {
-    return null;
-  }
+    @Override
+    public CompanyCommand findCompany(String companyId) {
+        return null;
+    }
 }

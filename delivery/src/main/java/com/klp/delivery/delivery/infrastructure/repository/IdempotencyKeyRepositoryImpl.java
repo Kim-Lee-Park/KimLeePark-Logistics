@@ -10,16 +10,16 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class IdempotencyKeyRepositoryImpl implements IdempotencyKeyRepository {
 
-  private final IdempotencyKeyJpaRepository idempotencyKeyJpaRepository;
+    private final IdempotencyKeyJpaRepository idempotencyKeyJpaRepository;
 
 
-  @Override
-  public IdempotencyKey save(IdempotencyKey idempotencyKey) {
-    return idempotencyKeyJpaRepository.save(idempotencyKey);
-  }
+    @Override
+    public IdempotencyKey save(IdempotencyKey idempotencyKey) {
+        return idempotencyKeyJpaRepository.save(idempotencyKey);
+    }
 
-  @Override
-  public Optional<IdempotencyKey> findByIdempotencyKey(String key) {
-    return idempotencyKeyJpaRepository.findByIdempotencyKey(key);
-  }
+    @Override
+    public Optional<IdempotencyKey> findByIdempotencyKey(String key) {
+        return idempotencyKeyJpaRepository.findByIdempotencyKey(key);
+    }
 }

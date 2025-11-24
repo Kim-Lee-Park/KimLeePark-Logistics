@@ -32,7 +32,8 @@ public class DeliveryFacade {
 
 
     @Transactional
-    public DeliveryResponse createDelivery(OrderToDeliveryCommand orderCommand, IdempotencyCommand idempotencyCommand) {
+    public DeliveryResponse createDelivery(OrderToDeliveryCommand orderCommand,
+        IdempotencyCommand idempotencyCommand) {
         log.info("배송 생성 시작: orderId={}", orderCommand.orderId());
 
         // 멱등키 등록 (주문 단위로 관리)
@@ -40,22 +41,25 @@ public class DeliveryFacade {
 
         try {
 
-            CompanyCommand companyCommand = deliveryService.findCompany(orderCommand.receiverId().toString());
+            CompanyCommand companyCommand = deliveryService.findCompany(
+                orderCommand.receiverId().toString());
 
             // TODO: 배송 담당자 api 생성 확정 후 로직 변경
             DriverCommand driverCommand = deliveryService.findDriver(companyCommand.hubId());
 
-
             // 항목별 배송 생성
-            List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(orderCommand,
+            List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(
+                orderCommand,
                 companyCommand, driverCommand);
 
-
-            IdempotencyCommand updateCommand = new IdempotencyCommand(idempotencyCommand.idempotencyKey(), idempotencyCommand.orderId(), IdempotencyStatus.COMPLETED);
+            IdempotencyCommand updateCommand = new IdempotencyCommand(
+                idempotencyCommand.idempotencyKey(), idempotencyCommand.orderId(),
+                IdempotencyStatus.COMPLETED);
 
             idempotencyKeyService.updateIdempotencyStatus(updateCommand);
 
-            log.info("배송 생성 완료: orderId={}, deliveryCount={}", orderCommand.orderId(), deliveryItems.size());
+            log.info("배송 생성 완료: orderId={}, deliveryCount={}", orderCommand.orderId(),
+                deliveryItems.size());
             return new DeliveryResponse(orderCommand.orderId(), deliveryItems);
         } catch (Exception e) {
             log.error("배송 생성 실패: orderId={}, error={}", orderCommand.orderId(), e.getMessage(), e);
@@ -64,14 +68,16 @@ public class DeliveryFacade {
     }
 
     private List<DeliveryResponse.DeliveryItemResponse> createDeliveriesForOrderItems(
-        OrderToDeliveryCommand orderCommand, CompanyCommand companyCommand, DriverCommand driverCommand) {
+        OrderToDeliveryCommand orderCommand, CompanyCommand companyCommand,
+        DriverCommand driverCommand) {
 
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = new ArrayList<>();
         UUID arrivalId = UUID.fromString(companyCommand.hubId());
 
-        Map<UUID,List<OrderItemCommand>> list = orderCommand.items().stream().collect(Collectors.groupingBy(OrderItemCommand::hubId));
+        Map<UUID, List<OrderItemCommand>> list = orderCommand.items().stream()
+            .collect(Collectors.groupingBy(OrderItemCommand::hubId));
 
-        for(Map.Entry<UUID,List<OrderItemCommand>> entry : list.entrySet()){
+        for (Map.Entry<UUID, List<OrderItemCommand>> entry : list.entrySet()) {
 
             UUID hubId = entry.getKey();
             List<OrderItemCommand> orderItems = entry.getValue();
@@ -90,13 +96,14 @@ public class DeliveryFacade {
 
             Delivery delivery = deliveryService.registerDelivery(deliveryCommand, orderItems);
 
-            for(DeliveryItem item: delivery.getDeliveryItems()){
+            for (DeliveryItem item : delivery.getDeliveryItems()) {
                 deliveryItems.add(new DeliveryResponse.DeliveryItemResponse(
                     item.getOrderItemId(),
                     delivery.getDeliveryId()
                 ));
 
-                log.info("OrderId={}, OrderItemId={}, DeliveryId={}", delivery.getOrderId(), item.getOrderItemId(), delivery.getDeliveryId());
+                log.info("OrderId={}, OrderItemId={}, DeliveryId={}", delivery.getOrderId(),
+                    item.getOrderItemId(), delivery.getDeliveryId());
             }
 
             // TODO: 각 배송 생성 시 경로 생성 이벤트 발행 (비동기)

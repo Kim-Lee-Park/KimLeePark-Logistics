@@ -91,7 +91,6 @@ public class DeliveryRepositoryImplTest {
         Delivery findResult = deliveryRepository.findByDeliveryId(saved.getDeliveryId());
         List<DeliveryItem> items = findResult.getDeliveryItems();
 
-
         // then: 배송 저장으로 인해 배송아이템도 함께 저장되었는지 검증
         Assertions.assertThat(items.get(0).getDelivery())
             .isNotNull()
@@ -111,8 +110,8 @@ public class DeliveryRepositoryImplTest {
         // given: 배송 생성 및 저장
         Delivery delivery1 = defaultDelivery();
 
-        List<OrderItemCommand> items = List.of(new OrderItemCommand(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND));
-
+        List<OrderItemCommand> items = List.of(
+            new OrderItemCommand(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND));
 
         Delivery delivery2 = deliveryWithCustomHubId(items);
 
@@ -123,7 +122,6 @@ public class DeliveryRepositoryImplTest {
         // when: 배송 저장 조회
         List<Delivery> findResult = deliveryRepository.findDeliveryByOrderId(saved.getOrderId());
 
-
         // then: 배송 저장으로 인해 배송아이템도 함께 저장되었는지 검증
         assertThat(findResult).hasSize(2);
         assertThat(findResult).isNotEmpty();
@@ -131,8 +129,8 @@ public class DeliveryRepositoryImplTest {
         Assertions.assertThat(findResult)
             .flatExtracting(Delivery::getDeliveryItems)
             .extracting(DeliveryItem::getOrderItemId)
-            .containsExactlyInAnyOrder(ORDER_ITEM_ID_FIRST, ORDER_ITEM_ID_SECOND, ORDER_ITEM_ID_THIRD);
-
+            .containsExactlyInAnyOrder(ORDER_ITEM_ID_FIRST, ORDER_ITEM_ID_SECOND,
+                ORDER_ITEM_ID_THIRD);
 
         Assertions.assertThat(findResult)
             .extracting(Delivery::getDepartureId)

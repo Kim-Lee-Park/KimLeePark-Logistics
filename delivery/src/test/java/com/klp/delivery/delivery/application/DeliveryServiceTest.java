@@ -40,125 +40,125 @@ import org.mockito.Mock;
 public class DeliveryServiceTest extends MockTest {
 
 
-  @InjectMocks
-  DeliveryService deliveryService;
+    @InjectMocks
+    DeliveryService deliveryService;
 
-  @Mock
-  DeliveryRepository deliveryRepository;
+    @Mock
+    DeliveryRepository deliveryRepository;
 
-  @Mock
-  CompanyApiClient companyApiClient;
+    @Mock
+    CompanyApiClient companyApiClient;
 
-  @Mock
-  DriverApiClient driverApiClient;
-
-
-  @Test
-  void 배송_생성_성공() {
-    // given: 배송 등록 데이터 준비
-    UUID orderId = DEFAULT_ORDER_ID;
-    UUID departureId = DEFAULT_DEPARTURE_ID;
-    UUID arrivalId = DEFAULT_ARRIVAL_ID;
-    UUID senderId = DEFAULT_SENDER_ID;
-    UUID receiverId = DEFAULT_RECEIVER_ID;
-    String receiverName = DEFAULT_COMPANY_NAME;
-    String address = DEFAULT_COMPANY_ADDRESS;
-    String receiverSlackId = DEFAULT_RECEIVER_SLACK_ID;
-    Long vendorDriverId = 1234L;
-
-    DeliveryCommand command = new DeliveryCommand(
-        orderId, departureId, arrivalId, senderId, receiverId,
-        receiverName, address, receiverSlackId, vendorDriverId);
-
-      Delivery delivery = defaultDelivery();
-    when(deliveryRepository.save(any(Delivery.class))).thenReturn(delivery);
-      List<OrderItemCommand> items =  orderItemCommandsDefault();
-    // when: 배송 생성
-    Delivery result = deliveryService.registerDelivery(command, items);
-
-    // then: 생성 검증
-    verify(deliveryRepository, times(1)).save(any(Delivery.class));
-    assertThat(result).isNotNull();
-    assertThat(result.getOrderId()).isEqualTo(orderId);
-  }
+    @Mock
+    DriverApiClient driverApiClient;
 
 
-  @Test
-  void 업체조회api_성공() {
-    // given: 업체 조회 데이터 준비
-    UUID receiverId = DEFAULT_RECEIVER_ID;
+    @Test
+    void 배송_생성_성공() {
+        // given: 배송 등록 데이터 준비
+        UUID orderId = DEFAULT_ORDER_ID;
+        UUID departureId = DEFAULT_DEPARTURE_ID;
+        UUID arrivalId = DEFAULT_ARRIVAL_ID;
+        UUID senderId = DEFAULT_SENDER_ID;
+        UUID receiverId = DEFAULT_RECEIVER_ID;
+        String receiverName = DEFAULT_COMPANY_NAME;
+        String address = DEFAULT_COMPANY_ADDRESS;
+        String receiverSlackId = DEFAULT_RECEIVER_SLACK_ID;
+        Long vendorDriverId = 1234L;
 
-    when(companyApiClient.findCompany(receiverId.toString())).thenReturn(createCompany());
+        DeliveryCommand command = new DeliveryCommand(
+            orderId, departureId, arrivalId, senderId, receiverId,
+            receiverName, address, receiverSlackId, vendorDriverId);
 
-    // when: 업체 조회
-    var result = deliveryService.findCompany(receiverId.toString());
+        Delivery delivery = defaultDelivery();
+        when(deliveryRepository.save(any(Delivery.class))).thenReturn(delivery);
+        List<OrderItemCommand> items = orderItemCommandsDefault();
+        // when: 배송 생성
+        Delivery result = deliveryService.registerDelivery(command, items);
 
-    // then: 조회 검증
-    verify(companyApiClient, times(1)).findCompany(receiverId.toString());
-    assertThat(result).isNotNull();
-    assertThat(result.name()).isEqualTo(DEFAULT_COMPANY_NAME);
-  }
+        // then: 생성 검증
+        verify(deliveryRepository, times(1)).save(any(Delivery.class));
+        assertThat(result).isNotNull();
+        assertThat(result.getOrderId()).isEqualTo(orderId);
+    }
 
-  @ParameterizedTest
-  @CsvSource({
-      "업체 조회 실패",
-      "네트워크 오류",
-      "타임아웃 발생"
-  })
-  void 업체조회api_실패_예외발생(String errorMessage) {
-    // given: 업체 조회 데이터 준비
-    UUID receiverId = DEFAULT_RECEIVER_ID;
 
-    when(companyApiClient.findCompany(receiverId.toString()))
-        .thenThrow(new RuntimeException(errorMessage));
+    @Test
+    void 업체조회api_성공() {
+        // given: 업체 조회 데이터 준비
+        UUID receiverId = DEFAULT_RECEIVER_ID;
 
-    // when & then: 예외 발생 검증
-    assertThatThrownBy(() -> deliveryService.findCompany(receiverId.toString()))
-        .isInstanceOf(BusinessException.class)
-        .satisfies(exception -> {
-          BusinessException businessException = (BusinessException) exception;
-          assertThat(businessException.getErrorCode()).isEqualTo(
-              DeliveryErrorCode.EXTERNAL_API_ERROR);
-        });
+        when(companyApiClient.findCompany(receiverId.toString())).thenReturn(createCompany());
 
-    // then: 외부 API 호출 검증
-    verify(companyApiClient, times(1)).findCompany(receiverId.toString());
-  }
+        // when: 업체 조회
+        var result = deliveryService.findCompany(receiverId.toString());
 
-  @Test
-  void 담당자조회api_성공() {
-    // given: 담당자 조회 데이터 준비
-    UUID receiverId = DEFAULT_RECEIVER_ID;
+        // then: 조회 검증
+        verify(companyApiClient, times(1)).findCompany(receiverId.toString());
+        assertThat(result).isNotNull();
+        assertThat(result.name()).isEqualTo(DEFAULT_COMPANY_NAME);
+    }
 
-    when(driverApiClient.findDriver(receiverId.toString())).thenReturn(createDriver());
+    @ParameterizedTest
+    @CsvSource({
+        "업체 조회 실패",
+        "네트워크 오류",
+        "타임아웃 발생"
+    })
+    void 업체조회api_실패_예외발생(String errorMessage) {
+        // given: 업체 조회 데이터 준비
+        UUID receiverId = DEFAULT_RECEIVER_ID;
 
-    // when: 담당자 조회
-    var result = deliveryService.findDriver(receiverId.toString());
+        when(companyApiClient.findCompany(receiverId.toString()))
+            .thenThrow(new RuntimeException(errorMessage));
 
-    // then: 조회 검증
-    verify(driverApiClient, times(1)).findDriver(receiverId.toString());
-    assertThat(result).isNotNull();
-    assertThat(result.receiverSlackId()).isEqualTo(DEFAULT_RECEIVER_SLACK_ID);
-  }
+        // when & then: 예외 발생 검증
+        assertThatThrownBy(() -> deliveryService.findCompany(receiverId.toString()))
+            .isInstanceOf(BusinessException.class)
+            .satisfies(exception -> {
+                BusinessException businessException = (BusinessException) exception;
+                assertThat(businessException.getErrorCode()).isEqualTo(
+                    DeliveryErrorCode.EXTERNAL_API_ERROR);
+            });
 
-  @Test
-  void 담당자조회api_실패_예외발생() {
-    // given: 담당자 조회 데이터 준비
-    UUID receiverId = DEFAULT_RECEIVER_ID;
+        // then: 외부 API 호출 검증
+        verify(companyApiClient, times(1)).findCompany(receiverId.toString());
+    }
 
-    when(driverApiClient.findDriver(receiverId.toString()))
-        .thenThrow(new RuntimeException("담당자 조회 실패"));
+    @Test
+    void 담당자조회api_성공() {
+        // given: 담당자 조회 데이터 준비
+        UUID receiverId = DEFAULT_RECEIVER_ID;
 
-    // when & then: 예외 발생 검증
-    assertThatThrownBy(() -> deliveryService.findDriver(receiverId.toString()))
-        .isInstanceOf(BusinessException.class)
-        .satisfies(exception -> {
-          BusinessException businessException = (BusinessException) exception;
-          assertThat(businessException.getErrorCode()).isEqualTo(
-              DeliveryErrorCode.EXTERNAL_API_ERROR);
-        });
+        when(driverApiClient.findDriver(receiverId.toString())).thenReturn(createDriver());
 
-    // then: 외부 API 호출 검증
-    verify(driverApiClient, times(1)).findDriver(receiverId.toString());
-  }
+        // when: 담당자 조회
+        var result = deliveryService.findDriver(receiverId.toString());
+
+        // then: 조회 검증
+        verify(driverApiClient, times(1)).findDriver(receiverId.toString());
+        assertThat(result).isNotNull();
+        assertThat(result.receiverSlackId()).isEqualTo(DEFAULT_RECEIVER_SLACK_ID);
+    }
+
+    @Test
+    void 담당자조회api_실패_예외발생() {
+        // given: 담당자 조회 데이터 준비
+        UUID receiverId = DEFAULT_RECEIVER_ID;
+
+        when(driverApiClient.findDriver(receiverId.toString()))
+            .thenThrow(new RuntimeException("담당자 조회 실패"));
+
+        // when & then: 예외 발생 검증
+        assertThatThrownBy(() -> deliveryService.findDriver(receiverId.toString()))
+            .isInstanceOf(BusinessException.class)
+            .satisfies(exception -> {
+                BusinessException businessException = (BusinessException) exception;
+                assertThat(businessException.getErrorCode()).isEqualTo(
+                    DeliveryErrorCode.EXTERNAL_API_ERROR);
+            });
+
+        // then: 외부 API 호출 검증
+        verify(driverApiClient, times(1)).findDriver(receiverId.toString());
+    }
 }
