@@ -31,7 +31,7 @@ class UserFeignClientIntegrationTest {
     @DisplayName("사용자 중복 체크 요청 테스트")
     void checkUsername_available() {
         // given
-        stubFor(get(urlEqualTo("/v1/users/exists?username=testuser"))
+        stubFor(get(urlEqualTo("/v1/users/check?username=testuser"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
@@ -49,7 +49,7 @@ class UserFeignClientIntegrationTest {
     @DisplayName("타임아웃 테스트")
     void handle_timeout() {
         // given
-        stubFor(get(urlEqualTo("/v1/users/exists?username=testuser"))
+        stubFor(get(urlEqualTo("/v1/users/check?username=testuser"))
             .willReturn(aResponse()
                 .withFixedDelay(1000)));
 
@@ -60,10 +60,10 @@ class UserFeignClientIntegrationTest {
     }
 
     @Test
-    @DisplayName("4xx 에러 처리 - ErrorDecoder 작동 확인")
+    @DisplayName("4xx 에러 처리 - ErrorDecoder 동작 확인")
     void handle4xxError() {
         // given
-        stubFor(get(urlEqualTo("/v1/users/exists?username=testuser"))
+        stubFor(get(urlEqualTo("/v1/users/check?username=testuser"))
             .willReturn(aResponse()
                 .withStatus(400)));
 
