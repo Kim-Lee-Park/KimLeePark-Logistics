@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -37,6 +38,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class RoutePlanServiceTest {
+
     @Mock
     private RoutePlanRepository routePlanRepository;
     @Mock
@@ -55,12 +57,12 @@ public class RoutePlanServiceTest {
         // given
         UUID depId = UUID.randomUUID();
         UUID arr = UUID.randomUUID();
-        CreateRoutePlanCommand request =  new CreateRoutePlanCommand(depId, arr);
+        CreateRoutePlanCommand request = new CreateRoutePlanCommand(depId, arr);
         given(routePlanRepository.existsByDepartureIdAndArrivalId(depId, arr)).willReturn(true);
         // when
 
         // then
-        assertThatThrownBy(()->routePlanService.createRoutePlan(request))
+        assertThatThrownBy(() -> routePlanService.createRoutePlan(request))
             .isInstanceOf(BusinessException.class)
             .hasMessage(RoutePlanErrorCode.ALREADY_EXISTS_ROUTE_PLAN.getMessage());
     }
@@ -71,7 +73,7 @@ public class RoutePlanServiceTest {
         // given
         UUID dep = UUID.randomUUID();
         UUID arr = UUID.randomUUID();
-        CreateRoutePlanCommand request = new CreateRoutePlanCommand(dep,arr);
+        CreateRoutePlanCommand request = new CreateRoutePlanCommand(dep, arr);
         given(routePlanRepository.existsByDepartureIdAndArrivalId(dep, arr)).willReturn(false);
         given(hubClientService.getHubById(dep))
             .willReturn(null);
@@ -90,8 +92,8 @@ public class RoutePlanServiceTest {
         // given
         UUID dep = UUID.randomUUID();
         UUID arr = UUID.randomUUID();
-        CreateRoutePlanCommand request = new CreateRoutePlanCommand(dep,arr);
-        HubInfo departureHub=HubFixture.createHubWithId(dep);
+        CreateRoutePlanCommand request = new CreateRoutePlanCommand(dep, arr);
+        HubInfo departureHub = HubFixture.createHubWithId(dep);
         given(hubClientService.getHubById(dep)).willReturn(departureHub);
 
         // when & then
@@ -106,9 +108,9 @@ public class RoutePlanServiceTest {
         // given
         UUID dep = UUID.randomUUID();
         UUID arr = UUID.randomUUID();
-        CreateRoutePlanCommand request = new CreateRoutePlanCommand(dep,arr);
-        HubInfo departureHub=HubFixture.createHubWithId(dep);
-        HubInfo arrivalHub=HubFixture.createHubWithId(arr);
+        CreateRoutePlanCommand request = new CreateRoutePlanCommand(dep, arr);
+        HubInfo departureHub = HubFixture.createHubWithId(dep);
+        HubInfo arrivalHub = HubFixture.createHubWithId(arr);
         given(routePlanRepository.existsByDepartureIdAndArrivalId(dep, arr)).willReturn(false);
         given(hubClientService.getHubById(dep)).willReturn(departureHub);
         given(hubClientService.getHubById(arr)).willReturn(arrivalHub);
@@ -263,12 +265,13 @@ public class RoutePlanServiceTest {
     @DisplayName("출발 허브ID, 도착허브ID로 조회")
     void get_byDepartureIdAndArrivalId_success() {
         // given
-        UUID depId=RoutePlanFixture.DEPARTURE_ID;
-        UUID arrId=RoutePlanFixture.ARRIVAL_ID;
+        UUID depId = RoutePlanFixture.DEPARTURE_ID;
+        UUID arrId = RoutePlanFixture.ARRIVAL_ID;
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
-        given(routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(depId, arrId)).willReturn(Optional.of(routePlan));
+        given(routePlanRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(depId,
+            arrId)).willReturn(Optional.of(routePlan));
         // when
-        GetRoutePlanDetailResponse response=routePlanService.getRoutePlan(depId,arrId);
+        GetRoutePlanDetailResponse response = routePlanService.getRoutePlan(depId, arrId);
         // then
         assertThat(response).isNotNull();
     }
@@ -277,9 +280,9 @@ public class RoutePlanServiceTest {
     @DisplayName("경로 계획 ID로 조회")
     void get_byRoutePlanId_success() {
         // given
-        UUID routePlanId=RoutePlanFixture.ROUTE_PLAN_ID;
+        UUID routePlanId = RoutePlanFixture.ROUTE_PLAN_ID;
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
-        given(routePlanRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId)).willReturn(Optional.of(routePlan));
+        given(routePlanRepository.getRoutePlanById(routePlanId)).willReturn(Optional.of(routePlan));
         // when
         GetRoutePlanDetailResponse response = routePlanService.getRoutePlan(routePlanId);
         // then
@@ -290,15 +293,31 @@ public class RoutePlanServiceTest {
     @DisplayName("경로 계획 목록 조회")
     void get_All_success() {
         // given
-        UUID depId=RoutePlanFixture.DEPARTURE_ID;
-        UUID arrId=RoutePlanFixture.ARRIVAL_ID;
-        Pageable pageable= PageRequest.of(0, 10);
+        UUID depId = RoutePlanFixture.DEPARTURE_ID;
+        UUID arrId = RoutePlanFixture.ARRIVAL_ID;
+        Pageable pageable = PageRequest.of(0, 10);
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
-        given(routePlanRepository.findAll(depId,arrId,pageable)).willReturn(new PageImpl<>(List.of(routePlan),pageable,1));
+        given(routePlanRepository.findAll(depId, arrId, pageable)).willReturn(
+            new PageImpl<>(List.of(routePlan), pageable, 1));
         // when
-        GetRoutePlanListResponse response = routePlanService.getRoutePlans(depId,arrId,pageable);
+        GetRoutePlanListResponse response = routePlanService.getRoutePlans(depId, arrId, pageable);
         // then
         assertThat(response.routePlans()).hasSize(1);
         assertThat(response.pageable().totalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("경로 계획 삭제")
+    void deleteRoutePlan() {
+        // given
+        UUID routePlanId = RoutePlanFixture.ROUTE_PLAN_ID;
+        RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
+        given(routePlanRepository.getRoutePlanById(routePlanId)).willReturn(Optional.of(routePlan));
+        // when
+        routePlanService.deleteRoutePlan(routePlanId);
+        // then
+        assertThat(routePlan.getDeletedAt()).isNotNull();
+
+        then(routePlanRepository).should().getRoutePlanById(routePlanId);
     }
 }
