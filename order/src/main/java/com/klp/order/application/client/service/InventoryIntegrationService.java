@@ -3,6 +3,7 @@ package com.klp.order.application.client.service;
 import com.klp.common.exception.BusinessException;
 import com.klp.order.application.client.InventoryClient;
 import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest;
+import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
 import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
 import com.klp.order.application.client.dto.inventory.response.GetProductResponse;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
@@ -27,34 +28,26 @@ public class InventoryIntegrationService {
     private final InventoryClient inventoryClient;
     private final OrderOutboundRequestService orderOutboundRequestService;
 
-
     @Transactional
     public void deductInventory(UUID orderId, List<OrderItemCommand> items,
         Map<UUID, GetProductResponse> productInfoMap) {
 
-        String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(orderId,
-            Target.INVENTORY, OperationType.DECREASE);
+        String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
+            orderId,
+            Target.INVENTORY,
+            OperationType.DECREASE
+        );
 
-        if (checkExistIdempotencyKey(idempotencyKey)) {
-            log.info("해당 주문의 재고 차감 멱등키 존재:{}", orderId);
+        if (checkExistIdempotencyKey(orderId, idempotencyKey)) {
+            return;
         }
 
-        List<DeductInventoryRequest.ProductDeduction> deductions = items.stream().
-            map(item -> {
-                GetProductResponse productInfo = productInfoMap.get(item.productId());
-                return new DeductInventoryRequest.ProductDeduction(
-                    item.productId(),
-                    productInfo.hubId(),
-                    item.quantity()
-                );
-            }).toList();
+        List<ProductDeduction> deductions = convertToProductDeductions(items, productInfoMap);
 
         DeductInventoryRequest request = new DeductInventoryRequest(idempotencyKey, deductions);
         DeductInventoryResponse response = inventoryClient.deductInventory(request);
 
-        if (!response.isSuccess() && !response.isAlreadyDeducted()) {
-            throw new BusinessException(OrderErrorCode.INVENTORY_DEDUCTION_FAILED);
-        }
+        validateDeductionResponse(response);
 
         orderOutboundRequestService.save(new CreateOrderOutboundRequestCommand(
             orderId,
@@ -63,10 +56,39 @@ public class InventoryIntegrationService {
             OperationType.DECREASE
         ));
 
-        log.info("주문에 대한 재고 차감에 성공하였습니다.: {}", orderId);
+        log.info("주문에 대한 재고 차감에 성공하였습니다. orderId: {}", orderId);
     }
 
-    private boolean checkExistIdempotencyKey(String idempotencyKey) {
-        return orderOutboundRequestService.existsByIdempotencyKey(idempotencyKey);
+
+    private boolean checkExistIdempotencyKey(UUID orderId, String idempotencyKey) {
+        boolean exists = orderOutboundRequestService.existsByIdempotencyKey(
+            idempotencyKey);
+
+        if (exists) {
+            log.info("해당 주문의 재고 차감 멱등키 존재. orderId: {}", orderId);
+        }
+        return exists;
+    }
+
+    private List<ProductDeduction> convertToProductDeductions(
+        List<OrderItemCommand> items,
+        Map<UUID, GetProductResponse> productInfoMap) {
+
+        return items.stream()
+            .map(item -> {
+                GetProductResponse productInfo = productInfoMap.get(item.productId());
+                return new ProductDeduction(
+                    item.productId(),
+                    productInfo.hubId(),
+                    item.quantity()
+                );
+            })
+            .toList();
+    }
+
+    private void validateDeductionResponse(DeductInventoryResponse response) {
+        if (!response.isSuccess() && !response.isAlreadyDeducted()) {
+            throw new BusinessException(OrderErrorCode.INVENTORY_DEDUCTION_FAILED);
+        }
     }
 }
