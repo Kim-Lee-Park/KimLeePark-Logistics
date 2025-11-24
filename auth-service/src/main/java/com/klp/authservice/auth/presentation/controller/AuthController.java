@@ -29,7 +29,7 @@ public class AuthController {
     private final AuthService authService;
     private final TokenProvider refreshTokenProvider;
 
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequest request) {
         authService.signUp(request.toCommand());
         return ResponseEntity.ok().build();
