@@ -1,6 +1,7 @@
 package com.klp.delivery.routeplan.domain.repository;
 
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
+import com.klp.delivery.routeplan.domain.model.RoutePlanItem;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -22,4 +23,6 @@ public interface RoutePlanRepository {
     Optional<RoutePlan> findByRoutePlanIdAndDeletedAtIsNull(UUID routePlanId);
 
     Page<RoutePlan> findAll(UUID depId, UUID arrId, Pageable pageable);
+
+    Optional<RoutePlanItem> findRoutePlanItemById(UUID routePlanId);
 }
