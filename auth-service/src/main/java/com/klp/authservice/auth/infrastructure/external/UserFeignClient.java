@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "user-service", configuration = UserFeignClientConfig.class)
 public interface UserFeignClient {
 
-    @GetMapping("/v1/users/exists")
+    @GetMapping("/v1/users/check")
     UsernameDuplicateResponse checkUsernameAvailable(@RequestParam("username") String userName);
 
     @PostMapping("/v1/users")

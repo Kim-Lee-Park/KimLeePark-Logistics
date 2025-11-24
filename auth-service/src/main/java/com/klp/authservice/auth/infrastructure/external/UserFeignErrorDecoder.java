@@ -17,17 +17,19 @@ public class UserFeignErrorDecoder implements ErrorDecoder {
 
         return switch (status) {
             case 500 -> {
-                log.error("유저 서비스에서 오류가 발생했습니다");
+                log.error("유저 서비스에서 오류가 발생했습니다: status={}", status);
                 yield new BusinessException(AuthErrorCode.USER_SERVICE_ERROR);
             }
             case 502, 503, 504 -> {
-                log.error("유저 서비스를 일시적으로 사용할 수 없습니다");
+                log.error("유저 서비스를 일시적으로 사용할 수 없습니다: status={}", status);
                 yield new BusinessException(AuthErrorCode.USER_SERVICE_UNAVAILABLE);
             }
             default -> {
                 if (status >= 400 && status < 500) {
+                    log.error("유저 서비스에 잘못된 요청을 보냈습니다: status={}", status);
                     yield new BusinessException(AuthErrorCode.USER_SERVICE_BAD_REQUEST);
                 }
+                log.error("알 수 없는 오류가 발생했습니다: status={}", status);
                 yield errorDecoder.decode(methodKey, response);
             }
         };
