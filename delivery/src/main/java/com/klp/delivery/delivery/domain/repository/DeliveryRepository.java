@@ -9,7 +9,7 @@ public interface DeliveryRepository {
 
   Delivery save(Delivery delivery);
 
-  Optional<Delivery> findByDeliveryId(UUID deliveryId);
+  Delivery findByDeliveryId(UUID deliveryId);
 
   List<Delivery> findDeliveryByOrderId(UUID orderId);
 

@@ -27,7 +27,7 @@ public class DeliveryItem extends BaseEntity {
     private UUID deliveryItemId;
 
     @Comment("배송 ID")
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "delivery_id")
     private Delivery delivery;
 
@@ -45,10 +45,5 @@ public class DeliveryItem extends BaseEntity {
 
     public static DeliveryItem create(Delivery delivery, UUID orderItemId) {
         return new DeliveryItem(delivery, orderItemId);
-    }
-
-
-    public void assignTo(Delivery delivery){
-        this.delivery = delivery;
     }
 }

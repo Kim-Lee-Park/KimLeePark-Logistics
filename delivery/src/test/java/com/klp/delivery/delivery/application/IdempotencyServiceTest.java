@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
@@ -47,7 +48,7 @@ public class IdempotencyServiceTest extends MockTest {
 
     // when & then: 중복 멱등키로 인한 예외 발생 검증
     Assertions.assertThrows(
-        com.klp.common.exception.BusinessException.class,
+        BusinessException.class,
         () -> idempotencyKeyService.registerIdempotencyKey(command)
     );
     

@@ -18,10 +18,10 @@ public record DeliveryCreateRequest(
     @NotBlank(message = "idempotencyKey는 필수입니다.")
     String idempotencykey,
 
-    @NotNull(message = "supplierId는 필수입니다.")
+    @NotBlank(message = "supplierId는 필수입니다.")
     String supplierId,
 
-    @NotNull(message = "customerId는 필수입니다.")
+    @NotBlank(message = "customerId는 필수입니다.")
     String customerId,
 
     @NotEmpty(message = "orderItems는 필수이며 최소 1개 이상이어야 합니다.")
@@ -53,10 +53,10 @@ public record DeliveryCreateRequest(
 
 
     public record OrderItem(
-        @NotNull(message = "orderItemId는 필수입니다.")
+        @NotBlank(message = "orderItemId는 필수입니다.")
         String orderItemId,
 
-        @NotNull(message = "hubId는 필수입니다.")
+        @NotBlank(message = "hubId는 필수입니다.")
         String hubId
     ) {
 

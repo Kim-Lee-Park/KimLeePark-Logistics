@@ -3,6 +3,7 @@ package com.klp.delivery.delivery.fixture;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
 
 import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -120,9 +121,8 @@ public class DeliveryFixture {
     }
 
 
-    //  기본 배송 객체 생성 후, 리플렉션으로 deliveryId를 지정
-  public static Delivery createDelivery(UUID deliveryId) {
-    Delivery delivery = defaultDelivery();
+  // 리플렉션으로 deliveryId 설정 (테스트용)
+  private static void setDeliveryId(Delivery delivery, UUID deliveryId) {
     try {
       var field = Delivery.class.getDeclaredField("deliveryId");
       field.setAccessible(true);
@@ -130,7 +130,28 @@ public class DeliveryFixture {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  //  기본 배송 객체 생성 후, 리플렉션으로 deliveryId를 지정
+  public static Delivery createDelivery(UUID deliveryId) {
+    Delivery delivery = defaultDelivery();
+    setDeliveryId(delivery, deliveryId);
     return delivery;
+  }
+
+  // orderItems와 deliveryId를 받아서 Delivery 생성 (테스트용)
+  public static Delivery createDeliveryWithItems(UUID deliveryId, List<OrderItemCommand> orderItems) {
+    Delivery delivery = deliveryWithCustomHubId(orderItems);
+    setDeliveryId(delivery, deliveryId);
+    return delivery;
+  }
+
+  // DeliveryCommand와 orderItems를 받아서 hubId에 따라 적절한 deliveryId를 가진 Delivery 생성 (테스트용)
+  public static Delivery createDeliveryFromCommand(DeliveryCommand cmd, List<OrderItemCommand> orderItems) {
+    UUID deliveryId = cmd.departureId().equals(DEFAULT_DEPARTURE_ID) 
+        ? DEFAULT_DELIVERY_ID_FIRST 
+        : DEFAULT_DELIVERY_ID_SECOND;
+    return createDeliveryWithItems(deliveryId, orderItems);
   }
 
 

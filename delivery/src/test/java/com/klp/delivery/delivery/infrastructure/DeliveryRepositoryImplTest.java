@@ -16,7 +16,6 @@ import com.klp.delivery.delivery.infrastructure.repository.DeliveryRepositoryImp
 import com.klp.delivery.global.config.AuditConfig;
 import groovy.util.logging.Slf4j;
 import java.util.List;
-import java.util.Optional;
 import org.assertj.core.api.Assertions;
 
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_THIRD;
@@ -70,12 +69,10 @@ public class DeliveryRepositoryImplTest {
 
         // when: 배송 엔티티 생성
         Delivery saved = deliveryRepository.save(delivery);
-        Optional<Delivery> findResult = deliveryRepository.findByDeliveryId(saved.getDeliveryId());
+        Delivery findResult = deliveryRepository.findByDeliveryId(saved.getDeliveryId());
 
         // then: 생성 검증
         assertThat(findResult)
-            .isPresent()
-            .get()
             .extracting(Delivery::getStatus)
             .isEqualTo(DeliveryStatus.CREATED);
 
@@ -91,7 +88,7 @@ public class DeliveryRepositoryImplTest {
         Delivery saved = deliveryRepository.save(delivery);
 
         // when: 배송 저장 조회
-        Delivery findResult = deliveryRepository.findByDeliveryId(saved.getDeliveryId()).orElseThrow();
+        Delivery findResult = deliveryRepository.findByDeliveryId(saved.getDeliveryId());
         List<DeliveryItem> items = findResult.getDeliveryItems();
 
 

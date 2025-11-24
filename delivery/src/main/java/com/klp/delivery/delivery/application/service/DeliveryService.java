@@ -76,8 +76,7 @@ public class DeliveryService {
     }
 
     public Delivery getDelivery(UUID deliveryId) {
-        return deliveryRepository.findByDeliveryId(deliveryId)
-            .orElseThrow(() -> new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+        return deliveryRepository.findByDeliveryId(deliveryId);
     }
 
     public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {

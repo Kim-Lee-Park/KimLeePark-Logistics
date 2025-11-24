@@ -138,7 +138,6 @@ public class Delivery extends BaseEntity {
     // 연관관계 설정
     public void addDeliveryItem(DeliveryItem item) {
         deliveryItems.add(item);
-        item.assignTo(this);
     }
 
 }

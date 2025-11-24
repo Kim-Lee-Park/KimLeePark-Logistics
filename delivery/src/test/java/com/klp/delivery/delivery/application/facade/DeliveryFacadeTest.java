@@ -6,10 +6,9 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_HUB_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryFromCommand;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
-import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_FIRST;
-import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_SECOND;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItemListWithDeliveryId;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
@@ -35,7 +34,6 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -92,40 +90,10 @@ public class DeliveryFacadeTest extends MockTest {
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(createCompany());
         when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
-            .thenAnswer(invocation -> {
-                DeliveryCommand cmd = invocation.getArgument(0);
-                @SuppressWarnings("unchecked")
-                List<OrderItemCommand> orderItems = invocation.getArgument(1);
-
-                // 실제 전달된 orderItems로 Delivery 생성
-                Delivery delivery = Delivery.create(
-                    cmd.vendorDriverId(),
-                    cmd.orderId(),
-                    cmd.departureId(),
-                    cmd.arrivalId(),
-                    cmd.senderId(),
-                    cmd.receiverId(),
-                    cmd.receiverName(),
-                    cmd.address(),
-                    cmd.receiverSlackId(),
-                    orderItems
-                );
-
-                // deliveryId 설정
-                try {
-                    var field = Delivery.class.getDeclaredField("deliveryId");
-                    field.setAccessible(true);
-                    if (cmd.departureId().equals(DEFAULT_HUB_ID_UUID_FIRST)) {
-                        field.set(delivery, DEFAULT_DELIVERY_ID_FIRST);
-                    } else if (cmd.departureId().equals(DEFAULT_HUB_ID_UUID_SECOND)) {
-                        field.set(delivery, DEFAULT_DELIVERY_ID_SECOND);
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
-                return delivery;
-            });
+            .thenAnswer(invocation -> createDeliveryFromCommand(
+                invocation.getArgument(0),
+                invocation.getArgument(1)
+            ));
         doNothing().when(idempotencyKeyService).updateIdempotencyStatus(any(IdempotencyCommand.class));
 
         // when: 배송 생성

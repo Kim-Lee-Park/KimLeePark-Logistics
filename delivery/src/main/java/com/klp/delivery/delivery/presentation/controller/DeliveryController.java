@@ -2,6 +2,7 @@ package com.klp.delivery.delivery.presentation.controller;
 
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.application.service.DeliveryService;
+import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
@@ -10,7 +11,6 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -43,7 +43,7 @@ public class DeliveryController {
 
   @GetMapping("/{deliveryId}")
   public ResponseEntity<DeliveryDetailResponse> getDelivery(@PathVariable UUID deliveryId) {
-    var delivery = deliveryService.getDelivery(deliveryId);
+      Delivery delivery = deliveryService.getDelivery(deliveryId);
     DeliveryDetailResponse response = DeliveryDetailResponse.from(delivery);
     return ResponseEntity.ok(response);
   }

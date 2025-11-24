@@ -41,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Import(DeliveryIntegrationTest.TestConfig.class)
 class DeliveryIntegrationTest {
 
-    private static final Logger log = LoggerFactory.getLogger(DeliveryIntegrationTest.class);
     @LocalServerPort
   private int port;
 
@@ -96,8 +95,7 @@ class DeliveryIntegrationTest {
         .body("status", equalTo(DeliveryStatus.CREATED.name()));
 
     // DB 저장 확인
-    Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId))
-        .orElseThrow(() -> new AssertionError("배송이 DB에 저장되지 않았습니다."));
+    Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
     assertThat(savedDelivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
     assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
   }
