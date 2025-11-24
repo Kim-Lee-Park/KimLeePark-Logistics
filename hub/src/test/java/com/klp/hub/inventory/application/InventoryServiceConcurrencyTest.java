@@ -11,6 +11,7 @@ import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Propagation;
@@ -44,6 +46,9 @@ public class InventoryServiceConcurrencyTest {
     @Autowired
     private InventoryJpaRepository jpaRepository;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     private UUID productId = UUID.randomUUID();
 
     private UUID hubId = UUID.randomUUID();
@@ -61,6 +66,11 @@ public class InventoryServiceConcurrencyTest {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     void tearDown() {
         jpaRepository.deleteAll();
+
+        Set<String> keys = stringRedisTemplate.keys("inv:idemp*");
+        if (!keys.isEmpty()) {
+            stringRedisTemplate.delete(keys);
+        }
     }
 
     @Nested

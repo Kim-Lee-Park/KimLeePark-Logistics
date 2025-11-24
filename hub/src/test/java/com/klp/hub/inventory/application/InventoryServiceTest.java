@@ -140,6 +140,7 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, 10))
             );
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey))
                 .thenReturn(false);
 
@@ -156,6 +157,7 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, quantity))
             );
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.deductAll(
                 InventoryUpdatePlanner.planDeduct(command.products()))
@@ -175,6 +177,7 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, quantity))
             );
+            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.deductAll(
                 InventoryUpdatePlanner.planDeduct(command.products()))
