@@ -4,6 +4,7 @@ import com.klp.delivery.routeplan.application.service.RoutePlanService;
 import com.klp.delivery.routeplan.presentation.dto.request.CreateRoutePlanRequest;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanItemDetailResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanListResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -64,5 +65,13 @@ public class RoutePlanController {
     public ResponseEntity<Void> deleteRoutePlan(@PathVariable UUID routePlanId) {
         routePlanService.deleteRoutePlan(routePlanId);
         return ResponseEntity.ok().build();
+    }
+
+    //경로 계획 구간 정보 조회
+    @GetMapping("{planId}/items/{planItemId}")
+    public ResponseEntity<GetRoutePlanItemDetailResponse> getRoutePlanItem(
+        @PathVariable UUID planId,
+        @PathVariable UUID planItemId) {
+        return ResponseEntity.ok().body(routePlanService.getRoutePlanItem(planId, planItemId));
     }
 }
