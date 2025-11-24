@@ -3,6 +3,7 @@ package com.klp.delivery.routeplan.infrastructure.repository;
 import com.klp.delivery.routeplan.domain.model.QRoutePlan;
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
 import com.klp.delivery.routeplan.domain.model.RoutePlanItem;
+import com.klp.delivery.routeplan.domain.model.RoutePlanStatus;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -67,7 +68,8 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
             .where(
                 depId != null ? qRoutePlan.departureId.eq(depId) : null,
                 arrId != null ? qRoutePlan.arrivalId.eq(arrId) : null,
-                qRoutePlan.deletedAt.isNull()
+                qRoutePlan.deletedAt.isNull(),
+                qRoutePlan.status.eq(RoutePlanStatus.ACTIVE)
             );
 
         if (pageable.getSort().isSorted()) {

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +53,7 @@ public class RoutePlanService {
 
         //출발 허브 조회
         HubInfo departureHub = hubClientService.getHubById(command.departureId());
-        if (departureHub == null) {
+        if (departureHub == null || !departureHub.isActive()) {
             log.warn("[RoutePlanService] 허브 조회 실패 - hubId: {} 존재하지 않음",
                 command.departureId());
             throw new BusinessException(RoutePlanErrorCode.HUB_NOT_FOUND);
@@ -60,7 +61,7 @@ public class RoutePlanService {
 
         //도착 허브 조회
         HubInfo arrivalHub = hubClientService.getHubById(command.arrivalId());
-        if (arrivalHub == null) {
+        if (arrivalHub == null || !arrivalHub.isActive()) {
             log.warn("[RoutePlanService] 허브 조회 실패 - hubId: {} 존재하지 않음",
                 command.arrivalId());
             throw new BusinessException(RoutePlanErrorCode.HUB_NOT_FOUND);
@@ -131,6 +132,7 @@ public class RoutePlanService {
 
     //경로 계획 삭제
     @Transactional
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#routePlanId")
     public void deleteRoutePlan(UUID routePlanId) {
         RoutePlan routePlan = getRoutePlanById(routePlanId);
 
