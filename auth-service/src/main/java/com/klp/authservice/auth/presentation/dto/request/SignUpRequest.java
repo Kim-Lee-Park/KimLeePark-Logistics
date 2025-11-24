@@ -25,6 +25,9 @@ public record SignUpRequest(
     @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다")
     String phone,
 
+    @NotBlank(message = "권한은 필수 입니다")
+    String role,
+
     @NotBlank(message = "소속 업체명(또는 허브명)은 필수 입니다")
     String affiliationName,
 
@@ -33,6 +36,14 @@ public record SignUpRequest(
 ) {
 
     public SignUpCommand toCommand() {
-        return new SignUpCommand(username, password, slackId, affiliationName, affiliationType);
+        return new SignUpCommand(
+            username,
+            password,
+            slackId,
+            phone,
+            role,
+            affiliationName,
+            affiliationType
+        );
     }
 }

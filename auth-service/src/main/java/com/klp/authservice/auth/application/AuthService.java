@@ -33,7 +33,7 @@ public class AuthService {
      * 회원가입: 유저 이름 중복 확인 요청 -> 패스워드 암호화 -> 유저 생성 요청
      */
     public void signUp(SignUpCommand command) {
-        if (checkDuplicateUserName(command.username())) {
+        if (!availableUsername(command.username())) {
             throw new BusinessException(AuthErrorCode.USERNAME_IS_EXIST);
         }
 
@@ -43,6 +43,8 @@ public class AuthService {
             command.username(),
             encodedPassword,
             command.slackId(),
+            command.phone(),
+            command.role(),
             command.affiliationName(),
             command.affiliationType()
         );
@@ -92,7 +94,7 @@ public class AuthService {
         return new ReissueResponse(userId, userName, role, newAccessToken);
     }
 
-    private boolean checkDuplicateUserName(String userName) {
+    private boolean availableUsername(String userName) {
         UsernameDuplicateResponse response = userClient.checkUsernameAvailable(userName);
 
         return response.available();

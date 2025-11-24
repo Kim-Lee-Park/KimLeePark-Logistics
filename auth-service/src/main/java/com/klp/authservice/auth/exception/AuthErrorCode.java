@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum AuthErrorCode implements ErrorCode {
-    USERNAME_IS_EXIST(HttpStatus.CONFLICT, "이미 존재하는 유저이름입니다"),
+    USERNAME_IS_EXIST(HttpStatus.BAD_REQUEST, "이미 존재하는 유저이름입니다"),
     INVALID_AFFILIATION_TYPE(HttpStatus.BAD_REQUEST, "올바르지 않은 소속 타입입니다"),
 
     // User Service의 4xx 에러
