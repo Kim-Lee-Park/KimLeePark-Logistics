@@ -1,6 +1,7 @@
 package com.klp.order.domain.repository;
 
 import com.klp.order.domain.entity.order.Order;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,4 +29,13 @@ public interface OrderRepository {
     List<Order> findByCustomerId(Long customerId);
 
     Optional<Order> findByOrderIdAndDeletedAtIsNull(UUID orderId);
+
+    Page<Order> searchOrders(
+        Long supplierId,
+        Long customerId,
+        Long createdBy,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        Pageable pageable
+    );
 }

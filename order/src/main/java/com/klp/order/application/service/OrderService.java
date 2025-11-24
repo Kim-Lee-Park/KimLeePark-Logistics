@@ -5,13 +5,20 @@ import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
+import com.klp.order.common.PageResponse;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
 import com.klp.order.global.exception.OrderErrorCode;
+import com.klp.order.presentation.dto.order.response.get.GetOrdersResponse;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,9 +99,45 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<GetOrdersResponse> searchOrders(
+        Long supplierId,
+        Long customerId,
+        Long createdBy,
+        LocalDate startDate,
+        LocalDate endDate,
+        Pageable pageable
+    ) {
+        LocalDateTime startDateTime = convertToStartDateTime(startDate);
+        LocalDateTime endDateTime = convertToEndDateTime(endDate);
+
+        Page<Order> orderPage = orderRepository.searchOrders(
+            supplierId,
+            customerId,
+            createdBy,
+            startDateTime,
+            endDateTime,
+            pageable
+        );
+
+        List<GetOrdersResponse> data = orderPage.getContent().stream()
+            .map(GetOrdersResponse::from)
+            .toList();
+
+        return PageResponse.of(data, orderPage);
+    }
+
     private void checkDeletedBy(Long deletedBy) {
         if (deletedBy == null) {
             throw new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED);
         }
+    }
+
+    private LocalDateTime convertToStartDateTime(LocalDate date) {
+        return date != null ? date.atStartOfDay() : null;
+    }
+
+    private LocalDateTime convertToEndDateTime(LocalDate date) {
+        return date != null ? date.atTime(LocalTime.MAX) : null;
     }
 }
