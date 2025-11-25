@@ -13,4 +13,8 @@ public interface UserRepository {
     Page<User> findAll(Pageable pageable);
 
     Page<User> searchByKeyword(String keyword, Pageable pageable);
+
+    User save(User user);
+
+    User findByUsername(String username);
 }

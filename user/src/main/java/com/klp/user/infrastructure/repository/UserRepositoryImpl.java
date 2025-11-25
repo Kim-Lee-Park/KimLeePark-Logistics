@@ -22,8 +22,14 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findById(Long userId) {
-        return userJpaRepository.findById(userId)
+        User user = userJpaRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        return user;
     }
 
     @Override
@@ -34,5 +40,16 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Page<User> searchByKeyword(String keyword, Pageable pageable) {
         return userJpaRepository.findAllByNameContaining(keyword, keyword, pageable);
+    }
+
+    @Override
+    public User save(User user) {
+        return userJpaRepository.save(user);
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        return userJpaRepository.findByName(username)
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
     }
 }
