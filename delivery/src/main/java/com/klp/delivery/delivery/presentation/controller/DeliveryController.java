@@ -45,7 +45,7 @@ public class DeliveryController {
 
     @GetMapping("/{deliveryId}")
     public ResponseEntity<DeliveryDetailResponse> getDelivery(@PathVariable UUID deliveryId) {
-        Delivery delivery = deliveryService.getDelivery(deliveryId);
+        Delivery delivery = deliveryService.findDelivery(deliveryId);
         DeliveryDetailResponse response = DeliveryDetailResponse.from(delivery);
         return ResponseEntity.ok(response);
     }
