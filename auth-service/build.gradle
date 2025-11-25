@@ -42,6 +42,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 
     // common-module
     implementation 'com.klp.common:common-module:1.0.0'

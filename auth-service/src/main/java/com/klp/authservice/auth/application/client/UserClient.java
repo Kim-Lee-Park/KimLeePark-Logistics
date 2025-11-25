@@ -1,14 +1,15 @@
 package com.klp.authservice.auth.application.client;
 
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
-import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataResponse;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 
 public interface UserClient {
 
     /**
      * 유저 도메인을 통해 닉네임 중복 여부를 확인
      */
-    boolean checkUserNameAvailable(String userName);
+    UsernameDuplicateResponse checkUsernameAvailable(String username);
 
     /**
      * 회원가입 이후 유저 생성 요청
@@ -16,7 +17,7 @@ public interface UserClient {
     void createUser(UserCreateRequest request);
 
     /**
-     * userName으로 유저 정보를 가져오는 요청
+     * username, password로 유저가 유효한 유저인지 확인하고 유저 정볼르 가져오는 요청
      */
-    UserDataDTO getUserByUserName(String userName);
+    UserDataResponse validateUserCredentials(String username, String password);
 }

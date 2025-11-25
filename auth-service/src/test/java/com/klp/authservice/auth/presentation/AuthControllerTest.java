@@ -1,4 +1,4 @@
-package com.klp.authservice.auth.entrypoint;
+package com.klp.authservice.auth.presentation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -15,14 +15,14 @@ import com.klp.authservice.auth.application.AuthService;
 import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.enums.AffiliationType;
-import com.klp.authservice.auth.entrypoint.controller.AuthController;
-import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
-import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
-import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
-import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.jwt.JwtConstants;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import com.klp.authservice.auth.presentation.controller.AuthController;
+import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
+import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
+import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
+import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
 import com.klp.authservice.global.exception.GlobalExceptionHandler;
 import com.klp.authservice.global.security.config.SecurityConfig;
 import com.klp.authservice.global.security.filter.AuthorizationFilter;
@@ -68,11 +68,18 @@ class AuthControllerTest {
             @DisplayName("4글자 미만이면 실패한다")
             void underFourDigit_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("abc", "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "abc",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -82,12 +89,18 @@ class AuthControllerTest {
             @DisplayName("10글자를 초과하면 실패한다")
             void overTenDigit_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("abcdefghijk", "!Password123", "slackId",
-                    "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "abcdefghijk",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -97,11 +110,18 @@ class AuthControllerTest {
             @DisplayName("대문자가 포함되면 실패한다")
             void upperCase_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("Testuser", "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "Testuser",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -111,11 +131,18 @@ class AuthControllerTest {
             @DisplayName("특수문자가 포함되면 실패한다")
             void specialCharacter_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("testuser!", "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "testuser!",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -125,11 +152,18 @@ class AuthControllerTest {
             @DisplayName("공백이 포함되면 실패한다")
             void whiteSpace_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("test user", "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "test user",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -139,11 +173,18 @@ class AuthControllerTest {
             @DisplayName("null이면 실패한다")
             void nullUsername_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest(null, "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    null,
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -153,11 +194,18 @@ class AuthControllerTest {
             @DisplayName("빈 문자열이면 실패한다")
             void emptyUsername_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("", "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -167,11 +215,18 @@ class AuthControllerTest {
             @DisplayName("공백이면 실패한다")
             void onlyWhiteSpaceUsername_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("   ", "!Password123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "   ",
+                    "!Password123",
+                    "slackId",
+                    "010-0000-0000",
+                    "testCompany",
+                    "COMPANY",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -186,11 +241,18 @@ class AuthControllerTest {
             @DisplayName("8글자 미만이면 실패한다")
             void under8Digit_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Pass1!", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Pass1!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -200,12 +262,18 @@ class AuthControllerTest {
             @DisplayName("15글자를 초과하면 실패한다")
             void over15Digit_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password12345667!@#", "slackId",
-                    "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password12345667!@#",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -215,11 +283,18 @@ class AuthControllerTest {
             @DisplayName("대문자가 없으면 실패한다")
             void upperCaseNotExist_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "password123!", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "password123!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -229,11 +304,18 @@ class AuthControllerTest {
             @DisplayName("소문자가 없으면 실패한다")
             void lowerCaseNotExist_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "PASSWORD123!", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "PASSWORD123!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -243,11 +325,18 @@ class AuthControllerTest {
             @DisplayName("숫자가 없으면 실패한다")
             void numberNotExist_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password!@#!@#", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password!@#!@#",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -257,11 +346,18 @@ class AuthControllerTest {
             @DisplayName("특수문자가 없으면 실패한다")
             void specialCharNotExist_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password123123", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password123123",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -271,11 +367,18 @@ class AuthControllerTest {
             @DisplayName("null이면 실패한다")
             void nullPassword_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", null, "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    null,
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -285,11 +388,18 @@ class AuthControllerTest {
             @DisplayName("빈 문자열이면 실패한다")
             void emptyPassword_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -299,11 +409,18 @@ class AuthControllerTest {
             @DisplayName("공백이면 실패한다")
             void onlyWhiteSpacePassword_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "   ", "slackId", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "   ",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -318,11 +435,18 @@ class AuthControllerTest {
             @DisplayName("null이면 실패한다")
             void nullSlackId_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", null, "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    null,
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -332,11 +456,18 @@ class AuthControllerTest {
             @DisplayName("빈 문자열이면 실패한다")
             void emptySlackId_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", "", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    "",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -346,11 +477,18 @@ class AuthControllerTest {
             @DisplayName("공백이면 실패한다")
             void whiteSpaceSlackId_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", "  ", "testCopmpany",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    "  ",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -365,11 +503,18 @@ class AuthControllerTest {
             @DisplayName("null이면 실패한다")
             void nullAffiliationName_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", "slackId", null,
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    null,
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -379,11 +524,18 @@ class AuthControllerTest {
             @DisplayName("빈 문자열이면 실패한다")
             void emptyAffiliationName_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", "slackId", "",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -393,11 +545,18 @@ class AuthControllerTest {
             @DisplayName("공백이면 실패한다")
             void whiteSpaceAffiliationName_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", "slackId", "  ",
-                    AffiliationType.COMPANY);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "  ",
+                    AffiliationType.COMPANY
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -412,11 +571,18 @@ class AuthControllerTest {
             @DisplayName("null이면 실패한다")
             void nullAffiliationType_fail() throws Exception {
                 // given
-                SignUpRequest signUpRequest = new SignUpRequest("user", "Password1!", "slackId", "testCopmpany",
-                    null);
+                SignUpRequest signUpRequest = new SignUpRequest(
+                    "user",
+                    "Password1!",
+                    "slackId",
+                    "010-0000-0000",
+                    "COMPANY",
+                    "testCompany",
+                    null
+                );
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signUpRequest)))
                     .andExpect(status().isBadRequest());
@@ -431,7 +597,7 @@ class AuthControllerTest {
                 // given
                 String request = """
                     {
-                        "userName": "user",
+                        "username": "user",
                         "password": "Password1!",
                         "slackId": "slackId",
                         "affiliationName": "testCompany",
@@ -440,7 +606,7 @@ class AuthControllerTest {
                     """;
 
                 // when & then
-                mockMvc.perform(post("/v1/auth/signUp")
+                mockMvc.perform(post("/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
                     .andExpect(status().isBadRequest());
@@ -456,19 +622,22 @@ class AuthControllerTest {
         @DisplayName("유효한 요청일 경우 회원가입에 성공한다")
         void validPassword_success() throws Exception {
             // given
-            String userName = "testuser1";
+            String username = "testuser1";
             String password = "Password123!";
             String slackId = "slackId";
+            String phone = "010-0000-0000";
+            String role = "COMPANY";
             String affiliationName = "testCompany";
             AffiliationType type = AffiliationType.COMPANY;
 
-            SignUpRequest signUpRequest = new SignUpRequest(userName, password, slackId, affiliationName, type);
+            SignUpRequest signUpRequest = new SignUpRequest(username, password, slackId, phone, role, affiliationName,
+                type);
 
             // when
             doNothing().when(authService).signUp(any(SignUpCommand.class));
 
             // then
-            mockMvc.perform(post("/v1/auth/signUp")
+            mockMvc.perform(post("/v1/auth/signup")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(mapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isOk());
@@ -484,18 +653,18 @@ class AuthControllerTest {
         void validRequest_success() throws Exception {
             // given
             Long userId = 1L;
-            String userName = "testuser";
+            String username = "testuser";
             String password = "Password1!";
             String role = "MASTER";
             String accessToken = "valid.access.token";
             String refreshToken = "valid.refresh.token";
 
-            LoginRequest request = new LoginRequest(userName, password);
-            LoginResponse response = new LoginResponse(userId, userName, role, accessToken);
+            LoginRequest request = new LoginRequest(username, password);
+            LoginResponse response = new LoginResponse(userId, username, role, accessToken);
 
             // when
             when(authService.login(any(LoginCommand.class))).thenReturn(response);
-            when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(refreshToken);
+            when(refreshTokenProvider.generate(userId, username, role)).thenReturn(refreshToken);
 
             // then
             mockMvc.perform(post("/v1/auth/login")
@@ -512,7 +681,7 @@ class AuthControllerTest {
     class LoginFailTest {
 
         @Nested
-        @DisplayName("userName 실패 케이스")
+        @DisplayName("username 실패 케이스")
         class UsernameInvalid {
 
             @Test
@@ -678,15 +847,15 @@ class AuthControllerTest {
             String accessToken = "old.access.token";
             String refreshToken = "valid.refresh.token";
             Long userId = 1L;
-            String userName = "testuser";
+            String username = "testuser";
             String role = "MASTER";
             String newAccessToken = "new.access.token";
             String newRefreshToken = "new.refresh.token";
 
-            ReissueResponse response = new ReissueResponse(userId, userName, role, newAccessToken);
+            ReissueResponse response = new ReissueResponse(userId, username, role, newAccessToken);
 
             when(authService.reissue(accessToken, refreshToken)).thenReturn(response);
-            when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(newRefreshToken);
+            when(refreshTokenProvider.generate(userId, username, role)).thenReturn(newRefreshToken);
 
             // when & then
             mockMvc.perform(post("/v1/auth/token/reissue")
@@ -694,13 +863,13 @@ class AuthControllerTest {
                     .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(userId))
-                .andExpect(jsonPath("$.userName").value(userName))
+                .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.role").value(role))
                 .andExpect(jsonPath("$.accessToken").value(newAccessToken))
                 .andExpect(cookie().exists(JwtConstants.REFRESH_TOKEN_COOKIE_NAME));
 
             verify(authService).reissue(accessToken, refreshToken);
-            verify(refreshTokenProvider).generate(userId, userName, role);
+            verify(refreshTokenProvider).generate(userId, username, role);
         }
 
         @Test
@@ -709,28 +878,28 @@ class AuthControllerTest {
             // given
             String refreshToken = "valid.refresh.token";
             Long userId = 1L;
-            String userName = "testuser";
+            String username = "testuser";
             String role = "MASTER";
             String newAccessToken = "new.access.token";
             String newRefreshToken = "new.refresh.token";
 
-            ReissueResponse response = new ReissueResponse(userId, userName, role, newAccessToken);
+            ReissueResponse response = new ReissueResponse(userId, username, role, newAccessToken);
 
             when(authService.reissue(null, refreshToken)).thenReturn(response);
-            when(refreshTokenProvider.generate(userId, userName, role)).thenReturn(newRefreshToken);
+            when(refreshTokenProvider.generate(userId, username, role)).thenReturn(newRefreshToken);
 
             // when & then
             mockMvc.perform(post("/v1/auth/token/reissue")
                     .cookie(new Cookie(JwtConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(userId))
-                .andExpect(jsonPath("$.userName").value(userName))
+                .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.role").value(role))
                 .andExpect(jsonPath("$.accessToken").value(newAccessToken))
                 .andExpect(cookie().exists(JwtConstants.REFRESH_TOKEN_COOKIE_NAME));
 
             verify(authService).reissue(null, refreshToken);
-            verify(refreshTokenProvider).generate(userId, userName, role);
+            verify(refreshTokenProvider).generate(userId, username, role);
         }
 
         @Test

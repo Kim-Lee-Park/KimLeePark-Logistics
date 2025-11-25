@@ -5,25 +5,26 @@ import com.klp.authservice.auth.application.command.LoginCommand;
 import com.klp.authservice.auth.application.command.SignUpCommand;
 import com.klp.authservice.auth.domain.entity.BlackListToken;
 import com.klp.authservice.auth.domain.repository.BlackListTokenRepository;
-import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
-import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.external.dto.request.UserCreateRequest;
-import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataDTO;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UserDataResponse;
+import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
+import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
 import com.klp.common.exception.BusinessException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserClient userClient;
-    private final PasswordEncoder passwordEncoder;
     private final TokenProvider accessTokenProvider;
     private final TokenProvider refreshTokenProvider;
     private final BlackListTokenRepository blackListTokenRepository;
@@ -32,16 +33,16 @@ public class AuthService {
      * 회원가입: 유저 이름 중복 확인 요청 -> 패스워드 암호화 -> 유저 생성 요청
      */
     public void signUp(SignUpCommand command) {
-        if (checkDuplicateUserName(command.userName())) {
+        if (!availableUsername(command.username())) {
             throw new BusinessException(AuthErrorCode.USERNAME_IS_EXIST);
         }
 
-        String encodedPassword = passwordEncoder.encode(command.password());
-
         UserCreateRequest request = new UserCreateRequest(
-            command.userName(),
-            encodedPassword,
+            command.username(),
+            command.password(),
             command.slackId(),
+            command.phone(),
+            command.role(),
             command.affiliationName(),
             command.affiliationType()
         );
@@ -49,10 +50,11 @@ public class AuthService {
         userClient.createUser(request);
     }
 
+    /**
+     * 로그인: 유저 자격 증명 검증 요청 -> 액세스 토큰 생성
+     */
     public LoginResponse login(LoginCommand command) {
-        UserDataDTO dto = userClient.getUserByUserName(command.userName());
-
-        validatePassword(command.password(), dto.password());
+        UserDataResponse dto = userClient.validateUserCredentials(command.username(), command.password());
 
         String accessToken = accessTokenProvider.generate(dto.userId(), dto.userName(), dto.role());
 
@@ -91,14 +93,10 @@ public class AuthService {
         return new ReissueResponse(userId, userName, role, newAccessToken);
     }
 
-    private boolean checkDuplicateUserName(String userName) {
-        return userClient.checkUserNameAvailable(userName);
-    }
+    private boolean availableUsername(String userName) {
+        UsernameDuplicateResponse response = userClient.checkUsernameAvailable(userName);
 
-    private void validatePassword(String rawPassword, String encodedPassword) {
-        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new BusinessException(AuthErrorCode.INVALID_PASSWORD);
-        }
+        return response.available();
     }
 
     private boolean isAdmin(String role) {

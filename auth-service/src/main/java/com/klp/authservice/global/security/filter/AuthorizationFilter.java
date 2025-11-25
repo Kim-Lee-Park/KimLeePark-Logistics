@@ -6,12 +6,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 public class AuthorizationFilter extends OncePerRequestFilter {
 
@@ -26,7 +28,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         String userId = request.getHeader(USER_ID_HEADER);
         String userName = request.getHeader(USER_NAME_HEADER);
         String role = request.getHeader(USER_ROLE_HEADER);
-
+        
         if (userId == null || userName == null || role == null) {
             filterChain.doFilter(request, response);
             return;
