@@ -2,6 +2,7 @@ package com.klp.delivery.routeplan.infrastructure.repository;
 
 import com.klp.delivery.routeplan.domain.model.QRoutePlan;
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
+import com.klp.delivery.routeplan.domain.model.RoutePlanItem;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -21,8 +22,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class RoutePlanRepositoryImpl implements RoutePlanRepository {
+
     private final RoutePlanJpaRepository routePlanJpaRepository;
     private final JPAQueryFactory queryFactory;
+    private final RoutePlanItemJpaRepository routePlanItemJpaRepository;
 
     @Override
     public RoutePlan save(RoutePlan routePlan) {
@@ -37,7 +40,8 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
     @Override
     public Optional<RoutePlan> findByDepartureIdAndArrivalIdAndDeletedAtIsNull(UUID departureId,
         UUID arrivalId) {
-        return routePlanJpaRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(departureId, arrivalId);
+        return routePlanJpaRepository.findByDepartureIdAndArrivalIdAndDeletedAtIsNull(departureId,
+            arrivalId);
     }
 
     @Override
@@ -46,7 +50,7 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
     }
 
     @Override
-    public Optional<RoutePlan> getRouteInfoById(UUID routePlanId) {
+    public Optional<RoutePlan> getRoutePlanById(UUID routePlanId) {
         return routePlanJpaRepository.findByRoutePlanIdAndDeletedAtIsNull(routePlanId);
     }
 
@@ -66,16 +70,18 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
                 qRoutePlan.deletedAt.isNull()
             );
 
-        if(pageable.getSort().isSorted()) {
-            PathBuilder<QRoutePlan> entityPath = new PathBuilder<>(QRoutePlan.class,qRoutePlan.getMetadata());
-            for(Sort.Order order:pageable.getSort()) {
+        if (pageable.getSort().isSorted()) {
+            PathBuilder<QRoutePlan> entityPath = new PathBuilder<>(QRoutePlan.class,
+                qRoutePlan.getMetadata());
+            for (Sort.Order order : pageable.getSort()) {
                 String property = order.getProperty();
                 Order direction = order.isAscending() ? Order.ASC : Order.DESC;
-                query.orderBy(new OrderSpecifier<>(direction,entityPath.getComparable(property,
+                query.orderBy(new OrderSpecifier<>(direction, entityPath.getComparable(property,
                     Comparable.class)));
             }
+        } else {
+            query.orderBy(qRoutePlan.createdAt.desc());
         }
-        else query.orderBy(qRoutePlan.createdAt.desc());
 
         long total = query.fetchCount();
         List<RoutePlan> content = query
@@ -84,5 +90,10 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
             .fetch();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Optional<RoutePlanItem> findRoutePlanItemById(UUID routePlanId) {
+        return routePlanItemJpaRepository.findByRoutePlanItemIdAndDeletedAtIsNull(routePlanId);
     }
 }

@@ -74,6 +74,4 @@ gateway:
     public-paths:
       - /v1/auth/signup
       - /v1/auth/login
-      - /v1/auth/logout
-      - /v1/auth/token/reissue
-      - /v1/auth/exists
+      - /v1/auth/check
