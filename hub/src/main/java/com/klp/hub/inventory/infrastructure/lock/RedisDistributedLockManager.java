@@ -13,7 +13,7 @@ public class RedisDistributedLockManager implements DistributedLockManager {
 
     private final StringRedisTemplate redisTemplate;
 
-    private static final String KEY_PREFIX = "inv:idemp";
+    private static final String KEY_PREFIX = "inv:idemp:";
     private static final Duration TTL = Duration.ofMinutes(1);
 
     @Override

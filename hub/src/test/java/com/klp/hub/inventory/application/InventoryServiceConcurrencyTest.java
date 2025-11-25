@@ -75,7 +75,7 @@ public class InventoryServiceConcurrencyTest {
     void tearDown() {
         jpaRepository.deleteAll();
 
-        Set<String> keys = stringRedisTemplate.keys("inv:idemp*");
+        Set<String> keys = stringRedisTemplate.keys("inv:idemp:*");
         if (!keys.isEmpty()) {
             stringRedisTemplate.delete(keys);
         }
