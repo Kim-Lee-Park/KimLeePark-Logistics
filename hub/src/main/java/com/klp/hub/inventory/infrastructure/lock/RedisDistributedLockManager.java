@@ -22,8 +22,14 @@ public class RedisDistributedLockManager implements DistributedLockManager {
 
         try {
             Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "LOCKED", TTL);
-            log.info("Redis 분산락 획득 key = {}", lockKey);
-            return Boolean.TRUE.equals(acquired);
+            boolean lockAcquired = Boolean.TRUE.equals(acquired);
+
+            if (lockAcquired) {
+                log.info("Redis 분산락 획득 key = {}", lockKey);
+            } else {
+                log.warn("Redis 분산락 획득 실패 key = {}", lockKey);
+            }
+            return lockAcquired;
         } catch (Exception e) {
             // Redis 장애시 DB 가 SSOT 이므로 DB가 책임
             log.warn("Redis 분산락 처리 중 예외 발생, DB로 진행 필요 key = {}", lockKey);
