@@ -40,15 +40,18 @@ public class UserService {
         // TODO 업체Id를 통해 업체 이름을 받아오는 요청 필요
         String affiliationName = "tempAffiliation";
 
-        User user = userRepository.findById(userId);
+        User user = findNotDeletedUser(userId);
+
         return UserDetailResponse.of(affiliationName, user);
     }
+
 
     @Transactional(readOnly = true)
     public UserDetailResponse getUserDetails(Long userId) {
         // TODO 업체Id를 통해 업체 이름을 받아오는 요청 필요
         String affiliationName = "tempAffiliation";
-        User user = userRepository.findById(userId);
+
+        User user = findNotDeletedUser(userId);
 
         return UserDetailResponse.of(affiliationName, user);
     }
@@ -71,7 +74,7 @@ public class UserService {
 
     @Transactional
     public void updateUserInfo(Long userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId);
+        User user = findNotDeletedUser(userId);
         String encodedPassword = passwordEncoder.encode(request.password());
 
         user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.role());
@@ -99,7 +102,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDataResponse getUserByUsername(ValidateUserCommand command) {
-        User user = userRepository.findByUsername(command.username());
+        User user = userRepository.findByUsername(command.username())
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         if (!validatePassword(command.password(), user.getPassword())) {
             throw new BusinessException(UserErrorCode.INVALID_PASSWORD);
@@ -110,19 +114,30 @@ public class UserService {
 
     @Transactional
     public void approvePendingUser(Long userId) {
-        User user = userRepository.findById(userId);
+        User user = findNotDeletedUser(userId);
 
         user.approve();
     }
 
     @Transactional
     public void rejectPendingUser(Long userId) {
-        User user = userRepository.findById(userId);
+        User user = findNotDeletedUser(userId);
 
         user.reject();
     }
 
     private boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    private User findNotDeletedUser(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        return user;
     }
 }
