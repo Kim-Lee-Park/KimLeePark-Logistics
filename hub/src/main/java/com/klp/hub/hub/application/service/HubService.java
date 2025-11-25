@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -84,7 +85,7 @@ public class HubService {
     }
 
     //허브 삭제
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     @CacheEvict(cacheNames = CACHE_NAME, key = "#hubId")
     public void markPendingDelete(UUID hubId, UserDetailsImpl userDetails) {
         Hub hub = getHubById(hubId);

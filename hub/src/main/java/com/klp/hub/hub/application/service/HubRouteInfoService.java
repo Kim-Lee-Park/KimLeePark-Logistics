@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -91,6 +92,7 @@ public class HubRouteInfoService {
     }
 
     //hubId와 관련된 허브간 이동 정보 삭제
+    @Transactional(propagation = Propagation.MANDATORY)
     public void deleteHubRouteInfoByHubId(UUID hubId, UserDetailsImpl userDetails) {
         List<HubRouteInfo> infos = hubRouteInfoRepository.findAllByHubId(hubId);
         infos.forEach(info -> {
