@@ -75,12 +75,12 @@ public class DeliveryService {
         }
     }
 
-    public Delivery getDelivery(UUID deliveryId) {
+    public Delivery findDelivery(UUID deliveryId) {
         return deliveryRepository.findByDeliveryId(deliveryId);
     }
 
     public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {
-        Delivery delivery = getDelivery(deliveryId);
+        Delivery delivery = findDelivery(deliveryId);
         delivery.updateStatus(status);
         deliveryRepository.save(delivery);
     }

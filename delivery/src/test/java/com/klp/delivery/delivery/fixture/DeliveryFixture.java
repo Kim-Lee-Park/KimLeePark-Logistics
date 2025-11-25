@@ -114,6 +114,16 @@ public class DeliveryFixture {
         );
     }
 
+    // 여러 개의 Delivery를 포함한 리스트 (테스트용)
+    public static List<Delivery> deliveryList() {
+        Delivery delivery1 = defaultDelivery();
+        Delivery delivery2 = defaultDelivery();
+        setDeliveryId(delivery1, DEFAULT_DELIVERY_ID_FIRST);
+        setDeliveryId(delivery2, DEFAULT_DELIVERY_ID_SECOND);
+        return List.of(delivery1, delivery2);
+    }
+
+
     public static Delivery deliveryWithCustomHubId(List<OrderItemCommand> items) {
         return Delivery.create(
             DEFAULT_VENDOR_DRIVER_ID,
