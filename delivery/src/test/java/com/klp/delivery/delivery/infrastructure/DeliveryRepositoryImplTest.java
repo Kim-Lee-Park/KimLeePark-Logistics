@@ -1,6 +1,14 @@
 package com.klp.delivery.delivery.infrastructure;
 
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_VENDOR_DRIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryWithCustomHubId;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_FIRST;
@@ -12,10 +20,13 @@ import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
+import com.klp.delivery.delivery.infrastructure.repository.DeliveryJpaRepository;
 import com.klp.delivery.delivery.infrastructure.repository.DeliveryRepositoryImpl;
 import com.klp.delivery.global.config.AuditConfig;
+import com.klp.delivery.global.config.QuerydslConfig;
 import groovy.util.logging.Slf4j;
 import java.util.List;
+import java.util.UUID;
 import org.assertj.core.api.Assertions;
 
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_THIRD;
@@ -25,17 +36,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 @Slf4j
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({DeliveryRepositoryImpl.class, AuditConfig.class})
+@Import({DeliveryRepositoryImpl.class, AuditConfig.class, QuerydslConfig.class})
 public class DeliveryRepositoryImplTest {
 
 
     @Autowired
     private DeliveryRepositoryImpl deliveryRepository;
+    @Autowired
+    private DeliveryJpaRepository deliveryJpaRepository;
 
 
     @Test
@@ -136,6 +153,41 @@ public class DeliveryRepositoryImplTest {
             .extracting(Delivery::getDepartureId)
             .containsExactlyInAnyOrder(DEFAULT_HUB_ID_UUID_FIRST, DEFAULT_HUB_ID_UUID_SECOND);
     }
+
+    @Test
+    void 배송_전체_조회_성공() {
+        // given: 배송 생성 및 저장
+        for (int i = 0; i < 22; i++) {
+            deliveryJpaRepository.save(
+                Delivery.create(
+                    DEFAULT_VENDOR_DRIVER_ID,
+                    UUID.randomUUID(),
+                    DEFAULT_DEPARTURE_ID,
+                    DEFAULT_ARRIVAL_ID,
+                    DEFAULT_SENDER_ID,
+                    DEFAULT_RECEIVER_ID,
+                    DEFAULT_COMPANY_NAME,
+                    DEFAULT_COMPANY_ADDRESS,
+                    DEFAULT_RECEIVER_SLACK_ID,
+                    List.of()
+                )
+            );
+        }
+
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").ascending());
+
+
+        // when
+        Page<Delivery> page = deliveryRepository.findDeliveryAll(pageable);
+
+        // then
+        assertThat(page.getContent()).hasSize(10);
+        assertThat(page.getNumber()).isEqualTo(0);
+        assertThat(page.getSize()).isEqualTo(10);
+        assertThat(page.getTotalElements()).isEqualTo(22);
+    }
+
 
 
 }

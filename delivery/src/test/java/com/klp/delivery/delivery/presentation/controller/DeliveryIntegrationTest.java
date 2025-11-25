@@ -16,14 +16,20 @@ import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
+
+import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import groovy.util.logging.Slf4j;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+
+
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -93,9 +99,84 @@ class DeliveryIntegrationTest {
             .statusCode(200)
             .body("status", equalTo(DeliveryStatus.CREATED.name()));
 
+        // then: 생성된 배송 주문ID로 조회
+        ExtractableResponse<Response> res = given()
+            .when()
+            .get("/deliveries/{deliveryId}/{orderId}", deliveryId, request.orderId())
+            .then()
+            .statusCode(200)
+            .extract();
+
+        List<DeliveryDetailResponse> list = res.jsonPath()
+            .getList("", DeliveryDetailResponse.class);
+        assertThat(list).hasSize(2);
+
+
         // DB 저장 확인
         Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
         assertThat(savedDelivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
         assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+    }
+
+    @Test
+    void 배송_전체_조회_E2E() {
+        // given: 배송 생성 및 저장 (고유한 orderId 사용)
+        UUID uniqueOrderId = UUID.randomUUID();
+        DeliveryCreateRequest request = createDeliveryRequest(uniqueOrderId, createOrderItems());
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/deliveries")
+            .then()
+            .statusCode(200);
+
+        // when: 배송 전체 조회 (페이징, 정렬 없음)
+        ExtractableResponse<Response> response = given()
+            .when()
+            .get("/deliveries?page=0&size=10")
+            .then()
+            .statusCode(200)
+            .extract();
+
+        // then: 조회 결과 검증
+        List<DeliveryDetailResponse> content = response.jsonPath()
+            .getList("content", DeliveryDetailResponse.class);
+        int totalElements = response.jsonPath().getInt("totalElements");
+        int number = response.jsonPath().getInt("number");
+        int size = response.jsonPath().getInt("size");
+
+        assertThat(content).isNotEmpty();
+        assertThat(number).isEqualTo(0);
+        assertThat(size).isEqualTo(10);
+        assertThat(totalElements).isGreaterThanOrEqualTo(2); // 주문당 2개 배송 생성됨
+    }
+
+    @Test
+    void 배송_전체_조회_정렬_E2E() {
+        // given: 배송 생성 및 저장 (고유한 orderId 사용)
+        UUID uniqueOrderId = UUID.randomUUID();
+        DeliveryCreateRequest request = createDeliveryRequest(uniqueOrderId, createOrderItems());
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/deliveries")
+            .then()
+            .statusCode(200);
+
+        // when: 정렬 파라미터로 배송 전체 조회
+        ExtractableResponse<Response> response = given()
+            .when()
+            .get("/deliveries?page=0&size=10&sort=deliveryId,desc")
+            .then()
+            .statusCode(200)
+            .extract();
+
+        // then: 조회 결과 검증
+        List<DeliveryDetailResponse> content = response.jsonPath()
+            .getList("content", DeliveryDetailResponse.class);
+
+        assertThat(content).isNotEmpty();
     }
 }

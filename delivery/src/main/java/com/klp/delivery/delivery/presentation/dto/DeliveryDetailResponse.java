@@ -2,7 +2,10 @@ package com.klp.delivery.delivery.presentation.dto;
 
 import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 public record DeliveryDetailResponse(
     UUID deliveryId,
@@ -28,6 +31,19 @@ public record DeliveryDetailResponse(
             delivery.getReceiverSlackId(),
             delivery.getStatus()
         );
+    }
+
+    public static List<DeliveryDetailResponse> from(List<Delivery> deliveries) {
+        return deliveries.stream()
+            .map(DeliveryDetailResponse::from)
+            .toList();
+    }
+
+    public static Page<DeliveryDetailResponse> from(Page<Delivery> deliveryPage) {
+        List<DeliveryDetailResponse> content = deliveryPage.getContent().stream()
+            .map(DeliveryDetailResponse::from)
+            .toList();
+        return new PageImpl<>(content, deliveryPage.getPageable(), deliveryPage.getTotalElements());
     }
 }
 
