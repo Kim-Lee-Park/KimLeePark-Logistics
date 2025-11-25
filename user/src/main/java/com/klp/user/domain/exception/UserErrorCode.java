@@ -16,6 +16,7 @@ public enum UserErrorCode implements ErrorCode {
     CONFLICT(HttpStatus.CONFLICT, "요청이 현재 서버 상태와 충돌합니다"),
 
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "지원하지 않는 회원 권한입니다"),
+    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다"),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "이미 승인된 상태입니다"),
     ALREADY_REJECTED(HttpStatus.CONFLICT, "이미 승인 거절된 상태입니다"),
 
