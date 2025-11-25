@@ -1,5 +1,6 @@
 package com.klp.hub.hub.presentation.controller;
 
+import com.klp.hub.common.model.UserDetailsImpl;
 import com.klp.hub.hub.application.service.HubRouteInfoService;
 import com.klp.hub.hub.presentation.dto.request.hubrouteinfo.RegisterHubRouteInfoRequest;
 import com.klp.hub.hub.presentation.dto.request.hubrouteinfo.UpdateHubRouteInfoRequest;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,21 +29,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/hubs/routes/info")
 public class HubRouteInfoController {
+
     private final HubRouteInfoService hubRouteInfoService;
 
     //허브간 이동 정보 생성
     @PostMapping("")
     public ResponseEntity<RegisterHubRouteInfoResponse> registerHubRouteInfo(
         @Valid @RequestBody RegisterHubRouteInfoRequest request
-    ){
-        RegisterHubRouteInfoResponse response=hubRouteInfoService.registerHubRouteInfo(request.toCommand());
-        URI location=URI.create("/v1/hubs/routes/info/"+response.hubRouteInfoId());
+    ) {
+        RegisterHubRouteInfoResponse response = hubRouteInfoService.registerHubRouteInfo(
+            request.toCommand());
+        URI location = URI.create("/v1/hubs/routes/info/" + response.hubRouteInfoId());
         return ResponseEntity.created(location).body(response);
     }
 
     //허브간 이동 정보 단일 조회
     @GetMapping("/{routeInfoId}")
-    public ResponseEntity<GetHubRouteInfoDetailResponse> getHubRouteInfoDetail(@PathVariable UUID routeInfoId){
+    public ResponseEntity<GetHubRouteInfoDetailResponse> getHubRouteInfoDetail(
+        @PathVariable UUID routeInfoId) {
         return ResponseEntity.ok(hubRouteInfoService.getHubRouteInfoDetail(routeInfoId));
     }
 
@@ -50,28 +55,33 @@ public class HubRouteInfoController {
     public ResponseEntity<GetHubRouteInfoListResponse> getHubRouteInfos(
         @RequestParam(required = false) UUID departureId,
         @RequestParam(required = false) UUID arrivalId,
-        Pageable pageable){
-        return ResponseEntity.ok(hubRouteInfoService.getHubRouteInfos(departureId,arrivalId,pageable));
+        Pageable pageable) {
+        return ResponseEntity.ok(
+            hubRouteInfoService.getHubRouteInfos(departureId, arrivalId, pageable));
     }
 
     //허브간 이동 정보 수정
     @PatchMapping("/{routeInfoId}")
-    public ResponseEntity<UpdatedHubRouteInfoResponse> updateHubRouteInfo(@PathVariable UUID routeInfoId,
-        @RequestBody UpdateHubRouteInfoRequest request){
-        return ResponseEntity.ok(hubRouteInfoService.updateHubRouteInfo(routeInfoId, request.toCommand()));
+    public ResponseEntity<UpdatedHubRouteInfoResponse> updateHubRouteInfo(
+        @PathVariable UUID routeInfoId,
+        @RequestBody UpdateHubRouteInfoRequest request) {
+        return ResponseEntity.ok(
+            hubRouteInfoService.updateHubRouteInfo(routeInfoId, request.toCommand()));
     }
 
     //허브간 이동 정보 삭제
     @DeleteMapping("/{routeInfoId}")
-    public ResponseEntity<Void> deleteHub(@PathVariable UUID routeInfoId){
-        hubRouteInfoService.deleteHubRouteInfo(routeInfoId);
+    public ResponseEntity<Void> deleteHub(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID routeInfoId) {
+        hubRouteInfoService.deleteHubRouteInfo(routeInfoId, userDetails);
         return ResponseEntity.ok().build();
     }
 
     //모든 허브간 이동 정보 조회 ( 페이지네이션 X )
     //TODO: MASTER 권한
     @GetMapping("/all")
-    public ResponseEntity<GetHubRouteInfoListResponse> getHubRouteInfos(){
+    public ResponseEntity<GetHubRouteInfoListResponse> getHubRouteInfos() {
         return ResponseEntity.ok(hubRouteInfoService.getAllHubRouteInfos());
     }
 }

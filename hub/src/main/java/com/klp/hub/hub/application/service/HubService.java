@@ -1,6 +1,7 @@
 package com.klp.hub.hub.application.service;
 
 import com.klp.common.exception.BusinessException;
+import com.klp.hub.common.model.UserDetailsImpl;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
@@ -13,7 +14,7 @@ import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,7 +65,7 @@ public class HubService {
     }
 
     //허브 수정
-    @CachePut(cacheNames = CACHE_NAME, key = "#hubId")
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#hubId")
     @Transactional
     public UpdatedHubResponse updateHub(UUID hubId, UpdateHubCommand request,
         UserDetails userDetails) {
@@ -84,8 +85,10 @@ public class HubService {
 
     //허브 삭제
     @Transactional
-    public void deleteHub(UUID hubId) {
-
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#hubId")
+    public void markPendingDelete(UUID hubId, UserDetailsImpl userDetails) {
+        Hub hub = getHubById(hubId);
+        hub.pendingDelete(userDetails.getUserId());
     }
 
     //허브 ID로 조회
