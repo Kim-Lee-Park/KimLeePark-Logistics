@@ -24,18 +24,24 @@ public class InventoryFacade {
         String idempotencyKey = command.idempotencyKey();
 
         lock(idempotencyKey);
-        InventoryDeductResponse response = inventoryService.deduct(command);
-        unLock(idempotencyKey);
-        return response;
+        try {
+            InventoryDeductResponse response = inventoryService.deduct(command);
+            return response;
+        } finally {
+            unLock(idempotencyKey);
+        }
     }
 
     public InventoryReplenishResponse replenish(InventoryReplenishCommand command) {
         String idempotencyKey = command.idempotencyKey();
 
         lock(idempotencyKey);
-        InventoryReplenishResponse response = inventoryService.replenish(command);
-        unLock(idempotencyKey);
-        return response;
+        try {
+            InventoryReplenishResponse response = inventoryService.replenish(command);
+            return response;
+        } finally {
+            unLock(idempotencyKey);
+        }
     }
 
     private void lock(String idempotencyKey) {
