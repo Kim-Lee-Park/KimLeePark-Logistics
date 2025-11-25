@@ -1,6 +1,7 @@
 package com.klp.delivery.routeplan.application.service;
 
 import com.klp.common.exception.BusinessException;
+import com.klp.delivery.common.entity.UserDetailsImpl;
 import com.klp.delivery.routeplan.application.command.CreateRoutePlanCommand;
 import com.klp.delivery.routeplan.application.command.HubInfo;
 import com.klp.delivery.routeplan.application.command.HubRouteInfo;
@@ -133,12 +134,18 @@ public class RoutePlanService {
     //경로 계획 삭제
     @Transactional
     @CacheEvict(cacheNames = CACHE_NAME, key = "#routePlanId")
-    public void deleteRoutePlan(UUID routePlanId) {
+    public void deleteRoutePlan(UUID routePlanId, UserDetailsImpl userDetails) {
         RoutePlan routePlan = getRoutePlanById(routePlanId);
+        routePlan.pendingDelete(userDetails.getUserId());
+    }
 
-        //TODO: 유저 ID 수정하기
-        routePlan.getRoutePlanItems().forEach(item -> item.delete(0L));
-        routePlan.delete(0L);
+    //hubId와 관련된 경로 계획 삭제
+    @Transactional
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#routePlan")
+    public void markRoutePlansPendingDeleteByHubId(UUID hubId, UserDetailsImpl userDetails) {
+        List<RoutePlan> plans = routePlanRepository.findByHubId(hubId);
+
+        plans.forEach(plan -> plan.pendingDelete(userDetails.getUserId()));
     }
 
     //경로 계획 ID로 조회 서비스 내부용

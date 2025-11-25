@@ -2,6 +2,7 @@ package com.klp.delivery.routeplan.domain.model;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.BaseEntity;
+import com.klp.delivery.common.enums.RoutePlanStatus;
 import com.klp.delivery.routeplan.domain.vo.PlanDetailVo;
 import com.klp.delivery.routeplan.domain.vo.RouteInfoVo;
 import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
@@ -17,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -210,5 +212,22 @@ public class RoutePlan extends BaseEntity {
         if (routeInfos == null || routeInfos.isEmpty()) {
             throw new BusinessException(RoutePlanErrorCode.ROUTE_INFOS_NEEDED);
         }
+    }
+
+    public void pendingDelete(Long userId) {
+        this.status = RoutePlanStatus.PENDING_DELETE;
+        this.setDeletedBy(userId);
+    }
+
+    public void softDelete() {
+        if (!this.status.isPendingDelete()) {
+            return;
+        }
+
+        this.status = RoutePlanStatus.DELETED;
+        this.setDeletedAt(LocalDateTime.now());
+        this.getRoutePlanItems().forEach(routePlanItem -> {
+            routePlanItem.delete(0L);
+        });
     }
 }
