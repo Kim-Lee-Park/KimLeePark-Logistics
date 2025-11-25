@@ -40,10 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 @TestPropertySource(properties = {
     "spring.sql.init.mode=never"
 })
-public class InventoryServiceConcurrencyTest {
+public class InventoryFacadeConcurrencyTest {
 
     @Autowired
-    private InventoryService inventoryService;
+    private InventoryFacade inventoryFacade;
 
     @Autowired
     private InventoryRepository inventoryRepository;
@@ -98,7 +98,7 @@ public class InventoryServiceConcurrencyTest {
                         uniqueIdempotencyKey,
                         List.of(new Product(productId, hubId, qtyPerThread))
                     );
-                    inventoryService.deduct(command);
+                    inventoryFacade.deduct(command);
                 } finally {
                     latch.countDown();
                 }
@@ -130,7 +130,7 @@ public class InventoryServiceConcurrencyTest {
                         List.of(
                             new InventoryReplenishCommand.Product(productId, hubId, qtyPerThread))
                     );
-                    inventoryService.replenish(command);
+                    inventoryFacade.replenish(command);
                 } finally {
                     latch.countDown();
                 }
@@ -163,7 +163,7 @@ public class InventoryServiceConcurrencyTest {
 
             IntStream.range(0, threadCount).forEach(i -> executorService.submit(() -> {
                 try {
-                    InventoryDeductResponse response = inventoryService.deduct(command);
+                    InventoryDeductResponse response = inventoryFacade.deduct(command);
 
                     if (response.status() == Status.SUCCESS) {
                         successCont[0]++;

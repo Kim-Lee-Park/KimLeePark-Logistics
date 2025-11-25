@@ -21,7 +21,6 @@ import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
-import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse.Status;
@@ -42,9 +41,6 @@ class InventoryServiceTest {
 
     @Mock
     private InventoryRepository inventoryRepository;
-
-    @Mock
-    private DistributedLockManager lockManager;
 
     @InjectMocks
     private InventoryService inventoryService;
@@ -141,7 +137,6 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, 10))
             );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
                 .thenReturn(alreadyUsedIdempotency());
 
@@ -158,7 +153,6 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, quantity))
             );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
                 inProgressIdempotency()
             );
@@ -180,7 +174,6 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, quantity))
             );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
                 inProgressIdempotency()
             );
@@ -194,18 +187,6 @@ class InventoryServiceTest {
             assertEquals(InventoryErrorCode.INSUFFICIENT_STOCK, errorCode);
         }
 
-        @Test
-        @DisplayName("분산락을 통한 락 획득 실패 시 예외가 발생한다")
-        void lockFailed() {
-            int quantity = 10;
-            InventoryDeductCommand command = new InventoryDeductCommand(
-                idempotencyKey,
-                List.of(new Product(productId, hubId, quantity))
-            );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(false);
-
-            assertThrows(BusinessException.class, () -> inventoryService.deduct(command));
-        }
     }
 
     @Nested
@@ -219,7 +200,6 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
             );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
                 inProgressIdempotency()
             );
@@ -241,7 +221,6 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
             );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
                 inProgressIdempotency()
             );
@@ -263,7 +242,6 @@ class InventoryServiceTest {
                 idempotencyKey,
                 List.of(new InventoryReplenishCommand.Product(productId, hubId, 10))
             );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(true);
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
                 .thenReturn(alreadyUsedIdempotency());
 
@@ -272,18 +250,6 @@ class InventoryServiceTest {
             assertEquals(Status.ALREADY_REPLENISHED, response.status());
         }
 
-        @Test
-        @DisplayName("분산락을 통한 락 획득 실패 시 예외가 발생한다")
-        void lockFailed() {
-            int quantity = 10;
-            InventoryReplenishCommand command = new InventoryReplenishCommand(
-                idempotencyKey,
-                List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
-            );
-            when(lockManager.tryLock(idempotencyKey)).thenReturn(false);
-
-            assertThrows(BusinessException.class, () -> inventoryService.replenish(command));
-        }
     }
 
     private InventoryIdempotencyStatus alreadyUsedIdempotency() {
