@@ -5,15 +5,13 @@ import com.klp.order.application.client.InventoryClient;
 import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest;
 import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
 import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
-import com.klp.order.application.client.dto.inventory.response.GetProductResponse;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
-import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
+import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.exception.OrderErrorCode;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,20 +27,18 @@ public class InventoryIntegrationService {
     private final OrderOutboundRequestService orderOutboundRequestService;
 
     @Transactional
-    public void deductInventory(UUID orderId, List<OrderItemCommand> items,
-        Map<UUID, GetProductResponse> productInfoMap) {
-
+    public void deductInventory(Order order) {
         String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
-            orderId,
+            order.getOrderId(),
             Target.INVENTORY,
             OperationType.DECREASE
         );
 
-        if (checkExistIdempotencyKey(orderId, idempotencyKey)) {
+        if (checkExistIdempotencyKey(order.getOrderId(), idempotencyKey)) {
             return;
         }
 
-        List<ProductDeduction> deductions = convertToProductDeductions(items, productInfoMap);
+        List<ProductDeduction> deductions = convertToProductDeductions(order);
 
         DeductInventoryRequest request = new DeductInventoryRequest(idempotencyKey, deductions);
         DeductInventoryResponse response = inventoryClient.deductInventory(request);
@@ -50,19 +46,17 @@ public class InventoryIntegrationService {
         validateDeductionResponse(response);
 
         orderOutboundRequestService.save(new CreateOrderOutboundRequestCommand(
-            orderId,
+            order.getOrderId(),
             idempotencyKey,
             Target.INVENTORY,
             OperationType.DECREASE
         ));
 
-        log.info("주문에 대한 재고 차감에 성공하였습니다. orderId: {}", orderId);
+        log.info("주문에 대한 재고 차감에 성공하였습니다. orderId: {}", order.getOrderId());
     }
 
-
     private boolean checkExistIdempotencyKey(UUID orderId, String idempotencyKey) {
-        boolean exists = orderOutboundRequestService.existsByIdempotencyKey(
-            idempotencyKey);
+        boolean exists = orderOutboundRequestService.existsByIdempotencyKey(idempotencyKey);
 
         if (exists) {
             log.info("해당 주문의 재고 차감 멱등키 존재. orderId: {}", orderId);
@@ -70,19 +64,13 @@ public class InventoryIntegrationService {
         return exists;
     }
 
-    private List<ProductDeduction> convertToProductDeductions(
-        List<OrderItemCommand> items,
-        Map<UUID, GetProductResponse> productInfoMap) {
-
-        return items.stream()
-            .map(item -> {
-                GetProductResponse productInfo = productInfoMap.get(item.productId());
-                return new ProductDeduction(
-                    item.productId(),
-                    productInfo.hubId(),
-                    item.quantity()
-                );
-            })
+    private List<ProductDeduction> convertToProductDeductions(Order order) {
+        return order.getOrderItems().stream()
+            .map(orderItem -> new ProductDeduction(
+                orderItem.getProductId(),
+                orderItem.getHubId(),
+                orderItem.getQuantity()
+            ))
             .toList();
     }
 

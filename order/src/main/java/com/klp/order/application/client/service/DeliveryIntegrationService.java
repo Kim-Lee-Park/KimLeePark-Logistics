@@ -3,14 +3,12 @@ package com.klp.order.application.client.service;
 import com.klp.order.application.client.DeliveryClient;
 import com.klp.order.application.client.dto.delivery.request.CreateDeliveryRequest;
 import com.klp.order.application.client.dto.delivery.request.CreateDeliveryRequest.DeliveryOrderItem;
-import com.klp.order.application.client.dto.inventory.response.GetProductResponse;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +24,7 @@ public class DeliveryIntegrationService {
     private final OrderOutboundRequestService orderOutboundRequestService;
 
     @Transactional
-    public void createDelivery(Order order, Map<UUID, GetProductResponse> productInfoMap) {
-
+    public void createDelivery(Order order) {
         String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
             order.getOrderId(),
             Target.DELIVERY,
@@ -38,7 +35,7 @@ public class DeliveryIntegrationService {
             return;
         }
 
-        List<DeliveryOrderItem> deliveryItems = convertToDeliveryItems(order, productInfoMap);
+        List<DeliveryOrderItem> deliveryItems = convertToDeliveryItems(order);
 
         CreateDeliveryRequest request = new CreateDeliveryRequest(
             order.getOrderId(),
@@ -61,27 +58,20 @@ public class DeliveryIntegrationService {
     }
 
     private boolean checkExistIdempotencyKey(UUID orderId, String idempotencyKey) {
-        boolean exists = orderOutboundRequestService.existsByIdempotencyKey(
-            idempotencyKey);
+        boolean exists = orderOutboundRequestService.existsByIdempotencyKey(idempotencyKey);
 
         if (exists) {
-            log.info("해당 주문의 재고 차감 멱등키 존재. orderId: {}", orderId);
+            log.info("해당 주문의 배송 생성 멱등키 존재. orderId: {}", orderId);
         }
         return exists;
     }
 
-    private List<DeliveryOrderItem> convertToDeliveryItems(
-        Order order,
-        Map<UUID, GetProductResponse> productInfoMap) {
-
+    private List<DeliveryOrderItem> convertToDeliveryItems(Order order) {
         return order.getOrderItems().stream()
-            .map(orderItem -> {
-                GetProductResponse productInfo = productInfoMap.get(orderItem.getProductId());
-                return new DeliveryOrderItem(
-                    orderItem.getOrderItemId(),
-                    productInfo.hubId()
-                );
-            })
+            .map(orderItem -> new DeliveryOrderItem(
+                orderItem.getOrderItemId(),
+                orderItem.getHubId()
+            ))
             .toList();
     }
 }
