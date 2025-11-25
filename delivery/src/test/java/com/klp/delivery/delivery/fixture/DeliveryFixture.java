@@ -247,5 +247,15 @@ public class DeliveryFixture {
         );
     }
 
+    public static DeliveryCreateRequest createDeliveryRequest(UUID orderId, List<OrderItem> orderItems) {
+        return new DeliveryCreateRequest(
+            orderId.toString(),
+            DEFAULT_IDEMPOTENCY_KEY + "-" + orderId,
+            DEFAULT_SUPPLIER_ID.toString(),
+            DEFAULT_CUSTOMER_ID.toString(),
+            orderItems
+        );
+    }
+
 
 }

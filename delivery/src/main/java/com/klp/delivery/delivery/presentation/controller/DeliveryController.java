@@ -8,9 +8,12 @@ import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryStatusUpdateRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -48,6 +51,19 @@ public class DeliveryController {
         Delivery delivery = deliveryService.findDelivery(deliveryId);
         DeliveryDetailResponse response = DeliveryDetailResponse.from(delivery);
         return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/{deliveryId}/{orderId}")
+    public ResponseEntity<List<DeliveryDetailResponse>> getDeliveriesByOrderId(@PathVariable UUID orderId) {
+        List<DeliveryDetailResponse> responses = deliveryService.findDeliveriesByOrderId(orderId);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<DeliveryDetailResponse>> getAllDeliveries(Pageable pageable) {
+        Page<DeliveryDetailResponse> responses = deliveryService.findDeliveryAll(pageable);
+        return ResponseEntity.ok(responses);
     }
 
     @PatchMapping("/{deliveryId}/status")

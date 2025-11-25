@@ -11,8 +11,9 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_I
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryList;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -29,6 +30,7 @@ import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 public class DeliveryServiceTest extends MockTest {
 
@@ -160,5 +167,95 @@ public class DeliveryServiceTest extends MockTest {
 
         // then: 외부 API 호출 검증
         verify(driverApiClient, times(1)).findDriver(receiverId.toString());
+    }
+
+
+
+    @Test
+    void 주문ID로_배송조회_성공() {
+        // given: 주문 ID로 배송 조회 데이터 준비
+        List<Delivery> expectedDeliveries = deliveryList();
+        UUID orderId = DEFAULT_ORDER_ID;
+
+        when(deliveryRepository.findDeliveryByOrderId(orderId))
+            .thenReturn(expectedDeliveries);
+
+        // when: 주문 ID로 배송 조회
+        List<DeliveryDetailResponse> result = deliveryService.findDeliveriesByOrderId(orderId);
+
+        // then: 조회 결과 검증
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).orderId()).isEqualTo(orderId);
+        assertThat(result.get(1).orderId()).isEqualTo(orderId);
+
+        // then: Repository 호출 검증
+        verify(deliveryRepository, times(1)).findDeliveryByOrderId(orderId);
+    }
+
+    @Test
+    void 배송_전체_조회_성공() {
+        // given: 배송 전체 조회 데이터 준비
+        List<Delivery> deliveries = deliveryList();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").ascending());
+        Page<Delivery> deliveryPage = new PageImpl<>(deliveries, pageable, deliveries.size());
+
+        when(deliveryRepository.findDeliveryAll(pageable)).thenReturn(deliveryPage);
+
+        // when: 배송 전체 조회
+        Page<DeliveryDetailResponse> result = deliveryService.findDeliveryAll(pageable);
+
+        // then: 조회 결과 검증
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getNumber()).isEqualTo(0);
+        assertThat(result.getSize()).isEqualTo(10);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent().get(0).orderId()).isEqualTo(DEFAULT_ORDER_ID);
+
+        // then: Repository 호출 검증
+        verify(deliveryRepository, times(1)).findDeliveryAll(pageable);
+    }
+
+    @Test
+    void 배송_전체_조회_빈_결과() {
+        // given: 빈 배송 조회 데이터 준비
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Delivery> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+        when(deliveryRepository.findDeliveryAll(pageable)).thenReturn(emptyPage);
+
+        // when: 배송 전체 조회
+        Page<DeliveryDetailResponse> result = deliveryService.findDeliveryAll(pageable);
+
+        // then: 조회 결과 검증
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+
+        // then: Repository 호출 검증
+        verify(deliveryRepository, times(1)).findDeliveryAll(pageable);
+    }
+
+    @Test
+    void 배송_전체_조회_정렬_확인() {
+        // given: 정렬된 배송 조회 데이터 준비
+        List<Delivery> deliveries = deliveryList();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        Page<Delivery> deliveryPage = new PageImpl<>(deliveries, pageable, deliveries.size());
+
+        when(deliveryRepository.findDeliveryAll(pageable)).thenReturn(deliveryPage);
+
+        // when: 배송 전체 조회
+        Page<DeliveryDetailResponse> result = deliveryService.findDeliveryAll(pageable);
+
+        // then: 조회 결과 검증
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getSort().getOrderFor("createdAt").getDirection())
+            .isEqualTo(Sort.Direction.DESC);
+
+        // then: Repository 호출 검증
+        verify(deliveryRepository, times(1)).findDeliveryAll(pageable);
     }
 }
