@@ -1,8 +1,8 @@
-package com.klp.authservice.auth.entrypoint.dto.response;
+package com.klp.authservice.auth.presentation.dto.response;
 
 public record ReissueResponse(
     Long userId,
-    String userName,
+    String username,
     String role,
     String accessToken
 ) {

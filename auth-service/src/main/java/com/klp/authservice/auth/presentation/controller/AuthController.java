@@ -1,18 +1,19 @@
-package com.klp.authservice.auth.entrypoint.controller;
+package com.klp.authservice.auth.presentation.controller;
 
 import com.klp.authservice.auth.application.AuthService;
-import com.klp.authservice.auth.entrypoint.dto.request.LoginRequest;
-import com.klp.authservice.auth.entrypoint.dto.request.SignUpRequest;
-import com.klp.authservice.auth.entrypoint.dto.response.LoginResponse;
-import com.klp.authservice.auth.entrypoint.dto.response.ReissueResponse;
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
 import com.klp.authservice.auth.infrastructure.jwt.TokenExtractor;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
+import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
+import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
+import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
 import com.klp.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class AuthController {
     private final AuthService authService;
     private final TokenProvider refreshTokenProvider;
 
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequest request) {
         authService.signUp(request.toCommand());
         return ResponseEntity.ok().build();
@@ -39,7 +41,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request.toCommand());
 
-        String refreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
+        String refreshToken = refreshTokenProvider.generate(response.userId(), response.username(), response.role());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(refreshToken).toString());
 
@@ -75,7 +77,7 @@ public class AuthController {
 
         ReissueResponse response = authService.reissue(accessToken, refreshToken);
 
-        String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.userName(), response.role());
+        String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.username(), response.role());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(newRefreshToken).toString());
 
