@@ -44,6 +44,9 @@ dependencies {
 
     // common-module
     implementation 'com.klp.common:common-module:1.0.0'
+
+    // google genai
+    implementation 'com.google.genai:google-genai:1.0.0'
 }
 
 dependencyManagement {
