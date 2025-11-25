@@ -1,5 +1,6 @@
 package com.klp.hub.inventory.presentation.controller;
 
+import com.klp.hub.inventory.application.InventoryFacade;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
@@ -26,6 +27,8 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
 
+    private final InventoryFacade inventoryFacade;
+
     @GetMapping("/{productId}")
     public ResponseEntity<InventoryResponse> getInventoryByProductId(
         @PathVariable("productId") String productId
@@ -41,7 +44,7 @@ public class InventoryController {
         @Valid @RequestBody InventoryDeductRequest request
     ) {
         log.info("== 재고 차감 멱등키 : {} ==", request.idempotencyKey());
-        InventoryDeductResponse response = inventoryService.deduct(request.toCommand());
+        InventoryDeductResponse response = inventoryFacade.deduct(request.toCommand());
         log.info("== 재고 차감 성공");
         return ResponseEntity.ok().body(response);
     }
@@ -51,7 +54,7 @@ public class InventoryController {
         @Valid @RequestBody InventoryReplenishRequest request
     ) {
         log.info("== 재고 증가 멱등키 : {} ==", request.idempotencyKey());
-        InventoryReplenishResponse response = inventoryService.replenish(request.toCommand());
+        InventoryReplenishResponse response = inventoryFacade.replenish(request.toCommand());
         log.info("== 재고 증가 성공");
         return ResponseEntity.ok().body(response);
     }

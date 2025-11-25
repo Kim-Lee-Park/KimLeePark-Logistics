@@ -17,6 +17,7 @@ import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
+import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,156 +53,210 @@ class InventoryServiceTest {
 
     String idempotencyKey = "idempotencyKey";
 
-    @Test
-    @DisplayName("한 상품의 재고를 조회할 수 있다")
-    void getInventoryByProductId() {
-        Inventory inventory = mock(Inventory.class);
-        when(inventory.getQuantity()).thenReturn(10);
-        when(inventoryRepository.findByProductId(productId))
-            .thenReturn(Optional.of(inventory));
+    @Nested
+    class Read {
 
-        InventoryResponse response = inventoryService.getByProductId(productId);
+        @Test
+        @DisplayName("한 상품의 재고를 조회할 수 있다")
+        void getInventoryByProductId() {
+            Inventory inventory = mock(Inventory.class);
+            when(inventory.getQuantity()).thenReturn(10);
+            when(inventoryRepository.findByProductId(productId))
+                .thenReturn(Optional.of(inventory));
 
-        assertEquals(response.productId(), productId);
-        assertEquals(response.quantity(), inventory.getQuantity());
+            InventoryResponse response = inventoryService.getByProductId(productId);
+
+            assertEquals(response.productId(), productId);
+            assertEquals(response.quantity(), inventory.getQuantity());
+        }
+
+        @Test
+        @DisplayName("해당 상품의 재고가 없다면 예외가 발생한다")
+        void throwGetInventoryByProductId() {
+            when(inventoryRepository.findByProductId(productId)).thenReturn(Optional.empty());
+
+            ErrorCode errorCode = assertThrows(BusinessException.class,
+                () -> inventoryService.getByProductId(productId))
+                .getErrorCode();
+            assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
+        }
     }
 
-    @Test
-    @DisplayName("해당 상품의 재고가 없다면 예외가 발생한다")
-    void throwGetInventoryByProductId() {
-        when(inventoryRepository.findByProductId(productId)).thenReturn(Optional.empty());
+    @Nested
+    class Delete {
 
-        ErrorCode errorCode = assertThrows(BusinessException.class,
-            () -> inventoryService.getByProductId(productId))
-            .getErrorCode();
-        assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
+        @Test
+        @DisplayName("재고 ID 를 통해 재고를 softDelete 할 수 있다")
+        void softDelete() {
+            Inventory inventory = new Inventory(productId, hubId);
+            when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.of(inventory));
+
+            inventoryService.delete(inventoryId);
+
+            assertTrue(inventory.isDeleted());
+            assertThat(inventory.getDeletedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("재고 ID 를 통해 재고를 삭제할때 재고가 없다면 예외가 발생한다")
+        void throwDeletedByNullInventoryId() {
+            when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.empty());
+
+            ErrorCode errorCode = assertThrows(BusinessException.class,
+                () -> inventoryService.delete(inventoryId))
+                .getErrorCode();
+            assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
+        }
     }
 
-    @Test
-    @DisplayName("재고 ID 를 통해 재고를 softDelete 할 수 있다")
-    void softDelete() {
-        Inventory inventory = new Inventory(productId, hubId);
-        when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.of(inventory));
+    @Nested
+    class Create {
 
-        inventoryService.delete(inventoryId);
+        @Test
+        @DisplayName("재고 생성시 이미 해당 상품과 허브에 재고가 존재한다면 예외가 발생한다")
+        void throwDuplicatedInventory() {
+            Integer quantity = 10;
+            when(inventoryRepository.save(any(Inventory.class)))
+                .thenThrow(UniqueConstraintException.class);
 
-        assertTrue(inventory.isDeleted());
-        assertThat(inventory.getDeletedAt()).isNotNull();
+            ErrorCode errorCode = assertThrows(BusinessException.class,
+                () -> inventoryService.create(productId, hubId, quantity))
+                .getErrorCode();
+            assertEquals(InventoryErrorCode.INVENTORY_ALREADY_EXISTS, errorCode);
+        }
     }
 
-    @Test
-    @DisplayName("재고 ID 를 통해 재고를 삭제할때 재고가 없다면 예외가 발생한다")
-    void throwDeletedByNullInventoryId() {
-        when(inventoryRepository.findById(inventoryId)).thenReturn(Optional.empty());
+    @Nested
+    class Deduct {
 
-        ErrorCode errorCode = assertThrows(BusinessException.class,
-            () -> inventoryService.delete(inventoryId))
-            .getErrorCode();
-        assertEquals(InventoryErrorCode.NOT_FOUND_INVENTORY, errorCode);
+        @Test
+        @DisplayName("재고 차감 요청시 이미 요청이 성공했다면 ALREADY 를 반환한다")
+        void idempotency() {
+            String idempotencyKey = "idempotencyKey";
+            InventoryDeductCommand command = new InventoryDeductCommand(
+                idempotencyKey,
+                List.of(new Product(productId, hubId, 10))
+            );
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
+                .thenReturn(alreadyUsedIdempotency());
+
+            InventoryDeductResponse response = inventoryService.deduct(command);
+
+            assertEquals(InventoryDeductResponse.Status.ALREADY_DEDUCTED, response.status());
+        }
+
+        @Test
+        @DisplayName("재고가 충분하고 멱등키가 처음이라면 성공을 반환하고 재고를 차감한다")
+        void deduct() {
+            int quantity = 5;
+            InventoryDeductCommand command = new InventoryDeductCommand(
+                idempotencyKey,
+                List.of(new Product(productId, hubId, quantity))
+            );
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
+            when(inventoryRepository.deductAll(
+                InventoryUpdatePlanner.planDeduct(command.products()))
+            ).thenReturn(1);
+
+            InventoryDeductResponse response = inventoryService.deduct(command);
+
+            assertEquals(InventoryDeductResponse.Status.SUCCESS, response.status());
+            verify(inventoryRepository, times(1)).deductAll(anyList());
+        }
+
+        @Test
+        @DisplayName("재고가 부족하다면 예외를 반환하고 재고를 차감하지 않는다")
+        void insufficientStock() {
+            int quantity = 10;
+            InventoryDeductCommand command = new InventoryDeductCommand(
+                idempotencyKey,
+                List.of(new Product(productId, hubId, quantity))
+            );
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
+            when(inventoryRepository.deductAll(
+                InventoryUpdatePlanner.planDeduct(command.products()))
+            ).thenReturn(0);
+
+            ErrorCode errorCode = assertThrows(
+                BusinessException.class, () -> inventoryService.deduct(command))
+                .getErrorCode();
+            assertEquals(InventoryErrorCode.INSUFFICIENT_STOCK, errorCode);
+        }
+
     }
 
-    @Test
-    @DisplayName("재고 생성시 이미 해당 상품과 허브에 재고가 존재한다면 예외가 발생한다")
-    void throwDuplicatedInventory() {
-        Integer quantity = 10;
-        when(inventoryRepository.save(any(Inventory.class)))
-            .thenThrow(UniqueConstraintException.class);
+    @Nested
+    class Replenish {
 
-        ErrorCode errorCode = assertThrows(BusinessException.class,
-            () -> inventoryService.create(productId, hubId, quantity))
-            .getErrorCode();
-        assertEquals(InventoryErrorCode.INVENTORY_ALREADY_EXISTS, errorCode);
+        @Test
+        @DisplayName("존재하는 재고에 대해서 재고 증가요청시 성공한다")
+        void replenish() {
+            int quantity = 5;
+            InventoryReplenishCommand command = new InventoryReplenishCommand(
+                idempotencyKey,
+                List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
+            );
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
+            when(inventoryRepository.replenishAll(
+                InventoryUpdatePlanner.planReplenish(command.products()))
+            ).thenReturn(1);
+
+            InventoryReplenishResponse response = inventoryService.replenish(command);
+
+            assertEquals(Status.SUCCESS, response.status());
+            verify(inventoryRepository, times(1)).replenishAll(anyList());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 재고에 대한 재고 증가시 예외가 발생한다")
+        void replenishNonExistenceInventory() {
+            int quantity = 10;
+            InventoryReplenishCommand command = new InventoryReplenishCommand(
+                idempotencyKey,
+                List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
+            );
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
+                inProgressIdempotency()
+            );
+            when(inventoryRepository.replenishAll(
+                InventoryUpdatePlanner.planReplenish(command.products()))
+            ).thenReturn(0);
+
+            ErrorCode errorCode = assertThrows(
+                BusinessException.class, () -> inventoryService.replenish(command))
+                .getErrorCode();
+            assertEquals(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND, errorCode);
+        }
+
+        @Test
+        @DisplayName("재고 증가 요청시 이미 요청이 성공했다면 ALREADY 를 반환한다")
+        void idempotency() {
+            String idempotencyKey = "idempotencyKey";
+            InventoryReplenishCommand command = new InventoryReplenishCommand(
+                idempotencyKey,
+                List.of(new InventoryReplenishCommand.Product(productId, hubId, 10))
+            );
+            when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
+                .thenReturn(alreadyUsedIdempotency());
+
+            InventoryReplenishResponse response = inventoryService.replenish(command);
+
+            assertEquals(Status.ALREADY_REPLENISHED, response.status());
+        }
+
     }
 
-    @Test
-    @DisplayName("재고 차감 요청시 이미 처리된 요청이라면 ALREADY 를 반환한다")
-    void idempotency() {
-        String idempotencyKey = "idempotencyKey";
-        InventoryDeductCommand command = new InventoryDeductCommand(
-            idempotencyKey,
-            List.of(new Product(productId, hubId, 10))
-        );
-        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey))
-            .thenReturn(false);
-
-        InventoryDeductResponse response = inventoryService.deduct(command);
-
-        assertEquals(InventoryDeductResponse.Status.ALREADY_DEDUCTED, response.status());
+    private InventoryIdempotencyStatus alreadyUsedIdempotency() {
+        return InventoryIdempotencyStatus.SUCCESS;
     }
 
-    @Test
-    @DisplayName("재고가 충분하고 멱등키가 처음이라면 성공을 반환하고 재고를 차감한다")
-    void deduct() {
-        int quantity = 5;
-        InventoryDeductCommand command = new InventoryDeductCommand(
-            idempotencyKey,
-            List.of(new Product(productId, hubId, quantity))
-        );
-        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.deductAll(
-            InventoryUpdatePlanner.planDeduct(command.products()))
-        ).thenReturn(1);
-
-        InventoryDeductResponse response = inventoryService.deduct(command);
-
-        assertEquals(InventoryDeductResponse.Status.SUCCESS, response.status());
-        verify(inventoryRepository, times(1)).deductAll(anyList());
-    }
-
-    @Test
-    @DisplayName("재고가 부족하다면 예외를 반환하고 재고를 차감하지 않는다")
-    void insufficientStock() {
-        int quantity = 10;
-        InventoryDeductCommand command = new InventoryDeductCommand(
-            idempotencyKey,
-            List.of(new Product(productId, hubId, quantity))
-        );
-        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.deductAll(
-            InventoryUpdatePlanner.planDeduct(command.products()))
-        ).thenReturn(0);
-
-        ErrorCode errorCode = assertThrows(
-            BusinessException.class, () -> inventoryService.deduct(command))
-            .getErrorCode();
-        assertEquals(InventoryErrorCode.INSUFFICIENT_STOCK, errorCode);
-    }
-
-    @Test
-    @DisplayName("존재하는 재고에 대해서 재고 증가요청시 성공한다")
-    void replenish() {
-        int quantity = 5;
-        InventoryReplenishCommand command = new InventoryReplenishCommand(
-            idempotencyKey,
-            List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
-        );
-        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.replenishAll(
-            InventoryUpdatePlanner.planReplenish(command.products()))
-        ).thenReturn(1);
-
-        InventoryReplenishResponse response = inventoryService.replenish(command);
-
-        assertEquals(Status.SUCCESS, response.status());
-        verify(inventoryRepository, times(1)).replenishAll(anyList());
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 재고에 대한 재고 증가시 예외가 발생한다")
-    void replenishNonExistenceInventory() {
-        int quantity = 10;
-        InventoryReplenishCommand command = new InventoryReplenishCommand(
-            idempotencyKey,
-            List.of(new InventoryReplenishCommand.Product(productId, hubId, quantity))
-        );
-        when(inventoryRepository.tryAcquireIdempotencyKey(idempotencyKey)).thenReturn(true);
-        when(inventoryRepository.replenishAll(
-            InventoryUpdatePlanner.planReplenish(command.products()))
-        ).thenReturn(0);
-
-        ErrorCode errorCode = assertThrows(
-            BusinessException.class, () -> inventoryService.replenish(command))
-            .getErrorCode();
-        assertEquals(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND, errorCode);
+    private InventoryIdempotencyStatus inProgressIdempotency() {
+        return InventoryIdempotencyStatus.IN_PROGRESS;
     }
 }

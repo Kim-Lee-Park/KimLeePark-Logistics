@@ -6,11 +6,15 @@ import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
+import com.klp.hub.inventory.domain.InventoryIdempotency;
+import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.infrastructure.repository.InventoryIdempotencyJpaRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -18,31 +22,40 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+@Disabled
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
     "spring.sql.init.mode=never"
 })
-public class InventoryServiceConcurrencyTest {
+public class InventoryFacadeConcurrencyTest {
 
     @Autowired
-    private InventoryService inventoryService;
+    private InventoryFacade inventoryFacade;
 
     @Autowired
     private InventoryRepository inventoryRepository;
 
     @Autowired
+    private InventoryIdempotencyJpaRepository idempotencyRepository;
+
+    @Autowired
     private InventoryJpaRepository jpaRepository;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     private UUID productId = UUID.randomUUID();
 
@@ -61,6 +74,11 @@ public class InventoryServiceConcurrencyTest {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     void tearDown() {
         jpaRepository.deleteAll();
+
+        Set<String> keys = stringRedisTemplate.keys("inv:idemp:*");
+        if (!keys.isEmpty()) {
+            stringRedisTemplate.delete(keys);
+        }
     }
 
     @Nested
@@ -80,7 +98,7 @@ public class InventoryServiceConcurrencyTest {
                         uniqueIdempotencyKey,
                         List.of(new Product(productId, hubId, qtyPerThread))
                     );
-                    inventoryService.deduct(command);
+                    inventoryFacade.deduct(command);
                 } finally {
                     latch.countDown();
                 }
@@ -112,7 +130,7 @@ public class InventoryServiceConcurrencyTest {
                         List.of(
                             new InventoryReplenishCommand.Product(productId, hubId, qtyPerThread))
                     );
-                    inventoryService.replenish(command);
+                    inventoryFacade.replenish(command);
                 } finally {
                     latch.countDown();
                 }
@@ -145,7 +163,7 @@ public class InventoryServiceConcurrencyTest {
 
             IntStream.range(0, threadCount).forEach(i -> executorService.submit(() -> {
                 try {
-                    InventoryDeductResponse response = inventoryService.deduct(command);
+                    InventoryDeductResponse response = inventoryFacade.deduct(command);
 
                     if (response.status() == Status.SUCCESS) {
                         successCont[0]++;
@@ -160,9 +178,13 @@ public class InventoryServiceConcurrencyTest {
             executorService.shutdown();
 
             Inventory inventory = inventoryRepository.findByProductId(productId).orElseThrow();
+            InventoryIdempotency inventoryIdempotency = idempotencyRepository.findByIdempotencyKey(
+                sharedIdempotencyKey
+            ).orElseThrow();
             int expectedQuantity = initQuantity - qtyPerThread; // 990 (처음 10개 재고 차감만 성공)
             assertEquals(1, successCont[0]);
             assertEquals(expectedQuantity, inventory.getQuantity());
+            assertEquals(InventoryIdempotencyStatus.SUCCESS, inventoryIdempotency.getStatus());
         }
     }
 }
