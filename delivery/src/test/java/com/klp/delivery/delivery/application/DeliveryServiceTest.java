@@ -137,13 +137,13 @@ public class DeliveryServiceTest extends MockTest {
         // given: 담당자 조회 데이터 준비
         UUID receiverId = DEFAULT_RECEIVER_ID;
 
-        when(driverApiClient.findDriver(receiverId.toString())).thenReturn(createDriver());
+        when(driverApiClient.findArrivalHubDrivers(receiverId.toString())).thenReturn(createDriver());
 
         // when: 담당자 조회
-        var result = deliveryService.findDriver(receiverId.toString());
+        var result = deliveryService.findArrivalHubDrivers(receiverId.toString());
 
         // then: 조회 검증
-        verify(driverApiClient, times(1)).findDriver(receiverId.toString());
+        verify(driverApiClient, times(1)).findArrivalHubDrivers(receiverId.toString());
         assertThat(result).isNotNull();
         assertThat(result.receiverSlackId()).isEqualTo(DEFAULT_RECEIVER_SLACK_ID);
     }
@@ -153,11 +153,11 @@ public class DeliveryServiceTest extends MockTest {
         // given: 담당자 조회 데이터 준비
         UUID receiverId = DEFAULT_RECEIVER_ID;
 
-        when(driverApiClient.findDriver(receiverId.toString()))
+        when(driverApiClient.findArrivalHubDrivers(receiverId.toString()))
             .thenThrow(new RuntimeException("담당자 조회 실패"));
 
         // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryService.findDriver(receiverId.toString()))
+        assertThatThrownBy(() -> deliveryService.findArrivalHubDrivers(receiverId.toString()))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -166,7 +166,7 @@ public class DeliveryServiceTest extends MockTest {
             });
 
         // then: 외부 API 호출 검증
-        verify(driverApiClient, times(1)).findDriver(receiverId.toString());
+        verify(driverApiClient, times(1)).findArrivalHubDrivers(receiverId.toString());
     }
 
 
