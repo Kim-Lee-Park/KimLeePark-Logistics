@@ -1,5 +1,7 @@
 package com.klp.hub.company.infrastructure.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -7,7 +9,9 @@ import com.klp.hub.TestJpaConfig;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
+import com.klp.hub.global.config.QuerydslConfig;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +26,8 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles("test")
 @Import({
     CompanyRepositoryImpl.class,
-    TestJpaConfig.class
+    TestJpaConfig.class,
+    QuerydslConfig.class
 })
 @TestPropertySource(properties = {
     "spring.sql.init.mode=never"
@@ -56,5 +61,39 @@ class CompanyRepositoryTest {
 
         assertFalse(result.isPresent());
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("업체명을 통해 업체 목록을 조회할 수 있다")
+    void findAllByName() {
+        Company companyA = new Company(hubId, CompanyType.SUPPLIER, "업체A", "주소");
+        Company companyB = new Company(hubId, CompanyType.SUPPLIER, "업체A", "주소");
+        Company companyC = new Company(hubId, CompanyType.SUPPLIER, "업체B", "주소");
+        entityManager.persist(companyA);
+        entityManager.persist(companyB);
+        entityManager.persist(companyC);
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Company> results = companyRepository.findAllByName("업체A");
+
+        assertEquals(2, results.size());
+        assertThat(results)
+            .extracting(Company::getName)
+            .containsExactlyInAnyOrder("업체A", "업체A");
+    }
+
+    @Test
+    @DisplayName("업체명으로 조회했을 때 결과가 없다면 빈 리스트를 반환한다")
+    void findAllByNameIsEmpty() {
+        Company companyA = new Company(hubId, CompanyType.SUPPLIER, "업체A", "주소");
+        entityManager.persist(companyA);
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Company> results = companyRepository.findAllByName("없는 업체명");
+
+        assertTrue(results.isEmpty());
+        assertEquals(0, results.size());
     }
 }
