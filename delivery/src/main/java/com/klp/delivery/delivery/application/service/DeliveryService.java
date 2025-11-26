@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Slf4j
@@ -43,6 +44,18 @@ public class DeliveryService {
     public DriverCommand findArrivalHubDrivers(String customerId) {
         try {
             return driverApiClient.findArrivalHubDrivers(customerId);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.",
+                e);
+        }
+    }
+
+    public DriverCommand findDriverAtArrivalHub(long vendorDriverId) {
+        try {
+            return driverApiClient.findDriverAtArrivalHub(vendorDriverId);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -97,5 +110,17 @@ public class DeliveryService {
     public Page<DeliveryDetailResponse> findDeliveryAll(Pageable pageable) {
         Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);
         return DeliveryDetailResponse.from(deliveryPage);
+    }
+
+    @Transactional
+    public void updateVendorDriver(UUID deliveryId, Long newVendorDriverId) {
+        Delivery delivery = findDelivery(deliveryId);
+        DriverCommand driver = findDriverAtArrivalHub(newVendorDriverId);
+        if (driver == null) {
+            throw new BusinessException(
+                DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 담당자를 찾을 수 없습니다");
+        }
+        delivery.updateVendorDriverId(newVendorDriverId);
+
     }
 }

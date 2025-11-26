@@ -13,4 +13,9 @@ public class DriverApiClientImpl implements DriverApiClient {
     public DriverCommand findArrivalHubDrivers(String receiverId) {
         return null;
     }
+
+    @Override
+    public DriverCommand findDriverAtArrivalHub(Long receiverId) {
+        return null;
+    }
 }

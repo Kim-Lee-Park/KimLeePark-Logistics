@@ -7,6 +7,7 @@ import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryStatusUpdateRequest;
+import com.klp.delivery.delivery.presentation.dto.DeliveryUpdateRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -55,7 +56,8 @@ public class DeliveryController {
 
 
     @GetMapping("/{deliveryId}/{orderId}")
-    public ResponseEntity<List<DeliveryDetailResponse>> getDeliveriesByOrderId(@PathVariable UUID orderId) {
+    public ResponseEntity<List<DeliveryDetailResponse>> getDeliveriesByOrderId(
+        @PathVariable UUID orderId) {
         List<DeliveryDetailResponse> responses = deliveryService.findDeliveriesByOrderId(orderId);
         return ResponseEntity.ok(responses);
     }
@@ -73,6 +75,14 @@ public class DeliveryController {
         deliveryService.updateDeliveryStatus(deliveryId, request.status());
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{deliveryId}")
+    public ResponseEntity<Void> updateDeliveryStatus(@PathVariable UUID deliveryId,
+        @RequestBody DeliveryUpdateRequest request) {
+        deliveryService.updateVendorDriver(deliveryId, request.vendorDrvierId());
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
 
