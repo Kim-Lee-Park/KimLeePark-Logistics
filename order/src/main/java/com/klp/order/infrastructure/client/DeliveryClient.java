@@ -1,8 +1,8 @@
-package com.klp.order.application.client;
+package com.klp.order.infrastructure.client;
 
-import com.klp.order.application.client.dto.delivery.request.CreateDeliveryRequest;
-import com.klp.order.application.client.dto.delivery.response.CreateDeliveryResponse;
 import com.klp.order.global.config.DeliveryFeignClientConfig;
+import com.klp.order.infrastructure.client.dto.delivery.request.CreateDeliveryRequest;
+import com.klp.order.infrastructure.client.dto.delivery.response.CreateDeliveryResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;

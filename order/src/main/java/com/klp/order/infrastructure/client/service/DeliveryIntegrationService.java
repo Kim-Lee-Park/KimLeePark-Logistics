@@ -1,14 +1,14 @@
-package com.klp.order.application.client.service;
+package com.klp.order.infrastructure.client.service;
 
-import com.klp.order.application.client.DeliveryClient;
-import com.klp.order.application.client.dto.delivery.request.CreateDeliveryRequest;
-import com.klp.order.application.client.dto.delivery.request.CreateDeliveryRequest.DeliveryOrderItem;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.orderitem.OrderItem;
+import com.klp.order.infrastructure.client.DeliveryClient;
+import com.klp.order.infrastructure.client.dto.delivery.request.CreateDeliveryRequest;
+import com.klp.order.infrastructure.client.dto.delivery.request.CreateDeliveryRequest.DeliveryOrderItem;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

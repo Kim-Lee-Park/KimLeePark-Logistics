@@ -1,12 +1,12 @@
-package com.klp.order.application.client;
+package com.klp.order.infrastructure.client;
 
 
-import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest;
-import com.klp.order.application.client.dto.inventory.request.ReplenishInventoryRequest;
-import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
-import com.klp.order.application.client.dto.inventory.response.GetProductResponse;
-import com.klp.order.application.client.dto.inventory.response.ReplenishInventoryResponse;
 import com.klp.order.global.config.InventoryFeignClientConfig;
+import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
+import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
+import com.klp.order.infrastructure.client.dto.inventory.response.DeductInventoryResponse;
+import com.klp.order.infrastructure.client.dto.inventory.response.GetProductResponse;
+import com.klp.order.infrastructure.client.dto.inventory.response.ReplenishInventoryResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

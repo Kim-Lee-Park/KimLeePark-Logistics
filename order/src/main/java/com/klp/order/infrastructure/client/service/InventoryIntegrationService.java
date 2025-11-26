@@ -1,19 +1,19 @@
-package com.klp.order.application.client.service;
+package com.klp.order.infrastructure.client.service;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.order.application.client.InventoryClient;
-import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest;
-import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
-import com.klp.order.application.client.dto.inventory.request.ReplenishInventoryRequest;
-import com.klp.order.application.client.dto.inventory.request.ReplenishInventoryRequest.ProductReplenishment;
-import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
-import com.klp.order.application.client.dto.inventory.response.ReplenishInventoryResponse;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.exception.OrderErrorCode;
+import com.klp.order.infrastructure.client.InventoryClient;
+import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
+import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
+import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
+import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest.ProductReplenishment;
+import com.klp.order.infrastructure.client.dto.inventory.response.DeductInventoryResponse;
+import com.klp.order.infrastructure.client.dto.inventory.response.ReplenishInventoryResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

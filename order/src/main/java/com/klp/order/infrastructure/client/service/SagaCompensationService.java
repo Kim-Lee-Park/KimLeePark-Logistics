@@ -1,4 +1,4 @@
-package com.klp.order.application.client.service;
+package com.klp.order.infrastructure.client.service;
 
 import com.klp.order.application.service.OrderSagaService;
 import com.klp.order.application.service.OrderService;

@@ -1,4 +1,4 @@
-package com.klp.order.application.client.dto.inventory.request;
+package com.klp.order.infrastructure.client.dto.inventory.request;
 
 import java.util.List;
 import java.util.UUID;
