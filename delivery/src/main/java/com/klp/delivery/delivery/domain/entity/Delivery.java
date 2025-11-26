@@ -140,4 +140,22 @@ public class Delivery extends BaseEntity {
         deliveryItems.add(item);
     }
 
+
+    public boolean validateDeliveryStatus(DeliveryStatus status) {
+        return switch (status) {
+            case CREATED, IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB -> true;
+            case OUT_FOR_DELIVERY, DELIVERED -> false;
+        };
+    }
+
+    public void updateVendorDriverId(Long newVendorDriverId) {
+        if (!validateDeliveryStatus(this.status)) {
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
+                String.format("배송 담당자 변경 불가 상태: %s", this.status)
+            );
+        }
+        this.vendorDrvierId = newVendorDriverId;
+    }
+
+
 }

@@ -3,11 +3,13 @@ package com.klp.delivery.delivery.application;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.NEW_VENDOR_DRIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.common.exception.BusinessException;
+import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
@@ -258,4 +261,53 @@ public class DeliveryServiceTest extends MockTest {
         // then: Repository 호출 검증
         verify(deliveryRepository, times(1)).findDeliveryAll(pageable);
     }
+
+
+    @Test
+    void 배송담당자_수정_성공() {
+        // given: 배송 엔티티와 외부 API 조회 결과 준비
+        Delivery delivery = defaultDelivery();
+        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
+        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
+        when(driverApiClient.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriver());
+
+        // when: 배송 담당자 수정
+        deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID);
+
+        // then: 담당자 변경 검증
+        assertThat(delivery.getVendorDrvierId()).isEqualTo(NEW_VENDOR_DRIVER_ID);
+    }
+
+    @Test
+    void 배송담당자_수정_담당자가_없어_실패() {
+        // given: 배송은 존재하지만 외부 API에서 담당자 조회 실패
+        Delivery delivery = defaultDelivery();
+        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
+        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
+        when(driverApiClient.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID))
+            .isInstanceOf(BusinessException.class)
+            .extracting("errorCode")
+            .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"OUT_FOR_DELIVERY", "DELIVERED"})
+    void 배송_수정_불가능_상태이므로_실패(String statusName) {
+        // given: 배송 상태가 수정 불가능 설정
+        Delivery delivery = defaultDelivery();
+        delivery.updateStatus(DeliveryStatus.valueOf(statusName));
+        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
+        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
+        when(driverApiClient.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriver());
+
+        // when & then: 담당자 수정 예외 검증
+        assertThatThrownBy(() -> deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID))
+            .isInstanceOf(BusinessException.class)
+            .extracting("errorCode")
+            .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
+    }
+
 }

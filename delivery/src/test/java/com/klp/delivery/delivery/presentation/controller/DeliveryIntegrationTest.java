@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.service.CompanyApiClient;
 import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -65,7 +66,18 @@ class DeliveryIntegrationTest {
         @Bean
         @Primary
         public DriverApiClient driverApiClient() {
-            return receiverId -> createDriver();
+            return new DriverApiClient() {
+                @Override
+                public DriverCommand findArrivalHubDrivers(String receiverId) {
+                    return createDriver();
+                }
+
+                @Override
+                public DriverCommand findDriverAtArrivalHub(Long receiverId) {
+                    return createDriver();
+                }
+
+            };
         }
     }
 
@@ -178,5 +190,50 @@ class DeliveryIntegrationTest {
             .getList("content", DeliveryDetailResponse.class);
 
         assertThat(content).isNotEmpty();
+    }
+
+    @Test
+    void 배송상태변경_E2E() {
+        // given: 배송 생성
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
+        String deliveryId = given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/deliveries")
+            .then()
+            .statusCode(200)
+            .extract()
+            .path("items[0].deliveryId");
+
+        // 초기 상태 확인
+        given()
+            .when()
+            .get("/deliveries/{deliveryId}", deliveryId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo(DeliveryStatus.CREATED.name()));
+
+        // when: 배송 상태 변경 (CREATED -> IN_HUB_TRANSIT)
+        String updateRequest = "{\"status\": \"IN_HUB_TRANSIT\"}";
+        given()
+            .contentType(ContentType.JSON)
+            .body(updateRequest)
+            .when()
+            .patch("/deliveries/{deliveryId}/status", deliveryId)
+            .then()
+            .statusCode(204);
+
+        // then: 상태 변경 확인 (API 조회)
+        given()
+            .when()
+            .get("/deliveries/{deliveryId}", deliveryId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo(DeliveryStatus.IN_HUB_TRANSIT.name()));
+
+        // then: 상태 변경 확인 (DB 조회)
+        Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
+        assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.IN_HUB_TRANSIT);
     }
 }
