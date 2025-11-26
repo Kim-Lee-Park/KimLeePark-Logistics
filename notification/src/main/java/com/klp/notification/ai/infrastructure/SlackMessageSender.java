@@ -1,6 +1,8 @@
 package com.klp.notification.ai.infrastructure;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.notification.ai.domain.MessageSender;
+import com.klp.notification.ai.domain.exception.NotificationErrorCode;
 import com.slack.api.methods.MethodsClient;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
@@ -18,7 +20,7 @@ public class SlackMessageSender implements MessageSender {
 
     @Override
     public void sendMessage(String recipientId, String message) {
-        log.debug("Sending Slack message to {}: {}", recipientId, message);
+        log.debug("{}에게 슬랙 메시지 전송: {}", recipientId, message);
 
         try {
             ChatPostMessageResponse response = slackClient.chatPostMessage(req -> req
@@ -27,15 +29,15 @@ public class SlackMessageSender implements MessageSender {
             );
 
             if (!response.isOk()) {
-                log.error("Error sending Slack message: {}", response.getError());
-                throw new RuntimeException("Error sending Slack message: " + response.getError());
+                log.error("슬랙 메시지 전송 실패: {}", response.getError());
+                throw new BusinessException(NotificationErrorCode.MESSAGE_SENDING_FAILED);
             }
 
-            log.info("Successfully sent Slack message to {}", recipientId);
+            log.info("{} 배송 담당자에게 슬랙 메시지 전송 성공", recipientId);
 
         } catch (IOException | SlackApiException e) {
-            log.error("Failed to send Slack message", e);
-            throw new RuntimeException("Failed to send Slack message", e);
+            log.error("슬랙 메시지 전송 실패", e);
+            throw new BusinessException(NotificationErrorCode.MESSAGE_SENDING_FAILED);
         }
     }
 }

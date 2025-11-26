@@ -7,9 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-/**
- * Google Gemini를 사용한 AI 텍스트 생성기 구현체
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -19,17 +16,15 @@ public class GeminiAITextGenerator implements AITextGenerator {
 
     @Override
     public String generate(String prompt) {
-        log.debug("Generating text with Gemini AI for prompt: {}", prompt);
-
+        log.info("Gemini AI 텍스트 생성 시작");
+        
         GenerateContentResponse response = client.models.generateContent(
             "gemini-2.5-flash",
             prompt,
             null
         );
 
-        String generatedText = response.text();
-        log.debug("Generated text: {}", generatedText);
-
-        return generatedText;
+        log.info("Gemini AI 텍스트 생성 완료");
+        return response.text();
     }
 }
