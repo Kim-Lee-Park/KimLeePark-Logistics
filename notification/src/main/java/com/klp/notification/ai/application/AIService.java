@@ -12,6 +12,7 @@ import com.klp.notification.ai.domain.repository.AIRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -24,13 +25,14 @@ public class AIService {
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
+    @Async
     public void fromTextInput(GenerateMessageCommand command) {
         log.info("AI 텍스트 생성 시작: recipientSlackId={}", command.departureHubManagerId());
 
         String prompt = buildOrderPrompt(command);
         String aiResponse = textGenerator.generate(prompt);
 
-        log.info("AI 응답 수신 완료: {}", aiResponse);
+        log.info("AI 응답 수신 완료");
         DeliveryPlanResponse planResponse = parseAIResponse(aiResponse);
 
         String formattedMessage = formatDeliveryMessage(command, planResponse);
