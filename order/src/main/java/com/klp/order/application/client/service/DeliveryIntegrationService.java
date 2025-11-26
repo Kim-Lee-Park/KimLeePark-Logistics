@@ -58,7 +58,6 @@ public class DeliveryIntegrationService {
         log.info("배송 생성 요청에 성공하였습니다.: {}", order.getOrderId());
     }
 
-    @Transactional
     public void deleteDeliveries(Order order) {
         List<UUID> deliveryIds = order.getOrderItems().stream()
             .map(OrderItem::getDeliveryId)
