@@ -1,6 +1,7 @@
 package com.klp.delivery.routeplan.application.service;
 
 import com.klp.common.exception.BusinessException;
+import com.klp.delivery.common.entity.UserDetailsImpl;
 import com.klp.delivery.routeplan.application.command.CreateRoutePlanCommand;
 import com.klp.delivery.routeplan.application.command.HubInfo;
 import com.klp.delivery.routeplan.application.command.HubRouteInfo;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +54,7 @@ public class RoutePlanService {
 
         //출발 허브 조회
         HubInfo departureHub = hubClientService.getHubById(command.departureId());
-        if (departureHub == null) {
+        if (departureHub == null || !departureHub.isActive()) {
             log.warn("[RoutePlanService] 허브 조회 실패 - hubId: {} 존재하지 않음",
                 command.departureId());
             throw new BusinessException(RoutePlanErrorCode.HUB_NOT_FOUND);
@@ -60,7 +62,7 @@ public class RoutePlanService {
 
         //도착 허브 조회
         HubInfo arrivalHub = hubClientService.getHubById(command.arrivalId());
-        if (arrivalHub == null) {
+        if (arrivalHub == null || !arrivalHub.isActive()) {
             log.warn("[RoutePlanService] 허브 조회 실패 - hubId: {} 존재하지 않음",
                 command.arrivalId());
             throw new BusinessException(RoutePlanErrorCode.HUB_NOT_FOUND);
@@ -131,12 +133,19 @@ public class RoutePlanService {
 
     //경로 계획 삭제
     @Transactional
-    public void deleteRoutePlan(UUID routePlanId) {
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#routePlanId")
+    public void deleteRoutePlan(UUID routePlanId, UserDetailsImpl userDetails) {
         RoutePlan routePlan = getRoutePlanById(routePlanId);
+        routePlan.pendingDelete(userDetails.getUserId());
+    }
 
-        //TODO: 유저 ID 수정하기
-        routePlan.getRoutePlanItems().forEach(item -> item.delete(0L));
-        routePlan.delete(0L);
+    //hubId와 관련된 경로 계획 삭제
+    @Transactional
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#routePlan")
+    public void markRoutePlansPendingDeleteByHubId(UUID hubId, UserDetailsImpl userDetails) {
+        List<RoutePlan> plans = routePlanRepository.findByHubId(hubId);
+
+        plans.forEach(plan -> plan.pendingDelete(userDetails.getUserId()));
     }
 
     //경로 계획 ID로 조회 서비스 내부용

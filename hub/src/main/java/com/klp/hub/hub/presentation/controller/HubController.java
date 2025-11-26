@@ -1,6 +1,7 @@
 package com.klp.hub.hub.presentation.controller;
 
 import com.klp.hub.common.model.UserDetailsImpl;
+import com.klp.hub.hub.application.facade.HubFacade;
 import com.klp.hub.hub.application.service.HubService;
 import com.klp.hub.hub.presentation.dto.request.hub.RegisterHubRequest;
 import com.klp.hub.hub.presentation.dto.request.hub.UpdateHubRequest;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class HubController {
 
+    private final HubFacade hubFacade;
     private final HubService hubService;
 
     //허브 등록
@@ -72,6 +74,7 @@ public class HubController {
     public ResponseEntity<Void> deleteHub(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID hubId) {
+        hubFacade.markPendingDelete(hubId, userDetails);
         return ResponseEntity.ok().build();
     }
 }

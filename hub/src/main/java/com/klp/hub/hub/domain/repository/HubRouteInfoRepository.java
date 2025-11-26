@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface HubRouteInfoRepository {
+
     HubRouteInfo save(HubRouteInfo hubRouteInfo);
 
     Optional<HubRouteInfo> getHubRouteInfoById(UUID hubRouteInfoId);
@@ -20,4 +21,6 @@ public interface HubRouteInfoRepository {
     boolean existsByDepartureIdAndArrivalId(UUID departureId, UUID arrivalId);
 
     List<HubRouteInfo> getAllHubRouteInfos();
+
+    List<HubRouteInfo> findAllByHubId(UUID hubId);
 }

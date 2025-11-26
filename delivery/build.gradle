@@ -64,6 +64,10 @@ dependencies {
 
     // REST Assured for E2E testing
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
+
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 dependencyManagement {
