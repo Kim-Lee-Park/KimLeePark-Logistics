@@ -106,6 +106,8 @@ public class HubService {
         return hubRepository.getHubsByIds(hubIds);
     }
 
+    //허브 이름으로 조회
+    @Transactional(readOnly = true)
     public GetHubByNameResponse getHubByName(String hubName) {
         Hub hub = hubRepository.findByName(hubName)
             .orElseThrow(() -> new BusinessException(HubErrorCode.NOT_EXISTS));
