@@ -121,17 +121,17 @@ public class User extends BaseEntity {
         AffiliationType affiliationType
     ) {
         switch (role) {
-            case HUB, HUB_DRIVER:
+            case HUB:
                 if (affiliationType != AffiliationType.HUB) {
                     throw new BusinessException(
-                        UserErrorCode.BAD_REQUEST, "허브 담당자, 허브 배송 담당자는는 HUB 소속이어야 합니다."
+                        UserErrorCode.BAD_REQUEST, "허브 관리자는 HUB 소속이어야 합니다."
                     );
                 }
                 break;
-            case COMPANY, COMPANY_DRIVER:
+            case COMPANY:
                 if (affiliationType != AffiliationType.COMPANY) {
                     throw new BusinessException(
-                        UserErrorCode.BAD_REQUEST, "업체 담당자, 업체 배송 담당자는 COMPANY 소속이어야 합니다."
+                        UserErrorCode.BAD_REQUEST, "업체 담당자는 COMPANY 소속이어야 합니다."
                     );
                 }
                 break;
@@ -139,6 +139,13 @@ public class User extends BaseEntity {
                 if (affiliationType != AffiliationType.LOGISTICS) {
                     throw new BusinessException(
                         UserErrorCode.BAD_REQUEST, "마스터는 LOGISTICS 소속이어야 합니다."
+                    );
+                }
+                break;
+            case DRIVER:
+                if (affiliationType != AffiliationType.LOGISTICS && affiliationType != AffiliationType.HUB) {
+                    throw new BusinessException(
+                        UserErrorCode.BAD_REQUEST, "배송 담당자는 LOGISTICS 또는 HUB 소속이어야 합니다."
                     );
                 }
                 break;

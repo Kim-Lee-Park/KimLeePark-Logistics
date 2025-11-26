@@ -1,8 +1,12 @@
 package com.klp.user.infrastructure.repository;
 
 import com.klp.user.domain.entity.User;
+import com.klp.user.domain.enums.AffiliationType;
+import com.klp.user.domain.enums.UserRole;
 import com.klp.user.domain.repository.UserRepository;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,5 +46,24 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByUsername(String username) {
         return userJpaRepository.findByName(username);
+    }
+
+    @Override
+    public List<User> findDriversByHubId(UUID hubId, Pageable pageable) {
+        return userJpaRepository.findByAffiliationIdAndRoleAndDeletedAtIsNull(
+            hubId, UserRole.DRIVER, pageable
+        );
+    }
+
+    @Override
+    public List<User> findDriversByLogistics(Pageable pageable) {
+        return userJpaRepository.findByAffiliationTypeAndRoleAndDeletedAtIsNull(
+            AffiliationType.LOGISTICS, UserRole.DRIVER, pageable
+        );
+    }
+
+    @Override
+    public Optional<User> findDriverById(Long driverId) {
+        return userJpaRepository.findByUserIdAndRoleAndDeletedAtIsNull(driverId, UserRole.DRIVER);
     }
 }

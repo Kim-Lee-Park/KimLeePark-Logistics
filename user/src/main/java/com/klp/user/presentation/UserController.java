@@ -6,12 +6,16 @@ import com.klp.user.application.UserService;
 import com.klp.user.presentation.dto.request.UserCreateRequest;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
 import com.klp.user.presentation.dto.request.ValidateUserRequest;
+import com.klp.user.presentation.dto.response.DriverDetailResponse;
+import com.klp.user.presentation.dto.response.HubDriverListResponse;
+import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
 import com.klp.user.presentation.dto.response.UserDataResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
 import com.klp.user.presentation.dto.response.UserInfoResponse;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -111,5 +115,23 @@ public class UserController {
         userService.rejectPendingUser(userId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/driver/logistics")
+    public ResponseEntity<LogisticsDriverListResponse> getDriversByLogistics() {
+        LogisticsDriverListResponse response = userService.getDriversByLogistics();
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/driver/{hubId}")
+    public ResponseEntity<HubDriverListResponse> getDriversByHubId(@PathVariable UUID hubId) {
+        HubDriverListResponse response = userService.getDriversByHubId(hubId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/driver")
+    public ResponseEntity<DriverDetailResponse> getDriverById(@RequestParam("id") Long driverId) {
+        DriverDetailResponse response = userService.getDriverById(driverId);
+        return ResponseEntity.ok().body(response);
     }
 }

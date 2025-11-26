@@ -8,14 +8,20 @@ import com.klp.user.domain.exception.UserErrorCode;
 import com.klp.user.domain.repository.UserRepository;
 import com.klp.user.presentation.dto.request.UserCreateRequest;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
+import com.klp.user.presentation.dto.response.DriverDetailResponse;
+import com.klp.user.presentation.dto.response.DriverInfo;
+import com.klp.user.presentation.dto.response.HubDriverListResponse;
+import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
 import com.klp.user.presentation.dto.response.UserDataResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
 import com.klp.user.presentation.dto.response.UserInfoResponse;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -124,6 +130,38 @@ public class UserService {
         User user = findNotDeletedUser(userId);
 
         user.reject();
+    }
+
+    @Transactional(readOnly = true)
+    public HubDriverListResponse getDriversByHubId(UUID hubId) {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<User> drivers = userRepository.findDriversByHubId(hubId, pageable);
+
+        List<DriverInfo> driverInfoList = drivers.stream()
+            .map(DriverInfo::from)
+            .toList();
+
+        return HubDriverListResponse.of(hubId, driverInfoList);
+    }
+
+    @Transactional(readOnly = true)
+    public LogisticsDriverListResponse getDriversByLogistics() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<User> drivers = userRepository.findDriversByLogistics(pageable);
+
+        List<DriverInfo> driverInfoList = drivers.stream()
+            .map(DriverInfo::from)
+            .toList();
+
+        return LogisticsDriverListResponse.of(driverInfoList);
+    }
+
+    @Transactional(readOnly = true)
+    public DriverDetailResponse getDriverById(Long driverId) {
+        User driver = userRepository.findDriverById(driverId)
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        return DriverDetailResponse.from(driver);
     }
 
     private boolean validatePassword(String rawPassword, String encodedPassword) {

@@ -1,7 +1,9 @@
 package com.klp.user.domain.repository;
 
 import com.klp.user.domain.entity.User;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,4 +20,10 @@ public interface UserRepository {
     User save(User user);
 
     Optional<User> findByUsername(String username);
+
+    List<User> findDriversByHubId(UUID hubId, Pageable pageable);
+
+    List<User> findDriversByLogistics(Pageable pageable);
+
+    Optional<User> findDriverById(Long driverId);
 }
