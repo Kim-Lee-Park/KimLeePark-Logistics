@@ -1,4 +1,4 @@
-package com.klp.user.presentation; // 기존 패키지 유지
+package com.klp.user.presentation;
 
 import com.klp.common.model.PageResponse;
 import com.klp.global.security.model.UserDetailsImpl;
@@ -37,7 +37,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // Auth Service Internal APIs
     @GetMapping("/check")
     public ResponseEntity<UsernameCheckResponse> checkUsername(@RequestParam String username) {
         UsernameCheckResponse response = userService.checkUserNameAvailable(username);
@@ -58,7 +57,6 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUserByUsername(request.toCommand()));
     }
 
-    // User Service APIs
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDetailResponse> getMyDetails(@AuthenticationPrincipal UserDetailsImpl userDetails) {
