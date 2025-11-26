@@ -55,16 +55,20 @@ class OrderCreateGetControllerTest {
     private Order savedOrder;
     private UUID productId1;
     private UUID productId2;
+    private UUID hubId1;
+    private UUID hubId2;
     private List<OrderItemCommand> itemCommands;
 
     @BeforeEach
     void setUp() {
         productId1 = UUID.randomUUID();
         productId2 = UUID.randomUUID();
+        hubId1 = UUID.randomUUID();
+        hubId2 = UUID.randomUUID();
 
         List<OrderItemRequest> orderItemRequests = List.of(
-            new OrderItemRequest(productId1, 10),
-            new OrderItemRequest(productId2, 5)
+            new OrderItemRequest(productId1, hubId1, 10),
+            new OrderItemRequest(productId2, hubId2, 5)
         );
 
         createOrderRequest = new CreateOrderRequest(
@@ -75,8 +79,8 @@ class OrderCreateGetControllerTest {
         );
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, 10),
-            new OrderItemCommand(productId2, 5)
+            new OrderItemCommand(productId1, hubId1, 10),
+            new OrderItemCommand(productId2, hubId2, 5)
         );
 
     }
@@ -112,7 +116,7 @@ class OrderCreateGetControllerTest {
             .andExpect(jsonPath("$.supplierId").value(1))
             .andExpect(jsonPath("$.customerId").value(2))
             .andExpect(jsonPath("$.comment").value("요구사항"))
-            .andExpect(jsonPath("$.orderStatus").value("ING"))
+            .andExpect(jsonPath("$.orderStatus").value("PENDING"))
             .andExpect(jsonPath("$.cancellation").isEmpty())
             .andExpect(jsonPath("$.orderItems").isArray())
             .andExpect(jsonPath("$.orderItems.length()").value(2))
@@ -214,7 +218,7 @@ class OrderCreateGetControllerTest {
             .andExpect(jsonPath("$.supplierId").value(1))
             .andExpect(jsonPath("$.customerId").value(2))
             .andExpect(jsonPath("$.comment").value("요구사항"))
-            .andExpect(jsonPath("$.orderStatus").value("ING"))
+            .andExpect(jsonPath("$.orderStatus").value("PENDING"))
             .andExpect(jsonPath("$.cancellation").isEmpty())
             .andExpect(jsonPath("$.orderItems").isArray())
             .andExpect(jsonPath("$.orderItems.length()").value(2))

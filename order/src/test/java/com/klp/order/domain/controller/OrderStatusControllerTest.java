@@ -54,10 +54,12 @@ public class OrderStatusControllerTest {
     void setUp() {
         UUID productId1 = UUID.randomUUID();
         UUID productId2 = UUID.randomUUID();
+        UUID hubId1 = UUID.randomUUID();
+        UUID hubId2 = UUID.randomUUID();
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, 10),
-            new OrderItemCommand(productId2, 5)
+            new OrderItemCommand(productId1, hubId1, 10),
+            new OrderItemCommand(productId2, hubId2, 5)
         );
     }
 

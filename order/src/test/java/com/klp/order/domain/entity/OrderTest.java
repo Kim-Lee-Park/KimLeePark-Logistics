@@ -24,6 +24,9 @@ class OrderTest {
     private String comment;
     private UUID productId1;
     private UUID productId2;
+    private UUID hubId1;
+    private UUID hubId2;
+
     private List<OrderItemCommand> itemCommands;
 
     @BeforeEach
@@ -34,10 +37,12 @@ class OrderTest {
 
         productId1 = UUID.randomUUID();
         productId2 = UUID.randomUUID();
+        hubId1 = UUID.randomUUID();
+        hubId2 = UUID.randomUUID();
 
         itemCommands = new ArrayList<>();
-        itemCommands.add(new OrderItemCommand(productId1, 10));
-        itemCommands.add(new OrderItemCommand(productId2, 5));
+        itemCommands.add(new OrderItemCommand(productId1, hubId1, 10));
+        itemCommands.add(new OrderItemCommand(productId2, hubId2, 5));
     }
 
 
@@ -51,7 +56,7 @@ class OrderTest {
         assertThat(order.getSupplierId()).isEqualTo(supplierId);
         assertThat(order.getCustomerId()).isEqualTo(customerId);
         assertThat(order.getComment()).isEqualTo(comment);
-        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.ING);
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PENDING);
 
         // 주문 아이템 검증
         assertThat(order.getOrderItems()).hasSize(2);
@@ -121,8 +126,8 @@ class OrderTest {
         String newComment = "수정된 요청사항";
 
         List<OrderItemCommand> newItemCommands = new ArrayList<>();
-        newItemCommands.add(new OrderItemCommand(UUID.randomUUID(), 15));
-        newItemCommands.add(new OrderItemCommand(UUID.randomUUID(), 20));
+        newItemCommands.add(new OrderItemCommand(UUID.randomUUID(), hubId1, 15));
+        newItemCommands.add(new OrderItemCommand(UUID.randomUUID(), hubId2, 20));
 
         // when
         order.updateOrder(newComment, newItemCommands);
@@ -146,7 +151,7 @@ class OrderTest {
         String newComment = "수정 시도";
 
         List<OrderItemCommand> newItemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 10)
+            new OrderItemCommand(UUID.randomUUID(), hubId1, 10)
         );
 
         // when & then
@@ -164,7 +169,7 @@ class OrderTest {
         String newComment = "수정 시도";
 
         List<OrderItemCommand> newItemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 10)
+            new OrderItemCommand(UUID.randomUUID(), hubId1, 10)
         );
 
         // when & then
@@ -182,7 +187,7 @@ class OrderTest {
         String newComment = "수정 시도";
 
         List<OrderItemCommand> newItemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 10)
+            new OrderItemCommand(UUID.randomUUID(), hubId1, 10)
         );
 
         // when & then

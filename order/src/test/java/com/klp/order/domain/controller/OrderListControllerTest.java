@@ -58,10 +58,12 @@ class OrderListControllerTest {
     void setUp() {
         UUID productId1 = UUID.randomUUID();
         UUID productId2 = UUID.randomUUID();
+        UUID hubId1 = UUID.randomUUID();
+        UUID hubId2 = UUID.randomUUID();
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, 10),
-            new OrderItemCommand(productId2, 5)
+            new OrderItemCommand(productId1, hubId1, 10),
+            new OrderItemCommand(productId2, hubId2, 5)
         );
 
         order1 = Order.create(1L, 2L, "주문1", itemCommands);
@@ -89,7 +91,6 @@ class OrderListControllerTest {
 
         PageResponse<GetOrdersResponse> response = new PageResponse<>(data, pageableResponse);
 
-        // ✅ isNull()을 명시적으로 사용!
         given(orderService.searchOrders(
             isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
             .willReturn(response);
@@ -105,7 +106,7 @@ class OrderListControllerTest {
             .andExpect(jsonPath("$.data[0].orderId").exists())
             .andExpect(jsonPath("$.data[0].supplierId").value(1))
             .andExpect(jsonPath("$.data[0].customerId").value(2))
-            .andExpect(jsonPath("$.data[0].orderStatus").value("ING"))
+            .andExpect(jsonPath("$.data[0].orderStatus").value("PENDING"))
             .andExpect(jsonPath("$.data[1].supplierId").value(2))
             .andExpect(jsonPath("$.data[1].customerId").value(3))
             .andExpect(jsonPath("$.pageable.page").value(0))

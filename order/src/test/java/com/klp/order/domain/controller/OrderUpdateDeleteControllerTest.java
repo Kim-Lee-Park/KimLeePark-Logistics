@@ -54,16 +54,20 @@ public class OrderUpdateDeleteControllerTest {
     private Order savedOrder;
     private UUID productId1;
     private UUID productId2;
+    private UUID hubId1;
+    private UUID hubId2;
     private List<OrderItemCommand> itemCommands;
 
     @BeforeEach
     void setUp() {
         productId1 = UUID.randomUUID();
         productId2 = UUID.randomUUID();
+        hubId1 = UUID.randomUUID();
+        hubId2 = UUID.randomUUID();
 
         List<OrderItemRequest> orderItemRequests = List.of(
-            new OrderItemRequest(productId1, 10),
-            new OrderItemRequest(productId2, 5)
+            new OrderItemRequest(productId1, hubId1, 10),
+            new OrderItemRequest(productId2, hubId2, 5)
         );
 
         createOrderRequest = new CreateOrderRequest(
@@ -74,8 +78,8 @@ public class OrderUpdateDeleteControllerTest {
         );
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, 10),
-            new OrderItemCommand(productId2, 5)
+            new OrderItemCommand(productId1, hubId1, 10),
+            new OrderItemCommand(productId2, hubId2, 5)
         );
 
     }
@@ -98,8 +102,8 @@ public class OrderUpdateDeleteControllerTest {
         UUID testOrderId = UUID.randomUUID();
 
         List<OrderItemRequest> updatedOrderItemRequests = List.of(
-            new OrderItemRequest(productId1, 15),
-            new OrderItemRequest(productId2, 8)
+            new OrderItemRequest(productId1, hubId1, 15),
+            new OrderItemRequest(productId2, hubId2, 8)
         );
 
         UpdateOrderRequest updateRequest = new UpdateOrderRequest(
@@ -108,8 +112,8 @@ public class OrderUpdateDeleteControllerTest {
         );
 
         List<OrderItemCommand> updatedItemCommands = List.of(
-            new OrderItemCommand(productId1, 15),
-            new OrderItemCommand(productId2, 8)
+            new OrderItemCommand(productId1, hubId1, 15),
+            new OrderItemCommand(productId2, hubId2, 8)
         );
 
         Order updatedOrder = createOrder(1L, 2L, "2025-11-06 10:00까지 납품 요청으로 변경",
@@ -126,7 +130,7 @@ public class OrderUpdateDeleteControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.orderId").value(testOrderId.toString()))
             .andExpect(jsonPath("$.comment").value("2025-11-06 10:00까지 납품 요청으로 변경"))
-            .andExpect(jsonPath("$.orderStatus").value("ING"))
+            .andExpect(jsonPath("$.orderStatus").value("PENDING"))
             .andExpect(jsonPath("$.cancellation").isEmpty())
             .andExpect(jsonPath("$.orderItems").isArray())
             .andExpect(jsonPath("$.orderItems.length()").value(2))
@@ -141,7 +145,7 @@ public class OrderUpdateDeleteControllerTest {
         UUID nonExistentId = UUID.randomUUID();
 
         List<OrderItemRequest> updatedOrderItemRequests = List.of(
-            new OrderItemRequest(productId1, 15)
+            new OrderItemRequest(productId1, hubId1, 15)
         );
 
         UpdateOrderRequest updateRequest = new UpdateOrderRequest(
@@ -202,7 +206,7 @@ public class OrderUpdateDeleteControllerTest {
         UUID testOrderId = UUID.randomUUID();
 
         List<OrderItemRequest> updatedOrderItemRequests = List.of(
-            new OrderItemRequest(productId1, 15)
+            new OrderItemRequest(productId1, hubId1, 15)
         );
 
         UpdateOrderRequest updateRequest = new UpdateOrderRequest(
@@ -227,7 +231,7 @@ public class OrderUpdateDeleteControllerTest {
         UUID testOrderId = UUID.randomUUID();
 
         List<OrderItemRequest> updatedOrderItemRequests = List.of(
-            new OrderItemRequest(productId1, 15)
+            new OrderItemRequest(productId1, hubId1, 15)
         );
 
         UpdateOrderRequest updateRequest = new UpdateOrderRequest(
@@ -252,7 +256,7 @@ public class OrderUpdateDeleteControllerTest {
         UUID testOrderId = UUID.randomUUID();
 
         List<OrderItemRequest> updatedOrderItemRequests = List.of(
-            new OrderItemRequest(productId1, 15)
+            new OrderItemRequest(productId1, hubId1, 15)
         );
 
         UpdateOrderRequest updateRequest = new UpdateOrderRequest(
