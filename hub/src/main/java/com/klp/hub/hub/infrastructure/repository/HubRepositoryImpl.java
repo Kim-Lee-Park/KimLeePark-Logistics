@@ -69,4 +69,9 @@ public class HubRepositoryImpl implements HubRepository {
     public List<Hub> findAllByStatus(HubStatus hubStatus) {
         return hubJpaRepository.findAllByStatus(hubStatus);
     }
+
+    @Override
+    public Optional<Hub> findByName(String hubName) {
+        return hubJpaRepository.findByName(hubName);
+    }
 }

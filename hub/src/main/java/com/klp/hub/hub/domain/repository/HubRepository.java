@@ -25,4 +25,6 @@ public interface HubRepository {
     List<Hub> getHubsByIds(List<UUID> hubIds);
 
     List<Hub> findAllByStatus(HubStatus hubStatus);
+
+    Optional<Hub> findByName(String hubName);
 }

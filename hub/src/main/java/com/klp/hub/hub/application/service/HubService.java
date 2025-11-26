@@ -7,6 +7,7 @@ import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.repository.HubRepository;
 import com.klp.hub.hub.exception.HubErrorCode;
+import com.klp.hub.hub.presentation.dto.response.GetHubByNameResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
@@ -105,4 +106,9 @@ public class HubService {
         return hubRepository.getHubsByIds(hubIds);
     }
 
+    public GetHubByNameResponse getHubByName(String hubName) {
+        Hub hub = hubRepository.findByName(hubName)
+            .orElseThrow(() -> new BusinessException(HubErrorCode.NOT_EXISTS));
+        return GetHubByNameResponse.from(hub);
+    }
 }
