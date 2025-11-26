@@ -3,9 +3,11 @@ package com.klp.notification.ai.application;
 import com.klp.notification.ai.application.command.GenerateMessageCommand;
 import com.klp.notification.ai.domain.AITextGenerator;
 import com.klp.notification.ai.domain.entity.AI;
+import com.klp.notification.ai.domain.event.AITextGeneratedEvent;
 import com.klp.notification.ai.domain.repository.AIRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -15,14 +17,23 @@ public class AIService {
 
     private final AITextGenerator textGenerator;
     private final AIRepository aiRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void fromTextInput(GenerateMessageCommand command) {
-        String prompt = buildOrderPrompt(command);
+        log.info("AI 텍스트 생성 시작: recipientSlackId={}", command.departureHubManagerId());
 
+        String prompt = buildOrderPrompt(command);
         String generatedText = textGenerator.generate(prompt);
 
         AI newAI = AI.create(prompt, generatedText);
         aiRepository.save(newAI);
+
+        log.info("AI 텍스트 생성 완료, 이벤트 발행: recipientSlackId={}", command.departureHubManagerId());
+        eventPublisher.publishEvent(new AITextGeneratedEvent(
+            this,
+            command.departureHubManagerId(),
+            generatedText
+        ));
     }
 
     private String buildOrderPrompt(GenerateMessageCommand command) {

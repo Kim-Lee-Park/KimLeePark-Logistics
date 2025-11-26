@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record GenerateMessageRequest(
+    @NotBlank(message = "발송 허브 담당자 Slack ID는 필수입니다.")
+    String departureHubManagerId,
+
     @NotNull(message = "주문 시간은 필수입니다.")
     LocalDateTime orderTime,
 
@@ -38,6 +41,7 @@ public record GenerateMessageRequest(
 
     public GenerateMessageCommand toCommand() {
         return new GenerateMessageCommand(
+            departureHubManagerId,
             orderTime,
             productName,
             quantity,
@@ -46,7 +50,7 @@ public record GenerateMessageRequest(
             departureHubName,
             transitHubNames,
             destinationAddress,
-            "09:00-18:00"
+            workingHours != null ? workingHours : "09:00-18:00"
         );
     }
 }

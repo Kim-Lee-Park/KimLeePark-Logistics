@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record GenerateMessageCommand(
+    String departureHubManagerId,
     LocalDateTime orderTime,
     String productName,
     Integer quantity,
