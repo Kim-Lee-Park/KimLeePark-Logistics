@@ -11,7 +11,8 @@ public record GetRoutePlanDetailResponse(
     UUID arrivalId,
     Long totalDurationMin,
     Double totalDistanceKm,
-    List<PlanItem> planItems
+    List<PlanItem> planItems,
+    String status
 ) {
 
     public record PlanItem(
@@ -45,7 +46,8 @@ public record GetRoutePlanDetailResponse(
             routePlan.getTotalDurationMin(),
             routePlan.getTotalDistanceKm(),
             routePlan.getRoutePlanItems().stream()
-                .map(item -> PlanItem.from(item, routePlan.getRoutePlanId())).toList()
+                .map(item -> PlanItem.from(item, routePlan.getRoutePlanId())).toList(),
+            routePlan.getStatus().name()
         );
     }
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -36,9 +37,11 @@ public abstract class BaseEntity {
     private Long updatedBy;
 
     @Comment("삭제 시간")
+    @Setter
     private LocalDateTime deletedAt;
 
     @Comment("삭제자")
+    @Setter
     private Long deletedBy;
 
     public void delete(Long deletedBy) {

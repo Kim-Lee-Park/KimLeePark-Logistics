@@ -33,6 +33,9 @@ scheduler:
   route-infos:
     fixed-rate: ${SCHEDULER_ROUTE_INFOS_FIXED_RATE:PT2H}        # 2시간마다 실행 (ISO-8601 표기: PT2H = 2 Hours)
     initial-delay: ${SCHEDULER_ROUTE_INFOS_INITIAL_DELAY:PT0S}     # 앱 실행 직후 바로 실행, 필요 시 PT5M 등으로 지연 가능
+  hub-delete:
+    fixed-rate: ${SCHEDULER_HUB_DELETE_FIXED_RATE:PT3H}
+    initial-delay: ${SCHEDULER_HUB_DELETE_INITIAL_DELAY:PT0S}
 
 shedlock:
   route-infos:

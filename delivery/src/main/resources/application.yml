@@ -26,3 +26,8 @@ logging:
   level:
     root: INFO
     com.klp.delivery: DEBUG
+
+scheduler:
+  route-plan-delete:
+    fixed-rate: ${SCHEDULER_ROUTE_PLAN_DELETE_FIXED_RATE:PT3H}
+    initial-delay: ${SCHEDULER_ROUTE_PLAN_DELETE_INITIAL_DELAY:PT0S}
