@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.hub.global.config.SecurityConfig;
 import com.klp.hub.global.exception.GlobalExceptionHandler;
 import com.klp.hub.global.filter.AuthorizationFilter;
+import com.klp.hub.inventory.application.InventoryFacade;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest.Product;
@@ -43,6 +44,9 @@ class InventoryControllerTest {
 
     @MockitoBean
     private InventoryService inventoryService;
+
+    @MockitoBean
+    private InventoryFacade inventoryFacade;
 
     @Nested
     class GetInventory {
@@ -80,7 +84,7 @@ class InventoryControllerTest {
                 idempotencyKey,
                 List.of(new Product(productId, hubId, quantity))
             );
-            when(inventoryService.deduct(request.toCommand()))
+            when(inventoryFacade.deduct(request.toCommand()))
                 .thenReturn(new InventoryDeductResponse(Status.SUCCESS));
 
             mockMvc.perform(post("/v1/inventories/deduct")
@@ -176,7 +180,7 @@ class InventoryControllerTest {
                 idempotencyKey,
                 List.of(new InventoryReplenishRequest.Product(productId, hubId, quantity))
             );
-            when(inventoryService.replenish(request.toCommand()))
+            when(inventoryFacade.replenish(request.toCommand()))
                 .thenReturn(
                     new InventoryReplenishResponse(InventoryReplenishResponse.Status.SUCCESS));
 

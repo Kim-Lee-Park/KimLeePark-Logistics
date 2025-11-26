@@ -28,7 +28,7 @@ public class RefreshTokenProvider implements TokenProvider {
     }
 
     @Override
-    public String generate(Long userId, String userName, String role) {
+    public String generate(Long userId, String username, String role) {
         return Jwts
             .builder()
             .header()
@@ -37,7 +37,7 @@ public class RefreshTokenProvider implements TokenProvider {
             .issuer(JwtConstants.ISSUER)
             .subject(userId.toString())
             .claim(JwtConstants.TOKEN_TYPE_CLAIM, JwtConstants.REFRESH_TOKEN_TYPE)
-            .claim(JwtConstants.USERNAME_CLAIM, userName)
+            .claim(JwtConstants.USERNAME_CLAIM, username)
             .claim(JwtConstants.ROLE_CLAIM, role)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + refreshExpiration))

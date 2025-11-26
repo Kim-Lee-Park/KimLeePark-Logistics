@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
+
     private final HubRouteInfoJpaRepository hubRouteInfoJpaRepository;
     private final JPAQueryFactory queryFactory;
 
@@ -48,11 +49,13 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
             );
 
         if (pageable.getSort().isSorted()) {
-            PathBuilder<QHubRouteInfo> entityPath = new PathBuilder<>(QHubRouteInfo.class, qRouteInfo.getMetadata());
+            PathBuilder<QHubRouteInfo> entityPath = new PathBuilder<>(QHubRouteInfo.class,
+                qRouteInfo.getMetadata());
             for (Sort.Order order : pageable.getSort()) {
                 String property = order.getProperty();
                 Order direction = order.isAscending() ? Order.ASC : Order.DESC;
-                base.orderBy(new OrderSpecifier<>(direction, entityPath.getComparable(property, Comparable.class)));
+                base.orderBy(new OrderSpecifier<>(direction,
+                    entityPath.getComparable(property, Comparable.class)));
             }
         } else {
             base.orderBy(qRouteInfo.createdAt.desc());
@@ -72,7 +75,8 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
         QHubRouteInfo qRouteInfo = QHubRouteInfo.hubRouteInfo;
 
         return queryFactory
-            .select(Projections.constructor(RoutePairDto.class, qRouteInfo.departureId, qRouteInfo.arrivalId))
+            .select(Projections.constructor(RoutePairDto.class, qRouteInfo.departureId,
+                qRouteInfo.arrivalId))
             .from(qRouteInfo)
             .where(
                 qRouteInfo.deletedAt.isNull(),
@@ -91,5 +95,16 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
     @Override
     public List<HubRouteInfo> getAllHubRouteInfos() {
         return hubRouteInfoJpaRepository.findByDeletedAtIsNull();
+    }
+
+    @Override
+    public List<HubRouteInfo> findAllByHubId(UUID hubId) {
+        QHubRouteInfo qRouteInfo = QHubRouteInfo.hubRouteInfo;
+        return queryFactory
+            .selectDistinct(qRouteInfo)
+            .from(qRouteInfo)
+            .where(qRouteInfo.departureId.eq(hubId)
+                .or(qRouteInfo.arrivalId.eq(hubId)))
+            .fetch();
     }
 }

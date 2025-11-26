@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class HubRepositoryImpl implements HubRepository {
+
     private final HubJpaRepository hubJpaRepository;
     private final JPAQueryFactory queryFactory;
 
@@ -62,5 +63,10 @@ public class HubRepositoryImpl implements HubRepository {
             .selectFrom(qHub)
             .where(qHub.hubId.in(hubIds))
             .fetch();
+    }
+
+    @Override
+    public List<Hub> findAllByStatus(HubStatus hubStatus) {
+        return hubJpaRepository.findAllByStatus(hubStatus);
     }
 }

@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -54,26 +55,36 @@ public class Hub extends BaseEntity {
 
     public static Hub create(String name, Double latitude, Double longitude, String address) {
         Hub hub = new Hub();
-        hub.name= name;
+        hub.name = name;
         hub.latitude = latitude;
         hub.longitude = longitude;
         hub.address = address;
-        hub.status=HubStatus.ACTIVE;
+        hub.status = HubStatus.ACTIVE;
         return hub;
     }
 
     public void update(String name, Double latitude, Double longitude, String address) {
-        if(name != null){
+        if (name != null) {
             this.name = name;
         }
-        if(latitude != null){
+        if (latitude != null) {
             this.latitude = latitude;
         }
-        if(longitude != null){
+        if (longitude != null) {
             this.longitude = longitude;
         }
-        if(address != null){
+        if (address != null) {
             this.address = address;
         }
+    }
+
+    public void softDelete() {
+        this.setDeletedAt(LocalDateTime.now());
+        this.status = HubStatus.DELETED;
+    }
+
+    public void pendingDelete(Long userId) {
+        this.status = HubStatus.PENDING_DELETE;
+        setDeletedBy(userId);
     }
 }

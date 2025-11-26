@@ -18,6 +18,7 @@ import com.klp.user.presentation.dto.response.UserDetailResponse;
 import com.klp.user.presentation.dto.response.UserInfoResponse;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -111,7 +112,7 @@ class UserServiceTest {
         @DisplayName("본인의 상세 정보를 성공적으로 조회")
         void getMyDetails_WhenUserExists_ReturnsUserDetails() {
             // given
-            given(userRepository.findById(userId)).willReturn(testUser);
+            given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
 
             // when
             UserDetailResponse response = userService.getMyDetails(userId);
@@ -134,7 +135,7 @@ class UserServiceTest {
         @DisplayName("특정 유저의 상세 정보를 성공적으로 조회")
         void getUserDetails_WhenUserExists_ReturnsUserDetails() {
             // given
-            given(userRepository.findById(userId)).willReturn(testUser);
+            given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
 
             // when
             UserDetailResponse response = userService.getUserDetails(userId);
@@ -282,7 +283,7 @@ class UserServiceTest {
                 newRole
             );
 
-            given(userRepository.findById(userId)).willReturn(testUser);
+            given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
             given(passwordEncoder.encode(newPassword)).willReturn(encodedPassword);
 
             // when
