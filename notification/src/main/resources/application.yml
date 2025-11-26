@@ -25,3 +25,7 @@ eureka:
 google:
   gemini:
     api-key: ${GEMINI_API_KEY}
+
+slack:
+  bot:
+    token: ${SLACK_BOT_TOKEN}
