@@ -72,7 +72,7 @@ eureka:
 
 jwt:
   access:
-    secret: ${JWT_ACCESS_SECRET:=dG9hc3R5YWNjZXNzdG9rZW5zZWNyZXRrZXk=}
+    secret: ${JWT_ACCESS_SECRET}
 
 gateway:
   auth:
