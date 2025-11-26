@@ -47,6 +47,9 @@ dependencies {
 
     // google genai
     implementation 'com.google.genai:google-genai:1.0.0'
+
+    // slack api
+    implementation 'com.slack.api:slack-api-client:1.45.3'
 }
 
 dependencyManagement {
