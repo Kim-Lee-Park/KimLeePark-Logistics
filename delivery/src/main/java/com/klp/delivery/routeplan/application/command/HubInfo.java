@@ -11,4 +11,7 @@ public record HubInfo(
     String status
 ) {
 
+    public boolean isActive() {
+        return this.status.equals("ACTIVE");
+    }
 }

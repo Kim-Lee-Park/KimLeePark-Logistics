@@ -9,10 +9,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.klp.hub.common.model.UserDetailsImpl;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
-
 import com.klp.hub.hub.domain.repository.HubRepository;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
@@ -43,7 +43,7 @@ public class HubServiceTest {
 
     @Test
     @DisplayName("허브 이름 중복으로 실패")
-    void registerHubFailDuplicateName(){
+    void registerHubFailDuplicateName() {
         //given
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
@@ -51,18 +51,19 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
         when(hubRepository.existsByName("testHub")).thenReturn(true);
 
         //when
 
         //then
-        assertThatThrownBy(() -> hubService.registerHub(command))
+        assertThatThrownBy(() -> hubService.registerHub(command, userDetails))
             .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     @DisplayName("허브 주소 중복으로 실패")
-    void registerHubFailDuplicateAddress(){
+    void registerHubFailDuplicateAddress() {
         //given
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
@@ -70,19 +71,19 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
         when(hubRepository.existsByAddress("Address")).thenReturn(true);
 
         //when
 
-
         //then
-        assertThatThrownBy(() -> hubService.registerHub(command))
+        assertThatThrownBy(() -> hubService.registerHub(command, userDetails))
             .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     @DisplayName("허브 등록 성공")
-    void registerHubSuccess(){
+    void registerHubSuccess() {
         //given
         RegisterHubCommand command = new RegisterHubCommand(
             "testHub",
@@ -90,13 +91,14 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
-        Hub saved= mock(Hub.class);
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
+        Hub saved = mock(Hub.class);
         when(hubRepository.existsByName("testHub")).thenReturn(false);
         when(hubRepository.existsByAddress("서울특별시")).thenReturn(false);
         given(hubRepository.save(any(Hub.class))).willReturn(saved);
 
         //when
-        RegisterHubResponse response=hubService.registerHub(command);
+        RegisterHubResponse response = hubService.registerHub(command, userDetails);
 
         //then
         assertThat(response).isNotNull();
@@ -104,7 +106,7 @@ public class HubServiceTest {
 
     @Test
     @DisplayName("허브 단일 조회 성공")
-    void getHubDetailSuccess(){
+    void getHubDetailSuccess() {
         //given
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand command = new RegisterHubCommand(
@@ -113,13 +115,14 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
-        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
+        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(),
+            command.address());
         ReflectionTestUtils.setField(hub, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
 
         //when
-        GetHubDetailResponse response=hubService.getHubDetail(hubId);
+        GetHubDetailResponse response = hubService.getHubDetail(hubId);
 
         //then
         assertThat(response).isNotNull();
@@ -129,7 +132,7 @@ public class HubServiceTest {
 
     @Test
     @DisplayName("허브 단일 조회 실패: 존재하지 않는 허브")
-    void getHubDetailFail(){
+    void getHubDetailFail() {
         //given
         UUID hubId = UUID.randomUUID();
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.empty());
@@ -143,20 +146,22 @@ public class HubServiceTest {
 
     @Test
     @DisplayName("허브 목록 조회 성공")
-    void getHubsSuccess(){
+    void getHubsSuccess() {
         //given
         Pageable pageable = PageRequest.of(0, 10);
-        RegisterHubCommand command1 =new RegisterHubCommand("제주허브", 334455., 126123., "제주시 노형동");
+        RegisterHubCommand command1 = new RegisterHubCommand("제주허브", 334455., 126123., "제주시 노형동");
         RegisterHubCommand command2 = new RegisterHubCommand("서귀포허브", 444555., 127333., "서귀포시 중문동");
-        Hub hub1 = Hub.create(command1.name(), command1.latitude(), command1.longitude(), command1.address());
-        Hub hub2 = Hub.create(command2.name(), command2.latitude(), command2.longitude(), command2.address());
+        Hub hub1 = Hub.create(command1.name(), command1.latitude(), command1.longitude(),
+            command1.address());
+        Hub hub2 = Hub.create(command2.name(), command2.latitude(), command2.longitude(),
+            command2.address());
         List<Hub> hubList = List.of(hub1, hub2);
         Page<Hub> hubs = new PageImpl<>(hubList, pageable, hubList.size());
 
         when(hubRepository.getHubs(pageable)).thenReturn(hubs);
 
         //when
-        GetHubListResponse response= hubService.getHubs(pageable);
+        GetHubListResponse response = hubService.getHubs(pageable);
 
         //then
         assertThat(response).isNotNull();
@@ -169,7 +174,7 @@ public class HubServiceTest {
 
     @Test
     @DisplayName("허브 수정 실패: 존재하지 않는 허브")
-    void updateHubFailNotFound(){
+    void updateHubFailNotFound() {
         //given
         UUID hubId = UUID.randomUUID();
         UpdateHubCommand command = new UpdateHubCommand(
@@ -178,21 +183,23 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.empty());
 
         //then
-        assertThatThrownBy(()->hubService.updateHub(hubId,command))
+        assertThatThrownBy(() -> hubService.updateHub(hubId, command, userDetails))
             .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     @DisplayName("허브 수정 실패: 중복된 이름")
-    void updateHubFailDuplicateName(){
+    void updateHubFailDuplicateName() {
         //given
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11., 12., "서울");
 
-        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
+        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(),
+            registerHubCommand.longitude(), registerHubCommand.address());
         ReflectionTestUtils.setField(original, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
@@ -203,23 +210,25 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
         when(hubRepository.existsByName(command.name())).thenReturn(true);
 
         //when
 
         //then
-        assertThatThrownBy(() -> hubService.updateHub(hubId, command))
+        assertThatThrownBy(() -> hubService.updateHub(hubId, command, userDetails))
             .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     @DisplayName("허브 수정 실패: 중복된 주소")
-    void updateHubFailDuplicateAddress(){
+    void updateHubFailDuplicateAddress() {
         //given
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand registerHubCommand = new RegisterHubCommand("oldHub", 11., 12., "서울");
 
-        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(), registerHubCommand.longitude(), registerHubCommand.address());
+        Hub original = Hub.create(registerHubCommand.name(), registerHubCommand.latitude(),
+            registerHubCommand.longitude(), registerHubCommand.address());
         ReflectionTestUtils.setField(original, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(original));
@@ -230,19 +239,20 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
         when(hubRepository.existsByName(command.name())).thenReturn(false);
         when(hubRepository.existsByAddress(command.address())).thenReturn(true);
 
         //when
 
         //then
-        assertThatThrownBy(() -> hubService.updateHub(hubId, command))
+        assertThatThrownBy(() -> hubService.updateHub(hubId, command, userDetails))
             .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     @DisplayName("허브 수정 성공")
-    void updateHubSuccess(){
+    void updateHubSuccess() {
         //given
         UUID hubId = UUID.randomUUID();
         RegisterHubCommand command = new RegisterHubCommand(
@@ -251,7 +261,8 @@ public class HubServiceTest {
             12.,
             "서울특별시"
         );
-        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(), command.address());
+        Hub hub = Hub.create(command.name(), command.latitude(), command.longitude(),
+            command.address());
         ReflectionTestUtils.setField(hub, "hubId", hubId);
 
         when(hubRepository.getHubById(hubId)).thenReturn(Optional.of(hub));
@@ -262,9 +273,10 @@ public class HubServiceTest {
             151.,
             "서울특별시 updated"
         );
+        UserDetailsImpl userDetails = new UserDetailsImpl(1L, "name", "MASTER");
 
         //when
-        hubService.updateHub(hubId, updateHubCommand);
+        hubService.updateHub(hubId, updateHubCommand, userDetails);
 
         // then
         assertThat(hub.getName()).isEqualTo("testHubUpdated");

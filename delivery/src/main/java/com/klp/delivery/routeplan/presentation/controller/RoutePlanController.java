@@ -1,9 +1,11 @@
 package com.klp.delivery.routeplan.presentation.controller;
 
+import com.klp.delivery.common.entity.UserDetailsImpl;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
 import com.klp.delivery.routeplan.presentation.dto.request.CreateRoutePlanRequest;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanItemDetailResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanListResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -11,6 +13,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,8 +64,27 @@ public class RoutePlanController {
 
     //경로 계획 삭제
     @DeleteMapping("/{routePlanId}")
-    public ResponseEntity<Void> deleteRoutePlan(@PathVariable UUID routePlanId) {
-        routePlanService.deleteRoutePlan(routePlanId);
+    public ResponseEntity<Void> deleteRoutePlan(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID routePlanId) {
+        routePlanService.deleteRoutePlan(routePlanId, userDetails);
         return ResponseEntity.ok().build();
+    }
+
+    //hubId와 관련된 경로 계획 삭제
+    @DeleteMapping("/delete/{hubId}")
+    public ResponseEntity<Void> deleteRoutePlansByHubId(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID hubId) {
+        routePlanService.markRoutePlansPendingDeleteByHubId(hubId, userDetails);
+        return ResponseEntity.ok().build();
+    }
+
+    //경로 계획 구간 정보 조회
+    @GetMapping("{planId}/items/{planItemId}")
+    public ResponseEntity<GetRoutePlanItemDetailResponse> getRoutePlanItem(
+        @PathVariable UUID planId,
+        @PathVariable UUID planItemId) {
+        return ResponseEntity.ok().body(routePlanService.getRoutePlanItem(planId, planItemId));
     }
 }

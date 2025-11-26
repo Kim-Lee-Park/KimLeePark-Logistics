@@ -2,6 +2,7 @@ package com.klp.hub.inventory.infrastructure.repository;
 
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotency;
+import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
@@ -47,13 +48,21 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     }
 
     @Override
-    public boolean tryAcquireIdempotencyKey(String idempotencyKey) {
-        try {
-            idempotencyJpaRepository.saveAndFlush(new InventoryIdempotency(idempotencyKey));
-            return true;
-        } catch (DataIntegrityViolationException exception) {
-            return false;
-        }
+    public InventoryIdempotencyStatus acquireIdempotencyKey(String idempotencyKey) {
+        InventoryIdempotency entity = idempotencyJpaRepository.save(
+            new InventoryIdempotency(idempotencyKey)
+        );
+        return entity.getStatus();
+    }
+
+    @Override
+    public void idempotencySuccess(String idempotencyKey) {
+        InventoryIdempotency inventoryIdempotency = idempotencyJpaRepository.findByIdempotencyKey(
+                idempotencyKey
+            )
+            .orElseThrow(() -> new UniqueConstraintException("멱등키가 유니크하지 않습니다"));
+        inventoryIdempotency.success();
+        idempotencyJpaRepository.save(inventoryIdempotency);
     }
 
     @Override

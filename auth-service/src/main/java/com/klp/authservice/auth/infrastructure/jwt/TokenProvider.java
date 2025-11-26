@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public interface TokenProvider {
 
-    String generate(Long userId, String userName, String role);
+    String generate(Long userId, String username, String role);
 
     boolean validateToken(String token);
 

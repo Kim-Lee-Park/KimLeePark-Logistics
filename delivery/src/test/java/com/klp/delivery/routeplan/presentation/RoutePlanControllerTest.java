@@ -63,6 +63,8 @@ public class RoutePlanControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
+            .andExpect(
+                header().string("Location", "/v1/routes/plans/" + RoutePlanFixture.ROUTE_PLAN_ID))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.routePlanId").value(RoutePlanFixture.ROUTE_PLAN_ID.toString()));
     }

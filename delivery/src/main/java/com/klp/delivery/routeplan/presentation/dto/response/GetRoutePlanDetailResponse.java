@@ -11,22 +11,29 @@ public record GetRoutePlanDetailResponse(
     UUID arrivalId,
     Long totalDurationMin,
     Double totalDistanceKm,
-    List<PlanItem> planItems
+    List<PlanItem> planItems,
+    String status
 ) {
+
     public record PlanItem(
         UUID routePlanItemId,
+        UUID planId,
         UUID departureId,
         UUID arrivalId,
         Long durationMin,
-        Double distanceKm
-    ){
-        public static PlanItem from(RoutePlanItem routePlanItem) {
+        Double distanceKm,
+        Integer sequence
+    ) {
+
+        public static PlanItem from(RoutePlanItem routePlanItem, UUID planId) {
             return new PlanItem(
                 routePlanItem.getRoutePlanItemId(),
+                planId,
                 routePlanItem.getDepartureId(),
                 routePlanItem.getArrivalId(),
                 routePlanItem.getDurationMin(),
-                routePlanItem.getDistanceKm()
+                routePlanItem.getDistanceKm(),
+                routePlanItem.getSequence()
             );
         }
     }
@@ -38,7 +45,9 @@ public record GetRoutePlanDetailResponse(
             routePlan.getArrivalId(),
             routePlan.getTotalDurationMin(),
             routePlan.getTotalDistanceKm(),
-            routePlan.getRoutePlanItems().stream().map(PlanItem::from).toList()
+            routePlan.getRoutePlanItems().stream()
+                .map(item -> PlanItem.from(item, routePlan.getRoutePlanId())).toList(),
+            routePlan.getStatus().name()
         );
     }
 }

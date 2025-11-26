@@ -1,10 +1,14 @@
 package com.klp.delivery.routeplan.infrastructure.repository;
 
+import com.klp.delivery.common.enums.RoutePlanStatus;
 import com.klp.delivery.routeplan.domain.model.QRoutePlan;
+import com.klp.delivery.routeplan.domain.model.QRoutePlanItem;
 import com.klp.delivery.routeplan.domain.model.RoutePlan;
+import com.klp.delivery.routeplan.domain.model.RoutePlanItem;
 import com.klp.delivery.routeplan.domain.repository.RoutePlanRepository;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -24,6 +28,7 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
 
     private final RoutePlanJpaRepository routePlanJpaRepository;
     private final JPAQueryFactory queryFactory;
+    private final RoutePlanItemJpaRepository routePlanItemJpaRepository;
 
     @Override
     public RoutePlan save(RoutePlan routePlan) {
@@ -65,7 +70,8 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
             .where(
                 depId != null ? qRoutePlan.departureId.eq(depId) : null,
                 arrId != null ? qRoutePlan.arrivalId.eq(arrId) : null,
-                qRoutePlan.deletedAt.isNull()
+                qRoutePlan.deletedAt.isNull(),
+                qRoutePlan.status.eq(RoutePlanStatus.ACTIVE)
             );
 
         if (pageable.getSort().isSorted()) {
@@ -88,5 +94,36 @@ public class RoutePlanRepositoryImpl implements RoutePlanRepository {
             .fetch();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Optional<RoutePlanItem> findRoutePlanItemById(UUID routePlanId) {
+        return routePlanItemJpaRepository.findByRoutePlanItemIdAndDeletedAtIsNull(routePlanId);
+    }
+
+    @Override
+    public List<RoutePlan> findByHubId(UUID hubId) {
+        QRoutePlan qRoutePlan = QRoutePlan.routePlan;
+        QRoutePlanItem qRoutePlanItem = QRoutePlanItem.routePlanItem;
+
+        BooleanExpression hubMatched =
+            qRoutePlan.departureId.eq(hubId)
+                .or(qRoutePlan.arrivalId.eq(hubId))
+                .or(qRoutePlanItem.departureId.eq(hubId))
+                .or(qRoutePlanItem.arrivalId.eq(hubId));
+
+        return queryFactory
+            .selectDistinct(qRoutePlan)
+            .from(qRoutePlan)
+            .leftJoin(qRoutePlan.routePlanItems, qRoutePlanItem).fetchJoin()
+            .where(
+                hubMatched.and(qRoutePlan.status.ne(RoutePlanStatus.DELETED))
+            )
+            .fetch();
+    }
+
+    @Override
+    public List<RoutePlan> findAllByStatus(RoutePlanStatus routePlanStatus) {
+        return routePlanJpaRepository.findAllByStatus(routePlanStatus);
     }
 }
