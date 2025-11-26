@@ -4,5 +4,5 @@ import com.klp.delivery.delivery.application.command.DriverCommand;
 
 public interface DriverApiClient {
 
-    DriverCommand findDriver(String receiverId);
+    DriverCommand findArrivalHubDrivers(String receiverId);
 }

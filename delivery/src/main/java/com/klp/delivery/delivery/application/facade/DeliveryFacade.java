@@ -45,7 +45,7 @@ public class DeliveryFacade {
                 orderCommand.receiverId().toString());
 
             // TODO: 배송 담당자 api 생성 확정 후 로직 변경
-            DriverCommand driverCommand = deliveryService.findDriver(companyCommand.hubId());
+            DriverCommand driverCommand = deliveryService.findArrivalHubDrivers(companyCommand.hubId());
 
             // 항목별 배송 생성
             List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(

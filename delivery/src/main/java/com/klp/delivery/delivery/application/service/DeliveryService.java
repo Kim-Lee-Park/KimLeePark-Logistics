@@ -40,9 +40,9 @@ public class DeliveryService {
         }
     }
 
-    public DriverCommand findDriver(String customerId) {
+    public DriverCommand findArrivalHubDrivers(String customerId) {
         try {
-            return driverApiClient.findDriver(customerId);
+            return driverApiClient.findArrivalHubDrivers(customerId);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {

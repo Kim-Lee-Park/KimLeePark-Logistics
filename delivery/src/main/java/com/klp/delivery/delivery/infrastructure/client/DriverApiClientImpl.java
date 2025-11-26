@@ -10,7 +10,7 @@ public class DriverApiClientImpl implements DriverApiClient {
 
 
     @Override
-    public DriverCommand findDriver(String receiverId) {
+    public DriverCommand findArrivalHubDrivers(String receiverId) {
         return null;
     }
 }
