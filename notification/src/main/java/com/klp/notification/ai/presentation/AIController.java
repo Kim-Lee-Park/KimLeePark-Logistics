@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/ai")
+@RequestMapping("/v1/notification/ai")
 @RequiredArgsConstructor
 public class AIController {
 
