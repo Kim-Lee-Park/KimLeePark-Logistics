@@ -27,7 +27,6 @@ import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
-import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -60,7 +59,7 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
             delivery);
         doNothing().when(idempotencyKeyService)
@@ -80,7 +79,7 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, times(1)).findDriver(DEFAULT_HUB_ID);
+        verify(deliveryService, times(1)).findArrivalHubDrivers(DEFAULT_HUB_ID);
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
@@ -97,7 +96,7 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenAnswer(invocation -> createDeliveryFromCommand(
                 invocation.getArgument(0),
@@ -149,7 +148,7 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, never()).findCompany(any());
-        verify(deliveryService, never()).findDriver(any());
+        verify(deliveryService, never()).findArrivalHubDrivers(any());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
@@ -167,7 +166,7 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
             delivery);
         doNothing().when(idempotencyKeyService)
@@ -207,7 +206,7 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, never()).findDriver(any());
+        verify(deliveryService, never()).findArrivalHubDrivers(any());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
@@ -223,7 +222,7 @@ public class DeliveryFacadeTest extends MockTest {
         // when & then: 예외 발생 검증
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenThrow(
+        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenThrow(
             new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
         assertThatThrownBy(() ->
             deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
@@ -240,7 +239,7 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, times(1)).findDriver(DEFAULT_HUB_ID.toString());
+        verify(deliveryService, times(1)).findArrivalHubDrivers(DEFAULT_HUB_ID.toString());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
@@ -255,7 +254,7 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findDriver(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
 
@@ -273,7 +272,7 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, times(1)).findDriver(DEFAULT_HUB_ID.toString());
+        verify(deliveryService, times(1)).findArrivalHubDrivers(DEFAULT_HUB_ID.toString());
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
