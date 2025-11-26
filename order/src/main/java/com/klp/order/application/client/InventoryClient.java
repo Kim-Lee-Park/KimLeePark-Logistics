@@ -6,6 +6,7 @@ import com.klp.order.application.client.dto.inventory.request.ReplenishInventory
 import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
 import com.klp.order.application.client.dto.inventory.response.GetProductResponse;
 import com.klp.order.application.client.dto.inventory.response.ReplenishInventoryResponse;
+import com.klp.order.global.config.InventoryFeignClientConfig;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "hub-service", url = "http://localhost:8030")
+@FeignClient(name = "hub-service", configuration = InventoryFeignClientConfig.class)
 public interface InventoryClient {
 
     @PostMapping("/v1/inventories/deduct")
