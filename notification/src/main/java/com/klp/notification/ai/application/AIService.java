@@ -46,6 +46,7 @@ public class AIService {
             command.departureHubManagerId(),
             formattedMessage
         ));
+        newAI.publish();
     }
 
     private DeliveryPlanResponse parseAIResponse(String aiResponse) {
