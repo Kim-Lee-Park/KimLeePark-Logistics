@@ -1,7 +1,7 @@
-package com.klp.notification.ai.application.event;
+package com.klp.notification.messaging.application.event;
 
-import com.klp.notification.ai.domain.MessageSender;
 import com.klp.notification.ai.domain.event.AITextGeneratedEvent;
+import com.klp.notification.messaging.domain.MessageSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

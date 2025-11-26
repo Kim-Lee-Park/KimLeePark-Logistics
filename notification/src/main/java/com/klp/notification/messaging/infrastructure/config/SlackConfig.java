@@ -1,4 +1,4 @@
-package com.klp.notification.ai.infrastructure.config;
+package com.klp.notification.messaging.infrastructure.config;
 
 import com.slack.api.Slack;
 import com.slack.api.methods.MethodsClient;

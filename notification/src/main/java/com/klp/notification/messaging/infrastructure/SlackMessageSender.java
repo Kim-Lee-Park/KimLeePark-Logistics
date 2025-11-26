@@ -1,8 +1,8 @@
-package com.klp.notification.ai.infrastructure;
+package com.klp.notification.messaging.infrastructure;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.notification.ai.domain.MessageSender;
-import com.klp.notification.ai.domain.exception.NotificationErrorCode;
+import com.klp.notification.messaging.domain.MessageSender;
+import com.klp.notification.messaging.domain.exception.MessagingErrorCode;
 import com.slack.api.methods.MethodsClient;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
@@ -30,14 +30,14 @@ public class SlackMessageSender implements MessageSender {
 
             if (!response.isOk()) {
                 log.error("슬랙 메시지 전송 실패: {}", response.getError());
-                throw new BusinessException(NotificationErrorCode.MESSAGE_SENDING_FAILED);
+                throw new BusinessException(MessagingErrorCode.MESSAGE_SENDING_FAILED);
             }
 
             log.info("{} 배송 담당자에게 슬랙 메시지 전송 성공", recipientId);
 
         } catch (IOException | SlackApiException e) {
             log.error("슬랙 메시지 전송 실패", e);
-            throw new BusinessException(NotificationErrorCode.MESSAGE_SENDING_FAILED);
+            throw new BusinessException(MessagingErrorCode.MESSAGE_SENDING_FAILED);
         }
     }
 }

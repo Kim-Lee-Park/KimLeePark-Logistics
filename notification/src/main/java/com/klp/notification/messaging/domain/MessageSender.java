@@ -1,4 +1,4 @@
-package com.klp.notification.ai.domain;
+package com.klp.notification.messaging.domain;
 
 public interface MessageSender {
 
