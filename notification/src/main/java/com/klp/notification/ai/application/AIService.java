@@ -1,8 +1,7 @@
 package com.klp.notification.ai.application;
 
-import com.google.genai.Client;
-import com.google.genai.types.GenerateContentResponse;
 import com.klp.notification.ai.application.command.GenerateMessageCommand;
+import com.klp.notification.ai.domain.AITextGenerator;
 import com.klp.notification.ai.domain.entity.AI;
 import com.klp.notification.ai.domain.repository.AIRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,19 +13,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AIService {
 
-    private final Client client;
+    private final AITextGenerator textGenerator;
     private final AIRepository aiRepository;
 
     public void fromTextInput(GenerateMessageCommand command) {
         String prompt = buildOrderPrompt(command);
 
-        GenerateContentResponse response = client.models.generateContent(
-            "gemini-2.5-flash",
-            prompt,
-            null
-        );
+        String generatedText = textGenerator.generate(prompt);
 
-        AI newAI = AI.create(prompt, response.text());
+        AI newAI = AI.create(prompt, generatedText);
         aiRepository.save(newAI);
     }
 
