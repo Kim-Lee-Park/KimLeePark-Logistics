@@ -6,7 +6,6 @@ import com.klp.order.presentation.dto.orderitem.request.OrderItemRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record UpdateOrderRequest(
     String comment,
@@ -18,8 +17,8 @@ public record UpdateOrderRequest(
 
     public UpdateOrderCommand toCommand() {
         List<OrderItemCommand> itemCommands = orderItems.stream()
-            .map(item -> new OrderItemCommand(item.productId(), item.quantity()))
-            .collect(Collectors.toList());
+            .map(item -> new OrderItemCommand(item.productId(), item.hubId(), item.quantity()))
+            .toList();
 
         return new UpdateOrderCommand(comment, itemCommands);
     }

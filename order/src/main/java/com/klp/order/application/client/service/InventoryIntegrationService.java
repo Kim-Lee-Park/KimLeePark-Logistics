@@ -4,7 +4,10 @@ import com.klp.common.exception.BusinessException;
 import com.klp.order.application.client.InventoryClient;
 import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest;
 import com.klp.order.application.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
+import com.klp.order.application.client.dto.inventory.request.ReplenishInventoryRequest;
+import com.klp.order.application.client.dto.inventory.request.ReplenishInventoryRequest.ProductReplenishment;
 import com.klp.order.application.client.dto.inventory.response.DeductInventoryResponse;
+import com.klp.order.application.client.dto.inventory.response.ReplenishInventoryResponse;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
@@ -55,6 +58,43 @@ public class InventoryIntegrationService {
         log.info("주문에 대한 재고 차감에 성공하였습니다. orderId: {}", order.getOrderId());
     }
 
+    @Transactional
+    public void replenishInventory(Order order) {
+        String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
+            order.getOrderId(),
+            Target.INVENTORY,
+            OperationType.INCREASE
+        );
+
+        // 이미 복구 처리된 경우 스킵
+        if (checkExistIdempotencyKey(order.getOrderId(), idempotencyKey)) {
+            log.info("이미 재고 복구가 완료된 주문입니다. orderId: {}", order.getOrderId());
+            return;
+        }
+
+        List<ProductReplenishment> replenishments = convertToProductReplenishments(order);
+
+        ReplenishInventoryRequest request = new ReplenishInventoryRequest(idempotencyKey,
+            replenishments);
+
+        try {
+            ReplenishInventoryResponse response = inventoryClient.replenishInventory(request);
+
+            orderOutboundRequestService.save(new CreateOrderOutboundRequestCommand(
+                order.getOrderId(),
+                idempotencyKey,
+                Target.INVENTORY,
+                OperationType.INCREASE
+            ));
+
+            log.info("주문에 대한 재고 복구에 성공하였습니다. orderId: {}, productIds: {}",
+                order.getOrderId(), response.productIds());
+        } catch (Exception e) {
+            log.error("재고 복구 실패. orderId: {}", order.getOrderId(), e);
+            throw e;
+        }
+    }
+
     private boolean checkExistIdempotencyKey(UUID orderId, String idempotencyKey) {
         boolean exists = orderOutboundRequestService.existsByIdempotencyKey(idempotencyKey);
 
@@ -67,6 +107,16 @@ public class InventoryIntegrationService {
     private List<ProductDeduction> convertToProductDeductions(Order order) {
         return order.getOrderItems().stream()
             .map(orderItem -> new ProductDeduction(
+                orderItem.getProductId(),
+                orderItem.getHubId(),
+                orderItem.getQuantity()
+            ))
+            .toList();
+    }
+
+    private List<ProductReplenishment> convertToProductReplenishments(Order order) {
+        return order.getOrderItems().stream()
+            .map(orderItem -> new ProductReplenishment(
                 orderItem.getProductId(),
                 orderItem.getHubId(),
                 orderItem.getQuantity()

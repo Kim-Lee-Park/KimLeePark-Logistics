@@ -45,14 +45,14 @@ public class OrderFacade {
             saga.updateStatus(SagaStatus.ORDER_CREATED, 1);
             orderSagaService.save(saga);
 
-            // Step 2: 재고 차감 (OrderItem에서 hubId 직접 사용)
+            // Step 2: 재고 차감
             log.info("Step 2: 재고 차감 시작");
             inventoryIntegrationService.deductInventory(order);
             saga.updateStatus(SagaStatus.INVENTORY_DEDUCTED, 2);
             orderSagaService.save(saga);
             log.info("Step 2: 재고 차감 완료");
 
-            // Step 3: 배송 생성 (OrderItem에서 hubId 직접 사용)
+            // Step 3: 배송 생성
             log.info("Step 3: 배송 생성 시작");
             deliveryIntegrationService.createDelivery(order);
             saga.updateStatus(SagaStatus.DELIVERY_CREATED, 3);
@@ -62,10 +62,6 @@ public class OrderFacade {
             // Step 4: Saga 완료
             saga.updateStatus(SagaStatus.COMPLETED, 4);
             orderSagaService.save(saga);
-
-            // 주문 상태를 DELIVERY_ASSIGNED로 변경
-            order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
-            orderService.updateOrder(order.getOrderId(), null);
 
             log.info("=== Saga 정상 완료: orderId={} ===", order.getOrderId());
             return order;
@@ -93,8 +89,17 @@ public class OrderFacade {
         try {
             Integer failedStep = saga.getCurrentStep();
 
-            // 아래와 같은 로직을 반복하는 이유 => 보상과 관련해서 조금 더 명확하게 로그를 찍고 싶어서 분리
             // Step 3에서 실패: 배송 생성 실패
+            // 재고 복구 필요
+            if (failedStep >= 3) {
+                log.info("보상 Step 3: 배송 삭제 시작");
+                compensateDelivery(order);
+                saga.updateStatus(SagaStatus.DELIVERY_COMPENSATION_FAILED, failedStep);
+                orderSagaService.save(saga);
+                log.info("보상 Step 3: 배송 삭제 완료");
+            }
+
+            // Step 2에서 실패: 재고 차감 실패
             // 재고 복구 필요
             if (failedStep >= 2) {
                 log.info("보상 Step 2: 재고 복구 시작");
@@ -104,7 +109,6 @@ public class OrderFacade {
                 log.info("보상 Step 2: 재고 복구 완료");
             }
 
-            // Step 2에서 실패: 재고 차감 실패
             // Step 1에서 실패: 주문 생성 실패
             // 주문 취소 (상태 변경)
             if (failedStep >= 1 && order != null) {
@@ -126,32 +130,34 @@ public class OrderFacade {
         }
     }
 
-    // 재고 복구 (보상 트랜잭션)
+    // 배송 삭제 - 배송 생성의 보상 트랜잭션
+    private void compensateDelivery(Order order) {
+        try {
+            deliveryIntegrationService.deleteDeliveries(order);
+            log.info("배송 삭제 완료: orderId={}", order.getOrderId());
+        } catch (Exception e) {
+            log.error("배송 삭제 실패: orderId={}", order.getOrderId(), e);
+            throw e;
+        }
+    }
+
+    // 재고 증감 - 재고 차감의 보상 트랜잭션
     private void compensateInventory(Order order) {
         try {
-            // 실제로는 InventoryIntegrationService를 통해 재고 복구 API 호출
-            log.info("재고 복구 API 호출 필요: orderId={}", order.getOrderId());
-
-            // TODO: 실제 구현 시
-            // inventoryIntegrationService.restoreInventory(order);
-
+            inventoryIntegrationService.replenishInventory(order);
+            log.info("재고 복구 완료: orderId={}", order.getOrderId());
         } catch (Exception e) {
             log.error("재고 복구 실패: orderId={}", order.getOrderId(), e);
             throw e;
         }
     }
 
-    /**
-     * 주문 취소 (보상 트랜잭션)
-     */
+    // 주문 취소 - 주문 생성의 보상 트랜잭션?
     private void compensateOrder(Order order) {
         try {
-            // 주문 상태를 FAILED로 변경
             order.changeStatus(OrderStatus.FAILED);
             orderService.updateOrder(order.getOrderId(), null);
-
             log.info("주문 상태를 FAILED로 변경: orderId={}", order.getOrderId());
-
         } catch (Exception e) {
             log.error("주문 취소 실패: orderId={}", order.getOrderId(), e);
             throw e;

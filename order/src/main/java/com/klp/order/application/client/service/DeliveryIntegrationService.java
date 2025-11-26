@@ -8,6 +8,7 @@ import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.domain.entity.orderitem.OrderItem;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,32 @@ public class DeliveryIntegrationService {
         ));
 
         log.info("배송 생성 요청에 성공하였습니다.: {}", order.getOrderId());
+    }
+
+    @Transactional
+    public void deleteDeliveries(Order order) {
+        List<UUID> deliveryIds = order.getOrderItems().stream()
+            .map(OrderItem::getDeliveryId)
+            .filter(deliveryId -> deliveryId != null)
+            .distinct()
+            .toList();
+
+        if (deliveryIds.isEmpty()) {
+            log.info("삭제할 배송이 없습니다. orderId: {}", order.getOrderId());
+            return;
+        }
+
+        for (UUID deliveryId : deliveryIds) {
+            try {
+                deliveryClient.deleteDelivery(deliveryId);
+                log.info("배송 삭제 성공: deliveryId={}, orderId={}", deliveryId,
+                    order.getOrderId());
+            } catch (Exception e) {
+                log.error("배송 삭제 실패: deliveryId={}, orderId={}", deliveryId,
+                    order.getOrderId(), e);
+            }
+        }
+
     }
 
     private boolean checkExistIdempotencyKey(UUID orderId, String idempotencyKey) {

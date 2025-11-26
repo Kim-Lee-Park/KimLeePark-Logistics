@@ -1,7 +1,7 @@
 package com.klp.order.domain.entity.order;
 
 public enum OrderStatus {
-    ING("진행 중"),
+    PENDING("진행 중"),
     DELIVERY_ASSIGNED("배송 할당"),
     COMPLETE("완료"),
     CANCELLED("취소됨"),
