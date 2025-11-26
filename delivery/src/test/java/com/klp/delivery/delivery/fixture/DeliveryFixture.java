@@ -26,6 +26,8 @@ public class DeliveryFixture {
         "00000000-0000-0000-0000-000000000005");              // 발송업체 ID
     public static Long DEFAULT_VENDOR_DRIVER_ID = 1234L;
 
+    public static Long NEW_VENDOR_DRIVER_ID = 4567L;
+
 
     public static UUID DEFAULT_DELIVERY_ID_FIRST = UUID.fromString(
         "00000000-0000-0000-0000-000000000006");      // 배송 ID
