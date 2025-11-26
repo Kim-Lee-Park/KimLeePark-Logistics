@@ -16,6 +16,7 @@ public enum OrderErrorCode implements ErrorCode {
     ORDER_ITEMS_MIN_REQUIRED(HttpStatus.BAD_REQUEST, "주문 상품은 최소 1개 이상이어야 합니다."),
     ORDER_STATUS_REQUIRED(HttpStatus.BAD_REQUEST, "변경할 주문 상태가 존재해야 합니다."),
     DELETED_BY_REQUIRED(HttpStatus.BAD_REQUEST, "삭제자는 필수 정보 입니다."),
+    HUB_ID_REQUIRED(HttpStatus.BAD_REQUEST, "허브 ID는 필수입니다."),
 
     CANNOT_UPDATE_DELIVERY_ASSIGNED(HttpStatus.BAD_REQUEST, "배송이 할당된 주문은 수정할 수 없습니다."),
     CANNOT_UPDATE_CANCELLED_ORDER(HttpStatus.BAD_REQUEST, "취소된 주문은 수정할 수 없습니다."),

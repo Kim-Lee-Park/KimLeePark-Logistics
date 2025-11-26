@@ -35,4 +35,12 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
         @Param("endDate") LocalDateTime endDate,
         Pageable pageable
     );
+
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END " +
+        "FROM Order o " +
+        "JOIN o.orderItems oi " +
+        "WHERE oi.hubId = :hubId " +
+        "AND o.orderStatus != 'COMPLETE' " +
+        "AND o.deletedAt IS NULL")
+    boolean existsByHubIdAndOrderStatusNotComplete(@Param("hubId") UUID hubId);
 }

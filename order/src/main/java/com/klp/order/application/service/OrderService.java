@@ -127,6 +127,12 @@ public class OrderService {
         return PageResponse.of(data, orderPage);
     }
 
+    @Transactional(readOnly = true)
+    public boolean hasProgressingOrders(UUID hubId) {
+        checkHubId(hubId);
+        return orderRepository.existsByHubIdAndOrderStatusNotComplete(hubId);
+    }
+
     private void checkDeletedBy(Long deletedBy) {
         if (deletedBy == null) {
             throw new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED);
@@ -139,5 +145,11 @@ public class OrderService {
 
     private LocalDateTime convertToEndDateTime(LocalDate date) {
         return date != null ? date.atTime(LocalTime.MAX) : null;
+    }
+
+    private void checkHubId(UUID hubId) {
+        if (hubId == null) {
+            throw new BusinessException(OrderErrorCode.HUB_ID_REQUIRED);
+        }
     }
 }

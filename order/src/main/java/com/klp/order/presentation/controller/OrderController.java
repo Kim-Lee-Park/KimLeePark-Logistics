@@ -15,6 +15,7 @@ import com.klp.order.presentation.dto.order.response.cancel.CancelOrderResponse;
 import com.klp.order.presentation.dto.order.response.create.CreateOrderResponse;
 import com.klp.order.presentation.dto.order.response.delete.DeleteOrderResponse;
 import com.klp.order.presentation.dto.order.response.get.GetOneOrderResponse;
+import com.klp.order.presentation.dto.order.response.get.GetOrderProgressResponse;
 import com.klp.order.presentation.dto.order.response.get.GetOrdersResponse;
 import com.klp.order.presentation.dto.order.response.update.ChangeOrderStatusResponse;
 import com.klp.order.presentation.dto.order.response.update.UpdateOrderResponse;
@@ -133,6 +134,15 @@ public class OrderController {
         Order order = orderService.changeOrderStatus(orderId, request.orderStatus());
         ChangeOrderStatusResponse response = ChangeOrderStatusResponse.from(order);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/progressing")
+    public ResponseEntity<GetOrderProgressResponse> getOrderStatus(
+        @RequestParam UUID hubId
+    ) {
+        boolean isOrderProgressing = orderService.hasProgressingOrders(hubId);
+        GetOrderProgressResponse response = GetOrderProgressResponse.of(isOrderProgressing);
         return ResponseEntity.ok(response);
     }
 

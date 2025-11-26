@@ -85,4 +85,9 @@ public class OrderRepositoryImpl implements OrderRepository {
             pageable
         );
     }
+
+    @Override
+    public boolean existsByHubIdAndOrderStatusNotComplete(UUID hubId) {
+        return orderJpaRepository.existsByHubIdAndOrderStatusNotComplete(hubId);
+    }
 }

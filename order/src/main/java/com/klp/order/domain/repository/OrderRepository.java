@@ -38,4 +38,6 @@ public interface OrderRepository {
         LocalDateTime endDate,
         Pageable pageable
     );
+
+    boolean existsByHubIdAndOrderStatusNotComplete(UUID hubId);
 }
