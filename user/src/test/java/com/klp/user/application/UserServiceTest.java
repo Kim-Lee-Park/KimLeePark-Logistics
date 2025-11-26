@@ -273,7 +273,7 @@ class UserServiceTest {
             String encodedPassword = "encodedPassword";
             String newSlackId = "newSlackId";
             String newPhone = "010-1111-1111";
-            UserRole newRole = UserRole.HUB_DRIVER;
+            UserRole newRole = UserRole.DRIVER;
 
             UserUpdateRequest request = new UserUpdateRequest(
                 newUsername,
@@ -292,6 +292,107 @@ class UserServiceTest {
             // then
             then(userRepository).should(times(1)).findById(userId);
             then(passwordEncoder).should(times(1)).encode(newPassword);
+        }
+    }
+
+    @Nested
+    @DisplayName("getDriversByHubId 테스트")
+    class GetDriversByHubIdTest {
+
+        @Test
+        @DisplayName("허브 ID로 배송 담당자 조회 성공")
+        void getDriversByHubId_ReturnsDriverList() {
+            // given
+            UUID hubId = UUID.randomUUID();
+            User driver1 = User.create(
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", UserRole.DRIVER
+            );
+            ReflectionTestUtils.setField(driver1, "userId", 1L);
+
+            User driver2 = User.create(
+                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222", UserRole.DRIVER
+            );
+            ReflectionTestUtils.setField(driver2, "userId", 2L);
+
+            List<User> drivers = List.of(driver1, driver2);
+            Pageable pageable = PageRequest.of(0, 10);
+
+            given(userRepository.findDriversByHubId(hubId, pageable)).willReturn(drivers);
+
+            // when
+            var response = userService.getDriversByHubId(hubId);
+
+            // then
+            assertThat(response.hubId()).isEqualTo(hubId);
+            assertThat(response.drivers()).hasSize(2);
+            assertThat(response.drivers().get(0).userId()).isEqualTo(1L);
+            assertThat(response.drivers().get(0).username()).isEqualTo("driver1");
+            then(userRepository).should(times(1)).findDriversByHubId(hubId, pageable);
+        }
+    }
+
+    @Nested
+    @DisplayName("getDriversByLogistics 테스트")
+    class GetDriversByLogisticsTest {
+
+        @Test
+        @DisplayName("물류회사 소속 배송 담당자 조회 성공")
+        void getDriversByLogistics_ReturnsDriverList() {
+            // given
+            UUID logisticsId = UUID.randomUUID();
+            User driver1 = User.create(
+                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1", "010-1111-1111", UserRole.DRIVER
+            );
+            ReflectionTestUtils.setField(driver1, "userId", 1L);
+
+            User driver2 = User.create(
+                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2", "010-2222-2222", UserRole.DRIVER
+            );
+            ReflectionTestUtils.setField(driver2, "userId", 2L);
+
+            List<User> drivers = List.of(driver1, driver2);
+            Pageable pageable = PageRequest.of(0, 10);
+
+            given(userRepository.findDriversByLogistics(pageable)).willReturn(drivers);
+
+            // when
+            var response = userService.getDriversByLogistics();
+
+            // then
+            assertThat(response.drivers()).hasSize(2);
+            assertThat(response.drivers().get(0).userId()).isEqualTo(1L);
+            assertThat(response.drivers().get(0).username()).isEqualTo("driver1");
+            then(userRepository).should(times(1)).findDriversByLogistics(pageable);
+        }
+    }
+
+    @Nested
+    @DisplayName("getDriverById 테스트")
+    class GetDriverByIdTest {
+
+        @Test
+        @DisplayName("배송 담당자 ID로 상세 정보 조회 성공")
+        void getDriverById_ReturnsDriverDetail() {
+            // given
+            Long driverId = 1L;
+            UUID hubId = UUID.randomUUID();
+            User driver = User.create(
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", UserRole.DRIVER
+            );
+            ReflectionTestUtils.setField(driver, "userId", driverId);
+
+            given(userRepository.findDriverById(driverId)).willReturn(Optional.of(driver));
+
+            // when
+            var response = userService.getDriverById(driverId);
+
+            // then
+            assertThat(response.userId()).isEqualTo(driverId);
+            assertThat(response.hubId()).isEqualTo(hubId);
+            assertThat(response.username()).isEqualTo("driver1");
+            assertThat(response.slackId()).isEqualTo("slack1");
+            assertThat(response.phone()).isEqualTo("010-1111-1111");
+            then(userRepository).should(times(1)).findDriverById(driverId);
         }
     }
 }
