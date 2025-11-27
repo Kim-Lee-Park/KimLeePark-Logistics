@@ -20,6 +20,7 @@ import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
+import com.klp.delivery.delivery.infrastructure.repository.DeliveryItemRepositoryImpl;
 import com.klp.delivery.delivery.infrastructure.repository.DeliveryJpaRepository;
 import com.klp.delivery.delivery.infrastructure.repository.DeliveryRepositoryImpl;
 import com.klp.delivery.global.config.AuditConfig;
@@ -45,7 +46,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Slf4j
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({DeliveryRepositoryImpl.class, AuditConfig.class, QuerydslConfig.class})
+@Import({DeliveryItemRepositoryImpl.class, DeliveryRepositoryImpl.class, AuditConfig.class, QuerydslConfig.class})
 public class DeliveryRepositoryImplTest {
 
 
