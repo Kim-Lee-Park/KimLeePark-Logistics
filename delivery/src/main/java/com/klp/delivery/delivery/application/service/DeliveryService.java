@@ -123,4 +123,10 @@ public class DeliveryService {
         delivery.updateVendorDriverId(newVendorDriverId);
 
     }
+
+    @Transactional
+    public void deleteDelivery(UUID deliveryId, Long deletedBy) {
+        Delivery delivery = findDelivery(deliveryId);
+        delivery.delete(deletedBy);
+    }
 }

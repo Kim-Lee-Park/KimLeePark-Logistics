@@ -157,5 +157,12 @@ public class Delivery extends BaseEntity {
         this.vendorDrvierId = newVendorDriverId;
     }
 
+    public void delete(Long deletedBy) {
+
+        if (this.status != DeliveryStatus.CREATED) {
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 삭제 불가 상태" + this.status);
+        }
+        super.delete(deletedBy);
+    }
 
 }
