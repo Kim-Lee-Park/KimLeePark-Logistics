@@ -13,7 +13,9 @@ public record CreateDeliveryRequest(
 
     public record DeliveryOrderItem(
         UUID orderItemId,
-        UUID hubId
+        UUID hubId,
+        String productName,
+        int quantity
     ) {
 
     }

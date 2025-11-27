@@ -32,7 +32,7 @@ public class OrderCancellationTest {
         Long customerId = 2L;
         String comment = "TDD 어디까지 해야 하는건가!";
         List<OrderItemCommand> initialItems = List.of(
-            new OrderItemCommand(UUID.randomUUID(), hubId, 1)
+            new OrderItemCommand(UUID.randomUUID(), "상품명", hubId, 1)
         );
 
         order = Order.create(supplierId, customerId, comment, initialItems);
