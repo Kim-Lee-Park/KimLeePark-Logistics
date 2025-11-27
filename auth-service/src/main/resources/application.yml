@@ -1,34 +1,13 @@
-server:
-  port: 8000
-
 spring:
   application:
     name: auth-service
-  datasource:
-    url: jdbc:postgresql://localhost:5432/logistics
-    username: kimleepark
-    password: kimleepark
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-  jackson:
-    mapper:
-      ACCEPT_CASE_INSENSITIVE_ENUMS: true
-
-jwt:
-  access:
-    secret: ${JWT_ACCESS_SECRET}
-    expiration: ${JWT_ACCESS_EXPIRATION}
-  refresh:
-    secret: ${JWT_REFRESH_SECRET}
-    expiration: ${JWT_REFRESH_EXPIRATION}
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  profiles:
+    active: local
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        initial-interval: 1000
+        max-attempts: 3
