@@ -7,6 +7,7 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.infrastructure.client.dto.CompanyResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;
 import java.util.List;
@@ -64,6 +65,21 @@ public class DeliveryFixture {
             name,
             address
         );
+    }
+
+    public static CompanyResponse createCompanyResponse() {
+        return new CompanyResponse(
+            DEFAULT_RECEIVER_ID.toString(),
+            DEFAULT_HUB_ID,
+            "CUSTOMER",
+            DEFAULT_COMPANY_NAME,
+            DEFAULT_COMPANY_ADDRESS
+        );
+    }
+
+    public static CompanyResponse createCompanyResponse(String companyId, String hubId,
+        String type, String name, String address, String email) {
+        return new CompanyResponse(companyId, hubId, type, name, address);
     }
 
     public static DriverCommand createDriver() {

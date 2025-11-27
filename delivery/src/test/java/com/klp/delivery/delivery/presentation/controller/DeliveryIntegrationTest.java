@@ -1,8 +1,7 @@
 package com.klp.delivery.delivery.presentation.controller;
 
 
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompanyResponse;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
@@ -12,7 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.DriverCommand;
-import com.klp.delivery.delivery.application.service.CompanyApiClient;
+import com.klp.delivery.delivery.application.service.CompanyClientService;
 import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
@@ -59,8 +58,8 @@ class DeliveryIntegrationTest {
 
         @Bean
         @Primary
-        public CompanyApiClient companyApiClient() {
-            return companyId -> createCompany();
+        public CompanyClientService companyApiClient() {
+            return companyId -> createCompanyResponse();
         }
 
         @Bean
@@ -89,8 +88,9 @@ class DeliveryIntegrationTest {
 
     @Test
     void 배송생성_조회_E2E() {
-        // given
-        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
+        // given: 고유한 orderId 사용하여 멱등키 중복 방지
+        UUID uniqueOrderId = UUID.randomUUID();
+        DeliveryCreateRequest request = createDeliveryRequest(uniqueOrderId, createOrderItems());
 
         // when: 배송 생성
         String deliveryId = given()
@@ -126,7 +126,7 @@ class DeliveryIntegrationTest {
 
         // DB 저장 확인
         Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
-        assertThat(savedDelivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
+        assertThat(savedDelivery.getOrderId()).isEqualTo(uniqueOrderId);
         assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
     }
 
@@ -194,8 +194,9 @@ class DeliveryIntegrationTest {
 
     @Test
     void 배송상태변경_E2E() {
-        // given: 배송 생성
-        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
+        // given: 배송 생성 (고유한 orderId 사용하여 멱등키 중복 방지)
+        UUID uniqueOrderId = UUID.randomUUID();
+        DeliveryCreateRequest request = createDeliveryRequest(uniqueOrderId, createOrderItems());
         String deliveryId = given()
             .contentType(ContentType.JSON)
             .body(request)
@@ -239,8 +240,9 @@ class DeliveryIntegrationTest {
 
     @Test
     void 배송삭제_E2E() {
-        // given: 배송 생성 (CREATED 상태)
-        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
+        // given: 배송 생성 (고유한 orderId 사용하여 멱등키 중복 방지)
+        UUID uniqueOrderId = UUID.randomUUID();
+        DeliveryCreateRequest request = createDeliveryRequest(uniqueOrderId, createOrderItems());
         String deliveryId = given()
             .contentType(ContentType.JSON)
             .body(request)

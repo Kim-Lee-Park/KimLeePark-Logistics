@@ -27,12 +27,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
-    private final CompanyApiClient companyApiClient;
+    private final CompanyClientService companyClientService;
     private final DriverApiClient driverApiClient;
 
     public CompanyCommand findCompany(String customerId) {
         try {
-            return companyApiClient.findCompany(customerId);
+            return CompanyCommand.of(companyClientService.findCompany(customerId));
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {

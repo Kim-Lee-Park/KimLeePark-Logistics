@@ -10,7 +10,7 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.NEW_VENDOR_DRIVER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompany;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompanyResponse;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryList;
@@ -27,7 +27,7 @@ import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.service.CompanyApiClient;
+import com.klp.delivery.delivery.application.service.CompanyClientService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverApiClient;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -57,7 +57,7 @@ public class DeliveryServiceTest extends MockTest {
     DeliveryRepository deliveryRepository;
 
     @Mock
-    CompanyApiClient companyApiClient;
+    CompanyClientService companyClientService;
 
     @Mock
     DriverApiClient driverApiClient;
@@ -98,13 +98,13 @@ public class DeliveryServiceTest extends MockTest {
         // given: 업체 조회 데이터 준비
         UUID receiverId = DEFAULT_RECEIVER_ID;
 
-        when(companyApiClient.findCompany(receiverId.toString())).thenReturn(createCompany());
+        when(companyClientService.findCompany(receiverId.toString())).thenReturn(createCompanyResponse());
 
         // when: 업체 조회
         var result = deliveryService.findCompany(receiverId.toString());
 
         // then: 조회 검증
-        verify(companyApiClient, times(1)).findCompany(receiverId.toString());
+        verify(companyClientService, times(1)).findCompany(receiverId.toString());
         assertThat(result).isNotNull();
         assertThat(result.name()).isEqualTo(DEFAULT_COMPANY_NAME);
     }
@@ -119,7 +119,7 @@ public class DeliveryServiceTest extends MockTest {
         // given: 업체 조회 데이터 준비
         UUID receiverId = DEFAULT_RECEIVER_ID;
 
-        when(companyApiClient.findCompany(receiverId.toString()))
+        when(companyClientService.findCompany(receiverId.toString()))
             .thenThrow(new RuntimeException(errorMessage));
 
         // when & then: 예외 발생 검증
@@ -132,7 +132,7 @@ public class DeliveryServiceTest extends MockTest {
             });
 
         // then: 외부 API 호출 검증
-        verify(companyApiClient, times(1)).findCompany(receiverId.toString());
+        verify(companyClientService, times(1)).findCompany(receiverId.toString());
     }
 
     @Test
