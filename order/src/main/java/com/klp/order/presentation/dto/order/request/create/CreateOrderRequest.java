@@ -25,7 +25,8 @@ public record CreateOrderRequest(
 
     public CreateOrderCommand toCommand() {
         List<OrderItemCommand> itemCommands = orderItems.stream()
-            .map(item -> new OrderItemCommand(item.productId(), item.hubId(), item.quantity()))
+            .map(item -> new OrderItemCommand(item.productId(), item.productName(), item.hubId(),
+                item.quantity()))
             .toList();
 
         return new CreateOrderCommand(
