@@ -42,7 +42,6 @@ public class AIService {
 
         log.info("AI 텍스트 생성 완료, 이벤트 발행: recipientSlackId={}", command.departureHubManagerId());
         eventPublisher.publishEvent(new AITextGeneratedEvent(
-            this,
             command.departureHubManagerId(),
             formattedMessage
         ));

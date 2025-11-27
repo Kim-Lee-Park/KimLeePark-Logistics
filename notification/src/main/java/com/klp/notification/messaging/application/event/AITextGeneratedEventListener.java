@@ -21,10 +21,10 @@ public class AITextGeneratedEventListener {
     @Async
     @EventListener
     public void handleAITextGeneratedEvent(AITextGeneratedEvent event) {
-        log.info("AI 텍스트 생성 완료 이벤트 수신: recipientId={}", event.getRecipientId());
+        log.info("AI 텍스트 생성 완료 이벤트 수신: recipientId={}", event.recipientId());
 
-        messageSender.sendMessage(event.getRecipientId(), event.getGeneratedText());
+        messageSender.sendMessage(event.recipientId(), event.generatedText());
 
-        log.info("알림 메시지 전송 완료: recipientId={}", event.getRecipientId());
+        log.info("알림 메시지 전송 완료: recipientId={}", event.recipientId());
     }
 }
