@@ -25,6 +25,10 @@ public record SignUpRequest(
     @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다")
     String phone,
 
+    @NotBlank(message = "이메일은 필수 입니다")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "이메일 형식이 올바르지 않습니다")
+    String email,
+
     @NotBlank(message = "권한은 필수 입니다")
     String role,
 
@@ -41,6 +45,7 @@ public record SignUpRequest(
             password,
             slackId,
             phone,
+            email,
             role,
             affiliationName,
             affiliationType

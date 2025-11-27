@@ -24,6 +24,7 @@ class UserTest {
     private final String password = "Password1!";
     private final String slackId = "slackId";
     private final String phone = "010-1234-5678";
+    private final String email = "test@example.com";
 
     @Test
     @DisplayName("유저 생성 성공")
@@ -32,7 +33,7 @@ class UserTest {
 
         // when
         User user = User.create(
-            affiliationId, AffiliationType.COMPANY, name, password, slackId, phone, UserRole.COMPANY
+            affiliationId, AffiliationType.COMPANY, name, password, slackId, phone, email, UserRole.COMPANY
         );
 
         // then
@@ -41,6 +42,7 @@ class UserTest {
         assertThat(user.getName()).isEqualTo(name);
         assertThat(user.getSlackId()).isEqualTo(slackId);
         assertThat(user.getPhone()).isEqualTo(phone);
+        assertThat(user.getEmail()).isEqualTo(email);
         assertThat(user.getRole()).isEqualTo(UserRole.COMPANY);
         assertThat(user.getStatus()).isEqualTo(UserStatus.PENDING);
     }
@@ -55,6 +57,7 @@ class UserTest {
         String password,
         String slackId,
         String phone,
+        String email,
         UserRole role
     ) {
         // given
@@ -67,6 +70,7 @@ class UserTest {
             password,
             slackId,
             phone,
+            email,
             role
         )).isInstanceOf(BusinessException.class);
     }
@@ -84,7 +88,8 @@ class UserTest {
             password,
             slackId,
             phone,
-            UserRole.HUB_DRIVER
+            email,
+            UserRole.DRIVER
         )).isInstanceOf(BusinessException.class);
     }
 
@@ -101,7 +106,8 @@ class UserTest {
             password,
             slackId,
             phone,
-            UserRole.HUB_DRIVER
+            email,
+            UserRole.DRIVER
         )).isInstanceOf(BusinessException.class);
     }
 
@@ -116,7 +122,8 @@ class UserTest {
             password,
             slackId,
             phone,
-            UserRole.HUB_DRIVER
+            email,
+            UserRole.DRIVER
         );
 
         // when
@@ -137,7 +144,8 @@ class UserTest {
             password,
             slackId,
             phone,
-            UserRole.HUB_DRIVER
+            email,
+            UserRole.DRIVER
         );
 
         // when
@@ -158,7 +166,8 @@ class UserTest {
             password,
             slackId,
             phone,
-            UserRole.HUB_DRIVER
+            email,
+            UserRole.DRIVER
         );
         user.approve();
 
@@ -174,16 +183,17 @@ class UserTest {
         String password = "Password1!";
         String slackId = "slackId";
         String phone = "010-1234-5678";
+        String email = "test@example.com";
 
         return Stream.of(
-            Arguments.of(null, AffiliationType.HUB, name, password, slackId, phone, UserRole.HUB_DRIVER),
-            Arguments.of(affiliationId, null, name, password, slackId, phone, UserRole.HUB_DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, null, password, slackId, phone, UserRole.HUB_DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, null, slackId, phone, UserRole.HUB_DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, null, phone, UserRole.HUB_DRIVER),
-            Arguments.of(
-                affiliationId, AffiliationType.HUB, name, password, slackId, null, UserRole.HUB_DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, null)
+            Arguments.of(null, AffiliationType.HUB, name, password, slackId, phone, email, UserRole.DRIVER),
+            Arguments.of(affiliationId, null, name, password, slackId, phone, email, UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, null, password, slackId, phone, email, UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, null, slackId, phone, email, UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, null, phone, email, UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, null, email, UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, null, UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, email, null)
         );
     }
 }

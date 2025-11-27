@@ -73,6 +73,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -94,6 +95,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -115,6 +117,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -136,6 +139,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -157,6 +161,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -178,6 +183,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -199,6 +205,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -220,6 +227,7 @@ class AuthControllerTest {
                     "!Password123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "testCompany",
                     "COMPANY",
                     AffiliationType.COMPANY
@@ -246,6 +254,7 @@ class AuthControllerTest {
                     "Pass1!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -267,6 +276,7 @@ class AuthControllerTest {
                     "Password12345667!@#",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -288,6 +298,7 @@ class AuthControllerTest {
                     "password123!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -309,6 +320,7 @@ class AuthControllerTest {
                     "PASSWORD123!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -330,6 +342,7 @@ class AuthControllerTest {
                     "Password!@#!@#",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -351,6 +364,7 @@ class AuthControllerTest {
                     "Password123123",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -372,6 +386,7 @@ class AuthControllerTest {
                     null,
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -393,6 +408,7 @@ class AuthControllerTest {
                     "",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -414,6 +430,7 @@ class AuthControllerTest {
                     "   ",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -440,6 +457,7 @@ class AuthControllerTest {
                     "Password1!",
                     null,
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -461,6 +479,7 @@ class AuthControllerTest {
                     "Password1!",
                     "",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -482,6 +501,7 @@ class AuthControllerTest {
                     "Password1!",
                     "  ",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     AffiliationType.COMPANY
@@ -508,6 +528,7 @@ class AuthControllerTest {
                     "Password1!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     null,
                     AffiliationType.COMPANY
@@ -529,6 +550,7 @@ class AuthControllerTest {
                     "Password1!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "",
                     AffiliationType.COMPANY
@@ -550,6 +572,7 @@ class AuthControllerTest {
                     "Password1!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "  ",
                     AffiliationType.COMPANY
@@ -576,6 +599,7 @@ class AuthControllerTest {
                     "Password1!",
                     "slackId",
                     "010-0000-0000",
+                    "test@example.com",
                     "COMPANY",
                     "testCompany",
                     null
@@ -626,11 +650,13 @@ class AuthControllerTest {
             String password = "Password123!";
             String slackId = "slackId";
             String phone = "010-0000-0000";
+            String email = "test@example.com";
             String role = "COMPANY";
             String affiliationName = "testCompany";
             AffiliationType type = AffiliationType.COMPANY;
 
-            SignUpRequest signUpRequest = new SignUpRequest(username, password, slackId, phone, role, affiliationName,
+            SignUpRequest signUpRequest = new SignUpRequest(username, password, slackId, phone, email, role,
+                affiliationName,
                 type);
 
             // when
