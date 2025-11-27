@@ -15,7 +15,7 @@ public record OrderOutboundRequestResponse(
 
     public static OrderOutboundRequestResponse from(OrderOutboundRequest entity) {
         return new OrderOutboundRequestResponse(
-            entity.getReqeustId(),
+            entity.getRequestId(),
             entity.getOrder().getOrderId(),
             entity.getIdempotencyKey(),
             entity.getTarget(),

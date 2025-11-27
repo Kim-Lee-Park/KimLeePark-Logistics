@@ -13,6 +13,7 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.global.exception.OrderErrorCode;
+import com.klp.order.infrastructure.client.service.facade.OrderFacade;
 import com.klp.order.presentation.controller.OrderController;
 import com.klp.order.presentation.dto.order.request.update.ChangeOrderStatusRequest;
 import java.util.List;
@@ -43,6 +44,9 @@ public class OrderStatusControllerTest {
     @MockitoBean
     private OrderService orderService;
 
+    @MockitoBean
+    private OrderFacade orderFacade;
+
     private Order savedOrder;
     private List<OrderItemCommand> itemCommands;
 
@@ -50,10 +54,12 @@ public class OrderStatusControllerTest {
     void setUp() {
         UUID productId1 = UUID.randomUUID();
         UUID productId2 = UUID.randomUUID();
+        UUID hubId1 = UUID.randomUUID();
+        UUID hubId2 = UUID.randomUUID();
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, 10),
-            new OrderItemCommand(productId2, 5)
+            new OrderItemCommand(productId1, hubId1, 10),
+            new OrderItemCommand(productId2, hubId2, 5)
         );
     }
 

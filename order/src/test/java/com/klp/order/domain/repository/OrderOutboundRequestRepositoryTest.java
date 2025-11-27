@@ -53,9 +53,9 @@ public class OrderOutboundRequestRepositoryTest {
         itemCommands1 = new ArrayList<>();
         itemCommands2 = new ArrayList<>();
 
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 5));
-        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), 20));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 5));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 20));
 
         order1 = Order.create(1L, 2L, "주문1", itemCommands1);
         order2 = Order.create(2L, 3L, "주문2", itemCommands2);
@@ -87,7 +87,7 @@ public class OrderOutboundRequestRepositoryTest {
         OrderOutboundRequest savedRequest = requestRepository.save(newRequest);
 
         // then
-        assertThat(savedRequest.getReqeustId()).isNotNull();
+        assertThat(savedRequest.getRequestId()).isNotNull();
         assertThat(savedRequest.getIdempotencyKey()).isEqualTo(idempotentKey2);
         assertThat(savedRequest.getTarget()).isEqualTo(Target.INVENTORY);
         assertThat(savedRequest.getOperation()).isEqualTo(OperationType.DECREASE);
@@ -100,14 +100,14 @@ public class OrderOutboundRequestRepositoryTest {
         // given
         //setup
         // requestRepository.save(outboundRequest1);
-        UUID requestId = outboundRequest1.getReqeustId();
+        UUID requestId = outboundRequest1.getRequestId();
 
         // when
         Optional<OrderOutboundRequest> foundRequest = requestRepository.findById(requestId);
 
         // then
         assertThat(foundRequest).isPresent();
-        assertThat(foundRequest.get().getReqeustId()).isEqualTo(requestId);
+        assertThat(foundRequest.get().getRequestId()).isEqualTo(requestId);
         assertThat(foundRequest.get().getIdempotencyKey()).isEqualTo(idempotentKey1);
     }
 

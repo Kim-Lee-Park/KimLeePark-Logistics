@@ -50,7 +50,7 @@ class OrderOutboundRequestServiceTest {
     @BeforeEach
     void setUp() {
         List<OrderItemCommand> itemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 10)
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10)
         );
         order = Order.create(1L, 2L, "테스트 주문", itemCommands);
 

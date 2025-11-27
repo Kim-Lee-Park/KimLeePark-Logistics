@@ -72,7 +72,7 @@ public class Order extends BaseEntity {
         order.supplierId = supplierId;
         order.customerId = customerId;
         order.comment = comment;
-        order.orderStatus = OrderStatus.ING;
+        order.orderStatus = OrderStatus.PENDING;
 
         for (OrderItemCommand command : itemCommands) {
             OrderItem orderItem = OrderItem.of(
