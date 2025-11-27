@@ -9,6 +9,7 @@ public record UserDetailResponse(
     String username,
     String slackId,
     String phone,
+    String email,
     String role,
     boolean activate
 ) {
@@ -20,6 +21,7 @@ public record UserDetailResponse(
             user.getName(),
             user.getSlackId(),
             user.getPhone(),
+            user.getEmail(),
             user.getRole().name(),
             user.getStatus() == UserStatus.APPROVED
         );

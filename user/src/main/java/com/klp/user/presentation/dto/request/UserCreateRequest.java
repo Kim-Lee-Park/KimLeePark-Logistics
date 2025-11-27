@@ -8,6 +8,7 @@ public record UserCreateRequest(
     String password,
     String slackId,
     String phone,
+    String email,
     UserRole role,
     String affiliationName,
     AffiliationType affiliationType

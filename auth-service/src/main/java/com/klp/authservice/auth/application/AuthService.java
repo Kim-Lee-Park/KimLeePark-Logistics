@@ -42,6 +42,7 @@ public class AuthService {
             command.password(),
             command.slackId(),
             command.phone(),
+            command.email(),
             command.role(),
             command.affiliationName(),
             command.affiliationType()

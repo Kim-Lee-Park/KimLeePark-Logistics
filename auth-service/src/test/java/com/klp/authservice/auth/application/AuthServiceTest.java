@@ -72,11 +72,12 @@ class AuthServiceTest {
             String password = "Password1!";
             String slackId = " slackId";
             String phone = "010-1234-5678";
+            String email = "test@example.com";
             String role = "MASTER";
             String affiliationName = "testCompany";
             AffiliationType affiliationType = AffiliationType.COMPANY;
             SignUpCommand command = new SignUpCommand(
-                username, password, slackId, phone, role, affiliationName, affiliationType
+                username, password, slackId, phone, email, role, affiliationName, affiliationType
             );
 
             // when
@@ -102,11 +103,12 @@ class AuthServiceTest {
             String password = "Password1!";
             String slackId = " slackId";
             String phone = "010-1234-5678";
+            String email = "test@example.com";
             String role = "MASTER";
             String affiliationName = "testCompany";
             AffiliationType affiliationType = AffiliationType.COMPANY;
             SignUpCommand command = new SignUpCommand(
-                username, password, slackId, phone, role, affiliationName, affiliationType
+                username, password, slackId, phone, email, role, affiliationName, affiliationType
             );
 
             // when
@@ -132,15 +134,16 @@ class AuthServiceTest {
             String password = "Password1!";
             String slackId = " slackId";
             String phone = "010-1234-5678";
+            String email = "test@example.com";
             String role = "MASTER";
             String affiliationName = "testCompany";
             AffiliationType affiliationType = AffiliationType.COMPANY;
 
             SignUpCommand command = new SignUpCommand(
-                username, password, slackId, phone, role, affiliationName, affiliationType
+                username, password, slackId, phone, email, role, affiliationName, affiliationType
             );
             UserCreateRequest request = new UserCreateRequest(
-                username, password, slackId, phone, role, affiliationName, affiliationType
+                username, password, slackId, phone, email, role, affiliationName, affiliationType
             );
 
             UsernameDuplicateResponse dto = new UsernameDuplicateResponse(true);
