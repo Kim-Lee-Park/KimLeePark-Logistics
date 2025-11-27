@@ -29,7 +29,10 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     public List<Company> findAllByName(String name) {
         return queryFactory
             .selectFrom(qCompany)
-            .where(nameEqual(name))
+            .where(
+                isNotDeleted(),
+                nameEqual(name)
+            )
             .fetch();
     }
 
@@ -39,5 +42,9 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         }
 
         return qCompany.name.eq(name);
+    }
+
+    private BooleanExpression isNotDeleted() {
+        return qCompany.deletedAt.isNull();
     }
 }
