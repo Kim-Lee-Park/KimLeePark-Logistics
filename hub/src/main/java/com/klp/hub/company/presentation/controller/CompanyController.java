@@ -33,7 +33,7 @@ public class CompanyController {
 
     @GetMapping
     public ResponseEntity<CompanyListResponse> getAllByName(
-        @RequestParam(value = "name", required = false) String name
+        @RequestParam(value = "name", required = true) String name
     ) {
         log.info("== 업체 목록 조회 name : {} ==", name);
         List<CompanySummaryResponse> response = companyService.getAllByName(name);
