@@ -72,6 +72,6 @@ public class HubRepositoryImpl implements HubRepository {
 
     @Override
     public Optional<Hub> findByName(String hubName) {
-        return hubJpaRepository.findByName(hubName);
+        return hubJpaRepository.findByNameAndDeletedAtIsNull(hubName);
     }
 }
