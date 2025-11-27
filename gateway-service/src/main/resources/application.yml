@@ -56,6 +56,11 @@ spring:
               predicates:
                 - Path=/v1/products/**
 
+            - id: route-plan-routes
+              uri: lb://delivery-service
+              predicates:
+                - Path=/v1/routes/**
+
           discovery:
             locator:
               enabled: true
