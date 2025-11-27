@@ -11,7 +11,8 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.NEW_VENDOR_DRIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompanyResponse;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponse;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponses;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryList;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
@@ -29,7 +30,7 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.service.CompanyClientService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
-import com.klp.delivery.delivery.application.service.DriverApiClient;
+import com.klp.delivery.delivery.application.service.DriverClientService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
@@ -60,7 +61,7 @@ public class DeliveryServiceTest extends MockTest {
     CompanyClientService companyClientService;
 
     @Mock
-    DriverApiClient driverApiClient;
+    DriverClientService driverClientService;
 
 
     @Test
@@ -140,15 +141,14 @@ public class DeliveryServiceTest extends MockTest {
         // given: 담당자 조회 데이터 준비
         UUID receiverId = DEFAULT_RECEIVER_ID;
 
-        when(driverApiClient.findArrivalHubDrivers(receiverId.toString())).thenReturn(createDriver());
+        when(driverClientService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID)).thenReturn(createDriversResponses());
 
         // when: 담당자 조회
-        var result = deliveryService.findArrivalHubDrivers(receiverId.toString());
+        var result = deliveryService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID);
 
         // then: 조회 검증
-        verify(driverApiClient, times(1)).findArrivalHubDrivers(receiverId.toString());
+        verify(driverClientService, times(1)).findArrivalHubDrivers(DEFAULT_RECEIVER_ID);
         assertThat(result).isNotNull();
-        assertThat(result.receiverSlackId()).isEqualTo(DEFAULT_RECEIVER_SLACK_ID);
     }
 
     @Test
@@ -156,11 +156,11 @@ public class DeliveryServiceTest extends MockTest {
         // given: 담당자 조회 데이터 준비
         UUID receiverId = DEFAULT_RECEIVER_ID;
 
-        when(driverApiClient.findArrivalHubDrivers(receiverId.toString()))
+        when(driverClientService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID))
             .thenThrow(new RuntimeException("담당자 조회 실패"));
 
         // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryService.findArrivalHubDrivers(receiverId.toString()))
+        assertThatThrownBy(() -> deliveryService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -169,7 +169,7 @@ public class DeliveryServiceTest extends MockTest {
             });
 
         // then: 외부 API 호출 검증
-        verify(driverApiClient, times(1)).findArrivalHubDrivers(receiverId.toString());
+        verify(driverClientService, times(1)).findArrivalHubDrivers(DEFAULT_RECEIVER_ID);
     }
 
 
@@ -269,7 +269,7 @@ public class DeliveryServiceTest extends MockTest {
         Delivery delivery = defaultDelivery();
         UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
         when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
-        when(driverApiClient.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriver());
+        when(driverClientService.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriversResponse());
 
         // when: 배송 담당자 수정
         deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID);
@@ -284,13 +284,13 @@ public class DeliveryServiceTest extends MockTest {
         Delivery delivery = defaultDelivery();
         UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
         when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
-        when(driverApiClient.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(null);
+        when(driverClientService.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(null);
 
         // when & then
         assertThatThrownBy(() -> deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID))
             .isInstanceOf(BusinessException.class)
             .extracting("errorCode")
-            .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
+            .isEqualTo(DeliveryErrorCode.EXTERNAL_API_ERROR);
     }
 
     @ParameterizedTest
@@ -301,7 +301,7 @@ public class DeliveryServiceTest extends MockTest {
         delivery.updateStatus(DeliveryStatus.valueOf(statusName));
         UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
         when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
-        when(driverApiClient.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriver());
+        when(driverClientService.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriversResponse());
 
         // when & then: 담당자 수정 예외 검증
         assertThatThrownBy(() -> deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID))

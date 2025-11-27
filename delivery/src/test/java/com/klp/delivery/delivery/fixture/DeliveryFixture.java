@@ -8,6 +8,7 @@ import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.infrastructure.client.dto.CompanyResponse;
+import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;
 import java.util.List;
@@ -37,7 +38,7 @@ public class DeliveryFixture {
 
     public static String DEFAULT_COMPANY_NAME = "테스트업체";
     public static String DEFAULT_COMPANY_ADDRESS = "서울특별시 강남구 테헤란로 123";
-    public static String DEFAULT_HUB_ID = DEFAULT_DEPARTURE_ID.toString();                                                // 기본 허브 ID
+    public static UUID DEFAULT_HUB_ID = DEFAULT_DEPARTURE_ID;                                                // 기본 허브 ID
     public static String DEFAULT_RECEIVER_SLACK_ID = "U123456";
     public static Long DEFAULT_VENDOR_DRIVER_ID_STR = DEFAULT_VENDOR_DRIVER_ID;
 
@@ -46,10 +47,17 @@ public class DeliveryFixture {
     public static String DEFAULT_IDEMPOTENCY_KEY = "멱등키123";
 
 
+    public static final Long DRIVER_USER_ID = 1L;
+    public static final String DRIVER_USERNAME = "test-username";
+    public static final String DRIVER_SLACK_ID = "U1234567890";
+    public static final String DRIVER_PHONE = "010-1234-5678";
+    public static final String DRIVER_EMAIL = "driver@test.com";
+
+
     public static CompanyCommand createCompany() {
         return new CompanyCommand(
             DEFAULT_RECEIVER_ID.toString(),
-            DEFAULT_HUB_ID,
+            DEFAULT_HUB_ID.toString(),
             "CUSTOMER",
             DEFAULT_COMPANY_NAME,
             DEFAULT_COMPANY_ADDRESS
@@ -70,7 +78,7 @@ public class DeliveryFixture {
     public static CompanyResponse createCompanyResponse() {
         return new CompanyResponse(
             DEFAULT_RECEIVER_ID.toString(),
-            DEFAULT_HUB_ID,
+            DEFAULT_HUB_ID.toString(),
             "CUSTOMER",
             DEFAULT_COMPANY_NAME,
             DEFAULT_COMPANY_ADDRESS
@@ -83,11 +91,20 @@ public class DeliveryFixture {
     }
 
     public static DriverCommand createDriver() {
-        return new DriverCommand(DEFAULT_VENDOR_DRIVER_ID_STR, DEFAULT_RECEIVER_SLACK_ID);
+        return DriverCommand.of(createDriversResponse());
     }
 
-    public static DriverCommand createDriver(Long vendorDriverId, String receiverSlackId) {
-        return new DriverCommand(vendorDriverId, receiverSlackId);
+    public static List<DriverCommand> createDrivers() {
+        return DriverCommand.from(createDriversResponses());
+    }
+
+
+    public static DriverResponse createDriversResponse() {
+        return new DriverResponse(DRIVER_USER_ID, DRIVER_USERNAME, DRIVER_SLACK_ID, DRIVER_PHONE, DRIVER_EMAIL);
+    }
+
+    public static List<DriverResponse> createDriversResponses() {
+        return List.of(new DriverResponse(DRIVER_USER_ID, DRIVER_USERNAME, DRIVER_SLACK_ID, DRIVER_PHONE, DRIVER_EMAIL));
     }
 
 

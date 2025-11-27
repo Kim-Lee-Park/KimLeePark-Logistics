@@ -31,6 +31,8 @@ import java.util.UUID;
 import org.assertj.core.api.Assertions;
 
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_THIRD;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_PRODUCT_NAME;
+import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_QUANTITY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -129,7 +131,7 @@ public class DeliveryRepositoryImplTest {
         Delivery delivery1 = defaultDelivery();
 
         List<OrderItemCommand> items = List.of(
-            new OrderItemCommand(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND));
+            new OrderItemCommand(ORDER_ITEM_ID_THIRD, DEFAULT_HUB_ID_UUID_SECOND, ORDER_PRODUCT_NAME, ORDER_QUANTITY));
 
         Delivery delivery2 = deliveryWithCustomHubId(items);
 

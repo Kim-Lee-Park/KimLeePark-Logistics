@@ -3,18 +3,19 @@ package com.klp.delivery.delivery.presentation.controller;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompanyResponse;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponse;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponses;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.klp.delivery.common.enums.DeliveryStatus;
-import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.service.CompanyClientService;
-import com.klp.delivery.delivery.application.service.DriverApiClient;
+import com.klp.delivery.delivery.application.service.DriverClientService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
+import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
@@ -64,16 +65,16 @@ class DeliveryIntegrationTest {
 
         @Bean
         @Primary
-        public DriverApiClient driverApiClient() {
-            return new DriverApiClient() {
+        public DriverClientService driverApiClient() {
+            return new DriverClientService() {
                 @Override
-                public DriverCommand findArrivalHubDrivers(String receiverId) {
-                    return createDriver();
+                public List<DriverResponse>  findArrivalHubDrivers(UUID receiverId) {
+                    return createDriversResponses();
                 }
 
                 @Override
-                public DriverCommand findDriverAtArrivalHub(Long receiverId) {
-                    return createDriver();
+                public DriverResponse findDriverAtArrivalHub(Long receiverId) {
+                    return createDriversResponse();
                 }
 
             };

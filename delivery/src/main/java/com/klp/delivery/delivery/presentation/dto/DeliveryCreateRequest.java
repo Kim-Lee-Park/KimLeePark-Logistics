@@ -5,6 +5,7 @@ import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -37,7 +38,9 @@ public record DeliveryCreateRequest(
             orderItems.stream()
                 .map(item -> new OrderItemCommand(
                     UUID.fromString(item.orderItemId()),
-                    UUID.fromString(item.hubId())
+                    UUID.fromString(item.hubId()),
+                    item.productName(),
+                    item.quantity()
                 ))
                 .toList()
         );
@@ -57,7 +60,15 @@ public record DeliveryCreateRequest(
         String orderItemId,
 
         @NotBlank(message = "hubId는 필수입니다.")
-        String hubId
+        String hubId,
+
+        @NotBlank(message = "상품명은 필수 입니다")
+        String productName,
+
+        @Min(value = 1, message = "수량은 1 이상이어야 합니다")
+        int quantity
+
+
     ) {
 
     }

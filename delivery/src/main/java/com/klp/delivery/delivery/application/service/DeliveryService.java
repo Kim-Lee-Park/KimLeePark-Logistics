@@ -13,6 +13,7 @@ import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,7 +29,7 @@ public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final CompanyClientService companyClientService;
-    private final DriverApiClient driverApiClient;
+    private final DriverClientService driverClientService;
 
     public CompanyCommand findCompany(String customerId) {
         try {
@@ -41,9 +42,9 @@ public class DeliveryService {
         }
     }
 
-    public DriverCommand findArrivalHubDrivers(String customerId) {
+    public List<DriverCommand> findArrivalHubDrivers(UUID hubId) {
         try {
-            return driverApiClient.findArrivalHubDrivers(customerId);
+            return DriverCommand.from(driverClientService.findArrivalHubDrivers(hubId));
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -55,7 +56,7 @@ public class DeliveryService {
 
     public DriverCommand findDriverAtArrivalHub(long vendorDriverId) {
         try {
-            return driverApiClient.findDriverAtArrivalHub(vendorDriverId);
+            return DriverCommand.of(driverClientService.findDriverAtArrivalHub(vendorDriverId));
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -128,5 +129,15 @@ public class DeliveryService {
     public void deleteDelivery(UUID deliveryId, Long deletedBy) {
         Delivery delivery = findDelivery(deliveryId);
         delivery.delete(deletedBy);
+    }
+
+
+    public DriverCommand pickRandomDriver(List<DriverCommand> drivers) {
+
+        if (drivers == null || drivers.isEmpty()) {
+            throw new BusinessException(DeliveryErrorCode.DRIVER_NOT_FOUND, "담당자 조회 결과가 없습니다.");
+        }
+        int index = ThreadLocalRandom.current().nextInt(drivers.size());
+        return drivers.get(index);
     }
 }
