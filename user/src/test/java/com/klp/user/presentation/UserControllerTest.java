@@ -86,8 +86,8 @@ class UserControllerTest {
         void getDriversByHubId_success() throws Exception {
             // given
             UUID hubId = UUID.randomUUID();
-            DriverInfo driver1 = new DriverInfo(1L, "driver1", "slack1", "010-1111-1111");
-            DriverInfo driver2 = new DriverInfo(2L, "driver2", "slack2", "010-2222-2222");
+            DriverInfo driver1 = new DriverInfo(1L, "driver1", "slack1", "010-1111-1111", "driver1@example.com");
+            DriverInfo driver2 = new DriverInfo(2L, "driver2", "slack2", "010-2222-2222", "driver2@example.com");
             HubDriverListResponse response = HubDriverListResponse.of(hubId, List.of(driver1, driver2));
 
             // when
@@ -111,8 +111,8 @@ class UserControllerTest {
         @DisplayName("성공 시 200 OK와 배송 담당자 목록을 반환한다")
         void getDriversByLogistics_success() throws Exception {
             // given
-            DriverInfo driver1 = new DriverInfo(1L, "driver1", "slack1", "010-1111-1111");
-            DriverInfo driver2 = new DriverInfo(2L, "driver2", "slack2", "010-2222-2222");
+            DriverInfo driver1 = new DriverInfo(1L, "driver1", "slack1", "010-1111-1111", "driver1@example.com");
+            DriverInfo driver2 = new DriverInfo(2L, "driver2", "slack2", "010-2222-2222", "driver2@example.com");
             LogisticsDriverListResponse response = LogisticsDriverListResponse.of(List.of(driver1, driver2));
 
             // when
@@ -138,7 +138,7 @@ class UserControllerTest {
             Long driverId = 1L;
             UUID hubId = UUID.randomUUID();
             DriverDetailResponse response = new DriverDetailResponse(
-                driverId, hubId, "driver1", "slack1", "010-1111-1111"
+                driverId, hubId, "driver1", "slack1", "010-1111-1111", "driver1@example.com"
             );
 
             // when

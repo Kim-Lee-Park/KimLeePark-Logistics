@@ -18,9 +18,9 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByName(String username);
 
-    List<User> findByAffiliationIdAndRoleAndDeletedAtIsNull(UUID affiliationId, UserRole role, Pageable pageable);
+    List<User> findByAffiliationIdAndRoleAndDeletedAtIsNull(UUID affiliationId, UserRole role);
 
-    List<User> findByAffiliationTypeAndRoleAndDeletedAtIsNull(AffiliationType affiliationType, UserRole role, Pageable pageable);
+    List<User> findByAffiliationTypeAndRoleAndDeletedAtIsNull(AffiliationType affiliationType, UserRole role);
 
     Optional<User> findByUserIdAndRoleAndDeletedAtIsNull(Long userId, UserRole role);
 }

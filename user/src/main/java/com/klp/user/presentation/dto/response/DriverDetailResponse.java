@@ -8,7 +8,8 @@ public record DriverDetailResponse(
     UUID hubId,
     String username,
     String slackId,
-    String phone
+    String phone,
+    String email
 ) {
     public static DriverDetailResponse from(User user) {
         return new DriverDetailResponse(
@@ -16,7 +17,8 @@ public record DriverDetailResponse(
             user.getAffiliationId(),
             user.getName(),
             user.getSlackId(),
-            user.getPhone()
+            user.getPhone(),
+            user.getEmail()
         );
     }
 }

@@ -8,6 +8,7 @@ public record UserInfoResponse(
     String username,
     String slackId,
     String phone,
+    String email,
     String role,
     String status
 ) {
@@ -19,6 +20,7 @@ public record UserInfoResponse(
             user.getName(),
             user.getSlackId(),
             user.getPhone(),
+            user.getEmail(),
             user.getRole().name(),
             user.getStatus().name()
         );

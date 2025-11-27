@@ -49,6 +49,9 @@ public class User extends BaseEntity {
     private String phone;
 
     @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
@@ -63,6 +66,7 @@ public class User extends BaseEntity {
         String password,
         String slackId,
         String phone,
+        String email,
         UserRole role
     ) {
         this.affiliationId = affiliationId;
@@ -71,6 +75,7 @@ public class User extends BaseEntity {
         this.password = password;
         this.slackId = slackId;
         this.phone = phone;
+        this.email = email;
         this.role = role;
     }
 
@@ -81,6 +86,7 @@ public class User extends BaseEntity {
         String password,
         String slackId,
         String phone,
+        String email,
         UserRole role
     ) {
         validateNotNull(affiliationId, "소속 ID는 필수입니다.");
@@ -90,16 +96,10 @@ public class User extends BaseEntity {
         validateNotBlank(password, "비밀번호는 필수입니다.");
         validateNotBlank(slackId, "슬랙 ID는 필수입니다.");
         validateNotBlank(phone, "전화번호는 필수입니다.");
+        validateNotBlank(email, "이메일은 필수입니다.");
         validateRoleAndAffiliationType(role, affiliationType);
 
-        User user = new User();
-        user.affiliationId = affiliationId;
-        user.affiliationType = affiliationType;
-        user.name = name;
-        user.password = password;
-        user.slackId = slackId;
-        user.phone = phone;
-        user.role = role;
+        User user = new User(affiliationId, affiliationType, name, password, slackId, phone, email, role);
         user.status = UserStatus.PENDING;
         return user;
     }
@@ -174,11 +174,12 @@ public class User extends BaseEntity {
         this.status = UserStatus.REJECTED;
     }
 
-    public void update(String username, String password, String slackId, String phone, UserRole role) {
+    public void update(String username, String password, String slackId, String phone, String email, UserRole role) {
         this.name = username;
         this.password = password;
         this.slackId = slackId;
         this.phone = phone;
+        this.email = email;
         this.role = role;
     }
 }

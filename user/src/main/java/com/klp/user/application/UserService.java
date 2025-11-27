@@ -83,7 +83,7 @@ public class UserService {
         User user = findNotDeletedUser(userId);
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.role());
+        user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.email(), request.role());
     }
 
     @Transactional
@@ -99,6 +99,7 @@ public class UserService {
             encodedPassword,
             request.slackId(),
             request.phone(),
+            request.email(),
             request.role()
         );
 
@@ -134,8 +135,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public HubDriverListResponse getDriversByHubId(UUID hubId) {
-        Pageable pageable = PageRequest.of(0, 10);
-        List<User> drivers = userRepository.findDriversByHubId(hubId, pageable);
+        List<User> drivers = userRepository.findDriversByHubId(hubId);
 
         List<DriverInfo> driverInfoList = drivers.stream()
             .map(DriverInfo::from)
@@ -146,8 +146,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public LogisticsDriverListResponse getDriversByLogistics() {
-        Pageable pageable = PageRequest.of(0, 10);
-        List<User> drivers = userRepository.findDriversByLogistics(pageable);
+        List<User> drivers = userRepository.findDriversByLogistics();
 
         List<DriverInfo> driverInfoList = drivers.stream()
             .map(DriverInfo::from)

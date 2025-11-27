@@ -49,16 +49,16 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findDriversByHubId(UUID hubId, Pageable pageable) {
+    public List<User> findDriversByHubId(UUID hubId) {
         return userJpaRepository.findByAffiliationIdAndRoleAndDeletedAtIsNull(
-            hubId, UserRole.DRIVER, pageable
+            hubId, UserRole.DRIVER
         );
     }
 
     @Override
-    public List<User> findDriversByLogistics(Pageable pageable) {
+    public List<User> findDriversByLogistics() {
         return userJpaRepository.findByAffiliationTypeAndRoleAndDeletedAtIsNull(
-            AffiliationType.LOGISTICS, UserRole.DRIVER, pageable
+            AffiliationType.LOGISTICS, UserRole.DRIVER
         );
     }
 

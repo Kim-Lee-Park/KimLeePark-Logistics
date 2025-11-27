@@ -66,6 +66,7 @@ class UserServiceTest {
             password,
             slackId,
             phone,
+            "test@example.com",
             UserRole.HUB
         );
         ReflectionTestUtils.setField(testUser, "userId", userId);
@@ -169,6 +170,7 @@ class UserServiceTest {
                 "Password1!",
                 "slackId1",
                 "010-1111-1111",
+                "user1@example.com",
                 UserRole.HUB
             );
             ReflectionTestUtils.setField(user1, "userId", 1L);
@@ -180,6 +182,7 @@ class UserServiceTest {
                 "Password2!",
                 "slackId2",
                 "010-2222-2222",
+                "user2@example.com",
                 UserRole.COMPANY
             );
             ReflectionTestUtils.setField(user2, "userId", 2L);
@@ -273,6 +276,7 @@ class UserServiceTest {
             String encodedPassword = "encodedPassword";
             String newSlackId = "newSlackId";
             String newPhone = "010-1111-1111";
+            String newEmail = "new@example.com";
             UserRole newRole = UserRole.DRIVER;
 
             UserUpdateRequest request = new UserUpdateRequest(
@@ -280,6 +284,7 @@ class UserServiceTest {
                 newPassword,
                 newSlackId,
                 newPhone,
+                newEmail,
                 newRole
             );
 
@@ -305,19 +310,18 @@ class UserServiceTest {
             // given
             UUID hubId = UUID.randomUUID();
             User driver1 = User.create(
-                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", UserRole.DRIVER
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver1, "userId", 1L);
 
             User driver2 = User.create(
-                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222", UserRole.DRIVER
+                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222", "driver2@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver2, "userId", 2L);
 
             List<User> drivers = List.of(driver1, driver2);
-            Pageable pageable = PageRequest.of(0, 10);
 
-            given(userRepository.findDriversByHubId(hubId, pageable)).willReturn(drivers);
+            given(userRepository.findDriversByHubId(hubId)).willReturn(drivers);
 
             // when
             var response = userService.getDriversByHubId(hubId);
@@ -327,7 +331,7 @@ class UserServiceTest {
             assertThat(response.drivers()).hasSize(2);
             assertThat(response.drivers().get(0).userId()).isEqualTo(1L);
             assertThat(response.drivers().get(0).username()).isEqualTo("driver1");
-            then(userRepository).should(times(1)).findDriversByHubId(hubId, pageable);
+            then(userRepository).should(times(1)).findDriversByHubId(hubId);
         }
     }
 
@@ -341,19 +345,18 @@ class UserServiceTest {
             // given
             UUID logisticsId = UUID.randomUUID();
             User driver1 = User.create(
-                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1", "010-1111-1111", UserRole.DRIVER
+                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver1, "userId", 1L);
 
             User driver2 = User.create(
-                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2", "010-2222-2222", UserRole.DRIVER
+                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2", "010-2222-2222", "driver2@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver2, "userId", 2L);
 
             List<User> drivers = List.of(driver1, driver2);
-            Pageable pageable = PageRequest.of(0, 10);
 
-            given(userRepository.findDriversByLogistics(pageable)).willReturn(drivers);
+            given(userRepository.findDriversByLogistics()).willReturn(drivers);
 
             // when
             var response = userService.getDriversByLogistics();
@@ -362,7 +365,7 @@ class UserServiceTest {
             assertThat(response.drivers()).hasSize(2);
             assertThat(response.drivers().get(0).userId()).isEqualTo(1L);
             assertThat(response.drivers().get(0).username()).isEqualTo("driver1");
-            then(userRepository).should(times(1)).findDriversByLogistics(pageable);
+            then(userRepository).should(times(1)).findDriversByLogistics();
         }
     }
 
@@ -377,7 +380,7 @@ class UserServiceTest {
             Long driverId = 1L;
             UUID hubId = UUID.randomUUID();
             User driver = User.create(
-                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", UserRole.DRIVER
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver, "userId", driverId);
 

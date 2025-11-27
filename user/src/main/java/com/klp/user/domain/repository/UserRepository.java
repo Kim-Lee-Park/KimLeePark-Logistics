@@ -21,9 +21,9 @@ public interface UserRepository {
 
     Optional<User> findByUsername(String username);
 
-    List<User> findDriversByHubId(UUID hubId, Pageable pageable);
+    List<User> findDriversByHubId(UUID hubId);
 
-    List<User> findDriversByLogistics(Pageable pageable);
+    List<User> findDriversByLogistics();
 
     Optional<User> findDriverById(Long driverId);
 }

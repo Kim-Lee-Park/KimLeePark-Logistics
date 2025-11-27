@@ -6,14 +6,16 @@ public record DriverInfo(
     Long userId,
     String username,
     String slackId,
-    String phone
+    String phone,
+    String email
 ) {
     public static DriverInfo from(User user) {
         return new DriverInfo(
             user.getUserId(),
             user.getName(),
             user.getSlackId(),
-            user.getPhone()
+            user.getPhone(),
+            user.getEmail()
         );
     }
 }
