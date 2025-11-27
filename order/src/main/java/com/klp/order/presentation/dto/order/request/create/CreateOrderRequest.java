@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record CreateOrderRequest(
     @NotNull(message = "공급 업체 ID는 필수입니다.")
@@ -26,8 +25,8 @@ public record CreateOrderRequest(
 
     public CreateOrderCommand toCommand() {
         List<OrderItemCommand> itemCommands = orderItems.stream()
-            .map(item -> new OrderItemCommand(item.productId(), item.quantity()))
-            .collect(Collectors.toList());
+            .map(item -> new OrderItemCommand(item.productId(), item.hubId(), item.quantity()))
+            .toList();
 
         return new CreateOrderCommand(
             supplierId,

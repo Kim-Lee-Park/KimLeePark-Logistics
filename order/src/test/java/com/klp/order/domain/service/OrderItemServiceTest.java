@@ -46,13 +46,15 @@ class OrderItemServiceTest {
     void setUp() {
         orderId = UUID.randomUUID();
         List<OrderItemCommand> itemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 10)
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10)
         );
         order = Order.create(1L, 2L, "테스트 주문", itemCommands);
 
         orderItemId = UUID.randomUUID();
-        orderItem1 = OrderItem.of(order, new OrderItemCommand(UUID.randomUUID(), 10));
-        orderItem2 = OrderItem.of(order, new OrderItemCommand(UUID.randomUUID(), 5));
+        orderItem1 = OrderItem.of(order,
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10));
+        orderItem2 = OrderItem.of(order,
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 5));
     }
 
     @Test

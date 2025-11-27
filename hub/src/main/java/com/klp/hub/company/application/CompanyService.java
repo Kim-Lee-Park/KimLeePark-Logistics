@@ -4,7 +4,9 @@ import com.klp.common.exception.BusinessException;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import com.klp.hub.company.exception.CompanyErrorCode;
+import com.klp.hub.company.presentation.dto.CompanyListResponse;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,5 +34,17 @@ public class CompanyService {
             company.getName(),
             company.getAddress()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CompanyListResponse.CompanySummaryResponse> getAllByName(String name) {
+        List<Company> companies = companyRepository.findAllByName(name);
+
+        return companies.stream()
+            .map(company -> new CompanyListResponse.CompanySummaryResponse(
+                company.getId(),
+                company.getName()
+            ))
+            .toList();
     }
 }

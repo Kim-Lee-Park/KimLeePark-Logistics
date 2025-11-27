@@ -43,8 +43,8 @@ public class OrderRepositoryTest {
     void setup() throws Exception {
         itemCommands1 = new ArrayList<>();
         itemCommands2 = new ArrayList<>();
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
-        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), 20));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 20));
         order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
 
     }
@@ -64,7 +64,7 @@ public class OrderRepositoryTest {
         assertThat(saveOrder.getSupplierId()).isEqualTo(1L);
         assertThat(saveOrder.getCustomerId()).isEqualTo(2L);
         assertThat(saveOrder.getComment()).isEqualTo("주문1요청사항");
-        assertThat(saveOrder.getOrderStatus()).isEqualTo(OrderStatus.ING);
+        assertThat(saveOrder.getOrderStatus()).isEqualTo(OrderStatus.PENDING);
         assertThat(saveOrder.getCancellation()).isNull();
         assertThat(saveOrder.getOutboundRequests()).hasSize(0);
     }
@@ -149,7 +149,7 @@ public class OrderRepositoryTest {
         UUID orderId = saveOrder.getOrderId();
         String newComment = "수정된 주문";
         List<OrderItemCommand> newOrderItemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 100));
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 100));
 
         // when
         Order foundOrder = orderRepository.findById(orderId).orElseThrow();

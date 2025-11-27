@@ -56,6 +56,11 @@ spring:
               predicates:
                 - Path=/v1/products/**
 
+            - id: company-routes
+              uri: lb://hub-service
+              predicates:
+                - Path=/v1/companies/**
+
           discovery:
             locator:
               enabled: true
@@ -75,3 +80,4 @@ gateway:
       - /v1/auth/signup
       - /v1/auth/login
       - /v1/auth/check
+      - /v1/companies

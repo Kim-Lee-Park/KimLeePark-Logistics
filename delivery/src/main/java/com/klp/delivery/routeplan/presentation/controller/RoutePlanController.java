@@ -13,6 +13,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,7 @@ public class RoutePlanController {
 
     //경로 계획 생성
     @PostMapping("")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<CreateRoutePlanResponse> createRoutePlan(
         @Valid @RequestBody CreateRoutePlanRequest request) {
         CreateRoutePlanResponse response = routePlanService.createRoutePlan(request.toCommand());
@@ -64,6 +66,7 @@ public class RoutePlanController {
 
     //경로 계획 삭제
     @DeleteMapping("/{routePlanId}")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<Void> deleteRoutePlan(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID routePlanId) {
@@ -73,6 +76,7 @@ public class RoutePlanController {
 
     //hubId와 관련된 경로 계획 삭제
     @DeleteMapping("/delete/{hubId}")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<Void> deleteRoutePlansByHubId(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID hubId) {

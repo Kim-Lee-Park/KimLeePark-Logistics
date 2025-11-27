@@ -27,8 +27,8 @@ public class OrderOutboundRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "reqeust_id")
-    private UUID reqeustId;
+    @Column(name = "request_id")
+    private UUID requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

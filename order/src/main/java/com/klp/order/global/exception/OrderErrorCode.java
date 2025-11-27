@@ -16,6 +16,7 @@ public enum OrderErrorCode implements ErrorCode {
     ORDER_ITEMS_MIN_REQUIRED(HttpStatus.BAD_REQUEST, "주문 상품은 최소 1개 이상이어야 합니다."),
     ORDER_STATUS_REQUIRED(HttpStatus.BAD_REQUEST, "변경할 주문 상태가 존재해야 합니다."),
     DELETED_BY_REQUIRED(HttpStatus.BAD_REQUEST, "삭제자는 필수 정보 입니다."),
+    HUB_ID_REQUIRED(HttpStatus.BAD_REQUEST, "허브 ID는 필수입니다."),
 
     CANNOT_UPDATE_DELIVERY_ASSIGNED(HttpStatus.BAD_REQUEST, "배송이 할당된 주문은 수정할 수 없습니다."),
     CANNOT_UPDATE_CANCELLED_ORDER(HttpStatus.BAD_REQUEST, "취소된 주문은 수정할 수 없습니다."),
@@ -23,7 +24,10 @@ public enum OrderErrorCode implements ErrorCode {
     CANNOT_CHANGE_CANCELLED_ORDER_STATUS(HttpStatus.BAD_REQUEST, "취소된 주문은 상태를 변경할 수 없습니다."),
     CANNOT_CANCEL_DELIVERY_ASSIGNED(HttpStatus.BAD_REQUEST, "배송이 할당된 주문은 취소할 수 없습니다."),
     CANNOT_CANCEL_COMPLETED_ORDER(HttpStatus.BAD_REQUEST, "완료된 주문은 취소할 수 없습니다."),
-    ALREADY_CANCELLED_ORDER(HttpStatus.BAD_REQUEST, "이미 취소된 주문입니다.");
+    ALREADY_CANCELLED_ORDER(HttpStatus.BAD_REQUEST, "이미 취소된 주문입니다."),
+
+    ORDER_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 생성 중 오류가 발생했습니다."),
+    INVENTORY_DEDUCTION_FAILED(HttpStatus.BAD_REQUEST, "재고 차감에 실패 하였습니다.");
 
     private final HttpStatus status;
     private final String message;

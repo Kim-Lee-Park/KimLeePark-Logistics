@@ -23,14 +23,16 @@ public class OrderCancellationTest {
     private String cancelReason;
     private Long cancelledBy;
     private CancelType cancelType;
+    private UUID hubId;
 
     @BeforeEach
     void setUp() {
+        hubId = UUID.randomUUID();
         Long supplierId = 1L;
         Long customerId = 2L;
         String comment = "TDD 어디까지 해야 하는건가!";
         List<OrderItemCommand> initialItems = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 1)
+            new OrderItemCommand(UUID.randomUUID(), hubId, 1)
         );
 
         order = Order.create(supplierId, customerId, comment, initialItems);

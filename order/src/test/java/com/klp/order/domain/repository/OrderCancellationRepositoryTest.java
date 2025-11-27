@@ -42,8 +42,8 @@ public class OrderCancellationRepositoryTest {
     @BeforeEach
     void setup() {
         itemCommands1 = new ArrayList<>();
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 10));
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), 20));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 20));
     }
 
     @Test
