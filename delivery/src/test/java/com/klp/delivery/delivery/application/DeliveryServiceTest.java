@@ -310,4 +310,38 @@ public class DeliveryServiceTest extends MockTest {
             .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
     }
 
+
+    @Test
+    void 배송_삭제_성공_CREATED상태에서() {
+        // given: CREATED 상태의 배송
+        Delivery delivery = defaultDelivery();
+        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
+        Long deletedBy = 1L;
+        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
+
+        // when: 배송 삭제
+        deliveryService.deleteDelivery(deliveryId, deletedBy);
+
+        // then: 삭제 확인
+        assertThat(delivery.isDeleted()).isTrue();
+        verify(deliveryRepository, times(1)).findByDeliveryId(deliveryId);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"IN_HUB_TRANSIT", "AT_INTERMEDIATE_HUB", "ARRIVED_AT_FINAL_HUB", "OUT_FOR_DELIVERY", "DELIVERED"})
+    void CREATED가_아닌_상태일때_배송삭제_성공(String statusName) {
+        // given: CREATED가 아닌 상태의 배송
+        Delivery delivery = defaultDelivery();
+        delivery.updateStatus(DeliveryStatus.valueOf(statusName));
+        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
+        Long deletedBy = 1L;
+        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
+
+        // when & then: 삭제 실패 예외 검증
+        assertThatThrownBy(() -> deliveryService.deleteDelivery(deliveryId, deletedBy))
+            .isInstanceOf(BusinessException.class)
+            .extracting("errorCode")
+            .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
+    }
+
 }

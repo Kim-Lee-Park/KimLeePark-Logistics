@@ -236,4 +236,38 @@ class DeliveryIntegrationTest {
         Delivery savedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
         assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.IN_HUB_TRANSIT);
     }
+
+    @Test
+    void 배송삭제_E2E() {
+        // given: 배송 생성 (CREATED 상태)
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItems());
+        String deliveryId = given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/deliveries")
+            .then()
+            .statusCode(200)
+            .extract()
+            .path("items[0].deliveryId");
+
+        // 초기 상태 확인
+        given()
+            .when()
+            .get("/deliveries/{deliveryId}", deliveryId)
+            .then()
+            .statusCode(200)
+            .body("status", equalTo(DeliveryStatus.CREATED.name()));
+
+        // when: 배송 삭제
+        given()
+            .when()
+            .delete("/deliveries/{deliveryId}", deliveryId)
+            .then()
+            .statusCode(204);
+
+        // then: 삭제 확인 (DB 조회)
+        Delivery deletedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
+        assertThat(deletedDelivery.isDeleted()).isTrue();
+    }
 }
