@@ -9,6 +9,7 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryFromCommand;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriver;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDrivers;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItemListWithDeliveryId;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
@@ -33,6 +34,7 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -59,7 +61,8 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
+        when(deliveryService.pickRandomDriver(anyList())).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
             delivery);
         doNothing().when(idempotencyKeyService)
@@ -79,7 +82,8 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, times(1)).findArrivalHubDrivers(DEFAULT_HUB_ID);
+        verify(deliveryService, times(1)).findArrivalHubDrivers(any(UUID.class));
+        verify(deliveryService, times(1)).pickRandomDriver(anyList());
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, times(1)).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
@@ -96,7 +100,8 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
+        when(deliveryService.pickRandomDriver(anyList())).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenAnswer(invocation -> createDeliveryFromCommand(
                 invocation.getArgument(0),
@@ -166,7 +171,8 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
+        when(deliveryService.pickRandomDriver(anyList())).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
             delivery);
         doNothing().when(idempotencyKeyService)
@@ -222,7 +228,7 @@ public class DeliveryFacadeTest extends MockTest {
         // when & then: 예외 발생 검증
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenThrow(
+        when(deliveryService.findArrivalHubDrivers(any(UUID.class))).thenThrow(
             new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
         assertThatThrownBy(() ->
             deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
@@ -239,7 +245,8 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, times(1)).findArrivalHubDrivers(DEFAULT_HUB_ID.toString());
+        verify(deliveryService, times(1)).findArrivalHubDrivers(any(UUID.class));
+        verify(deliveryService, never()).pickRandomDriver(anyList());
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
@@ -254,7 +261,8 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(deliveryService.findCompany(DEFAULT_CUSTOMER_ID.toString())).thenReturn(
             createCompany());
-        when(deliveryService.findArrivalHubDrivers(DEFAULT_HUB_ID)).thenReturn(createDriver());
+        when(deliveryService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
+        when(deliveryService.pickRandomDriver(anyList())).thenReturn(createDriver());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
 
@@ -272,7 +280,8 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
             any(IdempotencyCommand.class));
         verify(deliveryService, times(1)).findCompany(DEFAULT_CUSTOMER_ID.toString());
-        verify(deliveryService, times(1)).findArrivalHubDrivers(DEFAULT_HUB_ID.toString());
+        verify(deliveryService, times(1)).findArrivalHubDrivers(any(UUID.class));
+        verify(deliveryService, times(1)).pickRandomDriver(anyList());
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
