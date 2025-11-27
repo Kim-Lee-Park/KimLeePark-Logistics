@@ -5,6 +5,7 @@ import com.klp.hub.hub.application.facade.HubFacade;
 import com.klp.hub.hub.application.service.HubService;
 import com.klp.hub.hub.presentation.dto.request.hub.RegisterHubRequest;
 import com.klp.hub.hub.presentation.dto.request.hub.UpdateHubRequest;
+import com.klp.hub.hub.presentation.dto.response.GetHubByNameResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -76,5 +78,11 @@ public class HubController {
         @PathVariable UUID hubId) {
         hubFacade.markPendingDelete(hubId, userDetails);
         return ResponseEntity.ok().build();
+    }
+
+    //허브 이름으로 조회
+    @GetMapping("/by-name")
+    public ResponseEntity<GetHubByNameResponse> getHubByName(@RequestParam("name") String hubName) {
+        return ResponseEntity.ok().body(hubService.getHubByName(hubName));
     }
 }
