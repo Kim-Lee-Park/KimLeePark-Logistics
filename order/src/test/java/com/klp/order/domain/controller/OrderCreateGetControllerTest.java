@@ -67,8 +67,8 @@ class OrderCreateGetControllerTest {
         hubId2 = UUID.randomUUID();
 
         List<OrderItemRequest> orderItemRequests = List.of(
-            new OrderItemRequest(productId1, hubId1, 10),
-            new OrderItemRequest(productId2, hubId2, 5)
+            new OrderItemRequest(productId1, "상품명", hubId1, 10),
+            new OrderItemRequest(productId2, "상품명", hubId2, 5)
         );
 
         createOrderRequest = new CreateOrderRequest(
@@ -79,8 +79,8 @@ class OrderCreateGetControllerTest {
         );
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, hubId1, 10),
-            new OrderItemCommand(productId2, hubId2, 5)
+            new OrderItemCommand(productId1, "상품명", hubId1, 10),
+            new OrderItemCommand(productId2, "상품명", hubId2, 5)
         );
 
     }

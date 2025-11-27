@@ -43,8 +43,8 @@ public class OrderRepositoryTest {
     void setup() throws Exception {
         itemCommands1 = new ArrayList<>();
         itemCommands2 = new ArrayList<>();
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10));
-        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 20));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), "상품명", UUID.randomUUID(), 10));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), "상품명", UUID.randomUUID(), 20));
         order1 = Order.create(1L, 2L, "주문1요청사항", itemCommands1);
 
     }
@@ -149,7 +149,7 @@ public class OrderRepositoryTest {
         UUID orderId = saveOrder.getOrderId();
         String newComment = "수정된 주문";
         List<OrderItemCommand> newOrderItemCommands = List.of(
-            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 100));
+            new OrderItemCommand(UUID.randomUUID(), "상품명", UUID.randomUUID(), 100));
 
         // when
         Order foundOrder = orderRepository.findById(orderId).orElseThrow();
