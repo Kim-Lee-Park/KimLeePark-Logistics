@@ -7,6 +7,7 @@ import java.util.UUID;
 public record OrderItemResponse(
     UUID orderItemId,
     UUID productId,
+    UUID hubId,
     Integer quantity,
     UUID deliveryId,
     LocalDateTime createdAt,
@@ -21,6 +22,7 @@ public record OrderItemResponse(
         return new OrderItemResponse(
             orderItem.getOrderItemId(),
             orderItem.getProductId(),
+            orderItem.getHubId(),
             orderItem.getQuantity(),
             orderItem.getDeliveryId(),
             orderItem.getCreatedAt(),

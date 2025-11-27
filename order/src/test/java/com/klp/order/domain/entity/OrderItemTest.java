@@ -17,15 +17,17 @@ import org.junit.jupiter.api.Test;
 public class OrderItemTest {
 
     private UUID productId;
+    private UUID hubId;
     private int quantity;
     private Order order;
 
     @BeforeEach
     void setUp() {
         productId = UUID.randomUUID();
+        hubId = UUID.randomUUID();
         quantity = 10;
         List<OrderItemCommand> initialItems = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 1)
+            new OrderItemCommand(productId, hubId, 1)
         );
         order = Order.create(1L, 2L, "테스트 주문", initialItems);
     }
@@ -34,7 +36,7 @@ public class OrderItemTest {
     @DisplayName("OrderItem 생성 - 정상")
     void createOrderItem_Success() {
         // given
-        OrderItemCommand command = new OrderItemCommand(productId, quantity);
+        OrderItemCommand command = new OrderItemCommand(productId, hubId, quantity);
 
         // when
         OrderItem orderItem = OrderItem.of(order, command);
@@ -50,7 +52,7 @@ public class OrderItemTest {
     @DisplayName("OrderItem 생성 - productId null이면 예외")
     void createOrderItem_Fail_ProductId_is_Null() {
         // given
-        OrderItemCommand command = new OrderItemCommand(null, quantity);
+        OrderItemCommand command = new OrderItemCommand(null, hubId, quantity);
 
         // when & then
         assertThatThrownBy(() -> OrderItem.of(order, command))
@@ -59,14 +61,27 @@ public class OrderItemTest {
     }
 
     @Test
+    @DisplayName("OrderItem- 생성 - hubId가 Null이면 예외")
+    void createOrderItem_Fail_HubId_is_Null() {
+        //given
+        OrderItemCommand command = new OrderItemCommand(productId, null, quantity);
+
+        // when & then
+        assertThatThrownBy(() -> OrderItem.of(order, command))
+            .isInstanceOf(BusinessException.class)
+            .hasMessage("허브 ID는 필수입니다.");
+
+    }
+
+    @Test
     @DisplayName("OrderItem 생성 - quantity가 0 이하면 예외")
     void createOrderItem_Fail_Quantity_is_Zero_or_Negative() {
         // when & then
-        assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, 0)))
+        assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, hubId, 0)))
             .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
 
-        assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, -5)))
+        assertThatThrownBy(() -> OrderItem.of(order, new OrderItemCommand(productId, hubId, -5)))
             .isInstanceOf(BusinessException.class)
             .hasMessage("주문 수량은 1개 이상이어야 합니다.");
     }
@@ -75,7 +90,7 @@ public class OrderItemTest {
     @DisplayName("OrderItem 생성 - Order가 null이면 예외")
     void createOrderItem_Fail_Order_is_Null() {
         // given
-        OrderItemCommand command = new OrderItemCommand(productId, quantity);
+        OrderItemCommand command = new OrderItemCommand(productId, hubId, quantity);
 
         // when & then
         assertThatThrownBy(() -> OrderItem.of(null, command))
@@ -87,7 +102,7 @@ public class OrderItemTest {
     @DisplayName("배송 ID 할당 - 정상")
     void assignDeliveryId_Success() {
         // given
-        OrderItemCommand command = new OrderItemCommand(productId, quantity);
+        OrderItemCommand command = new OrderItemCommand(productId, hubId, quantity);
         OrderItem orderItem = OrderItem.of(order, command);
         UUID deliveryId = UUID.randomUUID();
 
@@ -102,7 +117,7 @@ public class OrderItemTest {
     @DisplayName("수량 수정 - 정상")
     void updateQuantity_Success() {
         // given
-        OrderItemCommand command = new OrderItemCommand(productId, quantity);
+        OrderItemCommand command = new OrderItemCommand(productId, hubId, quantity);
         OrderItem orderItem = OrderItem.of(order, command);
         int newQuantity = 100;
 
@@ -117,7 +132,7 @@ public class OrderItemTest {
     @DisplayName("수량 수정 - 0 이하면 예외")
     void updateQuantity_Fail_When_Zero_or_Negative() {
         // given
-        OrderItemCommand command = new OrderItemCommand(productId, quantity);
+        OrderItemCommand command = new OrderItemCommand(productId, hubId, quantity);
         OrderItem orderItem = OrderItem.of(order, command);
 
         // when & then

@@ -2,6 +2,7 @@ package com.klp.order.infrastructure.repository;
 
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.repository.OrderRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,5 +65,29 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findByOrderIdAndDeletedAtIsNull(UUID orderId) {
         return orderJpaRepository.findByOrderIdAndDeletedAtIsNull(orderId);
+    }
+
+    @Override
+    public Page<Order> searchOrders(
+        Long supplierId,
+        Long customerId,
+        Long createdBy,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        Pageable pageable
+    ) {
+        return orderJpaRepository.searchOrders(
+            supplierId,
+            customerId,
+            createdBy,
+            startDate,
+            endDate,
+            pageable
+        );
+    }
+
+    @Override
+    public boolean existsByHubIdAndOrderStatusNotComplete(UUID hubId) {
+        return orderJpaRepository.existsByHubIdAndOrderStatusNotComplete(hubId);
     }
 }

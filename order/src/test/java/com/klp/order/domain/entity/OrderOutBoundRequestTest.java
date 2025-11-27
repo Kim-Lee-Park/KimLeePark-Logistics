@@ -26,8 +26,9 @@ public class OrderOutBoundRequestTest {
     void setUp() {
         Long supplierId = 1L;
         Long customerId = 2L;
+        UUID hubId = UUID.randomUUID();
         List<OrderItemCommand> initialItems = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 1)
+            new OrderItemCommand(UUID.randomUUID(), hubId, 1)
         );
         order = Order.create(supplierId, customerId, "요청사항", initialItems);
         idempotencyKey = "흠 멱등키는 어떻게 구성해야 잘했다고 소문날까나";

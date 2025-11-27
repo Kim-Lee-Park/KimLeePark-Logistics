@@ -43,8 +43,8 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         List<OrderItemCommand> items = List.of(
-            new OrderItemCommand(UUID.randomUUID(), 10),
-            new OrderItemCommand(UUID.randomUUID(), 5)
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10),
+            new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 5)
         );
 
         createCommand = new CreateOrderCommand(
@@ -78,7 +78,7 @@ class OrderServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getSupplierId()).isEqualTo(1L);
         assertThat(result.getCustomerId()).isEqualTo(2L);
-        assertThat(result.getOrderStatus()).isEqualTo(OrderStatus.ING);
+        assertThat(result.getOrderStatus()).isEqualTo(OrderStatus.PENDING);
         assertThat(result.getOrderItems()).hasSize(2);
     }
 
@@ -172,7 +172,7 @@ class OrderServiceTest {
         // given
         UpdateOrderCommand updateCommand = new UpdateOrderCommand(
             "수정된 요청사항",
-            List.of(new OrderItemCommand(UUID.randomUUID(), 15))
+            List.of(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 15))
         );
 
         given(orderRepository.findById(orderId))
