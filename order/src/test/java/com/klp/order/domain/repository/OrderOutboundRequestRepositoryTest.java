@@ -53,9 +53,9 @@ public class OrderOutboundRequestRepositoryTest {
         itemCommands1 = new ArrayList<>();
         itemCommands2 = new ArrayList<>();
 
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 10));
-        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 5));
-        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), UUID.randomUUID(), 20));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), "상품명", UUID.randomUUID(), 10));
+        itemCommands1.add(new OrderItemCommand(UUID.randomUUID(), "상품명", UUID.randomUUID(), 5));
+        itemCommands2.add(new OrderItemCommand(UUID.randomUUID(), "상품명", UUID.randomUUID(), 20));
 
         order1 = Order.create(1L, 2L, "주문1", itemCommands1);
         order2 = Order.create(2L, 3L, "주문2", itemCommands2);

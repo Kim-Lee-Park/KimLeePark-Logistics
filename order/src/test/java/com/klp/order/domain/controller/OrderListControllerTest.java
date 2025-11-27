@@ -62,8 +62,8 @@ class OrderListControllerTest {
         UUID hubId2 = UUID.randomUUID();
 
         itemCommands = List.of(
-            new OrderItemCommand(productId1, hubId1, 10),
-            new OrderItemCommand(productId2, hubId2, 5)
+            new OrderItemCommand(productId1, "상품명", hubId1, 10),
+            new OrderItemCommand(productId2, "상품명", hubId2, 5)
         );
 
         order1 = Order.create(1L, 2L, "주문1", itemCommands);
