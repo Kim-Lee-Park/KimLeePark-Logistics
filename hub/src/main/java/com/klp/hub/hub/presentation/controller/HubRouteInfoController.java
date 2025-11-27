@@ -14,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,7 @@ public class HubRouteInfoController {
 
     //허브간 이동 정보 생성
     @PostMapping("")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<RegisterHubRouteInfoResponse> registerHubRouteInfo(
         @Valid @RequestBody RegisterHubRouteInfoRequest request
     ) {
@@ -62,6 +64,7 @@ public class HubRouteInfoController {
 
     //허브간 이동 정보 수정
     @PatchMapping("/{routeInfoId}")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<UpdatedHubRouteInfoResponse> updateHubRouteInfo(
         @PathVariable UUID routeInfoId,
         @RequestBody UpdateHubRouteInfoRequest request) {
@@ -71,6 +74,7 @@ public class HubRouteInfoController {
 
     //허브간 이동 정보 삭제
     @DeleteMapping("/{routeInfoId}")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<Void> deleteHub(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID routeInfoId) {
@@ -79,8 +83,8 @@ public class HubRouteInfoController {
     }
 
     //모든 허브간 이동 정보 조회 ( 페이지네이션 X )
-    //TODO: MASTER 권한
     @GetMapping("/all")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<GetHubRouteInfoListResponse> getHubRouteInfos() {
         return ResponseEntity.ok(hubRouteInfoService.getAllHubRouteInfos());
     }
