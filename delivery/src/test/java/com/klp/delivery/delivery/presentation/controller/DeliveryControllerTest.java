@@ -160,7 +160,7 @@ class DeliveryControllerTest {
 
         Delivery delivery = createDelivery(DEFAULT_DELIVERY_ID_FIRST);
 
-        when(deliveryService.getDelivery(DEFAULT_DELIVERY_ID_FIRST)).thenReturn(delivery);
+        when(deliveryService.findDelivery(DEFAULT_DELIVERY_ID_FIRST)).thenReturn(delivery);
 
         // when: 배송 조회 요청
         mockMvc.perform(get("/v1/deliveries/{deliveryId}", delivery.getDeliveryId()))
@@ -176,13 +176,13 @@ class DeliveryControllerTest {
             .andExpect(jsonPath("$.status").value(DeliveryStatus.CREATED.name()));
 
         // then: 배송 조회 서비스 호출 검증
-        verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID_FIRST);
+        verify(deliveryService).findDelivery(DEFAULT_DELIVERY_ID_FIRST);
     }
 
     @Test
     void 배송조회_배송없음_예외발생() {
         // given: 배송이 존재하지 않는 경우
-        when(deliveryService.getDelivery(DEFAULT_DELIVERY_ID_FIRST))
+        when(deliveryService.findDelivery(DEFAULT_DELIVERY_ID_FIRST))
             .thenThrow(new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
         // when & then: 배송 조회 요청 시 예외 발생
@@ -191,7 +191,7 @@ class DeliveryControllerTest {
         });
 
         // then: 배송 조회 서비스 호출 검증
-        verify(deliveryService).getDelivery(DEFAULT_DELIVERY_ID_FIRST);
+        verify(deliveryService).findDelivery(DEFAULT_DELIVERY_ID_FIRST);
     }
 
     @Test

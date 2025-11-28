@@ -2,6 +2,7 @@ package com.klp.hub.global.exception;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.common.exception.ErrorResponse;
+import com.klp.hub.common.exception.ExternalApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.TypeMismatchException;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         log.warn("handleBusinessException : {}", e.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.of(e.getErrorCode().name(), e.getMessage());
+
+        return ResponseEntity.status(e.getErrorCode().getStatus())
+            .body(errorResponse);
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    protected ResponseEntity<ErrorResponse> handleExternalApiException(ExternalApiException e) {
+        log.warn("handleExternalApiException : {}", e.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.of(e.getErrorCode().name(), e.getMessage());
 

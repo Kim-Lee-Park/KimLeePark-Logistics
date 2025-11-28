@@ -37,6 +37,9 @@ public class OrderItem extends BaseEntity {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Column(name = "product_name", nullable = false)
+    private String productName;
+
     @Column(name = "hub_id", nullable = false)
     private UUID hubId;
 
@@ -46,21 +49,24 @@ public class OrderItem extends BaseEntity {
     @Column(name = "delivery_id")
     private UUID deliveryId;
 
-    private OrderItem(Order order, UUID productId, UUID hubId, int quantity) {
+    private OrderItem(Order order, UUID productId, String productName, UUID hubId, int quantity) {
         validateOrder(order);
         validateProductId(productId);
+        validateProductName(productName);
         validateHubId(hubId);
         validateQuantity(quantity);
 
         this.order = order;
         this.productId = productId;
+        this.productName = productName;
         this.hubId = hubId;
         this.quantity = quantity;
     }
 
 
     public static OrderItem of(Order order, OrderItemCommand command) {
-        return new OrderItem(order, command.productId(), command.hubId(), command.quantity());
+        return new OrderItem(order, command.productId(), command.productName(), command.hubId(),
+            command.quantity());
     }
 
     private void validateOrder(Order order) {
@@ -72,6 +78,12 @@ public class OrderItem extends BaseEntity {
     private void validateProductId(UUID productId) {
         if (productId == null) {
             throw new BusinessException(OrderItemErrorCode.PRODUCT_ID_REQUIRED);
+        }
+    }
+
+    private void validateProductName(String productName) {
+        if (productName == null) {
+            throw new BusinessException(OrderItemErrorCode.PRODUCT_NAME_REQUIRED);
         }
     }
 

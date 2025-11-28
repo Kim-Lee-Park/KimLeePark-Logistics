@@ -11,6 +11,7 @@ import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.infrastructure.repository.DeliveryItemRepositoryImpl;
 import com.klp.delivery.delivery.infrastructure.repository.DeliveryRepositoryImpl;
 import com.klp.delivery.global.config.AuditConfig;
+import com.klp.delivery.global.config.QuerydslConfig;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({DeliveryItemRepositoryImpl.class, DeliveryRepositoryImpl.class, AuditConfig.class})
+@Import({DeliveryItemRepositoryImpl.class, DeliveryRepositoryImpl.class, AuditConfig.class, QuerydslConfig.class})
 public class DeliveryItemRepositoryImplTest {
 
     @Autowired

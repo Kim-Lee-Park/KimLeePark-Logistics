@@ -8,6 +8,9 @@ public record OrderItemRequest(
     @NotNull(message = "상품 ID는 필수입니다.")
     UUID productId,
 
+    @NotNull(message = "상품명은 필수입니다.")
+    String productName,
+
     @NotNull(message = "허브 ID는 필수입니다.")
     UUID hubId,
 

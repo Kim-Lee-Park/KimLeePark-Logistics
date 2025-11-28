@@ -96,7 +96,9 @@ public class DeliveryIntegrationService {
         return order.getOrderItems().stream()
             .map(orderItem -> new DeliveryOrderItem(
                 orderItem.getOrderItemId(),
-                orderItem.getHubId()
+                orderItem.getHubId(),
+                orderItem.getProductName(),
+                orderItem.getQuantity()
             ))
             .toList();
     }
