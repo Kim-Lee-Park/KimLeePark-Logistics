@@ -10,11 +10,16 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Slf4j
@@ -23,12 +28,12 @@ import org.springframework.stereotype.Service;
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
-    private final CompanyApiClient companyApiClient;
-    private final DriverApiClient driverApiClient;
+    private final CompanyClientService companyClientService;
+    private final DriverClientService driverClientService;
 
     public CompanyCommand findCompany(String customerId) {
         try {
-            return companyApiClient.findCompany(customerId);
+            return CompanyCommand.of(companyClientService.findCompany(customerId));
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -37,9 +42,21 @@ public class DeliveryService {
         }
     }
 
-    public DriverCommand findDriver(String customerId) {
+    public List<DriverCommand> findArrivalHubDrivers(UUID hubId) {
         try {
-            return driverApiClient.findDriver(customerId);
+            return DriverCommand.from(driverClientService.findArrivalHubDrivers(hubId));
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.",
+                e);
+        }
+    }
+
+    public DriverCommand findDriverAtArrivalHub(long vendorDriverId) {
+        try {
+            return DriverCommand.of(driverClientService.findDriverAtArrivalHub(vendorDriverId));
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -75,13 +92,52 @@ public class DeliveryService {
         }
     }
 
-    public Delivery getDelivery(UUID deliveryId) {
+    public Delivery findDelivery(UUID deliveryId) {
         return deliveryRepository.findByDeliveryId(deliveryId);
     }
 
+    public List<DeliveryDetailResponse> findDeliveriesByOrderId(UUID orderId) {
+        List<Delivery> deliveries = deliveryRepository.findDeliveryByOrderId(orderId);
+
+        return DeliveryDetailResponse.from(deliveries);
+    }
+
     public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {
-        Delivery delivery = getDelivery(deliveryId);
+        Delivery delivery = findDelivery(deliveryId);
         delivery.updateStatus(status);
         deliveryRepository.save(delivery);
+    }
+
+    public Page<DeliveryDetailResponse> findDeliveryAll(Pageable pageable) {
+        Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);
+        return DeliveryDetailResponse.from(deliveryPage);
+    }
+
+    @Transactional
+    public void updateVendorDriver(UUID deliveryId, Long newVendorDriverId) {
+        Delivery delivery = findDelivery(deliveryId);
+        DriverCommand driver = findDriverAtArrivalHub(newVendorDriverId);
+        if (driver == null) {
+            throw new BusinessException(
+                DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 담당자를 찾을 수 없습니다");
+        }
+        delivery.updateVendorDriverId(newVendorDriverId);
+
+    }
+
+    @Transactional
+    public void deleteDelivery(UUID deliveryId, Long deletedBy) {
+        Delivery delivery = findDelivery(deliveryId);
+        delivery.delete(deletedBy);
+    }
+
+
+    public DriverCommand pickRandomDriver(List<DriverCommand> drivers) {
+
+        if (drivers == null || drivers.isEmpty()) {
+            throw new BusinessException(DeliveryErrorCode.DRIVER_NOT_FOUND, "담당자 조회 결과가 없습니다.");
+        }
+        int index = ThreadLocalRandom.current().nextInt(drivers.size());
+        return drivers.get(index);
     }
 }

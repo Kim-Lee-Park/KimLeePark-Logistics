@@ -44,8 +44,12 @@ public class DeliveryFacade {
             CompanyCommand companyCommand = deliveryService.findCompany(
                 orderCommand.receiverId().toString());
 
-            // TODO: 배송 담당자 api 생성 확정 후 로직 변경
-            DriverCommand driverCommand = deliveryService.findDriver(companyCommand.hubId());
+            // 업체 배송 담당자 조회
+            List<DriverCommand> driverList = deliveryService.findArrivalHubDrivers(UUID.fromString(companyCommand.hubId()));
+
+            // 업체 배송 담당자 지정
+            DriverCommand driverCommand = deliveryService.pickRandomDriver(driverList);
+
 
             // 항목별 배송 생성
             List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(
@@ -90,8 +94,8 @@ public class DeliveryFacade {
                 orderCommand.receiverId(),
                 companyCommand.name(),
                 companyCommand.address(),
-                driverCommand.receiverSlackId(),
-                driverCommand.vendorDrvierId()
+                driverCommand.slackId(),
+                driverCommand.userId()
             );
 
             Delivery delivery = deliveryService.registerDelivery(deliveryCommand, orderItems);
