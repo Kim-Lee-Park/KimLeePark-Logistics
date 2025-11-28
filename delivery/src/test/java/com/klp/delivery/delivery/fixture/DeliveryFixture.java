@@ -7,6 +7,8 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.infrastructure.client.dto.CompanyResponse;
+import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest.OrderItem;
 import java.util.List;
@@ -26,6 +28,8 @@ public class DeliveryFixture {
         "00000000-0000-0000-0000-000000000005");              // 발송업체 ID
     public static Long DEFAULT_VENDOR_DRIVER_ID = 1234L;
 
+    public static Long NEW_VENDOR_DRIVER_ID = 4567L;
+
 
     public static UUID DEFAULT_DELIVERY_ID_FIRST = UUID.fromString(
         "00000000-0000-0000-0000-000000000006");      // 배송 ID
@@ -34,7 +38,7 @@ public class DeliveryFixture {
 
     public static String DEFAULT_COMPANY_NAME = "테스트업체";
     public static String DEFAULT_COMPANY_ADDRESS = "서울특별시 강남구 테헤란로 123";
-    public static String DEFAULT_HUB_ID = DEFAULT_DEPARTURE_ID.toString();                                                // 기본 허브 ID
+    public static UUID DEFAULT_HUB_ID = DEFAULT_DEPARTURE_ID;                                                // 기본 허브 ID
     public static String DEFAULT_RECEIVER_SLACK_ID = "U123456";
     public static Long DEFAULT_VENDOR_DRIVER_ID_STR = DEFAULT_VENDOR_DRIVER_ID;
 
@@ -43,10 +47,17 @@ public class DeliveryFixture {
     public static String DEFAULT_IDEMPOTENCY_KEY = "멱등키123";
 
 
+    public static final Long DRIVER_USER_ID = 1L;
+    public static final String DRIVER_USERNAME = "test-username";
+    public static final String DRIVER_SLACK_ID = "U1234567890";
+    public static final String DRIVER_PHONE = "010-1234-5678";
+    public static final String DRIVER_EMAIL = "driver@test.com";
+
+
     public static CompanyCommand createCompany() {
         return new CompanyCommand(
             DEFAULT_RECEIVER_ID.toString(),
-            DEFAULT_HUB_ID,
+            DEFAULT_HUB_ID.toString(),
             "CUSTOMER",
             DEFAULT_COMPANY_NAME,
             DEFAULT_COMPANY_ADDRESS
@@ -64,12 +75,36 @@ public class DeliveryFixture {
         );
     }
 
-    public static DriverCommand createDriver() {
-        return new DriverCommand(DEFAULT_VENDOR_DRIVER_ID_STR, DEFAULT_RECEIVER_SLACK_ID);
+    public static CompanyResponse createCompanyResponse() {
+        return new CompanyResponse(
+            DEFAULT_RECEIVER_ID.toString(),
+            DEFAULT_HUB_ID.toString(),
+            "CUSTOMER",
+            DEFAULT_COMPANY_NAME,
+            DEFAULT_COMPANY_ADDRESS
+        );
     }
 
-    public static DriverCommand createDriver(Long vendorDriverId, String receiverSlackId) {
-        return new DriverCommand(vendorDriverId, receiverSlackId);
+    public static CompanyResponse createCompanyResponse(String companyId, String hubId,
+        String type, String name, String address, String email) {
+        return new CompanyResponse(companyId, hubId, type, name, address);
+    }
+
+    public static DriverCommand createDriver() {
+        return DriverCommand.of(createDriversResponse());
+    }
+
+    public static List<DriverCommand> createDrivers() {
+        return DriverCommand.from(createDriversResponses());
+    }
+
+
+    public static DriverResponse createDriversResponse() {
+        return new DriverResponse(DRIVER_USER_ID, DRIVER_USERNAME, DRIVER_SLACK_ID, DRIVER_PHONE, DRIVER_EMAIL);
+    }
+
+    public static List<DriverResponse> createDriversResponses() {
+        return List.of(new DriverResponse(DRIVER_USER_ID, DRIVER_USERNAME, DRIVER_SLACK_ID, DRIVER_PHONE, DRIVER_EMAIL));
     }
 
 
@@ -113,6 +148,16 @@ public class DeliveryFixture {
             orderItemCommandsDefault()
         );
     }
+
+    // 여러 개의 Delivery를 포함한 리스트 (테스트용)
+    public static List<Delivery> deliveryList() {
+        Delivery delivery1 = defaultDelivery();
+        Delivery delivery2 = defaultDelivery();
+        setDeliveryId(delivery1, DEFAULT_DELIVERY_ID_FIRST);
+        setDeliveryId(delivery2, DEFAULT_DELIVERY_ID_SECOND);
+        return List.of(delivery1, delivery2);
+    }
+
 
     public static Delivery deliveryWithCustomHubId(List<OrderItemCommand> items) {
         return Delivery.create(
@@ -231,6 +276,16 @@ public class DeliveryFixture {
         return new DeliveryCreateRequest(
             DEFAULT_ORDER_ID.toString(),
             DEFAULT_IDEMPOTENCY_KEY,
+            DEFAULT_SUPPLIER_ID.toString(),
+            DEFAULT_CUSTOMER_ID.toString(),
+            orderItems
+        );
+    }
+
+    public static DeliveryCreateRequest createDeliveryRequest(UUID orderId, List<OrderItem> orderItems) {
+        return new DeliveryCreateRequest(
+            orderId.toString(),
+            DEFAULT_IDEMPOTENCY_KEY + "-" + orderId,
             DEFAULT_SUPPLIER_ID.toString(),
             DEFAULT_CUSTOMER_ID.toString(),
             orderItems
