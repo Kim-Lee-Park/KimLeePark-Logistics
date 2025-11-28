@@ -12,7 +12,9 @@ public record OrderToDeliveryCommand(
 
     public record OrderItemCommand(
         UUID orderItemId,
-        UUID hubId
+        UUID hubId,
+        String productName,
+        int quantity
     ) {
 
 
