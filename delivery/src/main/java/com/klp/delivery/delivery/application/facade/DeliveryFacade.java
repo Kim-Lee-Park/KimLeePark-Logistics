@@ -5,9 +5,12 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
+import com.klp.delivery.delivery.application.service.CompanyService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
+import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.application.util.DriverSelector;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
@@ -29,7 +32,8 @@ public class DeliveryFacade {
 
     private final DeliveryService deliveryService;
     private final IdempotencyKeyService idempotencyKeyService;
-
+    private final CompanyService companyService;
+    private final DriverService driverService;
 
     @Transactional
     public DeliveryResponse createDelivery(OrderToDeliveryCommand orderCommand,
@@ -41,14 +45,14 @@ public class DeliveryFacade {
 
         try {
 
-            CompanyCommand companyCommand = deliveryService.findCompany(
+            CompanyCommand companyCommand = companyService.findCompany(
                 orderCommand.receiverId().toString());
 
             // 업체 배송 담당자 조회
-            List<DriverCommand> driverList = deliveryService.findArrivalHubDrivers(UUID.fromString(companyCommand.hubId()));
+            List<DriverCommand> driverList = driverService.findArrivalHubDrivers(UUID.fromString(companyCommand.hubId()));
 
             // 업체 배송 담당자 지정
-            DriverCommand driverCommand = deliveryService.pickRandomDriver(driverList);
+            DriverCommand driverCommand =  DriverSelector.pickRandomDriver(driverList);
 
 
             // 항목별 배송 생성
