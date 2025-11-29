@@ -11,10 +11,15 @@ public enum ExternalApiErrorCode implements ErrorCode {
     DELIVERY_SERVICE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "배송 서비스 호출 에러 BAD_REQUEST"),
     DELIVERY_SERVICE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "배송 서비스 호출 에러 인증 실패"),
     DELIVERY_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "배송 서비스 호출 에러 인가 실패"),
-    INVENTORY_SERVICE_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "배송 서비스 호출 중 오류가 발생했습니다."),
-    INVENTORY_SERVICE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "배송 서비스 호출 에러 BAD_REQUEST"),
-    INVENTORY_SERVICE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "배송 서비스 호출 에러 인증 실패"),
-    INVENTORY_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "배송 서비스 호출 에러 인가 실패");
+    INVENTORY_SERVICE_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "INVENTORY 서비스 호출 중 오류가 발생했습니다."),
+    INVENTORY_SERVICE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "INVENTORY 서비스 호출 에러 BAD_REQUEST"),
+    INVENTORY_SERVICE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "INVENTORY 서비스 호출 에러 인증 실패"),
+    INVENTORY_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "INVENTORY 서비스 호출 에러 인가 실패"),
+    USER_SERVICE_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "USER 서비스 호출 중 오류가 발생했습니다."),
+    USER_SERVICE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "USER 서비스 호출 에러 BAD_REQUEST"),
+    USER_SERVICE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER 서비스 호출 에러 인증 실패"),
+    USER_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "USER 서비스 호출 에러 인가 실패"),
+    ;
 
     private final HttpStatus httpStatus;
     private final String message;
