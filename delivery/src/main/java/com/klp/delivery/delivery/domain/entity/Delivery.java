@@ -75,10 +75,6 @@ public class Delivery extends BaseEntity {
     @Column(name = "receiver_slack_id", nullable = false)
     private String receiverSlackId;
 
-    @Comment("배송경로 ID")
-    @Column(name = "routes_id")
-    private UUID routesId;
-
     @Comment("배송상태")
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
@@ -163,6 +159,11 @@ public class Delivery extends BaseEntity {
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 삭제 불가 상태" + this.status);
         }
         super.delete(deletedBy);
+    }
+
+    public void updateRouteInfo(UUID routePlanId, DeliveryStatus status){
+        this.routePlanId = routePlanId;
+        this.status = status;
     }
 
 }

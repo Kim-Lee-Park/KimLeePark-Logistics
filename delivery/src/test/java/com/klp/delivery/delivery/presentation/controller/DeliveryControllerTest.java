@@ -15,14 +15,10 @@ import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_F
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_SECOND;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_THIRD;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,12 +34,9 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
-import com.klp.delivery.delivery.presentation.dto.DeliveryStatusUpdateRequest;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -194,58 +187,5 @@ class DeliveryControllerTest {
         verify(deliveryService).findDelivery(DEFAULT_DELIVERY_ID_FIRST);
     }
 
-    @Test
-    void 배송상태변경_성공_204NoContent() throws Exception {
-        // given: 배송 상태 변경 요청 데이터
-        DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(
-            DeliveryStatus.IN_HUB_TRANSIT
-        );
-
-        doNothing().when(deliveryService)
-            .updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, DeliveryStatus.IN_HUB_TRANSIT);
-
-        // when: 배송 상태 변경 요청
-        mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isNoContent());
-
-        // then: 배송 상태 변경 서비스 호출 검증
-        verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST,
-            DeliveryStatus.IN_HUB_TRANSIT);
-    }
-
-    @Test
-    void 배송상태변경_status가null_400BadRequest() throws Exception {
-        // given: status가 null인 요청 데이터
-        String requestJson = "{\"status\": null}";
-
-        // when: 배송 상태 변경 요청
-        mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isBadRequest());
-
-        // then: 배송 상태 변경 서비스가 호출되지 않음
-        verify(deliveryService, never()).updateDeliveryStatus(any(), any());
-    }
-
-    @ParameterizedTest
-    @EnumSource(DeliveryStatus.class)
-    void 배송상태변경_모든상태변경_성공(DeliveryStatus status) throws Exception {
-        // given: 배송 상태 변경 요청 데이터
-        DeliveryStatusUpdateRequest request = new DeliveryStatusUpdateRequest(status);
-
-        doNothing().when(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
-
-        // when: 배송 상태 변경 요청
-        mockMvc.perform(patch("/v1/deliveries/{deliveryId}/status", DEFAULT_DELIVERY_ID_FIRST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isNoContent());
-
-        // then: 배송 상태 변경 서비스 호출 검증
-        verify(deliveryService).updateDeliveryStatus(DEFAULT_DELIVERY_ID_FIRST, status);
-    }
 }
 

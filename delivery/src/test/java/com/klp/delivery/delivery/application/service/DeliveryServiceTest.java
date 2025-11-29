@@ -1,4 +1,4 @@
-package com.klp.delivery.delivery.application;
+package com.klp.delivery.delivery.application.service;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
@@ -9,10 +9,6 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.NEW_VENDOR_DRIVER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompanyResponse;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponse;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponses;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryList;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
@@ -28,9 +24,6 @@ import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.service.CompanyClientService;
-import com.klp.delivery.delivery.application.service.DeliveryService;
-import com.klp.delivery.delivery.application.service.DriverClientService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
@@ -59,9 +52,6 @@ public class DeliveryServiceTest extends MockTest {
 
     @Mock
     CompanyClientService companyClientService;
-
-    @Mock
-    DriverClientService driverClientService;
 
 
     @Test
@@ -93,84 +83,6 @@ public class DeliveryServiceTest extends MockTest {
         assertThat(result.getOrderId()).isEqualTo(orderId);
     }
 
-
-    @Test
-    void 업체조회api_성공() {
-        // given: 업체 조회 데이터 준비
-        UUID receiverId = DEFAULT_RECEIVER_ID;
-
-        when(companyClientService.findCompany(receiverId.toString())).thenReturn(createCompanyResponse());
-
-        // when: 업체 조회
-        var result = deliveryService.findCompany(receiverId.toString());
-
-        // then: 조회 검증
-        verify(companyClientService, times(1)).findCompany(receiverId.toString());
-        assertThat(result).isNotNull();
-        assertThat(result.name()).isEqualTo(DEFAULT_COMPANY_NAME);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-        "업체 조회 실패",
-        "네트워크 오류",
-        "타임아웃 발생"
-    })
-    void 업체조회api_실패_예외발생(String errorMessage) {
-        // given: 업체 조회 데이터 준비
-        UUID receiverId = DEFAULT_RECEIVER_ID;
-
-        when(companyClientService.findCompany(receiverId.toString()))
-            .thenThrow(new RuntimeException(errorMessage));
-
-        // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryService.findCompany(receiverId.toString()))
-            .isInstanceOf(BusinessException.class)
-            .satisfies(exception -> {
-                BusinessException businessException = (BusinessException) exception;
-                assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.EXTERNAL_API_ERROR);
-            });
-
-        // then: 외부 API 호출 검증
-        verify(companyClientService, times(1)).findCompany(receiverId.toString());
-    }
-
-    @Test
-    void 담당자조회api_성공() {
-        // given: 담당자 조회 데이터 준비
-        UUID receiverId = DEFAULT_RECEIVER_ID;
-
-        when(driverClientService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID)).thenReturn(createDriversResponses());
-
-        // when: 담당자 조회
-        var result = deliveryService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID);
-
-        // then: 조회 검증
-        verify(driverClientService, times(1)).findArrivalHubDrivers(DEFAULT_RECEIVER_ID);
-        assertThat(result).isNotNull();
-    }
-
-    @Test
-    void 담당자조회api_실패_예외발생() {
-        // given: 담당자 조회 데이터 준비
-        UUID receiverId = DEFAULT_RECEIVER_ID;
-
-        when(driverClientService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID))
-            .thenThrow(new RuntimeException("담당자 조회 실패"));
-
-        // when & then: 예외 발생 검증
-        assertThatThrownBy(() -> deliveryService.findArrivalHubDrivers(DEFAULT_RECEIVER_ID))
-            .isInstanceOf(BusinessException.class)
-            .satisfies(exception -> {
-                BusinessException businessException = (BusinessException) exception;
-                assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.EXTERNAL_API_ERROR);
-            });
-
-        // then: 외부 API 호출 검증
-        verify(driverClientService, times(1)).findArrivalHubDrivers(DEFAULT_RECEIVER_ID);
-    }
 
 
 
@@ -263,52 +175,6 @@ public class DeliveryServiceTest extends MockTest {
     }
 
 
-    @Test
-    void 배송담당자_수정_성공() {
-        // given: 배송 엔티티와 외부 API 조회 결과 준비
-        Delivery delivery = defaultDelivery();
-        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
-        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
-        when(driverClientService.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriversResponse());
-
-        // when: 배송 담당자 수정
-        deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID);
-
-        // then: 담당자 변경 검증
-        assertThat(delivery.getVendorDrvierId()).isEqualTo(NEW_VENDOR_DRIVER_ID);
-    }
-
-    @Test
-    void 배송담당자_수정_담당자가_없어_실패() {
-        // given: 배송은 존재하지만 외부 API에서 담당자 조회 실패
-        Delivery delivery = defaultDelivery();
-        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
-        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
-        when(driverClientService.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(null);
-
-        // when & then
-        assertThatThrownBy(() -> deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID))
-            .isInstanceOf(BusinessException.class)
-            .extracting("errorCode")
-            .isEqualTo(DeliveryErrorCode.EXTERNAL_API_ERROR);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"OUT_FOR_DELIVERY", "DELIVERED"})
-    void 배송_수정_불가능_상태이므로_실패(String statusName) {
-        // given: 배송 상태가 수정 불가능 설정
-        Delivery delivery = defaultDelivery();
-        delivery.updateStatus(DeliveryStatus.valueOf(statusName));
-        UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
-        when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);
-        when(driverClientService.findDriverAtArrivalHub(NEW_VENDOR_DRIVER_ID)).thenReturn(createDriversResponse());
-
-        // when & then: 담당자 수정 예외 검증
-        assertThatThrownBy(() -> deliveryService.updateVendorDriver(deliveryId, NEW_VENDOR_DRIVER_ID))
-            .isInstanceOf(BusinessException.class)
-            .extracting("errorCode")
-            .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
-    }
 
 
     @Test

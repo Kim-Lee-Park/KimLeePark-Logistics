@@ -14,11 +14,15 @@ import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.service.CompanyClientService;
 import com.klp.delivery.delivery.application.service.DriverClientService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
+import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
-
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
+import com.klp.delivery.routeplan.application.service.RoutePlanService;
+import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import groovy.util.logging.Slf4j;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -54,6 +58,9 @@ class DeliveryIntegrationTest {
     @Autowired
     private DeliveryRepository deliveryRepository;
 
+    @Autowired
+    private DeliveryRouteRepository deliveryRouteRepository;
+
     @TestConfiguration
     static class TestConfig {
 
@@ -77,7 +84,35 @@ class DeliveryIntegrationTest {
                     return createDriversResponse();
                 }
 
+                @Override
+                public List<DriverResponse> findLogisticsDrivers() {
+                    return createDriversResponses();
+                }
             };
+        }
+
+        @Bean
+        @Primary
+        public RoutePlanService routePlanService() {
+            RoutePlanService mockService = org.mockito.Mockito.mock(RoutePlanService.class);
+            
+            // 직행 경로 (중간 허브 없음) - planItems가 빈 리스트
+            GetRoutePlanDetailResponse directRoutePlan = new GetRoutePlanDetailResponse(
+                RoutePlanFixture.ROUTE_PLAN_ID,
+                RoutePlanFixture.DEPARTURE_ID,
+                RoutePlanFixture.ARRIVAL_ID,
+                RoutePlanFixture.TOTAL_DURATION,
+                RoutePlanFixture.TOTAL_DISTANCE,
+                List.of(), // planItems가 비어있음 (직행)
+                "ACTIVE"
+            );
+            
+            org.mockito.Mockito.when(mockService.getRoutePlan(
+                org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(UUID.class)
+            )).thenReturn(directRoutePlan);
+            
+            return mockService;
         }
     }
 
@@ -272,5 +307,50 @@ class DeliveryIntegrationTest {
         // then: 삭제 확인 (DB 조회)
         Delivery deletedDelivery = deliveryRepository.findByDeliveryId(UUID.fromString(deliveryId));
         assertThat(deletedDelivery.isDeleted()).isTrue();
+    }
+
+    @Test
+    void 배송생성_경로생성_이벤트처리_E2E() throws InterruptedException {
+        // given: 고유한 orderId 사용하여 멱등키 중복 방지
+        UUID uniqueOrderId = UUID.randomUUID();
+        DeliveryCreateRequest request = createDeliveryRequest(uniqueOrderId, createOrderItems());
+
+        // when: 배송 생성
+        String deliveryId = given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/deliveries")
+            .then()
+            .statusCode(200)
+            .extract()
+            .path("items[0].deliveryId");
+
+        UUID deliveryIdUuid = UUID.fromString(deliveryId);
+
+        // then: 배송 생성 확인
+        Delivery savedDelivery = deliveryRepository.findByDeliveryId(deliveryIdUuid);
+        assertThat(savedDelivery).isNotNull();
+        assertThat(savedDelivery.getOrderId()).isEqualTo(uniqueOrderId);
+        assertThat(savedDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+
+        // 비동기 이벤트 처리 완료 대기 (배송 경로 생성)
+        Thread.sleep(2000); // @TransactionalEventListener가 AFTER_COMMIT이므로 트랜잭션 커밋 후 처리
+
+        // then: 배송 경로 생성 확인
+        java.util.Optional<DeliveryRoute> deliveryRoute = deliveryRouteRepository.findByDeliveryId(deliveryIdUuid);
+        assertThat(deliveryRoute).isPresent();
+        assertThat(deliveryRoute.get().getDeliveryId()).isEqualTo(deliveryIdUuid);
+        assertThat(deliveryRoute.get().getDepartureHubId()).isEqualTo(savedDelivery.getDepartureId());
+        assertThat(deliveryRoute.get().getArrivalHubId()).isEqualTo(savedDelivery.getArrivalId());
+
+        // 중간 허브가 없으므로 직행 경로이므로 ARRIVED_AT_FINAL_HUB 상태
+        assertThat(deliveryRoute.get().getStatus()).isEqualTo(DeliveryStatus.ARRIVED_AT_FINAL_HUB);
+
+        // then: Delivery의 routePlanId와 status 업데이트 확인
+        Delivery updatedDelivery = deliveryRepository.findByDeliveryId(deliveryIdUuid);
+        assertThat(updatedDelivery.getRoutePlanId()).isNotNull();
+        assertThat(updatedDelivery.getRoutePlanId()).isEqualTo(RoutePlanFixture.ROUTE_PLAN_ID);
+        assertThat(updatedDelivery.getStatus()).isEqualTo(DeliveryStatus.ARRIVED_AT_FINAL_HUB);
     }
 }

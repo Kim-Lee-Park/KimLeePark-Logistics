@@ -15,6 +15,7 @@ import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
+import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +36,10 @@ public class DeliveryFacade {
 
     private final DeliveryService deliveryService;
     private final IdempotencyKeyService idempotencyKeyService;
-    private final CompanyService companyService;
+    private final ApplicationEventPublisher eventPublisher;
     private final DriverService driverService;
+    private final CompanyService companyService;
+
 
     @Transactional
     public DeliveryResponse createDelivery(OrderToDeliveryCommand orderCommand,
@@ -51,11 +55,11 @@ public class DeliveryFacade {
                 orderCommand.receiverId().toString());
 
             // 업체 배송 담당자 조회
-            List<DriverCommand> driverList = driverService.findArrivalHubDrivers(UUID.fromString(companyCommand.hubId()));
+            List<DriverCommand> driverList = driverService.findArrivalHubDrivers(
+                UUID.fromString(companyCommand.hubId()));
 
             // 업체 배송 담당자 지정
-            DriverCommand driverCommand =  DriverSelector.pickRandomDriver(driverList);
-
+            DriverCommand driverCommand = DriverSelector.pickRandomDriver(driverList);
 
             // 항목별 배송 생성
             List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(
@@ -116,15 +120,21 @@ public class DeliveryFacade {
                     item.getOrderItemId(), delivery.getDeliveryId());
             }
 
-            // TODO: 각 배송 생성 시 경로 생성 이벤트 발행 (비동기)
-            // deliveryService.publishDeliveryCreatedEvent(delivery);
+            // 각 배송 생성 시 경로 생성 이벤트 발행 (비동기)
+            eventPublisher.publishEvent(
+                new DeliveryRouteCreateEvent(
+                    delivery.getDeliveryId(),
+                    delivery.getDepartureId(),
+                    delivery.getArrivalId(),
+                    delivery.getVendorDrvierId()
+                ));
         }
 
         return deliveryItems;
     }
 
     @Transactional
-    public void updateVendorDriver(UUID deliveryId, Long vendorDrvierId){
+    public void updateVendorDriver(UUID deliveryId, Long vendorDrvierId) {
 
         Delivery delivery = deliveryService.findDelivery(deliveryId);
         DriverCommand driver = driverService.findDriverAtArrivalHub(vendorDrvierId);

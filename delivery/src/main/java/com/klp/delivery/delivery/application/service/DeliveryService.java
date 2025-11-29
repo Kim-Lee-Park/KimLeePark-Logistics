@@ -99,4 +99,16 @@ public class DeliveryService {
         }
     }
 
+    public void applyRouteCreation(UUID deliveryId, UUID routePlanId, DeliveryStatus status) {
+        try {
+            Delivery delivery = findDelivery(deliveryId);
+            delivery.updateRouteInfo(routePlanId, status);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("배송 경로 정보 적용 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 경로 정보 적용에 실패했습니다.", e);
+        }
+    }
+
 }
