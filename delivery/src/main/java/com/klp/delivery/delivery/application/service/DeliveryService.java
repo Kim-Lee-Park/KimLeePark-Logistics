@@ -74,19 +74,6 @@ public class DeliveryService {
         }
     }
 
-    public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {
-        try {
-            Delivery delivery = findDelivery(deliveryId);
-            delivery.updateStatus(status);
-            deliveryRepository.save(delivery);
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("배송 상태 업데이트 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
-        }
-    }
-
     public Page<DeliveryDetailResponse> findDeliveryAll(Pageable pageable) {
         try {
             Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);

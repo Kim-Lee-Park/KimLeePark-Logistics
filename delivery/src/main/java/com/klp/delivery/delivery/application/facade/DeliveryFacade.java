@@ -1,5 +1,6 @@
 package com.klp.delivery.delivery.application.facade;
 
+import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
@@ -9,11 +10,12 @@ import com.klp.delivery.delivery.application.service.CompanyService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
-import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.application.util.DriverSelector;
+import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
+import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,5 +122,19 @@ public class DeliveryFacade {
 
         return deliveryItems;
     }
-}
 
+    @Transactional
+    public void updateVendorDriver(UUID deliveryId, Long vendorDrvierId){
+
+        Delivery delivery = deliveryService.findDelivery(deliveryId);
+        DriverCommand driver = driverService.findDriverAtArrivalHub(vendorDrvierId);
+
+        if (driver == null) {
+            throw new BusinessException(
+                DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 담당자를 찾을 수 없습니다");
+        }
+
+        delivery.updateVendorDriverId(vendorDrvierId);
+
+    }
+}
