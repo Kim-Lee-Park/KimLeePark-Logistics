@@ -6,7 +6,6 @@ import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
-import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;

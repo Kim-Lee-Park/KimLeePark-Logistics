@@ -297,4 +297,8 @@ public class DeliveryRouteService {
         return CustomerDeliveryStatus.SHIPPING;
     }
 
+    @Transactional(readOnly = true)
+    public  List<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
+        return deliveryRouteRepository.findByDeliveryId(deliveryId);
+    }
 }
