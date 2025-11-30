@@ -3,6 +3,7 @@ package com.klp.delivery.delivery.application.service;
 import static com.klp.delivery.routeplan.exception.RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND;
 
 import com.klp.common.exception.BusinessException;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.DeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
@@ -27,9 +28,11 @@ public class DeliveryRouteService {
     private final DeliveryRouteRepository deliveryRouteRepository;
     private final DriverClientService driverClientService;
 
-    public DeliveryRouteStatusCommand createDeliveryRoute(DeliveryRouteCommand deliveryCommand, DeliveryRoutePlanCommand planCommand) {
+    public DeliveryRouteStatusCommand createDeliveryRoute(DeliveryRouteCommand deliveryCommand,
+        DeliveryRoutePlanCommand planCommand) {
         log.info("배송 경로 생성 시작: deliveryId={}, routePlanId={}, departureId={}, arrivalId={}",
-            deliveryCommand.deliveryId(), planCommand.routePlanId(), planCommand.departureId(), planCommand.arrivalId());
+            deliveryCommand.deliveryId(), planCommand.routePlanId(), planCommand.departureId(),
+            planCommand.arrivalId());
 
         try {
             DeliveryRoute route;
@@ -37,8 +40,10 @@ public class DeliveryRouteService {
 
             // 경로아이템 size조회
             if (planCommand.planItems().isEmpty()) {
-                log.info("중간 허브 없음 - 직행 경로: deliveryId={}, departureId={}, arrivalId={}, totalDistance={}km, totalDuration={}min",
-                    deliveryCommand.deliveryId(), planCommand.departureId(), planCommand.arrivalId(),
+                log.info(
+                    "중간 허브 없음 - 직행 경로: deliveryId={}, departureId={}, arrivalId={}, totalDistance={}km, totalDuration={}min",
+                    deliveryCommand.deliveryId(), planCommand.departureId(),
+                    planCommand.arrivalId(),
                     planCommand.totalDistanceKm(), planCommand.totalDurationMin());
 
                 // 중간 허브 없음 → 바로 최종 허브 도착
@@ -56,8 +61,10 @@ public class DeliveryRouteService {
                     status // 중간허브가 없으므로 마지막 허브
                 );
             } else {
-                log.info("중간 허브 있음 - 경유 경로: deliveryId={}, planItemCount={}, departureId={}, arrivalId={}",
-                    deliveryCommand.deliveryId(), planCommand.planItems().size(), planCommand.departureId(), planCommand.arrivalId());
+                log.info(
+                    "중간 허브 있음 - 경유 경로: deliveryId={}, planItemCount={}, departureId={}, arrivalId={}",
+                    deliveryCommand.deliveryId(), planCommand.planItems().size(),
+                    planCommand.departureId(), planCommand.arrivalId());
 
                 // 중간 허브가 있음 허브로 이동 중
                 status = DeliveryStatus.IN_HUB_TRANSIT;
@@ -71,7 +78,8 @@ public class DeliveryRouteService {
                 // 물류배송담당자 조회
                 List<DriverResponse> driverList = driverClientService.findLogisticsDrivers();
 
-                DriverCommand driver = DriverSelector.pickRandomDriver(DriverCommand.from(driverList));
+                DriverCommand driver = DriverSelector.pickRandomDriver(
+                    DriverCommand.from(driverList));
 
                 route = DeliveryRoute.create(
                     deliveryCommand.deliveryId(),
@@ -88,15 +96,34 @@ public class DeliveryRouteService {
             }
 
             DeliveryRoute create = deliveryRouteRepository.save(route);
-            log.info("배송 경로 생성 완료: deliveryId={}, routeId={}, status={}, departureId={}, arrivalId={}",
-                deliveryCommand.deliveryId(), create.getDeliveryRouteId(), status, create.getDepartureHubId(), create.getArrivalHubId());
+            log.info(
+                "배송 경로 생성 완료: deliveryId={}, routeId={}, routeStatus={}, departureId={}, arrivalId={}",
+                deliveryCommand.deliveryId(), create.getDeliveryRouteId(), status,
+                create.getDepartureHubId(), create.getArrivalHubId());
 
-            return new DeliveryRouteStatusCommand(create.getDeliveryRouteId(), status);
+            CustomerDeliveryStatus deliveryStatus = convertToCustomerDeliveryStatus(status);
+
+            return new DeliveryRouteStatusCommand(create.getDeliveryRouteId(), deliveryStatus);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("배송 경로 생성 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
         }
+    }
+
+    /**
+     * 고객 노출 상태 매핑
+     * CREATED → CREATED
+     * (IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY) → SHIPPING
+     * DELIVERED → ARRIVED
+     */
+    CustomerDeliveryStatus convertToCustomerDeliveryStatus(DeliveryStatus deliveryStatus) {
+        return switch (deliveryStatus) {
+            case CREATED -> CustomerDeliveryStatus.CREATED;
+            case IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY ->
+                CustomerDeliveryStatus.SHIPPING;
+            case DELIVERED -> CustomerDeliveryStatus.ARRIVED;
+        };
     }
 }

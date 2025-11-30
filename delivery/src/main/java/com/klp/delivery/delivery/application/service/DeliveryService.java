@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.application.service;
 
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -99,7 +99,7 @@ public class DeliveryService {
         }
     }
 
-    public void applyRouteCreation(UUID deliveryId, UUID routePlanId, DeliveryStatus status) {
+    public void applyRouteCreation(UUID deliveryId, UUID routePlanId, CustomerDeliveryStatus status) {
         try {
             Delivery delivery = findDelivery(deliveryId);
             delivery.updateRouteInfo(routePlanId, status);

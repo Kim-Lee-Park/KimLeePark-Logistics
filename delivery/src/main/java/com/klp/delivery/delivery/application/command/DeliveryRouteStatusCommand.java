@@ -1,11 +1,11 @@
 package com.klp.delivery.delivery.application.command;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import java.util.UUID;
 
 public record DeliveryRouteStatusCommand(
     UUID deliveryRouteId,
-    DeliveryStatus status
+    CustomerDeliveryStatus status
 ) {
 
 }
