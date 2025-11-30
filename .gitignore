@@ -1,2 +1,4 @@
 ### IntelliJ IDEA ###
 .idea
+
+./aws/terraform/terraform.tfvars

@@ -3,7 +3,9 @@ package com.klp.payment.application.service;
 import com.klp.payment.application.service.dto.PaymentCreateCommand;
 import com.klp.payment.domain.entity.Payment;
 import com.klp.payment.infrastructure.repository.PaymentRepository;
+import com.klp.payment.presentation.controller.dto.PaymentResponse;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,5 +30,17 @@ public class PaymentService {
 
         log.info("결제 성공");
         return savedPayment.getPaymentId();
+    }
+
+    @Transactional
+    public List<PaymentResponse> getAll() {
+        List<Payment> payments = paymentRepository.findAll();
+        return payments.stream()
+            .map(payment -> new PaymentResponse(
+                payment.getPaymentId(),
+                payment.getOrderId(),
+                payment.getTotalAmount()
+            ))
+            .toList();
     }
 }
