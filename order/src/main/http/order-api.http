@@ -1,0 +1,21 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### 주문 생성
+POST http://localhost:8020/v1/orders
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "customerId": 2,
+  "comment": "Kafka 테스트 주문",
+  "orderItems": [
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440001",
+      "productName": "테스트 상품",
+      "hubId": "550e8400-e29b-41d4-a716-446655440002",
+      "quantity": 5
+    }
+  ]
+}
