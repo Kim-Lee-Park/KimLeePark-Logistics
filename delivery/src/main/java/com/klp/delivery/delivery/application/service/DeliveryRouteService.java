@@ -15,10 +15,13 @@ import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
+import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -126,4 +129,172 @@ public class DeliveryRouteService {
             case DELIVERED -> CustomerDeliveryStatus.ARRIVED;
         };
     }
+
+    @Transactional
+    public DeliveryRouteStatusCommand appendDeliveryRoute(UUID deliveryId,
+        GetRoutePlanDetailResponse routePlan, DeliveryStatus currentDeliveryStatus,
+        Long vendorDriverId) {
+        log.info("배송 경로 추가 시작: deliveryId={}, routePlanId={}, currentStatus={}, vendorDriverId={}",
+            deliveryId, routePlan.routePlanId(), currentDeliveryStatus, vendorDriverId);
+
+        try {
+            // 현재 상태가 배송완료(DELIVERED)면 예외 발생
+            if (currentDeliveryStatus == DeliveryStatus.DELIVERED) {
+                throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
+                    "이미 배송이 완료된 상태입니다. 배송 경로 기록을 추가할 수 없습니다.");
+            }
+
+            // 현재 배송 경로 목록 조회
+            List<DeliveryRoute> existingRoutes = deliveryRouteRepository.findByDeliveryId(
+                deliveryId);
+            if (existingRoutes.isEmpty()) {
+                throw new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_FETCH_FAILED);
+            }
+
+            // 현재 배송 경로 마지막 경로 찾기
+            DeliveryRoute lastRoute = existingRoutes.stream()
+                .max(java.util.Comparator.comparing(DeliveryRoute::getSequence))
+                .orElseThrow(
+                    () -> new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_FETCH_FAILED,
+                        "마지막 배송 경로를 찾을 수 없습니다."));
+
+            // 다음 sequence의 PlanItem 찾기
+            int nextSequence = lastRoute.getSequence() + 1;
+            GetRoutePlanDetailResponse.PlanItem nextPlanItem = routePlan.planItems().stream()
+                .filter(item -> item.sequence().equals(nextSequence))
+                .findFirst()
+                .orElseThrow(
+                    () -> new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_FETCH_FAILED,
+                        "다음 경로 계획을 찾을 수 없습니다. sequence=" + nextSequence));
+
+            // 마지막 sequence 확인
+            int lastSequence = routePlan.planItems().stream()
+                .map(GetRoutePlanDetailResponse.PlanItem::sequence)
+                .max(Integer::compareTo)
+                .orElse(1);
+
+            DeliveryStatus routeStatus = determineRouteStatus(
+                nextSequence, lastSequence, nextPlanItem, routePlan.arrivalId(),
+                lastRoute.getArrivalHubId(), currentDeliveryStatus);
+
+            CustomerDeliveryStatus deliveryStatus = determineDeliveryStatus(
+                currentDeliveryStatus,
+                nextPlanItem, routePlan.arrivalId(), lastSequence);
+
+
+            Long driverId = selectDriverId(currentDeliveryStatus, routeStatus, vendorDriverId);
+
+
+            UUID departureHubId = lastRoute.getArrivalHubId();
+            UUID arrivalHubId = nextPlanItem.arrivalId();
+
+            DeliveryRoute newRoute = DeliveryRoute.create(
+                deliveryId,
+                driverId,
+                departureHubId,
+                arrivalHubId,
+                nextPlanItem.sequence(),
+                nextPlanItem.distanceKm(),
+                nextPlanItem.durationMin(),
+                nextPlanItem.distanceKm(),
+                nextPlanItem.durationMin(),
+                routeStatus
+            );
+
+            DeliveryRoute savedRoute = deliveryRouteRepository.save(newRoute);
+            log.info(
+                "배송 경로 추가 완료: deliveryId={}, routeId={}, sequence={}, routeStatus={}, deliveryStatus={}, driverId={}, departureId={}, arrivalId={}",
+                deliveryId, savedRoute.getDeliveryRouteId(), nextSequence, routeStatus,
+                deliveryStatus, driverId, departureHubId, arrivalHubId);
+
+            return new DeliveryRouteStatusCommand(savedRoute.getDeliveryRouteId(),
+                deliveryStatus);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("배송 경로 추가 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
+        }
+    }
+
+
+    private Long selectDriverId(DeliveryStatus currentStatus, DeliveryStatus newStatus,
+        Long vendorDriverId) {
+
+        // 배송출발(OUT_FOR_DELIVERY) 또는 배송완료(DELIVERED)에서는 업체 배송 담당자 선택
+        if (currentStatus == DeliveryStatus.ARRIVED_AT_FINAL_HUB
+            || currentStatus == DeliveryStatus.OUT_FOR_DELIVERY
+            || newStatus == DeliveryStatus.OUT_FOR_DELIVERY
+            || newStatus == DeliveryStatus.DELIVERED) {
+            log.info("업체 배송 담당자 사용: vendorDriverId={}, currentStatus={}, newStatus={}",
+                vendorDriverId, currentStatus, newStatus);
+            return vendorDriverId;
+        }
+
+        // 그 외에는 물류 배송 담당자 선택
+        List<DriverResponse> driverList = driverClientService.findLogisticsDrivers();
+        DriverCommand driver = DriverSelector.pickRandomDriver(DriverCommand.from(driverList));
+        log.info("물류 배송 담당자 선택: driverId={}, currentStatus={}, newStatus={}",
+            driver.userId(), currentStatus, newStatus);
+        return driver.userId();
+    }
+
+
+    /**
+     * Route 상태
+     * 1. 추가되는 route의 sequence가 마지막 시퀀스라면 → ARRIVED_AT_FINAL_HUB (최종 허브 도착)
+     * 2. 현재 배송경로의 도착허브가 최종 허브가 아니며 현재 상태가 IN_HUB_TRANSIT(허브 간 이동 중)인 경우 → AT_INTERMEDIATE_HUB (중간 허브 도착)
+     * 3. 허브 도착 이후 다음 허브로 이동할 때 → IN_HUB_TRANSIT (허브 간 이동 중)
+     */
+    private DeliveryStatus determineRouteStatus(int nextSequence, int lastSequence,
+        GetRoutePlanDetailResponse.PlanItem nextPlanItem, UUID finalArrivalHubId,
+        UUID currentArrivalHubId, DeliveryStatus currentDeliveryStatus) {
+
+        // 1) sequence가 마지막 시퀀스라면 → ARRIVED_AT_FINAL_HUB (최종 허브 도착)
+        if (nextSequence == lastSequence) {
+            log.info("최종 허브 도착 route: sequence={}, arrivalHubId={}", nextSequence,
+                nextPlanItem.arrivalId());
+            return DeliveryStatus.ARRIVED_AT_FINAL_HUB;
+        }
+
+        // 2) 현재 배송경로의 arrivalHubId가 최종 허브가 아니며 현재 상태가 IN_HUB_TRANSIT인 경우 → AT_INTERMEDIATE_HUB
+        if (!currentArrivalHubId.equals(finalArrivalHubId)
+            && currentDeliveryStatus == DeliveryStatus.IN_HUB_TRANSIT) {
+            log.info("중간 허브 도착 route: sequence={}, arrivalHubId={}", nextSequence,
+                nextPlanItem.arrivalId());
+            return DeliveryStatus.AT_INTERMEDIATE_HUB;
+        }
+
+        // 3) 허브 도착 이후 다음 허브로 이동할 때 → IN_HUB_TRANSIT (허브 간 이동 중)
+        log.info("허브 간 이동 중 route: sequence={}, departureId={}, arrivalId={}",
+            nextSequence, nextPlanItem.departureId(), nextPlanItem.arrivalId());
+        return DeliveryStatus.IN_HUB_TRANSIT;
+    }
+
+
+
+    private CustomerDeliveryStatus determineDeliveryStatus(DeliveryStatus currentStatus,
+        GetRoutePlanDetailResponse.PlanItem nextPlanItem, UUID finalArrivalHubId,
+        int lastSequence) {
+
+        if (currentStatus == DeliveryStatus.ARRIVED_AT_FINAL_HUB) {
+            log.info("최종 허브 도착 후 배송 출발: ARRIVED_AT_FINAL_HUB → OUT_FOR_DELIVERY → SHIPPING");
+            return CustomerDeliveryStatus.SHIPPING;
+        }
+
+        if (currentStatus == DeliveryStatus.OUT_FOR_DELIVERY) {
+            log.info("배송 완료: OUT_FOR_DELIVERY → DELIVERED → ARRIVED");
+            return CustomerDeliveryStatus.ARRIVED;
+        }
+
+        int nextSequence = nextPlanItem.sequence();
+        if (nextPlanItem.arrivalId().equals(finalArrivalHubId) && nextSequence == lastSequence) {
+            log.info("최종 허브 도착: Delivery 상태 → ARRIVED_AT_FINAL_HUB → SHIPPING");
+            return CustomerDeliveryStatus.SHIPPING;
+        }
+
+        log.info("배송 중: Delivery 상태 → SHIPPING (중간 허브 도착 또는 이동 중)");
+        return CustomerDeliveryStatus.SHIPPING;
+    }
+
 }

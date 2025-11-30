@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.infrastructure.repository;
 
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,7 +19,7 @@ public class DeliveryRouteRepositoryImpl implements DeliveryRouteRepository {
     }
 
     @Override
-    public Optional<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
+    public List<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
         return deliveryRouteJpaRepository.findByDeliveryId(deliveryId);
     }
 }
