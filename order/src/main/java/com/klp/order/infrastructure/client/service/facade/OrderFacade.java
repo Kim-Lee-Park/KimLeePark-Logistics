@@ -1,16 +1,16 @@
 package com.klp.order.infrastructure.client.service.facade;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
-import com.klp.order.application.service.OrderSagaService;
+import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.application.service.OrderService;
+import com.klp.order.domain.entity.idempotencykey.OperationType;
+import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.entity.saga.OrderSaga;
-import com.klp.order.domain.entity.saga.SagaStatus;
-import com.klp.order.global.exception.OrderErrorCode;
-import com.klp.order.infrastructure.client.service.DeliveryIntegrationService;
-import com.klp.order.infrastructure.client.service.InventoryIntegrationService;
-import com.klp.order.infrastructure.client.service.SagaCompensationService;
+import com.klp.order.infrastructure.event.OrderCancelledEvent;
+import com.klp.order.infrastructure.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.OrderEventPublisher;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,64 +22,60 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderFacade {
 
     private final OrderService orderService;
-    private final OrderSagaService orderSagaService;
-    private final InventoryIntegrationService inventoryIntegrationService;
-    private final DeliveryIntegrationService deliveryIntegrationService;
-    private final SagaCompensationService sagaCompensationService;
+    private final OrderOutboundRequestService orderOutboundRequestService;
+    private final OrderEventPublisher eventPublisher;
 
+    /**
+     * 주문 생성 - 주문 생성 후 재고 차감 이벤트 발행
+     */
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
-        Order order = null;
-        OrderSaga saga = null;
+        log.info("=== 주문 생성 시작 ===");
 
-        try {
-            log.info("=== Saga 시작 ===");
+        // 1. 주문 생성
+        Order order = orderService.createOrder(command);
+        log.info("주문 생성 완료 - orderId: {}", order.getOrderId());
 
-            // Step 1: 주문 생성
-            log.info("Step 1: 주문 생성 시작");
-            order = orderService.createOrder(command);
-            log.info("Step 1: 주문 생성 완료 - orderId: {}", order.getOrderId());
+        // 2. 재고 차감 이벤트 발행
+        String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
+            order.getOrderId(),
+            Target.INVENTORY,
+            OperationType.DECREASE
+        );
 
-            // Saga 생성 및 저장
-            saga = orderSagaService.createSaga(order);
-            saga.updateStatus(SagaStatus.ORDER_CREATED, 1);
-            orderSagaService.save(saga);
+        OrderCreatedEvent event = OrderCreatedEvent.from(order, idempotencyKey);
+        eventPublisher.publishOrderCreated(event);
+        log.info("재고 차감 이벤트 발행 완료 - orderId: {}", order.getOrderId());
 
-            // Step 2: 재고 차감
-            log.info("Step 2: 재고 차감 시작");
-            inventoryIntegrationService.deductInventory(order);
-            saga.updateStatus(SagaStatus.INVENTORY_DEDUCTED, 2);
-            orderSagaService.save(saga);
-            log.info("Step 2: 재고 차감 완료");
-
-            // Step 3: 배송 생성
-            log.info("Step 3: 배송 생성 시작");
-            deliveryIntegrationService.createDelivery(order);
-            saga.updateStatus(SagaStatus.DELIVERY_CREATED, 3);
-            orderSagaService.save(saga);
-            log.info("Step 3: 배송 생성 완료");
-
-            // Step 4: Saga 완료
-            saga.updateStatus(SagaStatus.COMPLETED, 4);
-            orderSagaService.save(saga);
-
-            log.info("=== Saga 정상 완료: orderId={} ===", order.getOrderId());
-            return order;
-
-        } catch (Exception e) {
-            log.error("=== Saga 실패 발생 ===", e);
-
-            // 별도 서비스에서 보상 처리
-            if (saga != null && order != null) {
-                sagaCompensationService.handleSagaFailure(
-                    saga.getSagaId(),
-                    order.getOrderId(),
-                    saga.getCurrentStep(),
-                    e.getMessage()
-                );
-            }
-
-            throw new BusinessException(OrderErrorCode.ORDER_CREATION_FAILED);
-        }
+        log.info("=== 주문 생성 완료: orderId={} ===", order.getOrderId());
+        return order;
     }
+
+    /**
+     * 주문 취소 - 주문 취소 후 재고 복구 이벤트 발행
+     */
+    @Transactional
+    public Order cancelOrder(UUID orderId, CancelOrderCommand command) {
+        log.info("=== 주문 취소 시작: orderId={} ===", orderId);
+
+        // 1. 주문 취소 처리
+        Order order = orderService.cancelOrder(orderId, command);
+        log.info("주문 취소 완료 - orderId: {}", orderId);
+
+        // 2. 재고 복구 이벤트 발행
+        String idempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
+            order.getOrderId(),
+            Target.INVENTORY,
+            OperationType.INCREASE
+        );
+
+        OrderCancelledEvent event = OrderCancelledEvent.from(order, idempotencyKey);
+        eventPublisher.publishOrderCancelled(event);
+        log.info("재고 복구 이벤트 발행 완료 - orderId: {}", orderId);
+
+        log.info("=== 주문 취소 완료: orderId={} ===", orderId);
+        return order;
+    }
+
+    
 }

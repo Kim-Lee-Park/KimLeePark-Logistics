@@ -120,7 +120,7 @@ public class OrderController {
         @Valid @RequestBody CancelOrderRequest request
     ) {
         CancelOrderCommand command = request.toCommand(cancelledBy);
-        Order order = orderService.cancelOrder(orderId, command);
+        Order order = orderFacade.cancelOrder(orderId, command);
         CancelOrderResponse response = CancelOrderResponse.from(order);
 
         return ResponseEntity.ok(response);
