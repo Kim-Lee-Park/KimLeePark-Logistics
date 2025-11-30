@@ -1,0 +1,15 @@
+datasources:
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    jsonData:
+      tracesToLogs:
+        datasourceUid: ""   # 나중에 Loki 데이터소스 UID 넣으면 trace→log pivot 가능
+      tracesToMetrics:
+        datasourceUid: ""   # Prometheus 붙이면 여기 UID
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false

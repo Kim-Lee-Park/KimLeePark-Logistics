@@ -70,6 +70,13 @@ dependencies {
     // security
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    //otel
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    //actuator
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
 }
 
 dependencyManagement {

@@ -1,0 +1,30 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 512
+
+exporters:
+  # 디버깅용 – Collector 로그에 span 내용 찍어보기
+  logging/debug:
+    loglevel: debug
+
+  # Tempo로 OTLP gRPC 전송
+  otlp/tempo:
+    endpoint: tempo:4317  # docker-compose 서비스 이름:포트
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/tempo, logging/debug ]

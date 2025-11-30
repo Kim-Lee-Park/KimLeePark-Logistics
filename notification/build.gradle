@@ -52,6 +52,13 @@ dependencies {
 
     // slack api
     implementation 'com.slack.api:slack-api-client:1.45.3'
+
+    //otel
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    //actuator
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
 }
 
 dependencyManagement {

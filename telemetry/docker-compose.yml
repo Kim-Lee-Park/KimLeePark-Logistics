@@ -1,0 +1,79 @@
+services:
+  # Grafana Tempo (Traces 저장)
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo/tempo.yaml" ]
+    volumes:
+      - ./tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200" # Tempo HTTP (Grafana에서 붙는 포트)
+      - "4317:4317" # OTLP gRPC (원하면 앱이 직접 쏠 수도 있음)
+      - "4318:4318" # OTLP HTTP
+    networks:
+      - telemetry
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: [ "--config=/etc/otelcol/otel-collector-config.yaml" ]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317" # OTLP gRPC (App -> Collector)
+      - "4318:4318" # OTLP HTTP (App -> Collector)
+    depends_on:
+      - tempo
+    networks:
+      - telemetry
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:main-ubuntu
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # 자동 데이터소스 provisioning 사용
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    depends_on:
+      - tempo
+    networks:
+      - telemetry
+
+#  # Loki
+#  loki:
+#    image: grafana/loki:latest
+#    container_name: loki
+#    command: [ "-config.file=/etc/loki/local-config.yaml" ]
+#    ports:
+#      - "3100:3100" # http://localhost:3100
+#    networks:
+#      - telemetry
+#
+#  # Prometheus
+#  prometheus:
+#    image: prom/prometheus:main
+#    container_name: prometheus
+#    command:
+#      - "--config.file=/etc/prometheus/prometheus.yml"
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+#    ports:
+#      - "9090:9090"
+#    networks:
+#      - telemetry
+
+networks:
+  telemetry:
+
+volumes:
+  tempo-data:
+  grafana-data:
