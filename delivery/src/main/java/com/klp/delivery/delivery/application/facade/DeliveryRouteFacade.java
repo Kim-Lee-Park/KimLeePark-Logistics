@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.application.facade;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
@@ -62,10 +62,10 @@ public class DeliveryRouteFacade {
 
         // 현재 배송 경로 목록 조회하여 마지막 경로의 상태 확인
         List<DeliveryRoute> existingRoutes = deliveryRouteRepository.findByDeliveryId(deliveryId);
-        DeliveryStatus currentRouteStatus = existingRoutes.stream()
+        DeliveryRouteStatus currentRouteStatus = existingRoutes.stream()
             .max(Comparator.comparing(DeliveryRoute::getSequence))
             .map(DeliveryRoute::getStatus)
-            .orElse(DeliveryStatus.CREATED); // 첫 경로인 경우 CREATED
+            .orElse(DeliveryRouteStatus.CREATED); // 첫 경로인 경우 CREATED
 
         // 경로 계획 조회
         GetRoutePlanDetailResponse routePlan = routePlanService.getRoutePlan(

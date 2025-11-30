@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.presentation.dto;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import java.util.UUID;
 
 public record DeliveryRouteDetailResponse(
@@ -14,7 +14,7 @@ public record DeliveryRouteDetailResponse(
     Long estimatedTime,
     Double realDistance,
     Long realTime,
-    DeliveryStatus status
+    DeliveryRouteStatus status
 ) {
 
 }

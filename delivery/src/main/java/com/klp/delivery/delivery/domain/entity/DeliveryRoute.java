@@ -1,7 +1,7 @@
 package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.delivery.common.entity.BaseEntity;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -65,12 +65,12 @@ public class DeliveryRoute extends BaseEntity {
 
     @Comment("배송상태")
     @Enumerated(EnumType.STRING)
-    private DeliveryStatus status;
+    private DeliveryRouteStatus status;
 
 
     private DeliveryRoute(UUID deliveryId, Long driverId, UUID departureHubId,
         UUID arrivalHubId, Integer sequence, Double estimatedDistance, Long estimatedTime,
-        Double realDistance, Long realTime, DeliveryStatus status) {
+        Double realDistance, Long realTime, DeliveryRouteStatus status) {
         this.deliveryId = deliveryId;
         this.driverId = driverId;
         this.departureHubId = departureHubId;
@@ -85,7 +85,7 @@ public class DeliveryRoute extends BaseEntity {
 
     public static DeliveryRoute create(UUID deliveryId, Long vendorDriverId, UUID departureHubId,
         UUID arrivalHubId, Integer sequence, Double estimatedDistance, Long estimatedTime,
-        Double realDistance, Long realTime, DeliveryStatus status) {
+        Double realDistance, Long realTime, DeliveryRouteStatus status) {
         return new DeliveryRoute(deliveryId, vendorDriverId, departureHubId, arrivalHubId, sequence,
             estimatedDistance, estimatedTime, realDistance, realTime, status);
     }

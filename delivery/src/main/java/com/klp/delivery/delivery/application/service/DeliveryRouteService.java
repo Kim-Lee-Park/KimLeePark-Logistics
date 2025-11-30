@@ -4,7 +4,7 @@ import static com.klp.delivery.routeplan.exception.RoutePlanErrorCode.NO_ROUTE_P
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand.PlanItem;
@@ -39,7 +39,7 @@ public class DeliveryRouteService {
 
         try {
             DeliveryRoute route;
-            DeliveryStatus status;
+            DeliveryRouteStatus status;
 
             // 경로아이템 size조회
             if (planCommand.planItems().isEmpty()) {
@@ -50,7 +50,7 @@ public class DeliveryRouteService {
                     planCommand.totalDistanceKm(), planCommand.totalDurationMin());
 
                 // 중간 허브 없음 → 바로 최종 허브 도착
-                status = DeliveryStatus.ARRIVED_AT_FINAL_HUB;
+                status = DeliveryRouteStatus.ARRIVED_AT_FINAL_HUB;
                 route = DeliveryRoute.create(
                     deliveryCommand.deliveryId(),
                     deliveryCommand.vendorDrvierId(),
@@ -70,7 +70,7 @@ public class DeliveryRouteService {
                     planCommand.departureId(), planCommand.arrivalId());
 
                 // 중간 허브가 있음 허브로 이동 중
-                status = DeliveryStatus.IN_HUB_TRANSIT;
+                status = DeliveryRouteStatus.IN_HUB_TRANSIT;
 
                 // 경로계획 중 첫번째
                 PlanItem plan =
@@ -121,8 +121,8 @@ public class DeliveryRouteService {
      * (IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY) → SHIPPING
      * DELIVERED → ARRIVED
      */
-    CustomerDeliveryStatus convertToCustomerDeliveryStatus(DeliveryStatus deliveryStatus) {
-        return switch (deliveryStatus) {
+    CustomerDeliveryStatus convertToCustomerDeliveryStatus(DeliveryRouteStatus deliveryRouteStatus) {
+        return switch (deliveryRouteStatus) {
             case CREATED -> CustomerDeliveryStatus.CREATED;
             case IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY ->
                 CustomerDeliveryStatus.SHIPPING;
@@ -132,14 +132,14 @@ public class DeliveryRouteService {
 
     @Transactional
     public DeliveryRouteStatusCommand appendDeliveryRoute(UUID deliveryId,
-        GetRoutePlanDetailResponse routePlan, DeliveryStatus currentDeliveryStatus,
+        GetRoutePlanDetailResponse routePlan, DeliveryRouteStatus currentDeliveryRouteStatus,
         Long vendorDriverId) {
         log.info("배송 경로 추가 시작: deliveryId={}, routePlanId={}, currentStatus={}, vendorDriverId={}",
-            deliveryId, routePlan.routePlanId(), currentDeliveryStatus, vendorDriverId);
+            deliveryId, routePlan.routePlanId(), currentDeliveryRouteStatus, vendorDriverId);
 
         try {
             // 현재 상태가 배송완료(DELIVERED)면 예외 발생
-            if (currentDeliveryStatus == DeliveryStatus.DELIVERED) {
+            if (currentDeliveryRouteStatus == DeliveryRouteStatus.DELIVERED) {
                 throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
                     "이미 배송이 완료된 상태입니다. 배송 경로 기록을 추가할 수 없습니다.");
             }
@@ -173,16 +173,16 @@ public class DeliveryRouteService {
                 .max(Integer::compareTo)
                 .orElse(1);
 
-            DeliveryStatus routeStatus = determineRouteStatus(
+            DeliveryRouteStatus routeStatus = determineRouteStatus(
                 nextSequence, lastSequence, nextPlanItem, routePlan.arrivalId(),
-                lastRoute.getArrivalHubId(), currentDeliveryStatus);
+                lastRoute.getArrivalHubId(), currentDeliveryRouteStatus);
 
             CustomerDeliveryStatus deliveryStatus = determineDeliveryStatus(
-                currentDeliveryStatus,
+                currentDeliveryRouteStatus,
                 nextPlanItem, routePlan.arrivalId(), lastSequence);
 
 
-            Long driverId = selectDriverId(currentDeliveryStatus, routeStatus, vendorDriverId);
+            Long driverId = selectDriverId(currentDeliveryRouteStatus, routeStatus, vendorDriverId);
 
 
             UUID departureHubId = lastRoute.getArrivalHubId();
@@ -218,14 +218,14 @@ public class DeliveryRouteService {
     }
 
 
-    private Long selectDriverId(DeliveryStatus currentStatus, DeliveryStatus newStatus,
+    private Long selectDriverId(DeliveryRouteStatus currentStatus, DeliveryRouteStatus newStatus,
         Long vendorDriverId) {
 
         // 배송출발(OUT_FOR_DELIVERY) 또는 배송완료(DELIVERED)에서는 업체 배송 담당자 선택
-        if (currentStatus == DeliveryStatus.ARRIVED_AT_FINAL_HUB
-            || currentStatus == DeliveryStatus.OUT_FOR_DELIVERY
-            || newStatus == DeliveryStatus.OUT_FOR_DELIVERY
-            || newStatus == DeliveryStatus.DELIVERED) {
+        if (currentStatus == DeliveryRouteStatus.ARRIVED_AT_FINAL_HUB
+            || currentStatus == DeliveryRouteStatus.OUT_FOR_DELIVERY
+            || newStatus == DeliveryRouteStatus.OUT_FOR_DELIVERY
+            || newStatus == DeliveryRouteStatus.DELIVERED) {
             log.info("업체 배송 담당자 사용: vendorDriverId={}, currentStatus={}, newStatus={}",
                 vendorDriverId, currentStatus, newStatus);
             return vendorDriverId;
@@ -246,43 +246,43 @@ public class DeliveryRouteService {
      * 2. 현재 배송경로의 도착허브가 최종 허브가 아니며 현재 상태가 IN_HUB_TRANSIT(허브 간 이동 중)인 경우 → AT_INTERMEDIATE_HUB (중간 허브 도착)
      * 3. 허브 도착 이후 다음 허브로 이동할 때 → IN_HUB_TRANSIT (허브 간 이동 중)
      */
-    private DeliveryStatus determineRouteStatus(int nextSequence, int lastSequence,
+    private DeliveryRouteStatus determineRouteStatus(int nextSequence, int lastSequence,
         GetRoutePlanDetailResponse.PlanItem nextPlanItem, UUID finalArrivalHubId,
-        UUID currentArrivalHubId, DeliveryStatus currentDeliveryStatus) {
+        UUID currentArrivalHubId, DeliveryRouteStatus currentDeliveryRouteStatus) {
 
         // 1) sequence가 마지막 시퀀스라면 → ARRIVED_AT_FINAL_HUB (최종 허브 도착)
         if (nextSequence == lastSequence) {
             log.info("최종 허브 도착 route: sequence={}, arrivalHubId={}", nextSequence,
                 nextPlanItem.arrivalId());
-            return DeliveryStatus.ARRIVED_AT_FINAL_HUB;
+            return DeliveryRouteStatus.ARRIVED_AT_FINAL_HUB;
         }
 
         // 2) 현재 배송경로의 arrivalHubId가 최종 허브가 아니며 현재 상태가 IN_HUB_TRANSIT인 경우 → AT_INTERMEDIATE_HUB
         if (!currentArrivalHubId.equals(finalArrivalHubId)
-            && currentDeliveryStatus == DeliveryStatus.IN_HUB_TRANSIT) {
+            && currentDeliveryRouteStatus == DeliveryRouteStatus.IN_HUB_TRANSIT) {
             log.info("중간 허브 도착 route: sequence={}, arrivalHubId={}", nextSequence,
                 nextPlanItem.arrivalId());
-            return DeliveryStatus.AT_INTERMEDIATE_HUB;
+            return DeliveryRouteStatus.AT_INTERMEDIATE_HUB;
         }
 
         // 3) 허브 도착 이후 다음 허브로 이동할 때 → IN_HUB_TRANSIT (허브 간 이동 중)
         log.info("허브 간 이동 중 route: sequence={}, departureId={}, arrivalId={}",
             nextSequence, nextPlanItem.departureId(), nextPlanItem.arrivalId());
-        return DeliveryStatus.IN_HUB_TRANSIT;
+        return DeliveryRouteStatus.IN_HUB_TRANSIT;
     }
 
 
 
-    private CustomerDeliveryStatus determineDeliveryStatus(DeliveryStatus currentStatus,
+    private CustomerDeliveryStatus determineDeliveryStatus(DeliveryRouteStatus currentStatus,
         GetRoutePlanDetailResponse.PlanItem nextPlanItem, UUID finalArrivalHubId,
         int lastSequence) {
 
-        if (currentStatus == DeliveryStatus.ARRIVED_AT_FINAL_HUB) {
+        if (currentStatus == DeliveryRouteStatus.ARRIVED_AT_FINAL_HUB) {
             log.info("최종 허브 도착 후 배송 출발: ARRIVED_AT_FINAL_HUB → OUT_FOR_DELIVERY → SHIPPING");
             return CustomerDeliveryStatus.SHIPPING;
         }
 
-        if (currentStatus == DeliveryStatus.OUT_FOR_DELIVERY) {
+        if (currentStatus == DeliveryRouteStatus.OUT_FOR_DELIVERY) {
             log.info("배송 완료: OUT_FOR_DELIVERY → DELIVERED → ARRIVED");
             return CustomerDeliveryStatus.ARRIVED;
         }
