@@ -6,7 +6,9 @@ distributor:
     otlp:
       protocols:
         grpc:
+          endpoint: 0.0.0.0:4317
         http:
+          endpoint: 0.0.0.0:4318
 
 ingester:
   trace_idle_period: 10s
@@ -24,11 +26,3 @@ storage:
       path: /var/tempo/traces
     wal:
       path: /var/tempo/wal
-
-querier:
-  frontend_worker:
-    frontend_address: tempo:9095
-
-query_frontend:
-  search:
-    query_timeout: 30s

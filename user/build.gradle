@@ -47,12 +47,13 @@ dependencies {
     // common-module
     implementation 'com.klp.common:common-module:1.0.0'
 
-    //otel
+    //trace
     implementation("io.micrometer:micrometer-tracing-bridge-otel")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
-    //actuator
+    //metric
     implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "io.micrometer:micrometer-registry-prometheus"
 }
 
 dependencyManagement {
