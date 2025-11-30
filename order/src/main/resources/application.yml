@@ -23,7 +23,7 @@ spring:
       retries: 3
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: earliest # from-beginning 이랑 같다.
       properties:
         spring.json.trusted.packages: "*"
