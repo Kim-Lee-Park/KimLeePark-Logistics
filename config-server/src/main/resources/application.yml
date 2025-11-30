@@ -13,3 +13,11 @@ spring:
           password: ${GIT_TOKEN}
           default-label: main
           clone-on-start: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: busrefresh
