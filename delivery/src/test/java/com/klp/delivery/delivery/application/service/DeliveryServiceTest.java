@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
@@ -194,11 +194,11 @@ public class DeliveryServiceTest extends MockTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"IN_HUB_TRANSIT", "AT_INTERMEDIATE_HUB", "ARRIVED_AT_FINAL_HUB", "OUT_FOR_DELIVERY", "DELIVERED"})
-    void CREATED가_아닌_상태일때_배송삭제_성공(String statusName) {
+    @CsvSource({"SHIPPING", "ARRIVED"})
+    void CREATED가_아닌_상태일때_배송삭제_실패(String statusName) {
         // given: CREATED가 아닌 상태의 배송
         Delivery delivery = defaultDelivery();
-        delivery.updateStatus(DeliveryStatus.valueOf(statusName));
+        delivery.updateStatus(CustomerDeliveryStatus.valueOf(statusName));
         UUID deliveryId = DEFAULT_DELIVERY_ID_FIRST;
         Long deletedBy = 1L;
         when(deliveryRepository.findByDeliveryId(deliveryId)).thenReturn(delivery);

@@ -13,7 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
@@ -68,7 +68,7 @@ class DeliveryRouteFacadeTest extends MockTest {
 
         DeliveryRouteStatusCommand statusCommand = new DeliveryRouteStatusCommand(
             UUID.randomUUID(),
-            DeliveryStatus.ARRIVED_AT_FINAL_HUB
+            CustomerDeliveryStatus.SHIPPING // ARRIVED_AT_FINAL_HUB → SHIPPING 변환
         );
 
         when(routePlanService.getRoutePlan(DEFAULT_DEPARTURE_ID, DEFAULT_ARRIVAL_ID))
@@ -89,7 +89,7 @@ class DeliveryRouteFacadeTest extends MockTest {
         verify(deliveryService, times(1)).applyRouteCreation(
             eq(DEFAULT_DELIVERY_ID_FIRST),
             eq(ROUTE_PLAN_ID),
-            eq(DeliveryStatus.ARRIVED_AT_FINAL_HUB)
+            eq(CustomerDeliveryStatus.SHIPPING)
         );
     }
 
@@ -130,7 +130,7 @@ class DeliveryRouteFacadeTest extends MockTest {
 
         DeliveryRouteStatusCommand statusCommand = new DeliveryRouteStatusCommand(
             UUID.randomUUID(),
-            DeliveryStatus.IN_HUB_TRANSIT
+            CustomerDeliveryStatus.SHIPPING // IN_HUB_TRANSIT → SHIPPING 변환
         );
 
         when(routePlanService.getRoutePlan(DEFAULT_DEPARTURE_ID, DEFAULT_ARRIVAL_ID))
@@ -151,7 +151,7 @@ class DeliveryRouteFacadeTest extends MockTest {
         verify(deliveryService, times(1)).applyRouteCreation(
             eq(DEFAULT_DELIVERY_ID_FIRST),
             eq(ROUTE_PLAN_ID),
-            eq(DeliveryStatus.IN_HUB_TRANSIT)
+            eq(CustomerDeliveryStatus.SHIPPING)
         );
     }
 }

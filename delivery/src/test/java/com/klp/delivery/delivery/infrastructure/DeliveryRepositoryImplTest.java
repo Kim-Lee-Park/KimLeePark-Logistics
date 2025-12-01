@@ -16,7 +16,7 @@ import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_SECOND;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
@@ -76,7 +76,7 @@ public class DeliveryRepositoryImplTest {
         // then: 생성 검증
         assertThat(result.getDeliveryId()).isNotNull();
         assertThat(delivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
-        assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+        assertThat(delivery.getStatus()).isEqualTo(CustomerDeliveryStatus.CREATED);
 
     }
 
@@ -94,7 +94,7 @@ public class DeliveryRepositoryImplTest {
         // then: 생성 검증
         assertThat(findResult)
             .extracting(Delivery::getStatus)
-            .isEqualTo(DeliveryStatus.CREATED);
+            .isEqualTo(CustomerDeliveryStatus.CREATED);
 
     }
 

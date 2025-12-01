@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
@@ -166,7 +166,7 @@ class DeliveryControllerTest {
             .andExpect(jsonPath("$.receiverName").value(DEFAULT_COMPANY_NAME))
             .andExpect(jsonPath("$.address").value(DEFAULT_COMPANY_ADDRESS))
             .andExpect(jsonPath("$.receiverSlackId").value(DEFAULT_RECEIVER_SLACK_ID))
-            .andExpect(jsonPath("$.status").value(DeliveryStatus.CREATED.name()));
+            .andExpect(jsonPath("$.status").value(CustomerDeliveryStatus.CREATED.name()));
 
         // then: 배송 조회 서비스 호출 검증
         verify(deliveryService).findDelivery(DEFAULT_DELIVERY_ID_FIRST);
