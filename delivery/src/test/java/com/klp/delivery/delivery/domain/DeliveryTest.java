@@ -8,7 +8,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
@@ -28,7 +28,7 @@ public class DeliveryTest extends MockTest {
         Delivery delivery = defaultDelivery();
 
         // then: 배송 상태값 검증
-        assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+        assertThat(delivery.getStatus()).isEqualTo(CustomerDeliveryStatus.CREATED);
     }
 
     @Test
@@ -91,10 +91,10 @@ public class DeliveryTest extends MockTest {
 
     @ParameterizedTest(name = "상태가 {0} → {1} 로 변경될 수 있다")
     @CsvSource({
-        "IN_HUB_TRANSIT, ARRIVED_AT_FINAL_HUB",   // 허브 이동 중 → 최종 허브 도착
-        "OUT_FOR_DELIVERY, DELIVERED"          // 배송 출발 → 배송 완료
+        "CREATED, SHIPPING",   // 배송 준비 중 → 배송 중
+        "SHIPPING, ARRIVED"    // 배송 중 → 배송 완료
     })
-    void 배송상태_정상변경_검증(DeliveryStatus from, DeliveryStatus to) {
+    void 배송상태_정상변경_검증(CustomerDeliveryStatus from, CustomerDeliveryStatus to) {
         // given
         Delivery delivery = defaultDelivery();
 

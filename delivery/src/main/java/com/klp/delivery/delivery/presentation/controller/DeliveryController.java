@@ -70,18 +70,10 @@ public class DeliveryController {
         return ResponseEntity.ok(responses);
     }
 
-    @PatchMapping("/{deliveryId}/status")
-    public ResponseEntity<Void> updateDeliveryStatus(
-        @PathVariable UUID deliveryId,
-        @Valid @RequestBody DeliveryStatusUpdateRequest request) {
-        deliveryService.updateDeliveryStatus(deliveryId, request.status());
-        return ResponseEntity.noContent().build();
-    }
-
     @PatchMapping("/{deliveryId}")
     public ResponseEntity<Void> updateDeliveryStatus(@PathVariable UUID deliveryId,
         @RequestBody DeliveryUpdateRequest request) {
-        deliveryService.updateVendorDriver(deliveryId, request.vendorDrvierId());
+        deliveryFacade.updateVendorDriver(deliveryId, request.vendorDrvierId());
         return ResponseEntity.noContent().build();
     }
 

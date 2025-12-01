@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum DeliveryStatus {
+public enum DeliveryRouteStatus {
 
   CREATED("배송 생성"),                    // 배송 생성됨 (허브 도착 전)
   IN_HUB_TRANSIT("허브 간 이동 중"),        // 허브 이동 중
