@@ -137,12 +137,7 @@ public class DeliveryFacade {
     public void updateVendorDriver(UUID deliveryId, Long vendorDrvierId) {
 
         Delivery delivery = deliveryService.findDelivery(deliveryId);
-        DriverCommand driver = driverService.findDriverAtArrivalHub(vendorDrvierId);
-
-        if (driver == null) {
-            throw new BusinessException(
-                DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 담당자를 찾을 수 없습니다");
-        }
+        driverService.findDriverAtArrivalHub(vendorDrvierId);
 
         delivery.updateVendorDriverId(vendorDrvierId);
 

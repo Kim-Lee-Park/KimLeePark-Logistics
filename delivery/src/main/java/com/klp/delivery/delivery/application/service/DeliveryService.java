@@ -43,8 +43,6 @@ public class DeliveryService {
                     items
                 )
             );
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 저장 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CREATION_FAILED);
@@ -54,8 +52,6 @@ public class DeliveryService {
     public Delivery findDelivery(UUID deliveryId) {
         try {
             return deliveryRepository.findByDeliveryId(deliveryId);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 조회 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
@@ -66,8 +62,6 @@ public class DeliveryService {
         try {
             List<Delivery> deliveries = deliveryRepository.findDeliveryByOrderId(orderId);
             return DeliveryDetailResponse.from(deliveries);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("주문 ID로 배송 조회 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
@@ -78,8 +72,6 @@ public class DeliveryService {
         try {
             Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);
             return DeliveryDetailResponse.from(deliveryPage);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 전체 조회 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
@@ -91,8 +83,6 @@ public class DeliveryService {
         try {
             Delivery delivery = findDelivery(deliveryId);
             delivery.delete(deletedBy);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 삭제 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_DELETE_FAILED);
@@ -103,8 +93,6 @@ public class DeliveryService {
         try {
             Delivery delivery = findDelivery(deliveryId);
             delivery.updateRouteInfo(routePlanId, status);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 경로 정보 적용 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 경로 정보 적용에 실패했습니다.", e);

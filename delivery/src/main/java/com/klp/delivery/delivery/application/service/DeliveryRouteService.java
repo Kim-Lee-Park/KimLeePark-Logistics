@@ -107,8 +107,7 @@ public class DeliveryRouteService {
             CustomerDeliveryStatus deliveryStatus = convertToCustomerDeliveryStatus(status);
 
             return new DeliveryRouteStatusCommand(create.getDeliveryRouteId(), deliveryStatus);
-        } catch (BusinessException e) {
-            throw e;
+
         } catch (Exception e) {
             log.error("배송 경로 생성 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
@@ -121,7 +120,8 @@ public class DeliveryRouteService {
      * (IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY) → SHIPPING
      * DELIVERED → ARRIVED
      */
-    CustomerDeliveryStatus convertToCustomerDeliveryStatus(DeliveryRouteStatus deliveryRouteStatus) {
+    CustomerDeliveryStatus convertToCustomerDeliveryStatus(
+        DeliveryRouteStatus deliveryRouteStatus) {
         return switch (deliveryRouteStatus) {
             case CREATED -> CustomerDeliveryStatus.CREATED;
             case IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY ->
@@ -152,14 +152,14 @@ public class DeliveryRouteService {
             }
 
             // 현재 배송 경로 마지막 경로 찾기
-            DeliveryRoute lastRoute = existingRoutes.stream()
+            DeliveryRoute currentLastRoute = existingRoutes.stream()
                 .max(java.util.Comparator.comparing(DeliveryRoute::getSequence))
                 .orElseThrow(
                     () -> new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_FETCH_FAILED,
                         "마지막 배송 경로를 찾을 수 없습니다."));
 
             // 다음 sequence의 PlanItem 찾기
-            int nextSequence = lastRoute.getSequence() + 1;
+            int nextSequence = currentLastRoute.getSequence() + 1;
             GetRoutePlanDetailResponse.PlanItem nextPlanItem = routePlan.planItems().stream()
                 .filter(item -> item.sequence().equals(nextSequence))
                 .findFirst()
@@ -175,17 +175,15 @@ public class DeliveryRouteService {
 
             DeliveryRouteStatus routeStatus = determineRouteStatus(
                 nextSequence, lastSequence, nextPlanItem, routePlan.arrivalId(),
-                lastRoute.getArrivalHubId(), currentDeliveryRouteStatus);
+                currentLastRoute.getArrivalHubId(), currentDeliveryRouteStatus);
 
             CustomerDeliveryStatus deliveryStatus = determineDeliveryStatus(
                 currentDeliveryRouteStatus,
                 nextPlanItem, routePlan.arrivalId(), lastSequence);
 
-
             Long driverId = selectDriverId(currentDeliveryRouteStatus, routeStatus, vendorDriverId);
 
-
-            UUID departureHubId = lastRoute.getArrivalHubId();
+            UUID departureHubId = currentLastRoute.getArrivalHubId();
             UUID arrivalHubId = nextPlanItem.arrivalId();
 
             DeliveryRoute newRoute = DeliveryRoute.create(
@@ -209,8 +207,6 @@ public class DeliveryRouteService {
 
             return new DeliveryRouteStatusCommand(savedRoute.getDeliveryRouteId(),
                 deliveryStatus);
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 경로 추가 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
@@ -241,10 +237,9 @@ public class DeliveryRouteService {
 
 
     /**
-     * Route 상태
-     * 1. 추가되는 route의 sequence가 마지막 시퀀스라면 → ARRIVED_AT_FINAL_HUB (최종 허브 도착)
-     * 2. 현재 배송경로의 도착허브가 최종 허브가 아니며 현재 상태가 IN_HUB_TRANSIT(허브 간 이동 중)인 경우 → AT_INTERMEDIATE_HUB (중간 허브 도착)
-     * 3. 허브 도착 이후 다음 허브로 이동할 때 → IN_HUB_TRANSIT (허브 간 이동 중)
+     * Route 상태 1. 추가되는 route의 sequence가 마지막 시퀀스라면 → ARRIVED_AT_FINAL_HUB (최종 허브 도착) 2. 현재 배송경로의
+     * 도착허브가 최종 허브가 아니며 현재 상태가 IN_HUB_TRANSIT(허브 간 이동 중)인 경우 → AT_INTERMEDIATE_HUB (중간 허브 도착) 3. 허브
+     * 도착 이후 다음 허브로 이동할 때 → IN_HUB_TRANSIT (허브 간 이동 중)
      */
     private DeliveryRouteStatus determineRouteStatus(int nextSequence, int lastSequence,
         GetRoutePlanDetailResponse.PlanItem nextPlanItem, UUID finalArrivalHubId,
@@ -298,7 +293,7 @@ public class DeliveryRouteService {
     }
 
     @Transactional(readOnly = true)
-    public  List<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
+    public List<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
         return deliveryRouteRepository.findByDeliveryId(deliveryId);
     }
 }

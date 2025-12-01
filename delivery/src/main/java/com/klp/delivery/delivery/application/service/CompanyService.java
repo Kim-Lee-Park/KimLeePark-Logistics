@@ -17,11 +17,9 @@ public class CompanyService {
     public CompanyCommand findCompany(String customerId) {
         try {
             return CompanyCommand.of(companyClientService.findCompany(customerId));
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("업체 조회 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "업체 조회에 실패했습니다.");
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "업체 조회에 실패했습니다.", e);
         }
     }
 

@@ -20,8 +20,6 @@ public class DriverService {
     public List<DriverCommand> findArrivalHubDrivers(UUID hubId) {
         try {
             return DriverCommand.from(driverClientService.findArrivalHubDrivers(hubId));
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 담당자들 조회 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.");
@@ -31,8 +29,6 @@ public class DriverService {
     public DriverCommand findDriverAtArrivalHub(long vendorDriverId) {
         try {
             return DriverCommand.of(driverClientService.findDriverAtArrivalHub(vendorDriverId));
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.");
@@ -42,8 +38,6 @@ public class DriverService {
     public List<DriverCommand> findLogisticsDrivers() {
         try {
             return DriverCommand.from(driverClientService.findLogisticsDrivers());
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("물류 배송 담당자들 조회 실패: {}", e.getMessage(), e);
             throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "물류 배송 담당자 조회에 실패했습니다.");

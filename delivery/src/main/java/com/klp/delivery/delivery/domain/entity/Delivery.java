@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.BaseEntity;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import jakarta.persistence.CascadeType;
@@ -137,7 +137,7 @@ public class Delivery extends BaseEntity {
     }
 
 
-    public boolean canUpdateVendorDriver(CustomerDeliveryStatus status) {
+    public boolean cancelUpdateVendorDriver(CustomerDeliveryStatus status) {
         return switch (status) {
             case CREATED -> true;
             case SHIPPING, ARRIVED -> false;
@@ -145,7 +145,7 @@ public class Delivery extends BaseEntity {
     }
 
     public void updateVendorDriverId(Long newVendorDriverId) {
-        if (!canUpdateVendorDriver(this.status)) {
+        if (!cancelUpdateVendorDriver(this.status)) {
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
                 String.format("배송 담당자 변경 불가 상태: %s", this.status)
             );
@@ -155,7 +155,7 @@ public class Delivery extends BaseEntity {
 
     public void delete(Long deletedBy) {
 
-        if (this.status != CustomerDeliveryStatus.CREATED) {
+        if (!cancelUpdateVendorDriver(this.status)) {
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 삭제 불가 상태" + this.status);
         }
         super.delete(deletedBy);

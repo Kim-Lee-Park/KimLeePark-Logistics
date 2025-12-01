@@ -46,19 +46,7 @@ public class DliveryRouteController {
         List<DeliveryRoute> routes = deliveryRouteService.findByDeliveryId(deliveryId);
 
         List<DeliveryRouteDetailResponse> response = routes.stream()
-            .map(route -> new DeliveryRouteDetailResponse(
-                route.getDeliveryRouteId(),
-                route.getDeliveryId(),
-                route.getDriverId(),
-                route.getDepartureHubId(),
-                route.getArrivalHubId(),
-                route.getSequence(),
-                route.getEstimatedDistance(),
-                route.getEstimatedTime(),
-                route.getRealDistance(),
-                route.getRealTime(),
-                route.getStatus()
-            ))
+            .map(DeliveryRouteDetailResponse::from)
             .toList();
 
         return ResponseEntity.ok().body(response);
