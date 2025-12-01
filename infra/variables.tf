@@ -43,16 +43,6 @@ variable "private_db_subnet_cidr_az2" {
   default = "10.0.20.0/24"
 }
 
-variable "db_username" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_password" {
-  type      = string
-  sensitive = true
-}
-
 variable "allowed_ssh_cidr" {
   description = "SSH 허용 IP"
   type        = string

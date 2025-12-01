@@ -15,8 +15,8 @@ resource "aws_db_instance" "postgres" {
   allocated_storage = 50
 
   db_name  = "logistics"
-  username = var.db_username
-  password = var.db_password
+  username = local.db_username
+  password = local.db_password
 
   db_subnet_group_name = aws_db_subnet_group.main.name
   multi_az             = true
