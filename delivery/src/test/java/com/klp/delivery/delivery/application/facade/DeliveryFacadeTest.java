@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -40,7 +41,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.context.ApplicationEventPublisher;
 
 public class DeliveryFacadeTest extends MockTest {
 
@@ -52,9 +52,6 @@ public class DeliveryFacadeTest extends MockTest {
 
     @Mock
     IdempotencyKeyService idempotencyKeyService;
-
-    @Mock
-    ApplicationEventPublisher eventPublisher;
 
     @Mock
     DriverService driverService;
@@ -205,6 +202,8 @@ public class DeliveryFacadeTest extends MockTest {
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(companyService.findCompany(DEFAULT_CUSTOMER_ID.toString()))
             .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
+        doNothing().when(idempotencyKeyService)
+            .deleteIdempotencyKey(anyString());
 
         // when & then: 예외 발생 검증
         assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
@@ -213,7 +212,7 @@ public class DeliveryFacadeTest extends MockTest {
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
                 assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.EXTERNAL_API_ERROR);
+                    DeliveryErrorCode.DELIVERY_CREATION_FAILED);
             });
 
         // then: 멱등키 등록 및 업체 조회는 호출되지만, 담당자 조회 및 배송 생성은 호출되지 않음
@@ -224,6 +223,8 @@ public class DeliveryFacadeTest extends MockTest {
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
+        // 보상 트랜잭션: 멱등키 삭제 호출 검증
+        verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(anyString());
     }
 
     @Test
@@ -238,6 +239,9 @@ public class DeliveryFacadeTest extends MockTest {
             createCompany());
         when(driverService.findArrivalHubDrivers(any(UUID.class))).thenThrow(
             new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
+        doNothing().when(idempotencyKeyService)
+            .deleteIdempotencyKey(anyString());
+
         assertThatThrownBy(() ->
             deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
                 request.toIdempotencyCommand())
@@ -246,7 +250,7 @@ public class DeliveryFacadeTest extends MockTest {
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
                 assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.EXTERNAL_API_ERROR);
+                    DeliveryErrorCode.DELIVERY_CREATION_FAILED);
             });
 
         // then: 멱등키 등록, 업체 조회, 담당자 조회는 호출되지만, 배송 생성은 호출되지 않음
@@ -257,6 +261,8 @@ public class DeliveryFacadeTest extends MockTest {
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
+        // 보상 트랜잭션: 멱등키 삭제 호출 검증
+        verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(anyString());
     }
 
     @Test
@@ -271,6 +277,8 @@ public class DeliveryFacadeTest extends MockTest {
         when(driverService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
+        doNothing().when(idempotencyKeyService)
+            .deleteIdempotencyKey(anyString());
 
         // when & then: 예외 발생 검증
         assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
@@ -279,7 +287,7 @@ public class DeliveryFacadeTest extends MockTest {
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
                 assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.EXTERNAL_API_ERROR);
+                    DeliveryErrorCode.DELIVERY_CREATION_FAILED);
             });
 
         // then: 멱등키 등록, 업체/담당자 조회, 배송 생성은 호출되지만, 멱등키 업데이트는 호출되지 않음
@@ -290,7 +298,40 @@ public class DeliveryFacadeTest extends MockTest {
         verify(deliveryService, times(1)).registerDelivery(any(DeliveryCommand.class), anyList());
         verify(idempotencyKeyService, never()).updateIdempotencyStatus(
             any(IdempotencyCommand.class));
+        // 보상 트랜잭션: 멱등키 삭제 호출 검증
+        verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(anyString());
     }
+
+    @Test
+    void 배송생성_실패_보상트랜잭션_멱등키삭제_성공() {
+        // given: 배송 생성 요청 데이터 준비
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
+        String idempotencyKey = request.toIdempotencyCommand().idempotencyKey();
+
+        doNothing().when(idempotencyKeyService)
+            .registerIdempotencyKey(any(IdempotencyCommand.class));
+        when(companyService.findCompany(DEFAULT_CUSTOMER_ID.toString()))
+            .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
+        doNothing().when(idempotencyKeyService)
+            .deleteIdempotencyKey(idempotencyKey);
+
+        // when & then: 예외 발생 검증
+        assertThatThrownBy(() -> deliveryFacade.createDelivery(request.toOrderToDeliveryCommand(),
+            request.toIdempotencyCommand()))
+            .isInstanceOf(BusinessException.class)
+            .satisfies(exception -> {
+                BusinessException businessException = (BusinessException) exception;
+                assertThat(businessException.getErrorCode()).isEqualTo(
+                    DeliveryErrorCode.DELIVERY_CREATION_FAILED);
+            });
+
+        // then: 보상 트랜잭션 - 멱등키 삭제가 성공적으로 호출됨
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(
+            any(IdempotencyCommand.class));
+        verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(idempotencyKey);
+        verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
+    }
+
 
 
 }
