@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderEventPublisher {
 
-    private static final String ORDER_CREATED_TOPIC = "order-created";
-    private static final String ORDER_CANCELLED_TOPIC = "order-cancelled";
+    private static final String ORDER_CREATED_TOPIC = "order.created";
+    private static final String ORDER_CANCELLED_TOPIC = "order.cancelled";
     private static final String ORDER_DELIVERY_REQUEST_TOPIC = "order.delivery.request";
 
     private final KafkaTemplate<String, Object> kafkaTemplate;

@@ -10,6 +10,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +27,18 @@ public class DeliveryEventListener {
 
     @KafkaListener(
         topics = "delivery.created",
-        groupId = "order-service-group"
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
-    public void handleDeliveryCreated(DeliveryCreatedEvent event) {
-        log.info("=== 배송 생성 완료 이벤트 수신: orderId={}, items={} ===",
-            event.orderId(), event.items().size());
+    public void handleDeliveryCreated(
+        @Payload DeliveryCreatedEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        Acknowledgment acknowledgment) {
+
+        log.info("=== 배송 생성 이벤트 수신: orderId={}, partition={}, offset={}, items={} ===",
+            event.orderId(), partition, offset, event.items().size());
 
         try {
             // 1. 주문 조회
@@ -42,12 +52,21 @@ public class DeliveryEventListener {
             // 3. 주문 상태를 DELIVERY_ASSIGNED로 변경
             order.changeStatus(OrderStatus.DELIVERY_ASSIGNED);
 
+            // 4. 수동 커밋
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+
             log.info("=== 배송 생성 이벤트 처리 완료: orderId={}, 상태={} ===",
                 event.orderId(), OrderStatus.DELIVERY_ASSIGNED);
 
         } catch (Exception e) {
-            log.error("배송 생성 이벤트 처리 실패: orderId={}", event.orderId(), e);
+            log.error("배송 생성 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+                event.orderId(), partition, offset, e);
+
             // 이벤트 처리 실패 시 재시도를 위해 예외를 다시 던짐
+            // DefaultErrorHandler가 재시도 처리
             throw e;
         }
     }
@@ -56,7 +75,6 @@ public class DeliveryEventListener {
     private void assignDeliveryIdsToOrderItems(List<DeliveryItem> deliveryItems) {
         log.info("deliveryId 할당 시작 - 총 {}개 아이템", deliveryItems.size());
 
-        // 각 orderItem에 deliveryId 할당
         for (DeliveryItem item : deliveryItems) {
             try {
                 orderItemService.assignDeliveryId(item.orderItemId(), item.deliveryId());

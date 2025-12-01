@@ -14,6 +14,10 @@ import com.klp.order.infrastructure.event.PaymentCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,16 +34,24 @@ public class PaymentEventListener {
     // 결제 완료 이벤트를 받으면 배송 생성 요청 이벤트를 발행
     @KafkaListener(
         topics = "payment.completed",
-        groupId = "order-service-group"
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
-    public void handlePaymentCompleted(PaymentCompletedEvent event) {
-        log.info("=== 결제 완료 이벤트 수신: orderId={} ===", event.orderId());
+    public void handlePaymentCompleted(
+        @Payload PaymentCompletedEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        Acknowledgment acknowledgment) {
+
+        log.info("=== 결제 완료 이벤트 수신: orderId={}, partition={}, offset={} ===",
+            event.orderId(), partition, offset);
 
         try {
             // 1. 주문 조회 후 상태 변경
             Order order = orderService.findById(event.orderId());
             log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
+
             order.changeStatus(OrderStatus.PAID);
             orderRepository.save(order);
 
@@ -56,13 +68,19 @@ public class PaymentEventListener {
             );
             eventPublisher.publishDeliveryRequest(deliveryEvent);
 
+            // 3. 수동 커밋
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+
             log.info("배송 요청 이벤트 발행 완료 - orderId: {}", order.getOrderId());
             log.info("=== 결제 완료 이벤트 처리 완료: orderId={} ===", event.orderId());
 
         } catch (Exception e) {
-            log.error("결제 완료 이벤트 처리 실패: orderId={}", event.orderId(), e);
+            log.error("결제 완료 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+                event.orderId(), partition, offset, e);
             throw e;
         }
     }
-
 }
