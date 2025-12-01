@@ -1,8 +1,8 @@
-package com.klp.hub.global.exception;
+package com.klp.delivery.global.exception;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.common.exception.ErrorResponse;
-import com.klp.hub.common.exception.ExternalApiException;
+import com.klp.delivery.common.exception.ExternalApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.TypeMismatchException;
 import org.springframework.http.HttpStatus;

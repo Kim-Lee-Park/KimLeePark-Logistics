@@ -99,7 +99,7 @@ class DeliveryIntegrationTest {
         @Primary
         public RoutePlanService routePlanService() {
             routePlanServiceMock = org.mockito.Mockito.mock(RoutePlanService.class);
-            
+
             // 기본: 직행 경로 (중간 허브 없음) - planItems가 빈 리스트
             GetRoutePlanDetailResponse directRoutePlan = new GetRoutePlanDetailResponse(
                 RoutePlanFixture.ROUTE_PLAN_ID,
@@ -110,12 +110,12 @@ class DeliveryIntegrationTest {
                 List.of(), // planItems가 비어있음 (직행)
                 "ACTIVE"
             );
-            
+
             org.mockito.Mockito.when(routePlanServiceMock.getRoutePlan(
                 org.mockito.ArgumentMatchers.any(UUID.class),
                 org.mockito.ArgumentMatchers.any(UUID.class)
             )).thenReturn(directRoutePlan);
-            
+
             return routePlanServiceMock;
         }
 
@@ -417,11 +417,11 @@ class DeliveryIntegrationTest {
 
         // RoutePlanService를 경유 경로를 반환하도록 재설정
         RoutePlanService routePlanServiceMock = TestConfig.getRoutePlanServiceMock();
-        
+
         // 경유 경로 (중간 허브 있음) - planItems가 있는 경우
         UUID midHubId = UUID.randomUUID();
         UUID routePlanItemId = UUID.randomUUID();
-        
+
         GetRoutePlanDetailResponse.PlanItem planItem = new GetRoutePlanDetailResponse.PlanItem(
             routePlanItemId,
             RoutePlanFixture.ROUTE_PLAN_ID,
@@ -431,7 +431,7 @@ class DeliveryIntegrationTest {
             50.0,
             1
         );
-        
+
         GetRoutePlanDetailResponse viaRoutePlan = new GetRoutePlanDetailResponse(
             RoutePlanFixture.ROUTE_PLAN_ID,
             RoutePlanFixture.DEPARTURE_ID,
@@ -441,7 +441,7 @@ class DeliveryIntegrationTest {
             List.of(planItem), // planItems가 있음 (경유)
             "ACTIVE"
         );
-        
+
         // Mock 재설정: 경유 경로 반환
         org.mockito.Mockito.reset(routePlanServiceMock);
         org.mockito.Mockito.when(routePlanServiceMock.getRoutePlan(
