@@ -1,8 +1,8 @@
 package com.klp.hub.inventory.application;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
@@ -20,13 +20,12 @@ public class InventoryFacade {
 
     private final DistributedLockManager lockManager;
 
-    public InventoryDeductResponse deduct(InventoryDeductCommand command) {
-        String idempotencyKey = command.idempotencyKey();
+    public InventoryDeductResponse deduct(OrderCreatedEvent event) {
+        String idempotencyKey = event.idempotencyKey();
 
         lock(idempotencyKey);
         try {
-            InventoryDeductResponse response = inventoryService.deduct(command);
-            return response;
+            return inventoryService.deduct(event);
         } finally {
             unLock(idempotencyKey);
         }

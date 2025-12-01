@@ -1,7 +1,7 @@
 package com.klp.hub.inventory.application;
 
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent.OrderItemDto;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import java.util.Comparator;
@@ -28,12 +28,12 @@ public final class InventoryUpdatePlanner {
         Comparator.comparing((OrderKey orderKey) -> orderKey.productId)
             .thenComparing(orderKey -> orderKey.hubId);
 
-    public static List<InventoryDeduct> planDeduct(List<InventoryDeductCommand.Product> products) {
+    public static List<InventoryDeduct> planDeduct(List<OrderItemDto> items) {
         Map<OrderKey, Integer> aggregatedQty = aggregate(
-            products,
-            InventoryDeductCommand.Product::productId,
-            InventoryDeductCommand.Product::hubId,
-            InventoryDeductCommand.Product::quantity
+            items,
+            OrderItemDto::productId,
+            OrderItemDto::hubId,
+            OrderItemDto::quantity
         );
 
         return aggregatedQty.entrySet().stream()
