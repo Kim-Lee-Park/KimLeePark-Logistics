@@ -289,7 +289,7 @@ class DeliveryRouteServiceTest extends MockTest {
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
                 assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
+                    DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
             });
     }
 
@@ -317,7 +317,7 @@ class DeliveryRouteServiceTest extends MockTest {
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
                 assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.DELIVERY_ROUTE_FETCH_FAILED);
+                    DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
             });
 
         verify(deliveryRouteRepository, times(1)).findByDeliveryId(deliveryId);
@@ -364,7 +364,7 @@ class DeliveryRouteServiceTest extends MockTest {
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
                 assertThat(businessException.getErrorCode()).isEqualTo(
-                    DeliveryErrorCode.DELIVERY_ROUTE_FETCH_FAILED);
+                    DeliveryErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
             });
 
         verify(deliveryRouteRepository, times(1)).findByDeliveryId(deliveryId);

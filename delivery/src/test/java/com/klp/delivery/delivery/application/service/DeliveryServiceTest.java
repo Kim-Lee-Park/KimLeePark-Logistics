@@ -207,7 +207,7 @@ public class DeliveryServiceTest extends MockTest {
         assertThatThrownBy(() -> deliveryService.deleteDelivery(deliveryId, deletedBy))
             .isInstanceOf(BusinessException.class)
             .extracting("errorCode")
-            .isEqualTo(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED);
+            .isEqualTo(DeliveryErrorCode.DELIVERY_DELETE_FAILED);
     }
 
 }
