@@ -13,14 +13,15 @@ import static org.mockito.Mockito.when;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.common.exception.ErrorCode;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent.OrderItemDto;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
+import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse.Status;
@@ -42,8 +43,13 @@ class InventoryServiceTest {
     @Mock
     private InventoryRepository inventoryRepository;
 
+    @Mock
+    private InventoryEventProducer inventoryEventProducer;
+
     @InjectMocks
     private InventoryService inventoryService;
+
+    private UUID orderId = UUID.randomUUID();
 
     private UUID productId = UUID.randomUUID();
 
@@ -133,14 +139,13 @@ class InventoryServiceTest {
         @DisplayName("재고 차감 요청시 이미 요청이 성공했다면 ALREADY 를 반환한다")
         void idempotency() {
             String idempotencyKey = "idempotencyKey";
-            InventoryDeductCommand command = new InventoryDeductCommand(
-                idempotencyKey,
-                List.of(new Product(productId, hubId, 10))
-            );
+            OrderCreatedEvent event = OrderCreatedEvent.create(orderId, idempotencyKey,
+                List.of(new OrderItemDto(productId, hubId, 10)));
+
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey))
                 .thenReturn(alreadyUsedIdempotency());
 
-            InventoryDeductResponse response = inventoryService.deduct(command);
+            InventoryDeductResponse response = inventoryService.deduct(event);
 
             assertEquals(InventoryDeductResponse.Status.ALREADY_DEDUCTED, response.status());
         }
@@ -149,18 +154,17 @@ class InventoryServiceTest {
         @DisplayName("재고가 충분하고 멱등키가 처음이라면 성공을 반환하고 재고를 차감한다")
         void deduct() {
             int quantity = 5;
-            InventoryDeductCommand command = new InventoryDeductCommand(
-                idempotencyKey,
-                List.of(new Product(productId, hubId, quantity))
-            );
+            OrderCreatedEvent event = OrderCreatedEvent.create(orderId, idempotencyKey,
+                List.of(new OrderItemDto(productId, hubId, quantity)));
+
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
                 inProgressIdempotency()
             );
             when(inventoryRepository.deductAll(
-                InventoryUpdatePlanner.planDeduct(command.products()))
+                InventoryUpdatePlanner.planDeduct(event.items()))
             ).thenReturn(1);
 
-            InventoryDeductResponse response = inventoryService.deduct(command);
+            InventoryDeductResponse response = inventoryService.deduct(event);
 
             assertEquals(InventoryDeductResponse.Status.SUCCESS, response.status());
             verify(inventoryRepository, times(1)).deductAll(anyList());
@@ -170,19 +174,18 @@ class InventoryServiceTest {
         @DisplayName("재고가 부족하다면 예외를 반환하고 재고를 차감하지 않는다")
         void insufficientStock() {
             int quantity = 10;
-            InventoryDeductCommand command = new InventoryDeductCommand(
-                idempotencyKey,
-                List.of(new Product(productId, hubId, quantity))
-            );
+            OrderCreatedEvent event = OrderCreatedEvent.create(orderId, idempotencyKey,
+                List.of(new OrderItemDto(productId, hubId, quantity)));
+
             when(inventoryRepository.acquireIdempotencyKey(idempotencyKey)).thenReturn(
                 inProgressIdempotency()
             );
             when(inventoryRepository.deductAll(
-                InventoryUpdatePlanner.planDeduct(command.products()))
+                InventoryUpdatePlanner.planDeduct(event.items()))
             ).thenReturn(0);
 
             ErrorCode errorCode = assertThrows(
-                BusinessException.class, () -> inventoryService.deduct(command))
+                BusinessException.class, () -> inventoryService.deduct(event))
                 .getErrorCode();
             assertEquals(InventoryErrorCode.INSUFFICIENT_STOCK, errorCode);
         }
