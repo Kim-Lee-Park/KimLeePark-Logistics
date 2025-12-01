@@ -56,7 +56,7 @@ public class PaymentEventListener {
 
         } catch (Exception e) {
             log.error("결제 완료 이벤트 처리 실패: orderId={}", event.orderId(), e);
-            throw e; // DLQ로 보내기 위해 예외 재발생
+            throw e;
         }
     }
 

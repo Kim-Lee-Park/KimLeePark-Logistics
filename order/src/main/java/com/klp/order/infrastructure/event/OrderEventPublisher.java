@@ -22,7 +22,6 @@ public class OrderEventPublisher {
             log.info("주문 생성 이벤트 발행 완료: orderId={}", event.orderId());
         } catch (Exception e) {
             log.error("주문 생성 이벤트 발행 실패: orderId={}", event.orderId(), e);
-            // 간단한 구현이므로 실패해도 예외를 던지지 않음
         }
     }
 
