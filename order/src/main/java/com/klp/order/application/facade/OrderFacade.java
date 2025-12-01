@@ -1,4 +1,4 @@
-package com.klp.order.infrastructure.client.service.facade;
+package com.klp.order.application.facade;
 
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
@@ -25,9 +25,7 @@ public class OrderFacade {
     private final OrderOutboundRequestService orderOutboundRequestService;
     private final OrderEventPublisher eventPublisher;
 
-    /**
-     * 주문 생성 - 주문 생성 후 재고 차감 이벤트 발행
-     */
+    // 주문 생성 후 재고 차감 이벤트 발행
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
         log.info("=== 주문 생성 시작 ===");
@@ -51,9 +49,7 @@ public class OrderFacade {
         return order;
     }
 
-    /**
-     * 주문 취소 - 주문 취소 후 재고 복구 이벤트 발행
-     */
+    // 주문 취소 후 재고 증감 이벤트 발행
     @Transactional
     public Order cancelOrder(UUID orderId, CancelOrderCommand command) {
         log.info("=== 주문 취소 시작: orderId={} ===", orderId);
@@ -77,5 +73,5 @@ public class OrderFacade {
         return order;
     }
 
-    
+
 }
