@@ -149,9 +149,9 @@ resource "aws_security_group" "kafka" {
   }
 }
 
-resource "aws_security_group" "observability" {
+resource "aws_security_group" "observability_stack" {
   name        = "${local.project}-obs-sg"
-  description = "Observability Security Group"
+  description = "Observability Stack Security Group"
   vpc_id      = aws_vpc.main.id
 
   # Grafana
