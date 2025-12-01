@@ -1,17 +1,13 @@
-# AWS 아키텍쳐 구성 
+# ALB 테스트
 
-### AWS - Cloud Formation 
+### AWS - Terraform 구성
 
-[Cloud Formation](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/blob/deploy/aws-order/aws/cloud-formation/infra.yaml)
+[Terraform](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/tree/deploy/test-alb-with-terraform/aws/terraform)
 
-### 시스템 아키텍쳐 
+### ALB 테스트 계획
 
-[시스템 아키텍쳐](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/blob/deploy/aws-order/docs/ARCHITECTURE_DESIGN.md)
+[ALB_TEST_PLAN](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/blob/deploy/test-alb-with-terraform/docs/ALB_TEST_PLAN.md)
 
-### AWS 배포 
+### ALB 테스트 보고서 
 
-[AWS 배포](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/blob/deploy/aws-order/docs/DEPLOYMENT_REPORT.md)
-
-### 발표 자료 
-
-[발표 자료](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/blob/deploy/aws-order/docs/SECURITY_PRESENTATION.md)
+[ALB_TEST_REPORT](https://github.com/Kim-Lee-Park/KimLeePark-Logistics/blob/deploy/test-alb-with-terraform/docs/ALB_TEST_REPORT.md)

@@ -1,0 +1,12 @@
+{
+  "supplierId": 1001,
+  "customerId": 5001,
+  "products": [
+    {
+      "productId": "9f8c1b1a-3f47-4c41-a26e-7b4d5aacd222",
+      "quantity": 1,
+      "price": 15000
+    }
+  ],
+  "comments": "빠른 배송 요청"
+}
