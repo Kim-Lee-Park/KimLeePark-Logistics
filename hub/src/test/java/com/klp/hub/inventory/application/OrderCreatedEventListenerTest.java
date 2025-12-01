@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.inventory.application.listener.OrderEventListener;
+import com.klp.hub.inventory.application.listener.OrderCreatedEventListener;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent.OrderItemDto;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
@@ -21,13 +21,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class OrderEventListenerTest {
+class OrderCreatedEventListenerTest {
 
     @Mock
     private InventoryFacade inventoryFacade;
 
     @InjectMocks
-    private OrderEventListener orderEventListener;
+    private OrderCreatedEventListener orderCreatedEventListener;
 
     private final UUID orderId = UUID.randomUUID();
 
@@ -48,7 +48,7 @@ class OrderEventListenerTest {
         );
 
         // when
-        orderEventListener.handleOrderEvent(event);
+        orderCreatedEventListener.handleOrderEvent(event);
 
         // then
         verify(inventoryFacade, times(1)).deduct(event);
@@ -69,6 +69,6 @@ class OrderEventListenerTest {
             .thenThrow(new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK));
 
         // then
-        assertDoesNotThrow(() -> orderEventListener.handleOrderEvent(event));
+        assertDoesNotThrow(() -> orderCreatedEventListener.handleOrderEvent(event));
     }
 }

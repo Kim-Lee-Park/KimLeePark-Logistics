@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderEventListener {
+public class OrderCreatedEventListener {
 
     private final InventoryFacade inventoryFacade;
 
