@@ -29,7 +29,7 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column(nullable = true)
+    @Column
     private UUID affiliationId;
 
     @Column(nullable = false)
