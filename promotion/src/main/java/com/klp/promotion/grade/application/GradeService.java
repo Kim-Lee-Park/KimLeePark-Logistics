@@ -21,7 +21,6 @@ public class GradeService {
 
     private final GradeRepository gradeRepository;
 
-    @Transactional
     public GradeResponse createGrade(CreateGradeCommand command) {
         validateGradeNameDuplicate(command.gradeName());
         validateAmountRange(command.minAmount(), command.maxAmount());
