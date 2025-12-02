@@ -31,8 +31,6 @@ public class DeliveryRouteService {
     private final DeliveryRouteRepository deliveryRouteRepository;
     private final DriverClientService driverClientService;
 
-    private String departureName = "임시";
-    private String arrivalName = "임시";
 
     public DeliveryRouteStatusCommand createDeliveryRoute(DeliveryRouteCommand deliveryCommand,
         DeliveryRoutePlanCommand planCommand) {
@@ -93,9 +91,9 @@ public class DeliveryRouteService {
                     deliveryCommand.deliveryId(),
                     driver.userId(),
                     plan.departureId(),
-                    departureName,
+                    plan.departureName(),
                     plan.arrivalId(),
-                    arrivalName,
+                    plan.arrivalName(),
                     plan.sequence(),
                     plan.distanceKm(),
                     plan.durationMin(),
@@ -190,16 +188,13 @@ public class DeliveryRouteService {
 
             Long driverId = selectDriverId(currentDeliveryRouteStatus, routeStatus, vendorDriverId);
 
-            UUID departureId = currentLastRoute.getArrivalId();
-            UUID arrivalId = nextPlanItem.arrivalId();
-
             DeliveryRoute newRoute = DeliveryRoute.create(
                 deliveryId,
                 driverId,
-                departureId,
-                departureName,
-                arrivalId,
-                arrivalName,
+                currentLastRoute.getDepartureId(),
+                currentLastRoute.getDepartureName(),
+                nextPlanItem.arrivalId(),
+                nextPlanItem.arrivalName(),
                 nextPlanItem.sequence(),
                 nextPlanItem.distanceKm(),
                 nextPlanItem.durationMin(),
@@ -212,7 +207,7 @@ public class DeliveryRouteService {
             log.info(
                 "배송 경로 추가 완료: deliveryId={}, routeId={}, sequence={}, routeStatus={}, deliveryStatus={}, driverId={}, departureId={}, arrivalId={}",
                 deliveryId, savedRoute.getDeliveryRouteId(), nextSequence, routeStatus,
-                deliveryStatus, driverId, departureId, arrivalId);
+                deliveryStatus, driverId, currentLastRoute.getDepartureId(), nextPlanItem.arrivalName());
 
             return new DeliveryRouteStatusCommand(savedRoute.getDeliveryRouteId(),
                 deliveryStatus);

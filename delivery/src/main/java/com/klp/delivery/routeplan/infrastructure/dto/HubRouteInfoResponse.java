@@ -12,7 +12,9 @@ public record HubRouteInfoResponse(
     public record RouteInfoItem(
         UUID routeInfoId,
         UUID departureId,
+        String departureName,
         UUID arrivalId,
+        String arrivalName,
         Long durationMin,
         Double distanceKm
     ){
@@ -20,7 +22,9 @@ public record HubRouteInfoResponse(
             return new HubRouteInfo(
                 routeInfoId,
                 departureId,
+                departureName,
                 arrivalId,
+                arrivalName,
                 durationMin,
                 distanceKm
             );

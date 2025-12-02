@@ -1,8 +1,12 @@
 package com.klp.delivery.delivery.presentation.controller;
 
 
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createCompanyResponse;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDepartureHubInfo;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponse;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponses;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.createOrderItems;
@@ -10,9 +14,9 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.klp.delivery.common.CustomWithMockUser;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.DeliveryRouteStatus;
-import com.klp.delivery.delivery.application.service.CompanyClientService;
 import com.klp.delivery.delivery.application.service.DriverClientService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
@@ -22,6 +26,7 @@ import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteDetailResponse;
+import com.klp.delivery.routeplan.application.service.HubClientService;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
 import com.klp.delivery.routeplan.fixture.RoutePlanFixture;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
@@ -42,6 +47,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
@@ -49,6 +56,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ComponentScan(
+    basePackages = "com.klp.delivery",
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = {com.klp.delivery.global.config.SecurityConfig.class}
+    )
+)
 @ActiveProfiles("test")
 @Transactional
 @Import(DeliveryIntegrationTest.TestConfig.class)
@@ -70,8 +84,11 @@ class DeliveryIntegrationTest {
 
         @Bean
         @Primary
-        public CompanyClientService companyApiClient() {
-            return companyId -> createCompanyResponse();
+        public HubClientService getHubById() {
+            return companyId -> {
+                // 기본적으로 arrival hub 정보 반환
+                return createDepartureHubInfo();
+            };
         }
 
         @Bean
@@ -104,7 +121,9 @@ class DeliveryIntegrationTest {
             GetRoutePlanDetailResponse directRoutePlan = new GetRoutePlanDetailResponse(
                 RoutePlanFixture.ROUTE_PLAN_ID,
                 RoutePlanFixture.DEPARTURE_ID,
+                RoutePlanFixture.DEPARTURE_NAME,
                 RoutePlanFixture.ARRIVAL_ID,
+                RoutePlanFixture.ARRIVAL_NAME,
                 RoutePlanFixture.TOTAL_DURATION,
                 RoutePlanFixture.TOTAL_DISTANCE,
                 List.of(), // planItems가 비어있음 (직행)
@@ -122,6 +141,29 @@ class DeliveryIntegrationTest {
         public static RoutePlanService getRoutePlanServiceMock() {
             return routePlanServiceMock;
         }
+
+        @Bean
+        @Primary
+        public com.klp.delivery.global.filter.AuthorizationFilter authorizationFilter() {
+            return new com.klp.delivery.global.filter.AuthorizationFilter();
+        }
+
+        @Bean
+        @Primary
+        public org.springframework.security.web.SecurityFilterChain testSecurityFilterChain(
+            org.springframework.security.config.annotation.web.builders.HttpSecurity http,
+            com.klp.delivery.global.filter.AuthorizationFilter authorizationFilter) throws Exception {
+            http
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(
+                    org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
+                .addFilterBefore(authorizationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+            return http.build();
+        }
+
     }
 
     @BeforeEach
@@ -351,8 +393,8 @@ class DeliveryIntegrationTest {
         assertThat(deliveryRoutes).hasSize(1);
         DeliveryRoute deliveryRoute = deliveryRoutes.get(0);
         assertThat(deliveryRoute.getDeliveryId()).isEqualTo(deliveryIdUuid);
-        assertThat(deliveryRoute.getDepartureHubId()).isEqualTo(savedDelivery.getDepartureId());
-        assertThat(deliveryRoute.getArrivalHubId()).isEqualTo(savedDelivery.getArrivalId());
+        assertThat(deliveryRoute.getDepartureId()).isEqualTo(savedDelivery.getDepartureId());
+        assertThat(deliveryRoute.getArrivalId()).isEqualTo(savedDelivery.getArrivalId());
 
         // 중간 허브가 없으므로 직행 경로이므로 ARRIVED_AT_FINAL_HUB 상태 (DeliveryRoute는 DeliveryStatus 사용)
         assertThat(deliveryRoute.getStatus()).isEqualTo(DeliveryRouteStatus.ARRIVED_AT_FINAL_HUB);
@@ -421,12 +463,15 @@ class DeliveryIntegrationTest {
         // 경유 경로 (중간 허브 있음) - planItems가 있는 경우
         UUID midHubId = UUID.randomUUID();
         UUID routePlanItemId = UUID.randomUUID();
+        UUID planItemId = UUID.randomUUID();
 
         GetRoutePlanDetailResponse.PlanItem planItem = new GetRoutePlanDetailResponse.PlanItem(
             routePlanItemId,
-            RoutePlanFixture.ROUTE_PLAN_ID,
-            RoutePlanFixture.DEPARTURE_ID,
+            planItemId,
+            DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             midHubId,
+            DEFAULT_ARRIVAL_NAME,
             20L,
             50.0,
             1
@@ -435,7 +480,9 @@ class DeliveryIntegrationTest {
         GetRoutePlanDetailResponse viaRoutePlan = new GetRoutePlanDetailResponse(
             RoutePlanFixture.ROUTE_PLAN_ID,
             RoutePlanFixture.DEPARTURE_ID,
+            RoutePlanFixture.DEPARTURE_NAME,
             RoutePlanFixture.ARRIVAL_ID,
+            RoutePlanFixture.ARRIVAL_NAME,
             RoutePlanFixture.TOTAL_DURATION,
             RoutePlanFixture.TOTAL_DISTANCE,
             List.of(planItem), // planItems가 있음 (경유)
@@ -477,8 +524,8 @@ class DeliveryIntegrationTest {
         assertThat(deliveryRoutes).hasSize(1);
         DeliveryRoute deliveryRoute = deliveryRoutes.get(0);
         assertThat(deliveryRoute.getDeliveryId()).isEqualTo(deliveryIdUuid);
-        assertThat(deliveryRoute.getDepartureHubId()).isEqualTo(savedDelivery.getDepartureId());
-        assertThat(deliveryRoute.getArrivalHubId()).isEqualTo(midHubId); // 첫 번째 중간 허브로 도착
+        assertThat(deliveryRoute.getDepartureId()).isEqualTo(savedDelivery.getDepartureId());
+        assertThat(deliveryRoute.getArrivalId()).isEqualTo(midHubId); // 첫 번째 중간 허브로 도착
 
         // 중간 허브가 있으므로 IN_HUB_TRANSIT 상태 (DeliveryRoute는 DeliveryStatus 사용)
         assertThat(deliveryRoute.getStatus()).isEqualTo(DeliveryRouteStatus.IN_HUB_TRANSIT);

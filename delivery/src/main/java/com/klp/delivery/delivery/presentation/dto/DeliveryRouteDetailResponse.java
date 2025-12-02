@@ -17,7 +17,7 @@ public record DeliveryRouteDetailResponse(
     Long estimatedTime,
     Double realDistance,
     Long realTime,
-    DeliveryRouteStatus statusa
+    DeliveryRouteStatus status
 ) {
 
     public static DeliveryRouteDetailResponse from(DeliveryRoute route) {

@@ -41,7 +41,7 @@ public class DeliveryFacade {
     private final IdempotencyKeyService idempotencyKeyService;
     private final ApplicationEventPublisher eventPublisher;
     private final DriverService driverService;
-    private final CompanyService companyService;
+    private final HubClientService hubService;
 
 
     @Transactional
@@ -54,12 +54,11 @@ public class DeliveryFacade {
 
         try {
 
-            CompanyCommand companyCommand = companyService.findCompany(
-                orderCommand.receiverId().toString());
+            HubInfo arrivalHubInfo = hubService.getHubById(orderCommand.userAddressHubId());
 
             // 업체 배송 담당자 조회
             List<DriverCommand> driverList = driverService.findArrivalHubDrivers(
-                UUID.fromString(companyCommand.hubId()));
+                UUID.fromString(arrivalHubInfo.hubId().toString()));
 
             // 업체 배송 담당자 지정
             DriverCommand driverCommand = DriverSelector.pickRandomDriver(driverList);
@@ -67,7 +66,7 @@ public class DeliveryFacade {
             // 항목별 배송 생성
             List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(
                 orderCommand,
-                companyCommand, driverCommand);
+                arrivalHubInfo, driverCommand);
 
             IdempotencyCommand updateCommand = new IdempotencyCommand(
                 idempotencyCommand.idempotencyKey(), idempotencyCommand.orderId(),
@@ -93,11 +92,11 @@ public class DeliveryFacade {
     }
 
     private List<DeliveryResponse.DeliveryItemResponse> createDeliveriesForOrderItems(
-        OrderToDeliveryCommand orderCommand, CompanyCommand companyCommand,
+        OrderToDeliveryCommand orderCommand, HubInfo arrivalHubInfo,
         DriverCommand driverCommand) {
 
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = new ArrayList<>();
-        UUID arrivalId = UUID.fromString(companyCommand.hubId());
+        UUID arrivalId = arrivalHubInfo.hubId();
 
         Map<UUID, List<OrderItemCommand>> list = orderCommand.items().stream()
             .collect(Collectors.groupingBy(OrderItemCommand::hubId));
