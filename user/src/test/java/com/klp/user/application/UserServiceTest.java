@@ -13,6 +13,9 @@ import com.klp.user.domain.entity.User;
 import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
 import com.klp.user.domain.repository.UserRepository;
+import com.klp.user.infrastructure.client.CompanyClient;
+import com.klp.user.infrastructure.client.PromotionClient;
+import com.klp.user.infrastructure.client.dto.response.CompanyResponse;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
 import com.klp.user.presentation.dto.response.UserInfoResponse;
@@ -44,6 +47,12 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private CompanyClient companyClient;
+
+    @Mock
+    private PromotionClient promotionClient;
 
     @InjectMocks
     private UserService userService;
@@ -114,9 +123,11 @@ class UserServiceTest {
         void getMyDetails_WhenUserExists_ReturnsUserDetails() {
             // given
             given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
+            given(companyClient.getCompanyById(any(UUID.class)))
+                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
-            UserDetailResponse response = userService.getMyDetails(userId);
+            UserDetailResponse response = userService.getUserDetails(userId);
 
             // then
             assertThat(response).isNotNull();
@@ -137,6 +148,8 @@ class UserServiceTest {
         void getUserDetails_WhenUserExists_ReturnsUserDetails() {
             // given
             given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
+            given(companyClient.getCompanyById(any(UUID.class)))
+                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
             UserDetailResponse response = userService.getUserDetails(userId);
@@ -196,6 +209,8 @@ class UserServiceTest {
             // given
             Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
             given(userRepository.findAll(pageable)).willReturn(userPage);
+            given(companyClient.getCompanyById(any(UUID.class)))
+                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
             PageResponse<UserInfoResponse> response = userService.getUserList(null, pageable);
@@ -214,6 +229,8 @@ class UserServiceTest {
             // given
             Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
             given(userRepository.findAll(pageable)).willReturn(userPage);
+            given(companyClient.getCompanyById(any(UUID.class)))
+                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
             PageResponse<UserInfoResponse> response = userService.getUserList("", pageable);
@@ -232,6 +249,8 @@ class UserServiceTest {
             String keyword = "user1";
             Page<User> userPage = new PageImpl<>(List.of(userList.get(0)), pageable, 1);
             given(userRepository.searchByKeyword(keyword, pageable)).willReturn(userPage);
+            given(companyClient.getCompanyById(any(UUID.class)))
+                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
             PageResponse<UserInfoResponse> response = userService.getUserList(keyword, pageable);
@@ -310,12 +329,14 @@ class UserServiceTest {
             // given
             UUID hubId = UUID.randomUUID();
             User driver1 = User.create(
-                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com", UserRole.DRIVER
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com",
+                UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver1, "userId", 1L);
 
             User driver2 = User.create(
-                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222", "driver2@example.com", UserRole.DRIVER
+                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222", "driver2@example.com",
+                UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver2, "userId", 2L);
 
@@ -345,12 +366,14 @@ class UserServiceTest {
             // given
             UUID logisticsId = UUID.randomUUID();
             User driver1 = User.create(
-                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com", UserRole.DRIVER
+                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1", "010-1111-1111",
+                "driver1@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver1, "userId", 1L);
 
             User driver2 = User.create(
-                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2", "010-2222-2222", "driver2@example.com", UserRole.DRIVER
+                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2", "010-2222-2222",
+                "driver2@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver2, "userId", 2L);
 
@@ -380,7 +403,8 @@ class UserServiceTest {
             Long driverId = 1L;
             UUID hubId = UUID.randomUUID();
             User driver = User.create(
-                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com", UserRole.DRIVER
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com",
+                UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver, "userId", driverId);
 
