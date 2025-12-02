@@ -8,18 +8,19 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.service.CompanyService;
+import com.klp.delivery.delivery.application.service.HubService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.application.util.DriverSelector;
-import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.application.command.HubInfoCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
-import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
+import com.klp.delivery.routeplan.application.command.HubInfo;
+import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -149,7 +150,7 @@ public class DeliveryFacade {
         Delivery delivery = deliveryService.findDelivery(deliveryId);
         driverService.findDriverAtArrivalHub(vendorDrvierId);
 
-        delivery.updateVendorDriverId(vendorDrvierId);
+        delivery.updateUserDriverId(vendorDrvierId);
 
     }
 }

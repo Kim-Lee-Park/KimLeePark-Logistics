@@ -31,6 +31,9 @@ public class DeliveryRouteService {
     private final DeliveryRouteRepository deliveryRouteRepository;
     private final DriverClientService driverClientService;
 
+    private String departureName = "임시";
+    private String arrivalName = "임시";
+
     public DeliveryRouteStatusCommand createDeliveryRoute(DeliveryRouteCommand deliveryCommand,
         DeliveryRoutePlanCommand planCommand) {
         log.info("배송 경로 생성 시작: deliveryId={}, routePlanId={}, departureId={}, arrivalId={}",
@@ -53,9 +56,11 @@ public class DeliveryRouteService {
                 status = DeliveryRouteStatus.ARRIVED_AT_FINAL_HUB;
                 route = DeliveryRoute.create(
                     deliveryCommand.deliveryId(),
-                    deliveryCommand.vendorDrvierId(),
-                    planCommand.departureId(),
-                    planCommand.arrivalId(),
+                    deliveryCommand.driverId(),
+                    deliveryCommand.departureId(),
+                    deliveryCommand.departureName(),
+                    deliveryCommand.arrivalId(),
+                    deliveryCommand.arrivalName(),
                     1,  // 첫 등록이므로 0부터 시작
                     planCommand.totalDistanceKm(),
                     planCommand.totalDurationMin(),
@@ -88,7 +93,9 @@ public class DeliveryRouteService {
                     deliveryCommand.deliveryId(),
                     driver.userId(),
                     plan.departureId(),
+                    departureName,
                     plan.arrivalId(),
+                    arrivalName,
                     plan.sequence(),
                     plan.distanceKm(),
                     plan.durationMin(),
@@ -102,7 +109,7 @@ public class DeliveryRouteService {
             log.info(
                 "배송 경로 생성 완료: deliveryId={}, routeId={}, routeStatus={}, departureId={}, arrivalId={}",
                 deliveryCommand.deliveryId(), create.getDeliveryRouteId(), status,
-                create.getDepartureHubId(), create.getArrivalHubId());
+                create.getDepartureId(), create.getArrivalId());
 
             CustomerDeliveryStatus deliveryStatus = convertToCustomerDeliveryStatus(status);
 
@@ -175,7 +182,7 @@ public class DeliveryRouteService {
 
             DeliveryRouteStatus routeStatus = determineRouteStatus(
                 nextSequence, lastSequence, nextPlanItem, routePlan.arrivalId(),
-                currentLastRoute.getArrivalHubId(), currentDeliveryRouteStatus);
+                currentLastRoute.getArrivalId(), currentDeliveryRouteStatus);
 
             CustomerDeliveryStatus deliveryStatus = determineDeliveryStatus(
                 currentDeliveryRouteStatus,
@@ -183,14 +190,16 @@ public class DeliveryRouteService {
 
             Long driverId = selectDriverId(currentDeliveryRouteStatus, routeStatus, vendorDriverId);
 
-            UUID departureHubId = currentLastRoute.getArrivalHubId();
-            UUID arrivalHubId = nextPlanItem.arrivalId();
+            UUID departureId = currentLastRoute.getArrivalId();
+            UUID arrivalId = nextPlanItem.arrivalId();
 
             DeliveryRoute newRoute = DeliveryRoute.create(
                 deliveryId,
                 driverId,
-                departureHubId,
-                arrivalHubId,
+                departureId,
+                departureName,
+                arrivalId,
+                arrivalName,
                 nextPlanItem.sequence(),
                 nextPlanItem.distanceKm(),
                 nextPlanItem.durationMin(),
@@ -203,7 +212,7 @@ public class DeliveryRouteService {
             log.info(
                 "배송 경로 추가 완료: deliveryId={}, routeId={}, sequence={}, routeStatus={}, deliveryStatus={}, driverId={}, departureId={}, arrivalId={}",
                 deliveryId, savedRoute.getDeliveryRouteId(), nextSequence, routeStatus,
-                deliveryStatus, driverId, departureHubId, arrivalHubId);
+                deliveryStatus, driverId, departureId, arrivalId);
 
             return new DeliveryRouteStatusCommand(savedRoute.getDeliveryRouteId(),
                 deliveryStatus);

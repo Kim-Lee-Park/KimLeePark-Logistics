@@ -9,13 +9,15 @@ public record DeliveryRouteDetailResponse(
     UUID deliveryId,
     Long driverId,
     UUID departureId,
+    String departureName,
     UUID arrivalId,
+    String arrivalName,
     Integer sequence,
     Double estimatedDistance,
     Long estimatedTime,
     Double realDistance,
     Long realTime,
-    DeliveryRouteStatus status
+    DeliveryRouteStatus statusa
 ) {
 
     public static DeliveryRouteDetailResponse from(DeliveryRoute route) {
@@ -23,8 +25,10 @@ public record DeliveryRouteDetailResponse(
             route.getDeliveryRouteId(),
             route.getDeliveryId(),
             route.getDriverId(),
-            route.getDepartureHubId(),
-            route.getArrivalHubId(),
+            route.getDepartureId(),
+            route.getDepartureName(),
+            route.getArrivalId(),
+            route.getArrivalName(),
             route.getSequence(),
             route.getEstimatedDistance(),
             route.getEstimatedTime(),
