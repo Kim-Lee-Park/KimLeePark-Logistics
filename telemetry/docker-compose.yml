@@ -46,16 +46,18 @@ services:
     networks:
       - telemetry
 
-  #  # Loki
-  #  loki:
-  #    image: grafana/loki:latest
-  #    container_name: loki
-  #    command: [ "-config.file=/etc/loki/local-config.yaml" ]
-  #    ports:
-  #      - "3100:3100" # http://localhost:3100
-  #    networks:
-  #      - telemetry
-  #
+  # Loki
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    command: [ "-config.file=/etc/loki/local-config.yaml" ]
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+    ports:
+      - "3100:3100"
+    networks:
+      - telemetry
+
   # Prometheus
   prometheus:
     image: prom/prometheus:main
