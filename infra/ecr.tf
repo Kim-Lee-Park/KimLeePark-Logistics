@@ -9,6 +9,7 @@ locals {
     "hub",
     "delivery",
     "notification",
+    "promotion"
   ]
 }
 
