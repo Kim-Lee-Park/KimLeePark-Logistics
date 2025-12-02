@@ -18,9 +18,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +43,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.context.ApplicationEventPublisher;
 
 public class DeliveryFacadeTest extends MockTest {
 
@@ -58,6 +61,9 @@ public class DeliveryFacadeTest extends MockTest {
 
     @Mock
     CompanyService companyService;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     @Test
     void 배송생성_성공_단일아이템() {
@@ -330,6 +336,34 @@ public class DeliveryFacadeTest extends MockTest {
             any(IdempotencyCommand.class));
         verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(idempotencyKey);
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
+    }
+
+
+    @Test
+    void 배송생성_실패후_보상트랜잭션으로_멱등키삭제_후_동일멱등키_재요청_성공() {
+        // given
+        DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
+        IdempotencyCommand idempotencyCommand = request.toIdempotencyCommand();
+
+        // Step 1: 업체 조회 실패 → 멱등키 삭제 (보상 트랜잭션)
+        doNothing().when(idempotencyKeyService).registerIdempotencyKey(idempotencyCommand);
+        when(companyService.findCompany(DEFAULT_CUSTOMER_ID.toString()))
+            .thenThrow(new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR));
+        doNothing().when(idempotencyKeyService).deleteIdempotencyKey(idempotencyCommand.idempotencyKey());
+
+        assertThatThrownBy(() -> deliveryFacade.createDelivery(
+            request.toOrderToDeliveryCommand(), idempotencyCommand))
+            .isInstanceOf(BusinessException.class);
+
+        verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(idempotencyCommand.idempotencyKey());
+
+        // Step 2: 멱등키 삭제 후 재등록 성공
+        reset(idempotencyKeyService);
+        doNothing().when(idempotencyKeyService).registerIdempotencyKey(idempotencyCommand);
+
+        idempotencyKeyService.registerIdempotencyKey(idempotencyCommand);
+
+        verify(idempotencyKeyService, times(1)).registerIdempotencyKey(idempotencyCommand);
     }
 
 
