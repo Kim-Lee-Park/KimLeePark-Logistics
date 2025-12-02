@@ -33,6 +33,26 @@ variable "private_app_subnet_cidr_az2" {
   default = "10.0.4.0/24"
 }
 
+variable "private_kafka_subnet_cidr_az1" {
+  type    = string
+  default = "10.0.5.0/24"
+}
+
+variable "private_kafka_subnet_cidr_az2" {
+  type    = string
+  default = "10.0.6.0/24"
+}
+
+variable "private_obs_subnet_cidr_az1" {
+  type    = string
+  default = "10.0.7.0/24"
+}
+
+variable "private_obs_subnet_cidr_az2" {
+  type    = string
+  default = "10.0.8.0/24"
+}
+
 variable "private_db_subnet_cidr_az1" {
   type    = string
   default = "10.0.10.0/24"

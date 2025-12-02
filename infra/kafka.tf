@@ -4,7 +4,7 @@ resource "aws_instance" "kafka_broker" {
   instance_type = "t3.small"
   key_name      = var.ec2_key_name
 
-  subnet_id = count.index == 2 ? aws_subnet.private_app_az2.id : aws_subnet.private_app_az1.id
+  subnet_id = count.index == 2 ? aws_subnet.private_kafka_az2.id : aws_subnet.private_kafka_az1.id
 
   vpc_security_group_ids = [aws_security_group.kafka.id]
 

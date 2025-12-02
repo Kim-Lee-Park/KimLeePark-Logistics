@@ -59,6 +59,48 @@ resource "aws_subnet" "private_app_az2" {
   }
 }
 
+# Kafka Subnet
+resource "aws_subnet" "private_kafka_az1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_kafka_subnet_cidr_az1
+  availability_zone = local.az1
+
+  tags = {
+    Name = "${local.project}-private-kafka-az1"
+  }
+}
+
+resource "aws_subnet" "private_kafka_az2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_kafka_subnet_cidr_az2
+  availability_zone = local.az2
+
+  tags = {
+    Name = "${local.project}-private-kafka-az2"
+  }
+}
+
+# Observability Stack Subnet
+resource "aws_subnet" "private_obs_az1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_obs_subnet_cidr_az1
+  availability_zone = local.az1
+
+  tags = {
+    Name = "${local.project}-private-obs-az1"
+  }
+}
+
+resource "aws_subnet" "private_obs_az2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_obs_subnet_cidr_az2
+  availability_zone = local.az2
+
+  tags = {
+    Name = "${local.project}-private-obs-az2"
+  }
+}
+
 # DB Subnet
 resource "aws_subnet" "private_db_az1" {
   vpc_id            = aws_vpc.main.id
@@ -139,6 +181,26 @@ resource "aws_route_table_association" "private_app_az1" {
 
 resource "aws_route_table_association" "private_app_az2" {
   subnet_id      = aws_subnet.private_app_az2.id
+  route_table_id = aws_route_table.private_app.id
+}
+
+resource "aws_route_table_association" "private_kafka_az1" {
+  subnet_id      = aws_subnet.private_kafka_az1.id
+  route_table_id = aws_route_table.private_app.id
+}
+
+resource "aws_route_table_association" "private_kafka_az2" {
+  subnet_id      = aws_subnet.private_kafka_az2.id
+  route_table_id = aws_route_table.private_app.id
+}
+
+resource "aws_route_table_association" "private_obs_az1" {
+  subnet_id      = aws_subnet.private_obs_az1.id
+  route_table_id = aws_route_table.private_app.id
+}
+
+resource "aws_route_table_association" "private_obs_az2" {
+  subnet_id      = aws_subnet.private_obs_az2.id
   route_table_id = aws_route_table.private_app.id
 }
 
