@@ -104,17 +104,19 @@ public class DeliveryFacade {
 
         for (Map.Entry<UUID, List<OrderItemCommand>> entry : list.entrySet()) {
 
-            UUID hubId = entry.getKey();
+            UUID departuderId = entry.getKey();
             List<OrderItemCommand> orderItems = entry.getValue();
+
+            HubInfo departureInfo = hubService.getHubById(departuderId);
 
             DeliveryCommand deliveryCommand = new DeliveryCommand(
                 orderCommand.orderId(),
-                hubId,
+                departuderId,
+                departureInfo.name(),
                 arrivalId,
-                orderCommand.senderId(),
-                orderCommand.receiverId(),
-                companyCommand.name(),
-                companyCommand.address(),
+                departureInfo.name(),
+                orderCommand.name(),
+                orderCommand.address(),
                 driverCommand.slackId(),
                 driverCommand.userId()
             );
@@ -136,8 +138,10 @@ public class DeliveryFacade {
                 new DeliveryRouteCreateEvent(
                     delivery.getDeliveryId(),
                     delivery.getDepartureId(),
+                    delivery.getDepartureName(),
                     delivery.getArrivalId(),
-                    delivery.getVendorDrvierId()
+                    delivery.getArrivalName(),
+                    delivery.getUserDrvierId()
                 ));
         }
 
