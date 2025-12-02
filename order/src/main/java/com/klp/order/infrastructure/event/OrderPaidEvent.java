@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record OrderDeliveryRequestEvent(
+public record OrderPaidEvent(
     UUID orderId,
     String idempotencyKey,
     Long supplierId,
@@ -23,7 +23,7 @@ public record OrderDeliveryRequestEvent(
 
     }
 
-    public static OrderDeliveryRequestEvent from(Order order, String idempotencyKey) {
+    public static OrderPaidEvent from(Order order, String idempotencyKey) {
         List<DeliveryItem> items = order.getOrderItems().stream()
             .map(item -> new DeliveryItem(
                 item.getOrderItemId(),
@@ -33,7 +33,7 @@ public record OrderDeliveryRequestEvent(
             ))
             .toList();
 
-        return new OrderDeliveryRequestEvent(
+        return new OrderPaidEvent(
             order.getOrderId(),
             idempotencyKey,
             order.getSupplierId(),

@@ -8,8 +8,8 @@ import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.OrderDeliveryRequestEvent;
 import com.klp.order.infrastructure.event.OrderEventPublisher;
+import com.klp.order.infrastructure.event.OrderPaidEvent;
 import com.klp.order.infrastructure.event.PaymentCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,11 +62,11 @@ public class PaymentEventListener {
                 OperationType.MAKING
             );
 
-            OrderDeliveryRequestEvent deliveryEvent = OrderDeliveryRequestEvent.from(
+            OrderPaidEvent deliveryEvent = OrderPaidEvent.from(
                 order,
                 deliveryIdempotencyKey
             );
-            eventPublisher.publishDeliveryRequest(deliveryEvent);
+            eventPublisher.publishOrderPaid(deliveryEvent);
 
             // 3. 수동 커밋
             if (acknowledgment != null) {

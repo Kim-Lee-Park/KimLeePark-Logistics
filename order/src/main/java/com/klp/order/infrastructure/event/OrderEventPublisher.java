@@ -12,7 +12,7 @@ public class OrderEventPublisher {
 
     private static final String ORDER_CREATED_TOPIC = "order.created";
     private static final String ORDER_CANCELLED_TOPIC = "order.cancelled";
-    private static final String ORDER_DELIVERY_REQUEST_TOPIC = "order.delivery.request";
+    private static final String ORDER_PAID_TOPIC = "order.paid";
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -34,9 +34,9 @@ public class OrderEventPublisher {
         }
     }
 
-    public void publishDeliveryRequest(OrderDeliveryRequestEvent event) {
+    public void publishOrderPaid(OrderPaidEvent event) {
         try {
-            kafkaTemplate.send(ORDER_DELIVERY_REQUEST_TOPIC, event.orderId().toString(), event);
+            kafkaTemplate.send(ORDER_PAID_TOPIC, event.orderId().toString(), event);
             log.info("배송 요청 이벤트 발행 완료: orderId={}", event.orderId());
         } catch (Exception e) {
             log.error("배송 요청 이벤트 발행 실패: orderId={}", event.orderId(), e);

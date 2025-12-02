@@ -63,7 +63,7 @@ public class KafkaConfig {
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
             "OrderCreatedEvent:com.klp.order.infrastructure.event.OrderCreatedEvent," +
                 "OrderCancelledEvent:com.klp.order.infrastructure.event.OrderCancelledEvent," +
-                "OrderDeliveryRequestEvent:com.klp.order.infrastructure.event.OrderDeliveryRequestEvent");
+                "OrderPaidEvent:com.klp.order.infrastructure.event.OrderPaidEvent");
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
