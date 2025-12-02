@@ -23,7 +23,7 @@ public class UserGradeService {
      */
     @Transactional(readOnly = true)
     public String getCurrentGradeName(Long userId) {
-        return userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId)
+        return userGradeRepository.findFirstByUser(userId)
             .map(UserGrade::getGradeName)
             .orElse(null);
     }
@@ -33,7 +33,7 @@ public class UserGradeService {
      */
     @Transactional(readOnly = true)
     public UserGrade getCurrentUserGrade(Long userId) {
-        return userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId)
+        return userGradeRepository.findFirstByUser(userId)
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_GRADE_NOT_FOUND));
     }
 

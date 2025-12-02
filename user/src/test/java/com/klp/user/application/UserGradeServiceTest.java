@@ -69,7 +69,7 @@ class UserGradeServiceTest {
         void getCurrentGradeName_WhenGradeExists_ReturnsGradeName() {
             // given
             UserGrade userGrade = UserGrade.create(testUser, gradeName);
-            given(userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId))
+            given(userGradeRepository.findFirstByUser(userId))
                 .willReturn(Optional.of(userGrade));
 
             // when
@@ -78,14 +78,14 @@ class UserGradeServiceTest {
             // then
             assertThat(result).isEqualTo(gradeName);
             then(userGradeRepository).should(times(1))
-                .findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId);
+                .findFirstByUser(userId);
         }
 
         @Test
         @DisplayName("등급이 존재하지 않는 경우 null 반환")
         void getCurrentGradeName_WhenGradeNotExists_ReturnsNull() {
             // given
-            given(userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId))
+            given(userGradeRepository.findFirstByUser(userId))
                 .willReturn(Optional.empty());
 
             // when
@@ -94,7 +94,7 @@ class UserGradeServiceTest {
             // then
             assertThat(result).isNull();
             then(userGradeRepository).should(times(1))
-                .findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId);
+                .findFirstByUser(userId);
         }
 
         @Test
@@ -105,7 +105,7 @@ class UserGradeServiceTest {
             UserGrade latestGrade = UserGrade.create(testUser, latestGradeName);
             ReflectionTestUtils.setField(latestGrade, "evaluatedAt", LocalDateTime.now());
 
-            given(userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId))
+            given(userGradeRepository.findFirstByUser(userId))
                 .willReturn(Optional.of(latestGrade));
 
             // when
@@ -114,7 +114,7 @@ class UserGradeServiceTest {
             // then
             assertThat(result).isEqualTo(latestGradeName);
             then(userGradeRepository).should(times(1))
-                .findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId);
+                .findFirstByUser(userId);
         }
     }
 
@@ -130,7 +130,7 @@ class UserGradeServiceTest {
             UUID gradeId = UUID.randomUUID();
             ReflectionTestUtils.setField(userGrade, "userGradeId", gradeId);
 
-            given(userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId))
+            given(userGradeRepository.findFirstByUser(userId))
                 .willReturn(Optional.of(userGrade));
 
             // when
@@ -141,14 +141,14 @@ class UserGradeServiceTest {
             assertThat(result.getUserGradeId()).isEqualTo(gradeId);
             assertThat(result.getGradeName()).isEqualTo(gradeName);
             then(userGradeRepository).should(times(1))
-                .findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId);
+                .findFirstByUser(userId);
         }
 
         @Test
         @DisplayName("등급이 존재하지 않는 경우 예외 발생")
         void getCurrentUserGrade_WhenGradeNotExists_ThrowsException() {
             // given
-            given(userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId))
+            given(userGradeRepository.findFirstByUser(userId))
                 .willReturn(Optional.empty());
 
             // when & then
@@ -157,7 +157,7 @@ class UserGradeServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_GRADE_NOT_FOUND);
 
             then(userGradeRepository).should(times(1))
-                .findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId);
+                .findFirstByUser(userId);
         }
 
         @Test
@@ -170,7 +170,7 @@ class UserGradeServiceTest {
             ReflectionTestUtils.setField(latestGrade, "userGradeId", latestGradeId);
             ReflectionTestUtils.setField(latestGrade, "evaluatedAt", LocalDateTime.now());
 
-            given(userGradeRepository.findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId))
+            given(userGradeRepository.findFirstByUser(userId))
                 .willReturn(Optional.of(latestGrade));
 
             // when
@@ -181,7 +181,7 @@ class UserGradeServiceTest {
             assertThat(result.getUserGradeId()).isEqualTo(latestGradeId);
             assertThat(result.getGradeName()).isEqualTo(latestGradeName);
             then(userGradeRepository).should(times(1))
-                .findFirstByUser_UserIdOrderByEvaluatedAtDesc(userId);
+                .findFirstByUser(userId);
         }
     }
 
