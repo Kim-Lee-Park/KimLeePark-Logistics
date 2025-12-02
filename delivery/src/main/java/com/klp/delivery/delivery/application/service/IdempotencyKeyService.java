@@ -41,4 +41,10 @@ public class IdempotencyKeyService {
             .ifPresent(k -> k.updateStatus(command.status()));
 
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteIdempotencyKey(String idempotencyKey) {
+        log.info("멱등키 삭제: idempotencyKey={}", idempotencyKey);
+        idempotencyKeyRepository.deleteByIdempotencyKey(idempotencyKey);
+    }
 }

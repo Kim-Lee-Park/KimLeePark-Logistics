@@ -1,15 +1,17 @@
 package com.klp.hub.inventory.application;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
+import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
+import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
 import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
+    private final InventoryEventProducer inventoryEventProducer;
 
     @Transactional(readOnly = true)
     public InventoryResponse getByProductId(UUID productId) {
@@ -59,8 +62,8 @@ public class InventoryService {
      * 상품의 재고를 일괄 차감시킨다
      */
     @Transactional
-    public InventoryDeductResponse deduct(InventoryDeductCommand command) {
-        String idempotencyKey = command.idempotencyKey();
+    public InventoryDeductResponse deduct(OrderCreatedEvent event) {
+        String idempotencyKey = event.idempotencyKey();
         InventoryIdempotencyStatus status = inventoryRepository.acquireIdempotencyKey(
             idempotencyKey
         );
@@ -71,14 +74,28 @@ public class InventoryService {
         }
 
         List<InventoryDeduct> plans = InventoryUpdatePlanner.planDeduct(
-            command.products()
+            event.items()
         );
+
         int updated = inventoryRepository.deductAll(plans);
-        if (updated != command.size()) {
+        if (updated != plans.size()) {
             log.error("재고가 부족합니다.");
             throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
         }
         inventoryRepository.idempotencySuccess(idempotencyKey);
+
+        // 재고 차감 이후 이벤트 발행
+        InventoryDeductedEvent deductedEvent = InventoryDeductedEvent.of(
+            event.orderId(),
+            event.items().stream()
+                .map(item -> new InventoryDeductedEvent.DeductedItem(
+                    item.productId(),
+                    item.hubId(),
+                    item.quantity()
+                ))
+                .toList()
+        );
+        inventoryEventProducer.publishInventoryDeductedEvent(deductedEvent);
 
         return InventoryDeductResponse.success();
     }
