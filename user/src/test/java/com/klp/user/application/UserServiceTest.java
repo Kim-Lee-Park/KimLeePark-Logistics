@@ -8,17 +8,11 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-import com.klp.common.model.PageResponse;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
 import com.klp.user.domain.repository.UserRepository;
-import com.klp.user.infrastructure.client.CompanyClient;
-import com.klp.user.infrastructure.client.PromotionClient;
-import com.klp.user.infrastructure.client.dto.response.CompanyResponse;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
-import com.klp.user.presentation.dto.response.UserDetailResponse;
-import com.klp.user.presentation.dto.response.UserInfoResponse;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
 import java.util.List;
 import java.util.Optional;
@@ -47,12 +41,6 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private CompanyClient companyClient;
-
-    @Mock
-    private PromotionClient promotionClient;
 
     @InjectMocks
     private UserService userService;
@@ -115,52 +103,22 @@ class UserServiceTest {
     }
 
     @Nested
-    @DisplayName("getMyDetails 테스트")
-    class GetMyDetailsTest {
+    @DisplayName("findNotDeletedUser 테스트")
+    class FindNotDeletedUserTest {
 
         @Test
-        @DisplayName("본인의 상세 정보를 성공적으로 조회")
-        void getMyDetails_WhenUserExists_ReturnsUserDetails() {
+        @DisplayName("삭제되지 않은 유저를 성공적으로 조회")
+        void findNotDeletedUser_WhenUserExists_ReturnsUser() {
             // given
             given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
-            given(companyClient.getCompanyById(any(UUID.class)))
-                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
-            UserDetailResponse response = userService.getUserDetails(userId);
+            User result = userService.findNotDeletedUser(userId);
 
             // then
-            assertThat(response).isNotNull();
-            assertThat(response.userId()).isEqualTo(userId);
-            assertThat(response.username()).isEqualTo(username);
-            assertThat(response.slackId()).isEqualTo(slackId);
-            assertThat(response.phone()).isEqualTo(phone);
-            then(userRepository).should(times(1)).findById(userId);
-        }
-    }
-
-    @Nested
-    @DisplayName("getUserDetails 테스트")
-    class GetUserDetailsTest {
-
-        @Test
-        @DisplayName("특정 유저의 상세 정보를 성공적으로 조회")
-        void getUserDetails_WhenUserExists_ReturnsUserDetails() {
-            // given
-            given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
-            given(companyClient.getCompanyById(any(UUID.class)))
-                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
-
-            // when
-            UserDetailResponse response = userService.getUserDetails(userId);
-
-            // then
-            assertThat(response).isNotNull();
-            assertThat(response.userId()).isEqualTo(userId);
-            assertThat(response.username()).isEqualTo(username);
-            assertThat(response.slackId()).isEqualTo(slackId);
-            assertThat(response.phone()).isEqualTo(phone);
-            assertThat(response.role()).isEqualTo(testUser.getRole().name());
+            assertThat(result).isNotNull();
+            assertThat(result.getUserId()).isEqualTo(userId);
+            assertThat(result.getName()).isEqualTo(username);
             then(userRepository).should(times(1)).findById(userId);
         }
     }
@@ -209,16 +167,14 @@ class UserServiceTest {
             // given
             Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
             given(userRepository.findAll(pageable)).willReturn(userPage);
-            given(companyClient.getCompanyById(any(UUID.class)))
-                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
-            PageResponse<UserInfoResponse> response = userService.getUserList(null, pageable);
+            Page<User> result = userService.getUserList(null, pageable);
 
             // then
-            assertThat(response).isNotNull();
-            assertThat(response.getData()).hasSize(2);
-            assertThat(response.getTotalItems()).isEqualTo(2);
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getTotalElements()).isEqualTo(2);
             then(userRepository).should(times(1)).findAll(pageable);
             then(userRepository).should(never()).searchByKeyword(anyString(), any(Pageable.class));
         }
@@ -229,15 +185,13 @@ class UserServiceTest {
             // given
             Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
             given(userRepository.findAll(pageable)).willReturn(userPage);
-            given(companyClient.getCompanyById(any(UUID.class)))
-                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
-            PageResponse<UserInfoResponse> response = userService.getUserList("", pageable);
+            Page<User> result = userService.getUserList("", pageable);
 
             // then
-            assertThat(response).isNotNull();
-            assertThat(response.getData()).hasSize(2);
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
             then(userRepository).should(times(1)).findAll(pageable);
             then(userRepository).should(never()).searchByKeyword(anyString(), any(Pageable.class));
         }
@@ -249,16 +203,14 @@ class UserServiceTest {
             String keyword = "user1";
             Page<User> userPage = new PageImpl<>(List.of(userList.get(0)), pageable, 1);
             given(userRepository.searchByKeyword(keyword, pageable)).willReturn(userPage);
-            given(companyClient.getCompanyById(any(UUID.class)))
-                .willReturn(new CompanyResponse(affiliationId, UUID.randomUUID(), "type", "회사명", "주소"));
 
             // when
-            PageResponse<UserInfoResponse> response = userService.getUserList(keyword, pageable);
+            Page<User> result = userService.getUserList(keyword, pageable);
 
             // then
-            assertThat(response).isNotNull();
-            assertThat(response.getData()).hasSize(1);
-            assertThat(response.getTotalItems()).isEqualTo(1);
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getTotalElements()).isEqualTo(1);
             then(userRepository).should(times(1)).searchByKeyword(keyword, pageable);
             then(userRepository).should(never()).findAll(any(Pageable.class));
         }
@@ -272,12 +224,12 @@ class UserServiceTest {
             given(userRepository.searchByKeyword(keyword, pageable)).willReturn(emptyPage);
 
             // when
-            PageResponse<UserInfoResponse> response = userService.getUserList(keyword, pageable);
+            Page<User> result = userService.getUserList(keyword, pageable);
 
             // then
-            assertThat(response).isNotNull();
-            assertThat(response.getData()).isEmpty();
-            assertThat(response.getTotalItems()).isZero();
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isZero();
             then(userRepository).should(times(1)).searchByKeyword(keyword, pageable);
         }
     }
@@ -307,25 +259,25 @@ class UserServiceTest {
                 newRole
             );
 
-            given(userRepository.findById(userId)).willReturn(Optional.ofNullable(testUser));
             given(passwordEncoder.encode(newPassword)).willReturn(encodedPassword);
 
             // when
-            userService.updateUserInfo(userId, request);
+            userService.updateUserInfo(testUser, request);
 
             // then
-            then(userRepository).should(times(1)).findById(userId);
             then(passwordEncoder).should(times(1)).encode(newPassword);
+            assertThat(testUser.getName()).isEqualTo(newUsername);
+            assertThat(testUser.getSlackId()).isEqualTo(newSlackId);
         }
     }
 
     @Nested
-    @DisplayName("getDriversByHubId 테스트")
-    class GetDriversByHubIdTest {
+    @DisplayName("findDriversByHubId 테스트")
+    class FindDriversByHubIdTest {
 
         @Test
         @DisplayName("허브 ID로 배송 담당자 조회 성공")
-        void getDriversByHubId_ReturnsDriverList() {
+        void findDriversByHubId_ReturnsDriverList() {
             // given
             UUID hubId = UUID.randomUUID();
             User driver1 = User.create(
@@ -345,24 +297,23 @@ class UserServiceTest {
             given(userRepository.findDriversByHubId(hubId)).willReturn(drivers);
 
             // when
-            var response = userService.getDriversByHubId(hubId);
+            List<User> result = userService.findDriversByHubId(hubId);
 
             // then
-            assertThat(response.hubId()).isEqualTo(hubId);
-            assertThat(response.drivers()).hasSize(2);
-            assertThat(response.drivers().get(0).userId()).isEqualTo(1L);
-            assertThat(response.drivers().get(0).username()).isEqualTo("driver1");
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getUserId()).isEqualTo(1L);
+            assertThat(result.get(0).getName()).isEqualTo("driver1");
             then(userRepository).should(times(1)).findDriversByHubId(hubId);
         }
     }
 
     @Nested
-    @DisplayName("getDriversByLogistics 테스트")
-    class GetDriversByLogisticsTest {
+    @DisplayName("findDriversByLogistics 테스트")
+    class FindDriversByLogisticsTest {
 
         @Test
         @DisplayName("물류회사 소속 배송 담당자 조회 성공")
-        void getDriversByLogistics_ReturnsDriverList() {
+        void findDriversByLogistics_ReturnsDriverList() {
             // given
             UUID logisticsId = UUID.randomUUID();
             User driver1 = User.create(
@@ -382,23 +333,23 @@ class UserServiceTest {
             given(userRepository.findDriversByLogistics()).willReturn(drivers);
 
             // when
-            var response = userService.getDriversByLogistics();
+            List<User> result = userService.findDriversByLogistics();
 
             // then
-            assertThat(response.drivers()).hasSize(2);
-            assertThat(response.drivers().get(0).userId()).isEqualTo(1L);
-            assertThat(response.drivers().get(0).username()).isEqualTo("driver1");
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getUserId()).isEqualTo(1L);
+            assertThat(result.get(0).getName()).isEqualTo("driver1");
             then(userRepository).should(times(1)).findDriversByLogistics();
         }
     }
 
     @Nested
-    @DisplayName("getDriverById 테스트")
-    class GetDriverByIdTest {
+    @DisplayName("findDriverById 테스트")
+    class FindDriverByIdTest {
 
         @Test
         @DisplayName("배송 담당자 ID로 상세 정보 조회 성공")
-        void getDriverById_ReturnsDriverDetail() {
+        void findDriverById_ReturnsDriver() {
             // given
             Long driverId = 1L;
             UUID hubId = UUID.randomUUID();
@@ -411,15 +362,91 @@ class UserServiceTest {
             given(userRepository.findDriverById(driverId)).willReturn(Optional.of(driver));
 
             // when
-            var response = userService.getDriverById(driverId);
+            User result = userService.findDriverById(driverId);
 
             // then
-            assertThat(response.userId()).isEqualTo(driverId);
-            assertThat(response.hubId()).isEqualTo(hubId);
-            assertThat(response.username()).isEqualTo("driver1");
-            assertThat(response.slackId()).isEqualTo("slack1");
-            assertThat(response.phone()).isEqualTo("010-1111-1111");
+            assertThat(result.getUserId()).isEqualTo(driverId);
+            assertThat(result.getAffiliationId()).isEqualTo(hubId);
+            assertThat(result.getName()).isEqualTo("driver1");
+            assertThat(result.getSlackId()).isEqualTo("slack1");
+            assertThat(result.getPhone()).isEqualTo("010-1111-1111");
             then(userRepository).should(times(1)).findDriverById(driverId);
+        }
+    }
+
+    @Nested
+    @DisplayName("createPendingUser 테스트")
+    class CreatePendingUserTest {
+
+        @Test
+        @DisplayName("회원가입 시 PENDING 상태로 생성")
+        void createPendingUser_CreatesPendingUser() {
+            // given
+            UUID affiliationId = UUID.randomUUID();
+            String password = "Password1!";
+            String encodedPassword = "encodedPassword";
+
+            var request = new com.klp.user.presentation.dto.request.UserCreateRequest(
+                username,
+                password,
+                slackId,
+                phone,
+                "test@example.com",
+                UserRole.HUB,
+                "회사명",
+                AffiliationType.HUB
+            );
+
+            given(passwordEncoder.encode(password)).willReturn(encodedPassword);
+            given(userRepository.save(any(User.class))).willAnswer(invocation -> {
+                User user = invocation.getArgument(0);
+                ReflectionTestUtils.setField(user, "userId", userId);
+                return user;
+            });
+
+            // when
+            User result = userService.createPendingUser(request, affiliationId);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getUserId()).isEqualTo(userId);
+            assertThat(result.getName()).isEqualTo(username);
+            then(passwordEncoder).should(times(1)).encode(password);
+            then(userRepository).should(times(1)).save(any(User.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("approvePendingUser 테스트")
+    class ApprovePendingUserTest {
+
+        @Test
+        @DisplayName("유저 승인 처리")
+        void approvePendingUser_ApprovesUser() {
+            // given
+
+            // when
+            userService.approvePendingUser(testUser);
+
+            // then
+            assertThat(testUser.getStatus()).isEqualTo(com.klp.user.domain.enums.UserStatus.APPROVED);
+        }
+    }
+
+    @Nested
+    @DisplayName("rejectPendingUser 테스트")
+    class RejectPendingUserTest {
+
+        @Test
+        @DisplayName("유저 거부 처리")
+        void rejectPendingUser_RejectsUser() {
+            // given
+
+            // when
+            userService.rejectPendingUser(testUser);
+
+            // then
+            assertThat(testUser.getStatus()).isEqualTo(com.klp.user.domain.enums.UserStatus.REJECTED);
         }
     }
 }

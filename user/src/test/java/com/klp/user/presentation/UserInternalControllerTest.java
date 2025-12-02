@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.klp.global.exception.GlobalExceptionHandler;
 import com.klp.global.security.config.SecurityConfig;
 import com.klp.global.security.filter.AuthorizationFilter;
-import com.klp.user.application.UserService;
+import com.klp.user.application.UserFacade;
 import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.DriverInfo;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
@@ -32,7 +32,7 @@ class UserInternalControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private UserService userService;
+    private UserFacade userFacade;
 
     @Nested
     @DisplayName("허브 소속 배송 담당자 조회 테스트")
@@ -48,7 +48,7 @@ class UserInternalControllerTest {
             HubDriverListResponse response = HubDriverListResponse.of(hubId, List.of(driver1, driver2));
 
             // when
-            when(userService.getDriversByHubId(hubId)).thenReturn(response);
+            when(userFacade.getDriversByHubId(hubId)).thenReturn(response);
 
             // then
             mockMvc.perform(get("/v1/internal/users/driver/" + hubId))
@@ -73,7 +73,7 @@ class UserInternalControllerTest {
             LogisticsDriverListResponse response = LogisticsDriverListResponse.of(List.of(driver1, driver2));
 
             // when
-            when(userService.getDriversByLogistics()).thenReturn(response);
+            when(userFacade.getDriversByLogistics()).thenReturn(response);
 
             // then
             mockMvc.perform(get("/v1/internal/users/driver/logistics"))
@@ -99,7 +99,7 @@ class UserInternalControllerTest {
             );
 
             // when
-            when(userService.getDriverById(driverId)).thenReturn(response);
+            when(userFacade.getDriverById(driverId)).thenReturn(response);
 
             // then
             mockMvc.perform(get("/v1/internal/users/driver")

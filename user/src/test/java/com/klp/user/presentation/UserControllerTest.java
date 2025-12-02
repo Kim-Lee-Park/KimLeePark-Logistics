@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.klp.global.exception.GlobalExceptionHandler;
 import com.klp.global.security.config.SecurityConfig;
 import com.klp.global.security.filter.AuthorizationFilter;
+import com.klp.user.application.UserFacade;
 import com.klp.user.application.UserService;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +29,9 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private UserFacade userFacade;
 
     @Nested
     @DisplayName("유저 이름 사용 가능 여부 확인 테스트")
