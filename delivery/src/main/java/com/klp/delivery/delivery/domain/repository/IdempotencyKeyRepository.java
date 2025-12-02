@@ -9,4 +9,5 @@ public interface IdempotencyKeyRepository {
 
     Optional<IdempotencyKey> findByIdempotencyKey(String key);
 
+    void deleteByIdempotencyKey(String idempotencyKey);
 }
