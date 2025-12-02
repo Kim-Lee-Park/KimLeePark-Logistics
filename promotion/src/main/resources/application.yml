@@ -14,19 +14,3 @@ spring:
       retry:
         initial-interval: 1000
         max-attempts: 3
-  datasource:
-    url: jdbc:postgresql://localhost:5432/logistics
-    username: kimleepark
-    password: kimleepark
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-  kafka:
-    bootstrap-servers: localhost:9092
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: busrefresh, refresh
