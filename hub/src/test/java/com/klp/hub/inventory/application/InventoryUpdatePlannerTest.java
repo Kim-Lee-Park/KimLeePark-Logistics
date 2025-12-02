@@ -3,8 +3,8 @@ package com.klp.hub.inventory.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import java.util.List;
@@ -26,7 +26,7 @@ class InventoryUpdatePlannerTest {
         @Test
         @DisplayName("동일한 키는 합산되고 productId 와 hubId 순서로 오름차순 정렬된다")
         void order() {
-            List<InventoryDeductCommand.Product> products = List.of(
+            List<OrderCreatedEvent.OrderItemDto> products = List.of(
                 deductProduct(P2, H1, 1),
                 deductProduct(P1, H2, 1),
                 deductProduct(P1, H2, 1),
@@ -48,12 +48,12 @@ class InventoryUpdatePlannerTest {
                 );
         }
 
-        private InventoryDeductCommand.Product deductProduct(
+        private OrderCreatedEvent.OrderItemDto deductProduct(
             UUID productId,
             UUID hubId,
             int quantity
         ) {
-            return new InventoryDeductCommand.Product(productId, hubId, quantity);
+            return new OrderCreatedEvent.OrderItemDto(productId, hubId, quantity);
         }
     }
 

@@ -55,6 +55,8 @@ dependencies {
     //lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -73,6 +75,10 @@ dependencies {
 
     //openfeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
 }
 
 dependencyManagement {
