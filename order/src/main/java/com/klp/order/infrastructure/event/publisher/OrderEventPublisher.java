@@ -1,5 +1,8 @@
-package com.klp.order.infrastructure.event;
+package com.klp.order.infrastructure.event.publisher;
 
+import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
+import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderPaidEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -1,15 +1,16 @@
 package com.klp.order.application.facade;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
+import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.infrastructure.event.OrderCancelledEvent;
-import com.klp.order.infrastructure.event.OrderCreatedEvent;
-import com.klp.order.infrastructure.event.OrderEventPublisher;
+import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
+import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,8 @@ public class OrderFacade {
 
     private final OrderService orderService;
     private final OrderOutboundRequestService orderOutboundRequestService;
-    private final OrderEventPublisher eventPublisher;
+    private final OrderOutboxEventService orderOutboxEventService;
+    private final ObjectMapper objectMapper;
 
     // 주문 생성 후 재고 차감 이벤트 발행
     @Transactional
@@ -42,9 +44,8 @@ public class OrderFacade {
         );
 
         OrderCreatedEvent event = OrderCreatedEvent.from(order, idempotencyKey);
-        eventPublisher.publishOrderCreated(event);
-        log.info("재고 차감 이벤트 발행 완료 - orderId: {}", order.getOrderId());
-
+        orderOutboxEventService.saveEvent("ORDER", order.getOrderId(),
+            "ORDER_CREATED", event);
         log.info("=== 주문 생성 완료: orderId={} ===", order.getOrderId());
         return order;
     }
@@ -66,9 +67,8 @@ public class OrderFacade {
         );
 
         OrderCancelledEvent event = OrderCancelledEvent.from(order, idempotencyKey);
-        eventPublisher.publishOrderCancelled(event);
-        log.info("재고 복구 이벤트 발행 완료 - orderId: {}", orderId);
-
+        orderOutboxEventService.saveEvent("ORDER", order.getOrderId(),
+            "ORDER_CANCELLED", event);
         log.info("=== 주문 취소 완료: orderId={} ===", orderId);
         return order;
     }

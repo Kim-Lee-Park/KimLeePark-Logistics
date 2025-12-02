@@ -61,9 +61,10 @@ public class KafkaConfig {
 
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
-            "OrderCreatedEvent:com.klp.order.infrastructure.event.OrderCreatedEvent," +
-                "OrderCancelledEvent:com.klp.order.infrastructure.event.OrderCancelledEvent," +
-                "OrderPaidEvent:com.klp.order.infrastructure.event.OrderPaidEvent");
+            "OrderCreatedEvent:com.klp.order.infrastructure.event.event.OrderCreatedEvent," +
+                "OrderCancelledEvent:com.klp.order.infrastructure.event.event.OrderCancelledEvent,"
+                +
+                "OrderPaidEvent:com.klp.order.infrastructure.event.event.OrderPaidEvent");
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -93,8 +94,9 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentCompletedEvent:com.klp.order.infrastructure.event.PaymentCompletedEvent," +
-                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.DeliveryCreatedEvent");
+            "PaymentCompletedEvent:com.klp.order.infrastructure.event.event.PaymentCompletedEvent,"
+                +
+                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);

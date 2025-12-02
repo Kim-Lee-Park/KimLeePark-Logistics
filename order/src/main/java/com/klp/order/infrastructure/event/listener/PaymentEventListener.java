@@ -1,16 +1,17 @@
 package com.klp.order.infrastructure.event.listener;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.application.service.OrderOutboundRequestService;
+import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.OrderEventPublisher;
-import com.klp.order.infrastructure.event.OrderPaidEvent;
-import com.klp.order.infrastructure.event.PaymentCompletedEvent;
+import com.klp.order.infrastructure.event.event.OrderPaidEvent;
+import com.klp.order.infrastructure.event.event.PaymentCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -29,7 +30,9 @@ public class PaymentEventListener {
     private final OrderService orderService;
     private final OrderRepository orderRepository;
     private final OrderOutboundRequestService orderOutboundRequestService;
-    private final OrderEventPublisher eventPublisher;
+    private final OrderOutboxEventService OrderOutboxEventService;
+    private final ObjectMapper objectMapper;
+    private final OrderOutboxEventService orderOutboxEventService;
 
     // 결제 완료 이벤트를 받으면 배송 생성 요청 이벤트를 발행
     @KafkaListener(
@@ -62,19 +65,18 @@ public class PaymentEventListener {
                 OperationType.MAKING
             );
 
-            OrderPaidEvent deliveryEvent = OrderPaidEvent.from(
+            OrderPaidEvent orderPaidEvent = OrderPaidEvent.from(
                 order,
                 deliveryIdempotencyKey
             );
-            eventPublisher.publishOrderPaid(deliveryEvent);
+            orderOutboxEventService.saveEvent("ORDER", order.getOrderId(),
+                "ORDER_PAID", orderPaidEvent);
 
             // 3. 수동 커밋
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
             }
 
-            log.info("배송 요청 이벤트 발행 완료 - orderId: {}", order.getOrderId());
             log.info("=== 결제 완료 이벤트 처리 완료: orderId={} ===", event.orderId());
 
         } catch (Exception e) {
