@@ -10,7 +10,7 @@ public class KafkaTopicConfig {
 
     public static final String ORDER_CREATED_EVENTS = "order.created";
     public static final String ORDER_CANCELLED_EVENTS = "order.cancelled";
-    public static final String INVENTORY_EVENTS = "inventory.events";
+    public static final String INVENTORY_EVENTS = "inventory.deducted";
 
     /**
      * 주문 성공 이벤트 토픽 (구독용)
