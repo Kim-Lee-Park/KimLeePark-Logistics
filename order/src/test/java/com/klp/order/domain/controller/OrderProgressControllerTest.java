@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.order.application.facade.OrderFacade;
 import com.klp.order.application.service.OrderService;
-import com.klp.order.infrastructure.client.service.facade.OrderFacade;
 import com.klp.order.presentation.controller.OrderController;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;

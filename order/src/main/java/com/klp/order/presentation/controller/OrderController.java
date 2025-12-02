@@ -3,10 +3,10 @@ package com.klp.order.presentation.controller;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
+import com.klp.order.application.facade.OrderFacade;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.common.PageResponse;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.infrastructure.client.service.facade.OrderFacade;
 import com.klp.order.presentation.dto.order.request.cancel.CancelOrderRequest;
 import com.klp.order.presentation.dto.order.request.create.CreateOrderRequest;
 import com.klp.order.presentation.dto.order.request.update.ChangeOrderStatusRequest;
@@ -120,7 +120,7 @@ public class OrderController {
         @Valid @RequestBody CancelOrderRequest request
     ) {
         CancelOrderCommand command = request.toCommand(cancelledBy);
-        Order order = orderService.cancelOrder(orderId, command);
+        Order order = orderFacade.cancelOrder(orderId, command);
         CancelOrderResponse response = CancelOrderResponse.from(order);
 
         return ResponseEntity.ok(response);

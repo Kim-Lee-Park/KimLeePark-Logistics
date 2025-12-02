@@ -9,4 +9,6 @@ public interface DriverClientService {
     List<DriverResponse> findArrivalHubDrivers(UUID receiverId);
 
     DriverResponse findDriverAtArrivalHub(Long receiverId);
+
+    List<DriverResponse> findLogisticsDrivers();
 }

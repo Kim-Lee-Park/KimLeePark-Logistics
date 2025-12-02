@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.BaseEntity;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import jakarta.persistence.CascadeType;
@@ -75,20 +75,16 @@ public class Delivery extends BaseEntity {
     @Column(name = "receiver_slack_id", nullable = false)
     private String receiverSlackId;
 
-    @Comment("배송경로 ID")
-    @Column(name = "routes_id")
-    private UUID routesId;
-
     @Comment("배송상태")
     @Enumerated(EnumType.STRING)
-    private DeliveryStatus status;
+    private CustomerDeliveryStatus status;
 
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL)
     List<DeliveryItem> deliveryItems = new ArrayList<>();
 
     public Delivery(Long vendorDrvierId, UUID orderId, UUID departureId, UUID arrivalId,
         UUID senderId, UUID receiverId, String receiverName, String address, String receiverSlackId,
-        DeliveryStatus status, List<OrderItemCommand> orderItem) {
+        CustomerDeliveryStatus status, List<OrderItemCommand> orderItem) {
         this.vendorDrvierId = vendorDrvierId;
         this.orderId = orderId;
         this.departureId = departureId;
@@ -110,7 +106,7 @@ public class Delivery extends BaseEntity {
         String receiverSlackId, List<OrderItemCommand> items) {
         validateDeliveryData(vendorDriverId, receiverName, address, receiverSlackId);
         return new Delivery(vendorDriverId, orderId, departureId, arrivalId, senderId, receiverId,
-            receiverName, address, receiverSlackId, DeliveryStatus.CREATED, items);
+            receiverName, address, receiverSlackId, CustomerDeliveryStatus.CREATED, items);
 
     }
 
@@ -131,7 +127,7 @@ public class Delivery extends BaseEntity {
         }
     }
 
-    public void updateStatus(DeliveryStatus status) {
+    public void updateStatus(CustomerDeliveryStatus status) {
         this.status = status;
     }
 
@@ -141,15 +137,15 @@ public class Delivery extends BaseEntity {
     }
 
 
-    public boolean validateDeliveryStatus(DeliveryStatus status) {
+    public boolean cancelUpdateVendorDriver(CustomerDeliveryStatus status) {
         return switch (status) {
-            case CREATED, IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB -> true;
-            case OUT_FOR_DELIVERY, DELIVERED -> false;
+            case CREATED -> true;
+            case SHIPPING, ARRIVED -> false;
         };
     }
 
     public void updateVendorDriverId(Long newVendorDriverId) {
-        if (!validateDeliveryStatus(this.status)) {
+        if (!cancelUpdateVendorDriver(this.status)) {
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
                 String.format("배송 담당자 변경 불가 상태: %s", this.status)
             );
@@ -159,10 +155,15 @@ public class Delivery extends BaseEntity {
 
     public void delete(Long deletedBy) {
 
-        if (this.status != DeliveryStatus.CREATED) {
+        if (!cancelUpdateVendorDriver(this.status)) {
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 삭제 불가 상태" + this.status);
         }
         super.delete(deletedBy);
+    }
+
+    public void updateRouteInfo(UUID routePlanId, CustomerDeliveryStatus status){
+        this.routePlanId = routePlanId;
+        this.status = status;
     }
 
 }
