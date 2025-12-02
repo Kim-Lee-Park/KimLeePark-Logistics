@@ -56,7 +56,7 @@ public class UserController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDetailResponse> getMyDetails(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        UserDetailResponse response = userService.getMyDetails(userDetails.getUserId());
+        UserDetailResponse response = userService.getUserDetails(userDetails.getUserId());
         return ResponseEntity.ok().body(response);
     }
 
