@@ -12,6 +12,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -36,6 +37,7 @@ public class KafkaConfig {
     /**
      * ObjectMapper 설정 - LocalDateTime 등 Java 8 시간 타입 처리
      */
+    @Primary
     @Bean
     public ObjectMapper kafkaObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();

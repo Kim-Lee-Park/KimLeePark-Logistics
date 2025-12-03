@@ -8,8 +8,15 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface OrderOutboxEventJpaRepository extends JpaRepository<OrderOutboxEvent, UUID> {
 
-    @Query("SELECT o FROM OutboxEvent o WHERE o.status = 'PENDING' " +
-        "AND o.retryCount < 3 ORDER BY o.createdAt ASC")
+    @Query("SELECT o FROM OrderOutboxEvent o WHERE o.status = 'PENDING' " +
+        "ORDER BY o.createdAt ASC")
     List<OrderOutboxEvent> findPendingEvents();
 
+    @Query("SELECT o FROM OrderOutboxEvent o WHERE o.status = 'PUBLISHING' " +
+        "ORDER BY o.lastRetryAt ASC")
+    List<OrderOutboxEvent> findStuckPublishingEvents();
+
+    @Query("SELECT o FROM OrderOutboxEvent o WHERE o.status = 'FAILED' " +
+        "ORDER BY o.createdAt DESC")
+    List<OrderOutboxEvent> findFailedEvents();
 }

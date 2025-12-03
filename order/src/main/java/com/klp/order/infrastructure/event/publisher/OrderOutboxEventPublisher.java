@@ -2,6 +2,7 @@ package com.klp.order.infrastructure.event.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.domain.entity.outbox.OrderOutboxEvent;
+import com.klp.order.domain.entity.outbox.OrderOutboxStatus;
 import com.klp.order.domain.repository.OrderOutboxEventRepository;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -24,25 +26,43 @@ public class OrderOutboxEventPublisher {
     private final ObjectMapper objectMapper;
 
     @Scheduled(fixedDelay = 5000) //5초마다 실행
-    @Transactional
     public void publishPendingEvents() {
         List<OrderOutboxEvent> pendingEvents = orderOutboxEventRepository.findPendingEvents();
 
         if (pendingEvents.isEmpty()) {
             return;
         }
-
         log.info("발행 대기 중인 이벤트 {}건 처리 시작", pendingEvents.size());
 
         for (OrderOutboxEvent event : pendingEvents) {
-            try {
-                publishEvent(event);
-                event.markAsPublished();
-                orderOutboxEventRepository.save(event);
-            } catch (Exception e) {
-                log.error("이벤트 발행 실패: eventId = {}", event.getId(), e);
-                event.markAsFailed();
-                orderOutboxEventRepository.save(event);
+            if (!event.shouldRetryNow()) {
+                continue;
+            }
+            publishEventInSeperateTransaction(event);
+        }
+    }
+
+    // 분리 이유 : Outbox에 이벤트가 저장되고 트랜잭션이 커밋된 후 Publish가 실행되기 전에 애플리케이션이 다운 되면 이벤트가 발행되지 않기 때문에 분리
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishEventInSeperateTransaction(OrderOutboxEvent event) {
+        try {
+            event.markAsPublishing();
+            orderOutboxEventRepository.save(event);
+            publishEvent(event);
+            event.markAsPublished();
+            orderOutboxEventRepository.save(event);
+        } catch (Exception e) {
+            // 실패 시 재시도 카운트만 증가 (PENDING 유지)
+            // 그 대신 이제 재시도 카운트가 100 이상이면 markAsFailed에서 자동으로 Failed로 상태변화
+            event.markAsFailed();
+            orderOutboxEventRepository.save(event);
+            if (event.getStatus() == OrderOutboxStatus.FAILED) {
+                log.error("이벤트 최종 실패 (100회 초과): eventId={}, eventType={}",
+                    event.getId(), event.getEventType(), e);
+            } else {
+                log.warn("이벤트 발행 실패 (재시도 {}회): eventId={}, nextRetry={}초 후",
+                    event.getRetryCount(), event.getId(),
+                    event.getBackoffMillis() / 1000, e);
             }
         }
     }

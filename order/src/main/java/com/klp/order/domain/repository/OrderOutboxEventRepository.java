@@ -12,4 +12,8 @@ public interface OrderOutboxEventRepository {
     List<OrderOutboxEvent> findPendingEvents();
 
     Optional<OrderOutboxEvent> findById(UUID id);
+
+    List<OrderOutboxEvent> findStuckPublishingEvents();
+
+    List<OrderOutboxEvent> findFailedEvents();
 }

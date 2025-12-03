@@ -28,4 +28,14 @@ public class OrderOutboxEventRepositoryImpl implements OrderOutboxEventRepositor
     public Optional<OrderOutboxEvent> findById(UUID eventId) {
         return jpaRepository.findById(eventId);
     }
+
+    @Override
+    public List<OrderOutboxEvent> findStuckPublishingEvents() {
+        return jpaRepository.findStuckPublishingEvents();
+    }
+
+    @Override
+    public List<OrderOutboxEvent> findFailedEvents() {
+        return jpaRepository.findFailedEvents();
+    }
 }
