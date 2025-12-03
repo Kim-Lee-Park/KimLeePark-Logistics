@@ -59,9 +59,9 @@ public class OrderOutboxEvent extends BaseEntity {
         return event;
     }
 
-    private static final int MAX_RETRY_COUNT = 100;
-    private static final int MIDDLE_RETRY_COUNT = 50;
-    private static final long MAX_BACKOFF_MILLIS = 3600000L; // 1시간
+    private static final int MAX_RETRY_COUNT = 20;           // 최대 20회
+    private static final long INITIAL_BACKOFF_MILLIS = 1000L;  // 초기 1초
+    private static final long MAX_BACKOFF_MILLIS = 300000L;    // 최대 5분
 
     public void markAsPublishing() {
         this.status = OrderOutboxStatus.PUBLISHING;
@@ -78,6 +78,7 @@ public class OrderOutboxEvent extends BaseEntity {
         this.retryCount++;
         this.lastRetryAt = LocalDateTime.now();
 
+        // 20회 초과 시 FAILED 처리
         if (this.retryCount >= MAX_RETRY_COUNT) {
             this.status = OrderOutboxStatus.FAILED;
         }
@@ -88,13 +89,20 @@ public class OrderOutboxEvent extends BaseEntity {
             && this.status != OrderOutboxStatus.FAILED;
     }
 
+    /**
+     * AWS/Google Cloud 권장 전략 1초 → 2초 → 4초 → 8초 → ... → 최대 5분
+     */
+    // 1초 2초 ... 최대 5분 -> AWS, GOOGLE 방식
     public long getBackoffMillis() {
-        // 50회 이상부터는 1시간 고정
-        if (this.retryCount >= MIDDLE_RETRY_COUNT) {
-            return MAX_BACKOFF_MILLIS;
-        }
-        // 1초 → 2초 → 4초 → 8초 → ... → 최대 1시간
-        return Math.min(1000L * (1L << this.retryCount), MAX_BACKOFF_MILLIS);
+        // Exponential: 1초 * 2^(retryCount-1)
+        long exponentialBackoff = INITIAL_BACKOFF_MILLIS * (1L << (this.retryCount - 1));
+
+        // 최대값 제한
+        long cappedBackoff = Math.min(exponentialBackoff, MAX_BACKOFF_MILLIS);
+
+        // Jitter 추가 (0~20% 랜덤 변동)
+        double jitterFactor = 0.8 + (Math.random() * 0.4); // 0.8 ~ 1.2
+        return (long) (cappedBackoff * jitterFactor);
     }
 
     public boolean shouldRetryNow() {

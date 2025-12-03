@@ -57,12 +57,13 @@ public class OrderOutboxEventPublisher {
             event.markAsFailed();
             orderOutboxEventRepository.save(event);
             if (event.getStatus() == OrderOutboxStatus.FAILED) {
-                log.error("이벤트 최종 실패 (100회 초과): eventId={}, eventType={}",
+                log.error("이벤트 최종 실패 (20회 초과): eventId={}, eventType={}",
                     event.getId(), event.getEventType(), e);
             } else {
-                log.warn("이벤트 발행 실패 (재시도 {}회): eventId={}, nextRetry={}초 후",
-                    event.getRetryCount(), event.getId(),
-                    event.getBackoffMillis() / 1000, e);
+                // 재시도 예정
+                long nextRetrySeconds = event.getBackoffMillis() / 1000;
+                log.warn("이벤트 발행 실패 (재시도 {}/20회): eventId={}, nextRetry={}초 후",
+                    event.getRetryCount(), event.getId(), nextRetrySeconds, e);
             }
         }
     }

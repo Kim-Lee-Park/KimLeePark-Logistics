@@ -15,9 +15,14 @@ import org.springframework.stereotype.Component;
 public class StuckPublishEventRecovery {
 
     private final OrderOutboxEventRepository orderOutboxEventRepository;
-    private static final long STUCK_THRESHOLD_MINUTES = 5;
 
-    @Scheduled(fixedDelay = 60000) // 1분마다
+    // AWS/Google 권장: 3분 이상 PUBLISHING 상태면 stuck으로 간주
+    private static final long STUCK_THRESHOLD_MINUTES = 3;
+
+    /**
+     * PUBLISHING 상태로 멈춘 이벤트 복구 30초마다 실행 (AWS/Google 권장)
+     */
+    @Scheduled(fixedDelay = 30000)
     public void recoverStuckPublishingEvents() {
         try {
             List<OrderOutboxEvent> stuckEvents =
@@ -30,34 +35,46 @@ public class StuckPublishEventRecovery {
             LocalDateTime threshold = LocalDateTime.now()
                 .minusMinutes(STUCK_THRESHOLD_MINUTES);
 
+            int recoveredCount = 0;
             for (OrderOutboxEvent event : stuckEvents) {
-                // lastRetryAt이 임계값보다 오래된 경우만 복구
+                // 3분 이상 PUBLISHING 상태인 경우만 복구
                 if (event.getLastRetryAt() != null
                     && event.getLastRetryAt().isBefore(threshold)) {
 
                     event.resetToPending();
                     orderOutboxEventRepository.save(event);
+                    recoveredCount++;
 
+                    log.warn("PUBLISHING 상태 이벤트 복구: eventId={}, retryCount={}",
+                        event.getId(), event.getRetryCount());
                 }
             }
+
+            if (recoveredCount > 0) {
+                log.info("총 {}건의 PUBLISHING 이벤트 복구 완료", recoveredCount);
+            }
+
         } catch (Exception e) {
             log.error("PUBLISHING 상태 이벤트 복구 중 오류 발생", e);
         }
     }
 
-    // 실패 이벤트 관리
-    @Scheduled(cron = "0 */10 * * * *")
+    /**
+     * FAILED 이벤트 모니터링 및 알림 5분마다 실행
+     */
+    @Scheduled(cron = "0 */5 * * * *")
     public void monitorFailedEvents() {
         try {
             List<OrderOutboxEvent> failedEvents =
                 orderOutboxEventRepository.findFailedEvents();
+
             if (failedEvents.isEmpty()) {
-                log.info("현재 실패한 이벤트는 없습니다.");
                 return;
             }
 
             log.error("========================================");
             log.error("⚠️ FAILED 상태 이벤트 {}건 발견!", failedEvents.size());
+            log.error("⚠️ 최대 재시도 횟수(15회) 초과로 실패 처리됨");
             log.error("⚠️ 수동 처리가 필요합니다!");
             log.error("========================================");
 
@@ -67,12 +84,12 @@ public class StuckPublishEventRecovery {
                         "eventType={}, " +
                         "aggregateId={}, " +
                         "retryCount={}, " +
-                        "errorMessage={}",
+                        "lastRetryAt={}",
                     event.getId(),
                     event.getEventType(),
                     event.getAggregateId(),
                     event.getRetryCount(),
-                    event.getPayload());
+                    event.getLastRetryAt());
             }
 
         } catch (Exception e) {
