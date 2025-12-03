@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class UserProfile {
 
     private Long userId;
-    private String name;
+    private String username;
     private String affiliation;
     private String slackId;
     private String phoneNumber;

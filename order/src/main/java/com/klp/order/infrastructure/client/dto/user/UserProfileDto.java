@@ -4,21 +4,24 @@ import com.klp.order.domain.vo.UserProfile;
 
 public record UserProfileDto(
     Long userId,
-    String name,
-    String affiliation,
+    String affiliationName,
+    String username,
     String slackId,
-    String phoneNumber,
-    String grade
+    String phone,
+    String email,
+    String role,
+    String gradeName,
+    boolean activate
 ) {
 
     public UserProfile toVo() {
         return UserProfile.builder()
             .userId(userId)
-            .name(name)
-            .affiliation(affiliation)
+            .username(username)
+            .affiliation(affiliationName)
             .slackId(slackId)
-            .phoneNumber(phoneNumber)
-            .grade(grade)
+            .phoneNumber(phone)
+            .grade(gradeName)
             .build();
     }
 }
