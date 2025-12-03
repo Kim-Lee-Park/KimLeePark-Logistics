@@ -12,6 +12,8 @@ resource "aws_lb_target_group" "gateway_tg" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
+  target_type = "ip"
+
   health_check {
     path                = "/actuator/health"
     healthy_threshold   = 3
