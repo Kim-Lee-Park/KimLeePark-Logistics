@@ -1,0 +1,69 @@
+package com.klp.promotion.coupon.domain.entity;
+
+
+import com.klp.promotion.common.model.BaseEntity;
+import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
+
+@Entity
+@Getter
+@Table(name = "p_user_coupons", schema = "promotion_schema")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserCoupon extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_coupon_id", nullable = false)
+    @Comment("유저 쿠폰 ID")
+    private UUID userCouponId;
+
+    @Comment("쿠폰 ID")
+    @Column(name = "coupon_id", nullable = false)
+    private UUID couponId;
+
+    @Comment("유저 ID")
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Comment("쿠폰 상태")
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserCouponStatus status;
+
+
+    @Comment("쿠폰 사용 시간")
+    @Column(name = "used_at")
+    private LocalDateTime usedAt;
+
+
+
+    private UserCoupon(UUID couponId, Long userId, UserCouponStatus status){
+        this.couponId = couponId;
+        this.userId = userId;
+        this.status = status;
+    }
+
+
+    public static UserCoupon create(UUID couponId, Long userId){
+        return new UserCoupon(couponId, userId, UserCouponStatus.READY);
+    }
+
+
+
+
+
+
+}

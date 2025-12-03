@@ -46,6 +46,15 @@ dependencies {
 
     // common-module
     implementation 'com.klp.common:common-module:1.0.0'
+
+    // h2 (for test)
+    testImplementation "com.h2database:h2"
+
+    //redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // e2e test
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
 }
 
 dependencyManagement {
