@@ -22,4 +22,10 @@ public class IdempotencyKeyRepositoryImpl implements IdempotencyKeyRepository {
     public Optional<IdempotencyKey> findByIdempotencyKey(String key) {
         return idempotencyKeyJpaRepository.findByIdempotencyKey(key);
     }
+
+    @Override
+    public void deleteByIdempotencyKey(String key) {
+        idempotencyKeyJpaRepository.findByIdempotencyKey(key)
+            .ifPresent(idempotencyKeyJpaRepository::delete);
+    }
 }

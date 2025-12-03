@@ -43,4 +43,10 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
         "AND o.orderStatus != 'COMPLETE' " +
         "AND o.deletedAt IS NULL")
     boolean existsByHubIdAndOrderStatusNotComplete(@Param("hubId") UUID hubId);
+
+    @Query("SELECT o FROM Order o " +
+        "LEFT JOIN FETCH o.orderItems " +
+        "LEFT JOIN FETCH o.cancellation " +
+        "WHERE o.orderId = :orderId")
+    Optional<Order> findByIdWithDetails(@Param("orderId") UUID orderId);
 }

@@ -19,4 +19,7 @@ public interface DriverFeignClient {
     @GetMapping("/v1/users/driver")
     DriverResponse findDriverAtArrivalHub(@RequestParam("id") Long driverId);
 
+    @GetMapping("/driver/logistics")
+    List<DriverResponse> findLogisticsDrivers();
+
 }

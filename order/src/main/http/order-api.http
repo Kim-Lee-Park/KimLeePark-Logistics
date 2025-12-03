@@ -1,0 +1,58 @@
+### 1. 주문 생성
+POST http://localhost:8020/v1/orders
+Content-Type: application/json
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+{
+  "supplierId": 1,
+  "customerId": 2,
+  "comment": "Kafka 테스트 주문",
+  "orderItems": [
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440001",
+      "productName": "테스트 상품",
+      "hubId": "550e8400-e29b-41d4-a716-446655440002",
+      "quantity": 5
+    }
+  ]
+}
+
+### 2. 주문 조회 (생성 직후 상태 확인 - PENDING)
+GET http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### 3. Payment Completed 이벤트 발행 (PENDING -> PAID)
+POST http://localhost:8020/test/kafka/payment/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+
+### 4. 주문 상태 확인 (PAID 확인)
+GET http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### 5. Delivery Created 이벤트 발행 (PAID -> DELIVERY_ASSIGNED)
+POST http://localhost:8020/test/kafka/delivery/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd/d234932c-fbf6-44d7-8beb-d2dd49fa537d
+
+### 6. 최종 상태 확인 (DELIVERY_ASSIGNED 확인)
+GET http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### 7. 주문 취소 테스트 (선택사항)
+POST http://localhost:8020/v1/orders/여기에-orderId-붙여넣기/cancel
+Content-Type: application/json
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+{
+  "cancelReason": "고객 요청으로 인한 취소",
+  "cancelType": "USER_REQUEST"
+}
+
+###

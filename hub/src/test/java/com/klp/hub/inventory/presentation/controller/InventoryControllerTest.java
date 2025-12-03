@@ -13,10 +13,6 @@ import com.klp.hub.global.exception.GlobalExceptionHandler;
 import com.klp.hub.global.filter.AuthorizationFilter;
 import com.klp.hub.inventory.application.InventoryFacade;
 import com.klp.hub.inventory.application.InventoryService;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductRequest.Product;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse.Status;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishRequest;
 import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
@@ -67,102 +63,6 @@ class InventoryControllerTest {
                 .andExpect(jsonPath("$.inventoryId").isString())
                 .andExpect(jsonPath("$.hubId").isString())
                 .andExpect(jsonPath("$.quantity").isNumber());
-        }
-    }
-
-    @Nested
-    class Deduct {
-
-        @Test
-        @DisplayName("재고를 차감시킬 수 있다")
-        void deduct() throws Exception {
-            UUID productId = UUID.randomUUID();
-            UUID hubId = UUID.randomUUID();
-            Integer quantity = 10;
-            String idempotencyKey = "idempotencyKey";
-            InventoryDeductRequest request = new InventoryDeductRequest(
-                idempotencyKey,
-                List.of(new Product(productId, hubId, quantity))
-            );
-            when(inventoryFacade.deduct(request.toCommand()))
-                .thenReturn(new InventoryDeductResponse(Status.SUCCESS));
-
-            mockMvc.perform(post("/v1/inventories/deduct")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status").isString());
-        }
-
-        @Test
-        @DisplayName("멱등키가 누락되면 400 Bad Request 를 반환한다")
-        void missingIdempotencyKey() throws Exception {
-            InventoryDeductRequest request = new InventoryDeductRequest(
-                " ",
-                List.of(new Product(UUID.randomUUID(), UUID.randomUUID(), 10))
-            );
-
-            mockMvc.perform(post("/v1/inventories/deduct")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("상품 수량이 1 미만이면 400 Bad Request 를 반환한다")
-        void invalidQuantity() throws Exception {
-            InventoryDeductRequest request = new InventoryDeductRequest(
-                "idempotencyKey",
-                List.of(new Product(UUID.randomUUID(), UUID.randomUUID(), 0))
-            );
-
-            mockMvc.perform(post("/v1/inventories/deduct")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("상품 목록이 비어있으면 400 Bad Request 를 반환한다")
-        void emptyProducts() throws Exception {
-            InventoryDeductRequest request = new InventoryDeductRequest(
-                "idempotencyKey",
-                List.of()
-            );
-
-            mockMvc.perform(post("/v1/inventories/deduct")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("상품 ID 가 누락되면 400 Bad Request 를 반환한다")
-        void missingProductId() throws Exception {
-            InventoryDeductRequest request = new InventoryDeductRequest(
-                "idempotencyKey",
-                List.of(new Product(null, UUID.randomUUID(), 0))
-            );
-
-            mockMvc.perform(post("/v1/inventories/deduct")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("허브 ID 가 누락되면 400 Bad Request 를 반환한다")
-        void missingHubId() throws Exception {
-            InventoryDeductRequest request = new InventoryDeductRequest(
-                "idempotencyKey",
-                List.of(new Product(UUID.randomUUID(), null, 0))
-            );
-
-            mockMvc.perform(post("/v1/inventories/deduct")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
         }
     }
 

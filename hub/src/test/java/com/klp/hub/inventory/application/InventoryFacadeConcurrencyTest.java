@@ -2,12 +2,12 @@ package com.klp.hub.inventory.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotency;
 import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent.OrderItemDto;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryIdempotencyJpaRepository;
 import com.klp.hub.inventory.infrastructure.repository.InventoryJpaRepository;
@@ -57,6 +57,8 @@ public class InventoryFacadeConcurrencyTest {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    private UUID orderId = UUID.randomUUID();
+
     private UUID productId = UUID.randomUUID();
 
     private UUID hubId = UUID.randomUUID();
@@ -94,11 +96,9 @@ public class InventoryFacadeConcurrencyTest {
             IntStream.range(0, threadCount).forEach(i -> executorService.submit(() -> {
                 try {
                     String uniqueIdempotencyKey = UUID.randomUUID().toString();
-                    InventoryDeductCommand command = new InventoryDeductCommand(
-                        uniqueIdempotencyKey,
-                        List.of(new Product(productId, hubId, qtyPerThread))
-                    );
-                    inventoryFacade.deduct(command);
+                    OrderCreatedEvent event = OrderCreatedEvent.create(orderId, uniqueIdempotencyKey,
+                        List.of(new OrderItemDto(productId, hubId, qtyPerThread)));
+                    inventoryFacade.deduct(event);
                 } finally {
                     latch.countDown();
                 }
@@ -152,10 +152,8 @@ public class InventoryFacadeConcurrencyTest {
         void idempotencyConcurrency() throws InterruptedException {
             String sharedIdempotencyKey = "sharedIdempotencyKey";
             int qtyPerThread = initQuantity / threadCount; // 10개
-            InventoryDeductCommand command = new InventoryDeductCommand(
-                sharedIdempotencyKey,
-                List.of(new Product(productId, hubId, qtyPerThread))
-            );
+            OrderCreatedEvent event = OrderCreatedEvent.create(orderId, sharedIdempotencyKey,
+                List.of(new OrderItemDto(productId, hubId, qtyPerThread)));
             ExecutorService executorService = Executors.newFixedThreadPool(32);
             CountDownLatch latch = new CountDownLatch(threadCount);
             int[] successCont = {0};
@@ -163,7 +161,7 @@ public class InventoryFacadeConcurrencyTest {
 
             IntStream.range(0, threadCount).forEach(i -> executorService.submit(() -> {
                 try {
-                    InventoryDeductResponse response = inventoryFacade.deduct(command);
+                    InventoryDeductResponse response = inventoryFacade.deduct(event);
 
                     if (response.status() == Status.SUCCESS) {
                         successCont[0]++;

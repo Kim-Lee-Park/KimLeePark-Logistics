@@ -2,18 +2,15 @@ package com.klp.delivery.delivery.application.service;
 
 
 import com.klp.common.exception.BusinessException;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
-import com.klp.delivery.delivery.application.command.CompanyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
-import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,44 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
-    private final CompanyClientService companyClientService;
-    private final DriverClientService driverClientService;
-
-    public CompanyCommand findCompany(String customerId) {
-        try {
-            return CompanyCommand.of(companyClientService.findCompany(customerId));
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("업체 조회 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "업체 조회에 실패했습니다.", e);
-        }
-    }
-
-    public List<DriverCommand> findArrivalHubDrivers(UUID hubId) {
-        try {
-            return DriverCommand.from(driverClientService.findArrivalHubDrivers(hubId));
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.",
-                e);
-        }
-    }
-
-    public DriverCommand findDriverAtArrivalHub(long vendorDriverId) {
-        try {
-            return DriverCommand.of(driverClientService.findDriverAtArrivalHub(vendorDriverId));
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("배송 담당자 조회 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 담당자 조회에 실패했습니다.",
-                e);
-        }
-    }
-
 
     public Delivery registerDelivery(DeliveryCommand command, List<OrderItemCommand> items) {
         try {
@@ -84,60 +43,60 @@ public class DeliveryService {
                     items
                 )
             );
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("배송 저장 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 저장에 실패했습니다.", e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_CREATION_FAILED);
         }
     }
 
     public Delivery findDelivery(UUID deliveryId) {
-        return deliveryRepository.findByDeliveryId(deliveryId);
+        try {
+            return deliveryRepository.findByDeliveryId(deliveryId);
+        } catch (Exception e) {
+            log.error("배송 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
+        }
     }
 
     public List<DeliveryDetailResponse> findDeliveriesByOrderId(UUID orderId) {
-        List<Delivery> deliveries = deliveryRepository.findDeliveryByOrderId(orderId);
-
-        return DeliveryDetailResponse.from(deliveries);
-    }
-
-    public void updateDeliveryStatus(UUID deliveryId, DeliveryStatus status) {
-        Delivery delivery = findDelivery(deliveryId);
-        delivery.updateStatus(status);
-        deliveryRepository.save(delivery);
+        try {
+            List<Delivery> deliveries = deliveryRepository.findDeliveryByOrderId(orderId);
+            return DeliveryDetailResponse.from(deliveries);
+        } catch (Exception e) {
+            log.error("주문 ID로 배송 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
+        }
     }
 
     public Page<DeliveryDetailResponse> findDeliveryAll(Pageable pageable) {
-        Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);
-        return DeliveryDetailResponse.from(deliveryPage);
-    }
-
-    @Transactional
-    public void updateVendorDriver(UUID deliveryId, Long newVendorDriverId) {
-        Delivery delivery = findDelivery(deliveryId);
-        DriverCommand driver = findDriverAtArrivalHub(newVendorDriverId);
-        if (driver == null) {
-            throw new BusinessException(
-                DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 담당자를 찾을 수 없습니다");
+        try {
+            Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);
+            return DeliveryDetailResponse.from(deliveryPage);
+        } catch (Exception e) {
+            log.error("배송 전체 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
         }
-        delivery.updateVendorDriverId(newVendorDriverId);
-
     }
 
     @Transactional
     public void deleteDelivery(UUID deliveryId, Long deletedBy) {
-        Delivery delivery = findDelivery(deliveryId);
-        delivery.delete(deletedBy);
-    }
-
-
-    public DriverCommand pickRandomDriver(List<DriverCommand> drivers) {
-
-        if (drivers == null || drivers.isEmpty()) {
-            throw new BusinessException(DeliveryErrorCode.DRIVER_NOT_FOUND, "담당자 조회 결과가 없습니다.");
+        try {
+            Delivery delivery = findDelivery(deliveryId);
+            delivery.delete(deletedBy);
+        } catch (Exception e) {
+            log.error("배송 삭제 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_DELETE_FAILED);
         }
-        int index = ThreadLocalRandom.current().nextInt(drivers.size());
-        return drivers.get(index);
     }
+
+    public void applyRouteCreation(UUID deliveryId, UUID routePlanId, CustomerDeliveryStatus status) {
+        try {
+            Delivery delivery = findDelivery(deliveryId);
+            delivery.updateRouteInfo(routePlanId, status);
+        } catch (Exception e) {
+            log.error("배송 경로 정보 적용 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 경로 정보 적용에 실패했습니다.", e);
+        }
+    }
+
 }
