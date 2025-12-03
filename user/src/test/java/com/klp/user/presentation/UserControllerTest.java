@@ -52,25 +52,4 @@ class UserControllerTest {
                 .andExpect(status().isOk());
         }
     }
-
-    // ================== 아래 쪽 권한이 필요한 테스트의 경우 현재 커스텀 UserDetailsImpl을 사용하기 때문에 테스트 불가 ===================
-    // ==================@WitMockUser로는 커스텀 UserDetailsImpl을 가져올 수 없어 별도의 어노테이션을 구성해서 사용 예정 ================
-
-    @Nested
-    @DisplayName("본인 정보 상세 조회 테스트")
-    class getMyDetailsTest {
-
-    }
-
-    @Nested
-    @DisplayName("유저 목록 조회 테스트")
-    class getUserListTest {
-
-    }
-
-    @Nested
-    @DisplayName("유저 정보 변경 테스트")
-    class updateUserInfo {
-
-    }
 }
