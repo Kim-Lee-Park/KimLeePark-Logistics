@@ -2,7 +2,9 @@ package com.klp.user.application;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.common.model.PageResponse;
+import com.klp.user.application.command.UserAddressCreateCommand;
 import com.klp.user.domain.entity.User;
+import com.klp.user.domain.entity.UserAddress;
 import com.klp.user.domain.entity.UserGrade;
 import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
@@ -19,6 +21,8 @@ import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.DriverInfo;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
 import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
+import com.klp.user.presentation.dto.response.UserAddressListResponse;
+import com.klp.user.presentation.dto.response.UserAddressResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
 import com.klp.user.presentation.dto.response.UserGradeResponse;
 import com.klp.user.presentation.dto.response.UserInfoResponse;
@@ -38,6 +42,7 @@ public class UserFacade {
 
     private final UserService userService;
     private final UserGradeService userGradeService;
+    private final UserAddressService userAddressService;
     private final CompanyClient companyClient;
     private final PromotionClient promotionClient;
 
@@ -256,5 +261,54 @@ public class UserFacade {
             throw new BusinessException(UserErrorCode.INTERNAL_SERVER_ERROR,
                 "업체 정보 조회 중 예상치 못한 오류가 발생했습니다.");
         }
+    }
+
+    /**
+     * 회원 주소 생성(요청으로 자신 주소 근처 hubId를 받음)
+     */
+    @Transactional
+    public void createUserAddress(UserAddressCreateCommand command) {
+        User user = userService.findNotDeletedUser(command.userId());
+        userAddressService.createUserAddress(user, command);
+        log.info("회원 주소 생성 완료 - userId: {}", command.userId());
+    }
+
+    /**
+     * 회원 주소 단건 조회
+     */
+    @Transactional(readOnly = true)
+    public UserAddressResponse getUserAddress(UUID userAddressId) {
+        UserAddress userAddress = userAddressService.getUserAddress(userAddressId);
+        return UserAddressResponse.from(userAddress);
+    }
+
+    /**
+     * 회원 주소 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public UserAddressListResponse getUserAddressList(Long userId) {
+        List<UserAddress> addresses = userAddressService.getUserAddressList(userId);
+        List<UserAddressResponse> addressResponses = addresses.stream()
+            .map(UserAddressResponse::from)
+            .toList();
+        return UserAddressListResponse.of(addressResponses);
+    }
+
+    /**
+     * 회원 주소 수정
+     */
+    @Transactional
+    public void updateUserAddress(UUID userAddressId, UserAddressCreateCommand command) {
+        userAddressService.updateUserAddress(userAddressId, command);
+        log.info("회원 주소 수정 완료 - addressId: {}", userAddressId);
+    }
+
+    /**
+     * 회원 주소 삭제
+     */
+    @Transactional
+    public void deleteUserAddress(UUID userAddressId, Long userId) {
+        userAddressService.deleteUserAddress(userAddressId, userId);
+        log.info("회원 주소 삭제 완료 - addressId: {}, deletedBy: {}", userAddressId, userId);
     }
 }
