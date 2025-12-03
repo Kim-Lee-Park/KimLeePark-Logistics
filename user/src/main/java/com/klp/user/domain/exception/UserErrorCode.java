@@ -21,12 +21,8 @@ public enum UserErrorCode implements ErrorCode {
     ALREADY_REJECTED(HttpStatus.CONFLICT, "이미 승인 거절된 상태입니다"),
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 유저가 존재하지 않습니다"),
-
-        INVALID_AFFILIATION(HttpStatus.BAD_REQUEST, "소속 정보가 없습니다."),
-
-        USER_GRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 회원의 등급 정보를 찾을 수 없습니다"),
-
-        ;
+    INVALID_AFFILIATION(HttpStatus.BAD_REQUEST, "소속 정보가 없습니다."),
+    USER_GRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 회원의 등급 정보를 찾을 수 없습니다");
 
     private final HttpStatus status;
     private final String message;
