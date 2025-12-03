@@ -27,8 +27,15 @@ public class RoutePlanItem extends BaseEntity {
 
     @Column(nullable = false)
     private UUID departureId;
+
+    @Column(nullable = false)
+    private String departureName;
+
     @Column(nullable = false)
     private UUID arrivalId;
+
+    @Column(nullable = false)
+    private String arrivalName;
 
     @Column(nullable = false)
     private Long durationMin;
@@ -42,11 +49,13 @@ public class RoutePlanItem extends BaseEntity {
     @Column(nullable = false)
     private Integer sequence;
 
-    public static RoutePlanItem create(UUID departureId, UUID arrivalId, long totalDurationMin,
+    public static RoutePlanItem create(UUID departureId, String departureName, UUID arrivalId, String arrivalName, long totalDurationMin,
         double totalDistanceKm, int sequence,RoutePlan routePlan) {
         RoutePlanItem routePlanItem = new RoutePlanItem();
         routePlanItem.departureId = departureId;
+        routePlanItem.departureName = departureName;
         routePlanItem.arrivalId = arrivalId;
+        routePlanItem.arrivalName = arrivalName;
         routePlanItem.durationMin = totalDurationMin;
         routePlanItem.distanceKm = totalDistanceKm;
         routePlanItem.sequence = sequence;

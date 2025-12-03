@@ -8,18 +8,19 @@ import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.service.CompanyService;
+import com.klp.delivery.delivery.application.service.HubService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.application.util.DriverSelector;
-import com.klp.delivery.delivery.application.command.CompanyCommand;
+import com.klp.delivery.delivery.application.command.HubInfoCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
-import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
+import com.klp.delivery.routeplan.application.command.HubInfo;
+import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class DeliveryFacade {
     private final IdempotencyKeyService idempotencyKeyService;
     private final ApplicationEventPublisher eventPublisher;
     private final DriverService driverService;
-    private final CompanyService companyService;
+    private final HubClientService hubService;
 
 
     @Transactional
@@ -53,12 +54,11 @@ public class DeliveryFacade {
 
         try {
 
-            CompanyCommand companyCommand = companyService.findCompany(
-                orderCommand.receiverId().toString());
+            HubInfo arrivalHubInfo = hubService.getHubById(orderCommand.userAddressHubId());
 
             // 업체 배송 담당자 조회
             List<DriverCommand> driverList = driverService.findArrivalHubDrivers(
-                UUID.fromString(companyCommand.hubId()));
+                UUID.fromString(arrivalHubInfo.hubId().toString()));
 
             // 업체 배송 담당자 지정
             DriverCommand driverCommand = DriverSelector.pickRandomDriver(driverList);
@@ -66,7 +66,7 @@ public class DeliveryFacade {
             // 항목별 배송 생성
             List<DeliveryResponse.DeliveryItemResponse> deliveryItems = createDeliveriesForOrderItems(
                 orderCommand,
-                companyCommand, driverCommand);
+                arrivalHubInfo, driverCommand);
 
             IdempotencyCommand updateCommand = new IdempotencyCommand(
                 idempotencyCommand.idempotencyKey(), idempotencyCommand.orderId(),
@@ -92,28 +92,30 @@ public class DeliveryFacade {
     }
 
     private List<DeliveryResponse.DeliveryItemResponse> createDeliveriesForOrderItems(
-        OrderToDeliveryCommand orderCommand, CompanyCommand companyCommand,
+        OrderToDeliveryCommand orderCommand, HubInfo arrivalHubInfo,
         DriverCommand driverCommand) {
 
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = new ArrayList<>();
-        UUID arrivalId = UUID.fromString(companyCommand.hubId());
+        UUID arrivalId = arrivalHubInfo.hubId();
 
         Map<UUID, List<OrderItemCommand>> list = orderCommand.items().stream()
             .collect(Collectors.groupingBy(OrderItemCommand::hubId));
 
         for (Map.Entry<UUID, List<OrderItemCommand>> entry : list.entrySet()) {
 
-            UUID hubId = entry.getKey();
+            UUID departuderId = entry.getKey();
             List<OrderItemCommand> orderItems = entry.getValue();
+
+            HubInfo departureInfo = hubService.getHubById(departuderId);
 
             DeliveryCommand deliveryCommand = new DeliveryCommand(
                 orderCommand.orderId(),
-                hubId,
+                departuderId,
+                departureInfo.name(),
                 arrivalId,
-                orderCommand.senderId(),
-                orderCommand.receiverId(),
-                companyCommand.name(),
-                companyCommand.address(),
+                departureInfo.name(),
+                orderCommand.name(),
+                orderCommand.address(),
                 driverCommand.slackId(),
                 driverCommand.userId()
             );
@@ -135,8 +137,10 @@ public class DeliveryFacade {
                 new DeliveryRouteCreateEvent(
                     delivery.getDeliveryId(),
                     delivery.getDepartureId(),
+                    delivery.getDepartureName(),
                     delivery.getArrivalId(),
-                    delivery.getVendorDrvierId()
+                    delivery.getArrivalName(),
+                    delivery.getUserDrvierId()
                 ));
         }
 
@@ -149,7 +153,7 @@ public class DeliveryFacade {
         Delivery delivery = deliveryService.findDelivery(deliveryId);
         driverService.findDriverAtArrivalHub(vendorDrvierId);
 
-        delivery.updateVendorDriverId(vendorDrvierId);
+        delivery.updateUserDriverId(vendorDrvierId);
 
     }
 }
