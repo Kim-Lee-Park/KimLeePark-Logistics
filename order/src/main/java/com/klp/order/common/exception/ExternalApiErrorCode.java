@@ -19,7 +19,7 @@ public enum ExternalApiErrorCode implements ErrorCode {
     USER_SERVICE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "USER 서비스 호출 에러 BAD_REQUEST"),
     USER_SERVICE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER 서비스 호출 에러 인증 실패"),
     USER_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "USER 서비스 호출 에러 인가 실패"),
-    ;
+    PRODUCT_SERVICE_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "PRODUCT 서비스 호출 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
