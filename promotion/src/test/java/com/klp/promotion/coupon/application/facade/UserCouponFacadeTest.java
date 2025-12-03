@@ -12,8 +12,7 @@ import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.enums.CouponType;
-import com.klp.promotion.coupon.presentation.dto.CreateCouponResponse;
-import java.lang.reflect.Field;
+import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 @DisplayName("CouponFacade 테스트")
-class CouponFacadeTest extends MockTest {
+class UserCouponFacadeTest extends MockTest {
 
     @Mock
     private UserCouponService userCouponService;
@@ -31,7 +30,7 @@ class CouponFacadeTest extends MockTest {
     private CouponService couponService;
 
     @InjectMocks
-    private CouponFacade couponFacade;
+    private UserCouponFacade userCouponFacade;
 
     @Test
     @DisplayName("쿠폰 발급 성공")
@@ -50,7 +49,7 @@ class CouponFacadeTest extends MockTest {
         when(couponService.updateStock(couponId)).thenReturn(coupon);
 
         // when
-        CreateCouponResponse response = couponFacade.createCoupon(couponId, userId);
+        IssueUserCouponResponse response = userCouponFacade.issueUserCoupon(couponId, userId);
 
         // then
         assertThat(response).isNotNull();
@@ -68,7 +67,7 @@ class CouponFacadeTest extends MockTest {
             .thenReturn(existingUserCoupon);
 
         // when & then
-        assertThatThrownBy(() -> couponFacade.createCoupon(couponId, userId))
+        assertThatThrownBy(() -> userCouponFacade.issueUserCoupon(couponId, userId))
             .isInstanceOf(BusinessException.class)
             .hasFieldOrPropertyWithValue("errorCode", CouponErrorCode.COUPON_ALREADY_ISSUED);
     }
@@ -84,7 +83,7 @@ class CouponFacadeTest extends MockTest {
         when(couponService.decreaseStock(couponId)).thenReturn(false);
 
         // when & then
-        assertThatThrownBy(() -> couponFacade.createCoupon(couponId, userId))
+        assertThatThrownBy(() -> userCouponFacade.issueUserCoupon(couponId, userId))
             .isInstanceOf(BusinessException.class)
             .hasFieldOrPropertyWithValue("errorCode", CouponErrorCode.COUPON_OUT_OF_STOCK);
     }

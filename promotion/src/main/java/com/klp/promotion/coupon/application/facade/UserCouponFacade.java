@@ -8,7 +8,7 @@ import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
-import com.klp.promotion.coupon.presentation.dto.CreateCouponResponse;
+import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,13 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class CouponFacade {
+public class UserCouponFacade {
 
     private final UserCouponService userCouponService;
     private final CouponService couponService;
 
     @Transactional
-    public CreateCouponResponse createCoupon(UUID couponId, Long userId) {
+    public IssueUserCouponResponse issueUserCoupon(UUID couponId, Long userId) {
 
         UserCoupon userCoupon = userCouponService.findByUserIdAndCouponId(userId, couponId);
 
@@ -40,7 +40,7 @@ public class CouponFacade {
 
         Coupon coupon = couponService.updateStock(couponId);
 
-        return new CreateCouponResponse(coupon.getCouponId(), usercoupon.getUserCouponId());
+        return new IssueUserCouponResponse(coupon.getCouponId(), usercoupon.getUserCouponId());
     }
 
 }

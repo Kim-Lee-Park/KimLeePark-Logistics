@@ -8,6 +8,7 @@ import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.enums.CouponType;
 import com.klp.promotion.coupon.infrastructure.repository.CouponJpaRepositroy;
 import com.klp.promotion.coupon.infrastructure.repository.UserCouponJpaRepotiory;
+import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class CouponIntegrationTest {
+class UserCouponIntegrationTest {
 
     @LocalServerPort
     private int port;
@@ -45,7 +46,7 @@ class CouponIntegrationTest {
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
-        RestAssured.basePath = "/v1/promotions";
+        RestAssured.basePath = "/v1/user-coupons";
     }
 
     @AfterEach
@@ -64,7 +65,6 @@ class CouponIntegrationTest {
     @DisplayName("쿠폰 발급 성공")
     void createCoupon_Success() {
         // given: 쿠폰 생성 및 저장
-        UUID couponId = UUID.randomUUID();
         Long userId = 1L;
 
         Coupon coupon = Coupon.create("테스트 쿠폰", CouponType.RATE, 10L, 10000, 5000L, 100L, 50L,
@@ -78,8 +78,9 @@ class CouponIntegrationTest {
         ExtractableResponse<Response> response = given()
             .header("X-USER-ID", userId)
             .contentType(ContentType.JSON)
+            .body("\"" + coupon.getCouponId().toString() + "\"")
             .when()
-            .post("/coupons/{couponId}", coupon.getCouponId())
+            .post()
             .then()
             .statusCode(200)
             .extract();
@@ -100,7 +101,6 @@ class CouponIntegrationTest {
     @DisplayName("중복 쿠폰 발급 실패")
     void createCoupon_Fail_AlreadyIssued() {
         // given 쿠폰 생성 및 저장
-        UUID couponId = UUID.randomUUID();
         Long userId = 1L;
 
         Coupon coupon = Coupon.create("테스트 쿠폰", CouponType.RATE, 10L, 10000, 5000L, 100L, 50L,
@@ -118,17 +118,19 @@ class CouponIntegrationTest {
         given()
             .header("X-USER-ID", userId)
             .contentType(ContentType.JSON)
+            .body("\"" + coupon.getCouponId().toString() + "\"")
             .when()
-            .post("/coupons/{couponId}", coupon.getCouponId())
+            .post()
             .then()
-            .statusCode(400);
+            .statusCode(400)
+            .extract();
+
     }
 
     @Test
     @DisplayName("재고 부족으로 쿠폰 발급 실패")
     void createCoupon_Fail_OutOfStock() {
         // given: 쿠폰 생성 및 저장
-        UUID couponId = UUID.randomUUID();
         Long userId = 1L;
 
         Coupon coupon = Coupon.create("테스트 쿠폰", CouponType.RATE, 10L, 10000, 5000L, 100L, 50L,
@@ -143,10 +145,12 @@ class CouponIntegrationTest {
         given()
             .header("X-USER-ID", userId)
             .contentType(ContentType.JSON)
+            .body("\"" + coupon.getCouponId().toString() + "\"")
             .when()
-            .post("/coupons/{couponId}", coupon.getCouponId())
+            .post()
             .then()
-            .statusCode(400);
+            .statusCode(400)
+            .extract();
     }
 }
 
