@@ -11,10 +11,11 @@ public record UserDetailResponse(
     String phone,
     String email,
     String role,
+    String gradeName,
     boolean activate
 ) {
 
-    public static UserDetailResponse of(String affiliationName, User user) {
+    public static UserDetailResponse of(User user, String affiliationName, String gradeName) {
         return new UserDetailResponse(
             user.getUserId(),
             affiliationName,
@@ -23,6 +24,7 @@ public record UserDetailResponse(
             user.getPhone(),
             user.getEmail(),
             user.getRole().name(),
+            gradeName,
             user.getStatus() == UserStatus.APPROVED
         );
     }

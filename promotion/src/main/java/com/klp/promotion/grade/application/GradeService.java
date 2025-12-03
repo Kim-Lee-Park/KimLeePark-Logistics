@@ -4,8 +4,10 @@ import com.klp.common.exception.BusinessException;
 import com.klp.promotion.grade.application.dto.CreateGradeCommand;
 import com.klp.promotion.grade.application.dto.UpdateGradeCommand;
 import com.klp.promotion.grade.domain.entity.Grade;
+import com.klp.promotion.grade.domain.enums.GradeType;
 import com.klp.promotion.grade.domain.repository.GradeRepository;
 import com.klp.promotion.grade.exception.GradeErrorCode;
+import com.klp.promotion.grade.presentation.dto.response.DefaultGradeResponse;
 import com.klp.promotion.grade.presentation.dto.response.GradeResponse;
 import java.util.List;
 import java.util.UUID;
@@ -96,5 +98,10 @@ public class GradeService {
         if (minAmount != null && maxAmount != null && minAmount >= maxAmount) {
             throw new BusinessException(GradeErrorCode.INVALID_AMOUNT_RANGE);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public DefaultGradeResponse getDefaultGradeName() {
+        return DefaultGradeResponse.of(GradeType.NONE.getDisplayName());
     }
 }
