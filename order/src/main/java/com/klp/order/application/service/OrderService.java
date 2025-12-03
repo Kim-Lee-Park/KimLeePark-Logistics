@@ -42,7 +42,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Order findById(UUID orderId) {
-        return orderRepository.findById(orderId)
+        return orderRepository.findByIdWithDetails(orderId)
             .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 

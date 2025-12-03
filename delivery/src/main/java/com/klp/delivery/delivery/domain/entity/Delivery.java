@@ -2,7 +2,7 @@ package com.klp.delivery.delivery.domain.entity;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.BaseEntity;
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import jakarta.persistence.CascadeType;
@@ -39,65 +39,62 @@ public class Delivery extends BaseEntity {
     @Column(name = "route_plan_id")
     private UUID routePlanId;
 
-    @Comment("업체 배송담당자 ID")
-    @Column(name = "vendor_drvier_id", nullable = false)
-    private Long vendorDrvierId;
-
     @Comment("주문 ID")
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
+
+    @Comment("고객 배송담당자 ID")
+    @Column(name = "user_drvier_id", nullable = false)
+    private Long userDrvierId;
+
+    @Comment("고객 배송담당자 슬랙 ID")
+    @Column(name = "user_driver_slack_id", nullable = false)
+    private String userDriverSlackId;
 
     @Comment("출발 허브 ID")
     @Column(name = "departure_id", nullable = false)
     private UUID departureId;
 
+    @Comment("출발 허브 이름")
+    @Column(name = "departure_name", nullable = false)
+    private String departureName;
+
     @Comment("도착 허브 ID")
     @Column(name = "arrival_id", nullable = false)
     private UUID arrivalId;
 
-    @Comment("발송업체 ID")
-    @Column(name = "sender_id", nullable = false)
-    private UUID senderId;
+    @Comment("도착 허브 이름")
+    @Column(name = "arrival_name", nullable = false)
+    private String arrivalName;
 
-    @Comment("수령업체 ID")
-    @Column(name = "receiver_id", nullable = false)
-    private UUID receiverId;
-
-    @Comment("수령업체명")
-    @Column(name = "receiver_name", nullable = false)
-    private String receiverName;
+    @Comment("구매자 이름")
+    @Column(name = "user_name", nullable = false)
+    private String userName;
 
     @Comment("배송지 주소")
-    @Column(name = "address", nullable = false)
-    private String address;
-
-    @Comment("수령업체 슬랙 ID")
-    @Column(name = "receiver_slack_id", nullable = false)
-    private String receiverSlackId;
-
-    @Comment("배송경로 ID")
-    @Column(name = "routes_id")
-    private UUID routesId;
+    @Column(name = "user_address", nullable = false)
+    private String userAddress;
 
     @Comment("배송상태")
     @Enumerated(EnumType.STRING)
-    private DeliveryStatus status;
+    private CustomerDeliveryStatus status;
 
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL)
     List<DeliveryItem> deliveryItems = new ArrayList<>();
 
-    public Delivery(Long vendorDrvierId, UUID orderId, UUID departureId, UUID arrivalId,
-        UUID senderId, UUID receiverId, String receiverName, String address, String receiverSlackId,
-        DeliveryStatus status, List<OrderItemCommand> orderItem) {
-        this.vendorDrvierId = vendorDrvierId;
+    public Delivery(UUID orderId, Long userDrvierId, String userDriverSlackId, UUID departureId,
+        String departureName, UUID arrivalId, String arrivalName, String userName,
+        String userAddress,
+        CustomerDeliveryStatus status, List<OrderItemCommand> orderItem) {
         this.orderId = orderId;
+        this.userDrvierId = userDrvierId;
+        this.userDriverSlackId = userDriverSlackId;
         this.departureId = departureId;
+        this.departureName = departureName;
         this.arrivalId = arrivalId;
-        this.senderId = senderId;
-        this.receiverId = receiverId;
-        this.receiverName = receiverName;
-        this.address = address;
-        this.receiverSlackId = receiverSlackId;
+        this.arrivalName = arrivalName;
+        this.userName = userName;
+        this.userAddress = userAddress;
         this.status = status;
         for (OrderItemCommand deliveryItem : orderItem) {
             DeliveryItem item = DeliveryItem.create(this, deliveryItem.orderItemId());
@@ -105,33 +102,35 @@ public class Delivery extends BaseEntity {
         }
     }
 
-    public static Delivery create(Long vendorDriverId, UUID orderId, UUID departureId,
-        UUID arrivalId, UUID senderId, UUID receiverId, String receiverName, String address,
-        String receiverSlackId, List<OrderItemCommand> items) {
-        validateDeliveryData(vendorDriverId, receiverName, address, receiverSlackId);
-        return new Delivery(vendorDriverId, orderId, departureId, arrivalId, senderId, receiverId,
-            receiverName, address, receiverSlackId, DeliveryStatus.CREATED, items);
+    public static Delivery create(UUID orderId, Long userDrvierId, String userDriverSlackId, UUID departureId,
+        String departureName, UUID arrivalId, String arrivalName, String userName,
+        String userAddress, List<OrderItemCommand> items) {
+        validateDeliveryData(userDrvierId, userName, userAddress, userDriverSlackId);
+        return new Delivery(orderId, userDrvierId, userDriverSlackId, departureId, departureName,
+            arrivalId, arrivalName, userName, userAddress, CustomerDeliveryStatus.CREATED, items);
 
     }
 
-    private static void validateDeliveryData(Long vendorDriverId, String receiverName,
-        String address, String receiverSlackId) {
-        if (vendorDriverId == null) {
-            throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "배송 담당자는 필수입니다.");
+    private static void validateDeliveryData(Long userDriverId, String userName,
+        String address, String userDriverSlackId) {
+        if (userDriverId == null) {
+            throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA,
+                "고객 배송 담당자는 필수입니다.");
         }
         if (!StringUtils.hasText(address)) {
-            throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "배송지 주소는 필수입니다.");
-        }
-        if (!StringUtils.hasText(receiverName)) {
-            throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "수령인 이름은 필수입니다.");
-        }
-        if (!StringUtils.hasText(receiverSlackId)) {
             throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA,
-                "수령인 슬랙 ID는 필수입니다.");
+                "고객 배송지 주소는 필수입니다.");
+        }
+        if (!StringUtils.hasText(userName)) {
+            throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA, "고객 이름은 필수입니다.");
+        }
+        if (!StringUtils.hasText(userDriverSlackId)) {
+            throw new BusinessException(DeliveryErrorCode.INVALID_DELIVERY_DATA,
+                "고객 배송담당자 슬랙 ID는 필수입니다.");
         }
     }
 
-    public void updateStatus(DeliveryStatus status) {
+    public void updateStatus(CustomerDeliveryStatus status) {
         this.status = status;
     }
 
@@ -141,28 +140,34 @@ public class Delivery extends BaseEntity {
     }
 
 
-    public boolean validateDeliveryStatus(DeliveryStatus status) {
+    public boolean cancelUpdateUserDriver(CustomerDeliveryStatus status) {
         return switch (status) {
-            case CREATED, IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB -> true;
-            case OUT_FOR_DELIVERY, DELIVERED -> false;
+            case CREATED -> true;
+            case SHIPPING, ARRIVED -> false;
         };
     }
 
-    public void updateVendorDriverId(Long newVendorDriverId) {
-        if (!validateDeliveryStatus(this.status)) {
+    public void updateUserDriverId(Long newUserDriverId) {
+        if (!cancelUpdateUserDriver(this.status)) {
             throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
                 String.format("배송 담당자 변경 불가 상태: %s", this.status)
             );
         }
-        this.vendorDrvierId = newVendorDriverId;
+        this.userDrvierId = newUserDriverId;
     }
 
     public void delete(Long deletedBy) {
 
-        if (this.status != DeliveryStatus.CREATED) {
-            throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED, "배송 삭제 불가 상태" + this.status);
+        if (!cancelUpdateUserDriver(this.status)) {
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_CANNOT_BE_MODIFIED,
+                "배송 삭제 불가 상태" + this.status);
         }
         super.delete(deletedBy);
+    }
+
+    public void updateRouteInfo(UUID routePlanId, CustomerDeliveryStatus status) {
+        this.routePlanId = routePlanId;
+        this.status = status;
     }
 
 }

@@ -90,4 +90,9 @@ public class OrderRepositoryImpl implements OrderRepository {
     public boolean existsByHubIdAndOrderStatusNotComplete(UUID hubId) {
         return orderJpaRepository.existsByHubIdAndOrderStatusNotComplete(hubId);
     }
+
+    @Override
+    public Optional<Order> findByIdWithDetails(UUID orderId) {
+        return orderJpaRepository.findByIdWithDetails(orderId);
+    }
 }

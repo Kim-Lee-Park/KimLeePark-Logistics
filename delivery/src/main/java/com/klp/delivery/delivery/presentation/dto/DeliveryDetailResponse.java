@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.presentation.dto;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import java.util.List;
 import java.util.UUID;
@@ -12,11 +12,10 @@ public record DeliveryDetailResponse(
     UUID orderId,
     UUID departureId,
     UUID arrivalId,
-    UUID receiverId,
-    String receiverName,
-    String address,
-    String receiverSlackId,
-    DeliveryStatus status
+    String userName,
+    String userAddress,
+    String userDriverSlackId,
+    CustomerDeliveryStatus status
 ) {
 
     public static DeliveryDetailResponse from(Delivery delivery) {
@@ -25,10 +24,9 @@ public record DeliveryDetailResponse(
             delivery.getOrderId(),
             delivery.getDepartureId(),
             delivery.getArrivalId(),
-            delivery.getReceiverId(),
-            delivery.getReceiverName(),
-            delivery.getAddress(),
-            delivery.getReceiverSlackId(),
+            delivery.getUserName(),
+            delivery.getUserAddress(),
+            delivery.getUserDriverSlackId(),
             delivery.getStatus()
         );
     }

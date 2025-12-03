@@ -53,7 +53,11 @@ public class RoutePlan extends BaseEntity {
     @Column(nullable = false)
     private UUID departureId;
     @Column(nullable = false)
+    private String departureName;
+    @Column(nullable = false)
     private UUID arrivalId;
+    @Column(nullable = false)
+    private String arrvalName;
 
     @Column(nullable = false)
     private Long totalDurationMin;
@@ -68,16 +72,19 @@ public class RoutePlan extends BaseEntity {
     private RoutePlanStatus status;
 
     //직행 경로 계획
-    public static RoutePlan create(UUID departureId, UUID arrivalId, long totalDurationMin,
+    public static RoutePlan create(UUID departureId, String departureName,
+        UUID arrivalId, String arrivalName, long totalDurationMin,
         double totalDistanceKm) {
         validateCreateParam(departureId, arrivalId, totalDurationMin, totalDistanceKm);
         RoutePlan routePlan = new RoutePlan();
         routePlan.departureId = departureId;
+        routePlan.departureName = departureName;
         routePlan.arrivalId = arrivalId;
+        routePlan.arrvalName = arrivalName;
         routePlan.totalDurationMin = totalDurationMin;
         routePlan.totalDistanceKm = totalDistanceKm;
         routePlan.routePlanItems.add(
-            RoutePlanItem.create(departureId, arrivalId, totalDurationMin, totalDistanceKm, 1,
+            RoutePlanItem.create(departureId, departureName, arrivalId, arrivalName, totalDurationMin, totalDistanceKm, 1,
                 routePlan));
         routePlan.status = RoutePlanStatus.ACTIVE;
         return routePlan;

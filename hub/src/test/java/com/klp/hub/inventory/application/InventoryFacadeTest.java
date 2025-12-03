@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
-import com.klp.hub.inventory.application.dto.InventoryDeductCommand.Product;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent.OrderItemDto;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +32,8 @@ class InventoryFacadeTest {
 
     String idempotencyKey = "idempotencyKey";
 
+    private UUID orderId = UUID.randomUUID();
+
     private UUID productId = UUID.randomUUID();
 
     private UUID hubId = UUID.randomUUID();
@@ -43,13 +45,12 @@ class InventoryFacadeTest {
         @DisplayName("분산락을 통한 락 획득 실패 시 예외가 발생한다")
         void lockFailed() {
             int quantity = 10;
-            InventoryDeductCommand command = new InventoryDeductCommand(
-                idempotencyKey,
-                List.of(new Product(productId, hubId, quantity))
-            );
+            OrderCreatedEvent event = OrderCreatedEvent.create(orderId, idempotencyKey,
+                List.of(new OrderItemDto(productId, hubId, quantity)));
+
             when(lockManager.tryLock(idempotencyKey)).thenReturn(false);
 
-            assertThrows(BusinessException.class, () -> inventoryFacade.deduct(command));
+            assertThrows(BusinessException.class, () -> inventoryFacade.deduct(event));
         }
     }
 

@@ -37,6 +37,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.cloud:spring-cloud-starter-bus-kafka'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
@@ -46,6 +47,18 @@ dependencies {
 
     // common-module
     implementation 'com.klp.common:common-module:1.0.0'
+
+    //trace
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    //metric
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "io.micrometer:micrometer-registry-prometheus"
+
+    //log
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.7.0-alpha'
 }
 
 dependencyManagement {

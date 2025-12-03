@@ -23,4 +23,9 @@ public class DriverClientServiceServiceImpl implements DriverClientService {
     public DriverResponse findDriverAtArrivalHub(Long receiverId) {
         return driverFeignClient.findDriverAtArrivalHub(receiverId);
     }
+
+    @Override
+    public List<DriverResponse> findLogisticsDrivers() {
+        return driverFeignClient.findLogisticsDrivers();
+    }
 }

@@ -40,4 +40,6 @@ public interface OrderRepository {
     );
 
     boolean existsByHubIdAndOrderStatusNotComplete(UUID hubId);
+
+    Optional<Order> findByIdWithDetails(UUID orderId);
 }

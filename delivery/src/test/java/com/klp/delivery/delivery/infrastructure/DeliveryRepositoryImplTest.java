@@ -1,14 +1,16 @@
 package com.klp.delivery.delivery.infrastructure;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.CUSTOMER_ADDRESS;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.CUSTOMER_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_VENDOR_DRIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_SLACK_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryWithCustomHubId;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_FIRST;
@@ -16,7 +18,7 @@ import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_SECOND;
 
-import com.klp.delivery.common.enums.DeliveryStatus;
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
@@ -76,7 +78,7 @@ public class DeliveryRepositoryImplTest {
         // then: 생성 검증
         assertThat(result.getDeliveryId()).isNotNull();
         assertThat(delivery.getOrderId()).isEqualTo(DEFAULT_ORDER_ID);
-        assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+        assertThat(delivery.getStatus()).isEqualTo(CustomerDeliveryStatus.CREATED);
 
     }
 
@@ -94,7 +96,7 @@ public class DeliveryRepositoryImplTest {
         // then: 생성 검증
         assertThat(findResult)
             .extracting(Delivery::getStatus)
-            .isEqualTo(DeliveryStatus.CREATED);
+            .isEqualTo(CustomerDeliveryStatus.CREATED);
 
     }
 
@@ -163,15 +165,15 @@ public class DeliveryRepositoryImplTest {
         for (int i = 0; i < 22; i++) {
             deliveryJpaRepository.save(
                 Delivery.create(
-                    DEFAULT_VENDOR_DRIVER_ID,
                     UUID.randomUUID(),
+                    DEFAULT_USER_DRIVER_ID,
+                    DEFAULT_USER_DRIVER_SLACK_ID,
                     DEFAULT_DEPARTURE_ID,
+                    DEFAULT_DEPARTURE_NAME,
                     DEFAULT_ARRIVAL_ID,
-                    DEFAULT_SENDER_ID,
-                    DEFAULT_RECEIVER_ID,
-                    DEFAULT_COMPANY_NAME,
-                    DEFAULT_COMPANY_ADDRESS,
-                    DEFAULT_RECEIVER_SLACK_ID,
+                    DEFAULT_ARRIVAL_NAME,
+                    CUSTOMER_NAME,
+                    CUSTOMER_ADDRESS,
                     List.of()
                 )
             );
