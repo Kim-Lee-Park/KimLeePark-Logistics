@@ -1,10 +1,10 @@
-package com.klp.recommendation;
+package com.klp.ai;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RecommendationApplicationTests {
+class AiApplicationTests {
 
     @Test
     void contextLoads() {
