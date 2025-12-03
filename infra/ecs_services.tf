@@ -99,6 +99,8 @@ locals {
     ",",
     [for i in aws_instance.kafka_broker : "${i.private_ip}:9092"]
   )
+
+  otel_image = "${data.aws_ecr_repository.service["otel-collector"].repository_url}:latest"
 }
 
 resource "aws_service_discovery_service" "ecs" {

@@ -10,13 +10,12 @@ resource "aws_ecs_task_definition" "discovery" {
   container_definitions = jsonencode([
     {
       name      = "discovery"
-      image     = "${aws_ecr_repository.service["discovery"].repository_url}:latest"
+      image     = "${data.aws_ecr_repository.service["discovery"].repository_url}:latest"
       essential = true
 
       portMappings = [
         {
           containerPort = 8761
-          hostPort      = 8761
           protocol      = "tcp"
         }
       ]
@@ -34,8 +33,8 @@ resource "aws_ecs_task_definition" "discovery" {
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "EUREKA_HOSTNAME", value = "discovery.klp.local" },
         { name = "EUREKA_URL", value = "discovery.klp.local" },
-        { name = "CONFIG_SERVER_URI", value = "config.klp.local" },
-        { name = "DISCOVERY_SERVICE_PORT", value = 8761 },
+        { name = "CONFIG_SERVER_URL", value = "config.klp.local" },
+        { name = "DISCOVERY_SERVICE_PORT", value = "8761" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap }
       ]
     }

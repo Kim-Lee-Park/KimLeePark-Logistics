@@ -74,8 +74,3 @@ variable "ec2_key_name" {
   type        = string
   default     = "klp-keypair"
 }
-
-variable "ec2_private_key_path" {
-  type        = string
-  description = "SSH Key Path"
-}

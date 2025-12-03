@@ -14,7 +14,7 @@ resource "aws_ecs_service" "gateway" {
   load_balancer {
     target_group_arn = aws_lb_target_group.gateway_tg.arn
     container_name   = "gateway"
-    container_port   = 80880
+    container_port   = 8080
   }
 
   depends_on = [

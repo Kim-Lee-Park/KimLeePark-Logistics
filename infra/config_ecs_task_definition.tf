@@ -10,13 +10,12 @@ resource "aws_ecs_task_definition" "config" {
   container_definitions = jsonencode([
     {
       name      = "config"
-      image     = "${aws_ecr_repository.service["config"].repository_url}:latest"
+      image     = "${data.aws_ecr_repository.service["config"].repository_url}:latest"
       essential = true
 
       portMappings = [
         {
           containerPort = 8888
-          hostPort      = 8888
           protocol      = "tcp"
         }
       ]
@@ -33,7 +32,7 @@ resource "aws_ecs_task_definition" "config" {
       environment = [
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "EUREKA_HOSTNAME", value = "discovery.klp.local" },
-        { name = "CONFIG_SERVER_URI", value = "config.klp.local" },
+        { name = "CONFIG_SERVER_URL", value = "config.klp.local" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
       ]
 

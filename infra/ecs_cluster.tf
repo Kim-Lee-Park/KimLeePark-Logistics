@@ -52,10 +52,13 @@ resource "aws_iam_policy" "ecs_exec_secrets" {
         Resource = [
           data.aws_secretsmanager_secret.db_username.arn,
           data.aws_secretsmanager_secret.db_password.arn,
+          data.aws_secretsmanager_secret.config_repo_uri.arn,
           data.aws_secretsmanager_secret.git_username.arn,
           data.aws_secretsmanager_secret.git_token.arn,
           data.aws_secretsmanager_secret.jwt_access_secret.arn,
-          data.aws_secretsmanager_secret.jwt_refresh_secret.arn
+          data.aws_secretsmanager_secret.jwt_refresh_secret.arn,
+          data.aws_secretsmanager_secret.gemini_api_key.arn,
+          data.aws_secretsmanager_secret.slack_bot_token.arn
         ]
       }
     ]
