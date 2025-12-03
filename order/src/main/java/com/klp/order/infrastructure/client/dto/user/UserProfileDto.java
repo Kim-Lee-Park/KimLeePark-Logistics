@@ -15,13 +15,13 @@ public record UserProfileDto(
 ) {
 
     public UserProfile toVo() {
-        return UserProfile.builder()
-            .userId(userId)
-            .username(username)
-            .affiliation(affiliationName)
-            .slackId(slackId)
-            .phoneNumber(phone)
-            .grade(gradeName)
-            .build();
+        return new UserProfile(
+            userId,
+            username,
+            affiliationName,
+            slackId,
+            phone,
+            gradeName
+        );
     }
 }
