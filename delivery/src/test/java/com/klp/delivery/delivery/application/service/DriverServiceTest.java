@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.application.service;
 
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponse;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDriversResponses;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +33,7 @@ class DriverServiceTest extends MockTest {
     @DisplayName("담당자조회api_성공 - 도착 허브의 배송 담당자들 조회")
     void 담당자조회api_성공() {
         // given: 담당자 조회 데이터 준비
-        UUID hubId = DEFAULT_RECEIVER_ID;
+        UUID hubId = DEFAULT_ARRIVAL_ID;
 
         when(driverClientService.findArrivalHubDrivers(hubId)).thenReturn(createDriversResponses());
 
@@ -51,7 +51,7 @@ class DriverServiceTest extends MockTest {
     @DisplayName("담당자조회api_실패_예외발생 - 외부 API 호출 실패 시 예외 처리")
     void 담당자조회api_실패_예외발생() {
         // given: 담당자 조회 데이터 준비
-        UUID hubId = DEFAULT_RECEIVER_ID;
+        UUID hubId = DEFAULT_ARRIVAL_ID;
 
         when(driverClientService.findArrivalHubDrivers(hubId))
             .thenThrow(new RuntimeException("담당자 조회 실패"));

@@ -1,9 +1,11 @@
 package com.klp.delivery.delivery.application.facade;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_VENDOR_DRIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_ID;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.ROUTE_PLAN_ID;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.TOTAL_DISTANCE;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.TOTAL_DURATION;
@@ -51,15 +53,19 @@ class DeliveryRouteFacadeTest extends MockTest {
         DeliveryRouteCommand command = new DeliveryRouteCommand(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         // RoutePlan 조회 결과 (직행 경로 - planItems가 비어있음)
         GetRoutePlanDetailResponse routePlanResponse = new GetRoutePlanDetailResponse(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             new ArrayList<>(), // planItems가 비어있음
@@ -103,8 +109,10 @@ class DeliveryRouteFacadeTest extends MockTest {
         DeliveryRouteCommand command = new DeliveryRouteCommand(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         // RoutePlan 조회 결과 (경유 경로 - planItems가 있음)
@@ -112,7 +120,9 @@ class DeliveryRouteFacadeTest extends MockTest {
             routePlanItemId,
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             midHubId,
+            DEFAULT_ARRIVAL_NAME,
             20L,
             50.0,
             1
@@ -121,7 +131,9 @@ class DeliveryRouteFacadeTest extends MockTest {
         GetRoutePlanDetailResponse routePlanResponse = new GetRoutePlanDetailResponse(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             java.util.List.of(planItem),

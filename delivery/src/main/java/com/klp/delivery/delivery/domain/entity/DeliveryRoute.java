@@ -31,17 +31,25 @@ public class DeliveryRoute extends BaseEntity {
     @Column(name = "delivery_id")
     private UUID deliveryId;
 
-    @Comment("업체 배송담당자 ID")
+    @Comment("배송담당자 ID")
     @Column(name = "drvier_id", nullable = false)
     private Long driverId;
 
-    @Comment("출발허브 ID")
+    @Comment("출발 허브 ID")
     @Column(name = "departure_id", nullable = false)
-    private UUID departureHubId;
+    private UUID departureId;
+
+    @Comment("출발 허브 이름")
+    @Column(name = "departure_name", nullable = false)
+    private String departureName;
 
     @Comment("도착 허브 ID")
     @Column(name = "arrival_id", nullable = false)
-    private UUID arrivalHubId;
+    private UUID arrivalId;
+
+    @Comment("도착 허브 이름")
+    @Column(name = "arrival_name", nullable = false)
+    private String arrivalName;
 
     @Comment("시퀀스")
     @Column(name = "sequence", nullable = false)
@@ -68,13 +76,15 @@ public class DeliveryRoute extends BaseEntity {
     private DeliveryRouteStatus status;
 
 
-    private DeliveryRoute(UUID deliveryId, Long driverId, UUID departureHubId,
-        UUID arrivalHubId, Integer sequence, Double estimatedDistance, Long estimatedTime,
+    private DeliveryRoute(UUID deliveryId, Long driverId, UUID departureId, String departureName,
+        UUID arrivalId, String arrivalName, Integer sequence, Double estimatedDistance, Long estimatedTime,
         Double realDistance, Long realTime, DeliveryRouteStatus status) {
         this.deliveryId = deliveryId;
         this.driverId = driverId;
-        this.departureHubId = departureHubId;
-        this.arrivalHubId = arrivalHubId;
+        this.departureId = departureId;
+        this.departureName = departureName;
+        this.arrivalId = arrivalId;
+        this.arrivalName = arrivalName;
         this.sequence = sequence;
         this.estimatedDistance = estimatedDistance;
         this.estimatedTime = estimatedTime;
@@ -83,10 +93,10 @@ public class DeliveryRoute extends BaseEntity {
         this.status = status;
     }
 
-    public static DeliveryRoute create(UUID deliveryId, Long vendorDriverId, UUID departureHubId,
-        UUID arrivalHubId, Integer sequence, Double estimatedDistance, Long estimatedTime,
+    public static DeliveryRoute create(UUID deliveryId, Long driverId, UUID departureId, String departureName,
+        UUID arrivalId, String arrivalName, Integer sequence, Double estimatedDistance, Long estimatedTime,
         Double realDistance, Long realTime, DeliveryRouteStatus status) {
-        return new DeliveryRoute(deliveryId, vendorDriverId, departureHubId, arrivalHubId, sequence,
+        return new DeliveryRoute(deliveryId, driverId, departureId, departureName, arrivalId, arrivalName,  sequence,
             estimatedDistance, estimatedTime, realDistance, realTime, status);
     }
 

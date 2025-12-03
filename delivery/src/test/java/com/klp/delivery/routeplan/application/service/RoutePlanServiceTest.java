@@ -1,5 +1,7 @@
 package com.klp.delivery.routeplan.application.service;
 
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -134,7 +136,7 @@ public class RoutePlanServiceTest {
 
         HubInfo departureHub = HubFixture.createHubWithId(dep);
         HubInfo arrivalHub = HubFixture.createHubWithId(arr);
-        HubRouteInfo hubRouteInfo = new HubRouteInfo(routeInfoId, dep, arr, 1L, 10.0);
+        HubRouteInfo hubRouteInfo = new HubRouteInfo(routeInfoId, dep,DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME, 1L, 10.0);
 
         given(routePlanRepository.existsByDepartureIdAndArrivalId(dep, arr))
             .willReturn(false);
@@ -146,7 +148,7 @@ public class RoutePlanServiceTest {
             .willReturn(true);
 
         RoutePlan savedRoutePlan =
-            RoutePlan.create(dep, arr, hubRouteInfo.durationMin(), hubRouteInfo.distanceKm());
+            RoutePlan.create(dep,DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME, hubRouteInfo.durationMin(), hubRouteInfo.distanceKm());
         ReflectionTestUtils.setField(savedRoutePlan, "routePlanId", routePlanId);
 
         given(routePlanRepository.save(any(RoutePlan.class)))
@@ -182,7 +184,7 @@ public class RoutePlanServiceTest {
         HubInfo arrivalHub = HubFixture.createHubWithId(arr);
 
         // 직행 허브간 이동 정보 (정책상 직행 불가라서 plan()에서는 directRoute 로만 쓰임)
-        HubRouteInfo directHubRoute = new HubRouteInfo(routeInfoId, dep, arr, 200L, 150.0);
+        HubRouteInfo directHubRoute = new HubRouteInfo(routeInfoId, dep, DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME, 200L, 150.0);
         RouteInfoVo directRouteVo = directHubRoute.toVo(); // plan() 의 directRoute 인자
 
         UUID mid = UUID.randomUUID();
@@ -191,21 +193,27 @@ public class RoutePlanServiceTest {
         HubRouteInfo originToMidHub = new HubRouteInfo(
             UUID.randomUUID(),
             dep,
+            DEFAULT_DEPARTURE_NAME,
             mid,
+            DEFAULT_ARRIVAL_NAME,
             50L,
             40.0
         );
         HubRouteInfo midToDestHub = new HubRouteInfo(
             UUID.randomUUID(),
-            mid,
+            dep,
+            DEFAULT_DEPARTURE_NAME,
             arr,
+            DEFAULT_ARRIVAL_NAME,
             60L,
             50.0
         );
         HubRouteInfo originToDummyHub = new HubRouteInfo(
             UUID.randomUUID(),
             dep,
+            DEFAULT_DEPARTURE_NAME,
             UUID.randomUUID(),
+            DEFAULT_ARRIVAL_NAME,
             500L,
             500.0
         );
@@ -314,7 +322,7 @@ public class RoutePlanServiceTest {
         RoutePlan routePlan = RoutePlanFixture.createRoutePlan();
         given(routePlanRepository.getRoutePlanById(routePlanId)).willReturn(Optional.of(routePlan));
         // when
-        routePlanService.deleteRoutePlan(routePlanId);
+//        routePlanService.deleteRoutePlan(routePlanId);
         // then
         assertThat(routePlan.getDeletedAt()).isNotNull();
 

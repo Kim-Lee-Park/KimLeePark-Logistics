@@ -87,7 +87,9 @@ public class RoutePlanService {
         if (routePlanPolicy.isDirectAllowed(hubRouteInfo.distanceKm())) {
             routePlan = RoutePlan.create(
                 command.departureId(),
+                hubRouteInfo.departureName(),
                 command.arrivalId(),
+                hubRouteInfo.arrivalName(),
                 hubRouteInfo.durationMin(),
                 hubRouteInfo.distanceKm()
             );

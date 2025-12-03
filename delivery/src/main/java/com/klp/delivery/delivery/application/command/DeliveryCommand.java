@@ -5,13 +5,13 @@ import java.util.UUID;
 public record DeliveryCommand(
     UUID orderId,
     UUID departureId,
+    String departureName,
     UUID arrivalId,
-    UUID senderId,
-    UUID receiverId,
-    String receiverName,
-    String address,
-    String receiverSlackId,
-    Long vendorDriverId
+    String arrivalName,
+    String userName,
+    String userAddress,
+    String userDrvicerSlackId,
+    Long userDriverId
 ) {
 
 }

@@ -1,14 +1,15 @@
 package com.klp.delivery.delivery.application.service;
 
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.CUSTOMER_ADDRESS;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.CUSTOMER_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_SENDER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_SLACK_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.deliveryList;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.orderItemCommandsDefault;
@@ -28,6 +29,7 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
+import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -51,7 +53,7 @@ public class DeliveryServiceTest extends MockTest {
     DeliveryRepository deliveryRepository;
 
     @Mock
-    CompanyClientService companyClientService;
+    HubClientService hubClientService;
 
 
     @Test
@@ -60,16 +62,16 @@ public class DeliveryServiceTest extends MockTest {
         UUID orderId = DEFAULT_ORDER_ID;
         UUID departureId = DEFAULT_DEPARTURE_ID;
         UUID arrivalId = DEFAULT_ARRIVAL_ID;
-        UUID senderId = DEFAULT_SENDER_ID;
-        UUID receiverId = DEFAULT_RECEIVER_ID;
-        String receiverName = DEFAULT_COMPANY_NAME;
-        String address = DEFAULT_COMPANY_ADDRESS;
-        String receiverSlackId = DEFAULT_RECEIVER_SLACK_ID;
-        Long vendorDriverId = 1234L;
+        String departureName = DEFAULT_DEPARTURE_NAME;
+        String arrivalName = DEFAULT_ARRIVAL_NAME;
+        String userName = CUSTOMER_NAME;
+        String userAddress = CUSTOMER_ADDRESS;
+        String userDriverSlackId = DEFAULT_USER_DRIVER_SLACK_ID;
+        Long userDriverId = DEFAULT_USER_DRIVER_ID;
 
         DeliveryCommand command = new DeliveryCommand(
-            orderId, departureId, arrivalId, senderId, receiverId,
-            receiverName, address, receiverSlackId, vendorDriverId);
+            orderId, departureId, departureName, arrivalId, arrivalName,
+            userName, userAddress, userDriverSlackId, userDriverId);
 
         Delivery delivery = defaultDelivery();
         when(deliveryRepository.save(any(Delivery.class))).thenReturn(delivery);

@@ -31,15 +31,15 @@ public class DeliveryService {
 
             return deliveryRepository.save(
                 Delivery.create(
-                    command.vendorDriverId(),
                     command.orderId(),
+                    command.userDriverId(),
+                    command.userDrvicerSlackId(),
                     command.departureId(),
+                    command.departureName(),
                     command.arrivalId(),
-                    command.senderId(),
-                    command.receiverId(),
-                    command.receiverName(),
-                    command.address(),
-                    command.receiverSlackId(),
+                    command.arrivalName(),
+                    command.userName(),
+                    command.userAddress(),
                     items
                 )
             );
