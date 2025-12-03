@@ -15,7 +15,7 @@ public class CustomWithMockUserSecurityContextFactory implements WithSecurityCon
         UserDetailsImpl principal = new UserDetailsImpl(
             annotation.userId(),
             annotation.username(),
-            annotation.authority().name()
+            annotation.authority()
         );
         UsernamePasswordAuthenticationToken authentication =
             new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());

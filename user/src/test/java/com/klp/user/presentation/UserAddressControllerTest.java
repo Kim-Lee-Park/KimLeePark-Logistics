@@ -19,7 +19,6 @@ import com.klp.global.exception.GlobalExceptionHandler;
 import com.klp.global.security.config.SecurityConfig;
 import com.klp.global.security.filter.AuthorizationFilter;
 import com.klp.user.application.UserFacade;
-import com.klp.user.domain.enums.UserRole;
 import com.klp.user.presentation.dto.request.UserAddressCreateRequest;
 import com.klp.user.presentation.dto.response.UserAddressListResponse;
 import com.klp.user.presentation.dto.response.UserAddressResponse;
@@ -54,7 +53,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("MASTER 권한으로 다른 사용자의 주소를 조회할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.MASTER)
+        @CustomWithMockUser(userId = 1L, authority = "MASTER")
         void getUserAddress_asMaster_success() throws Exception {
             // given
             Long userId = 2L;
@@ -87,7 +86,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 본인의 주소를 조회할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void getUserAddress_asCustomerOwn_success() throws Exception {
             // given
             Long userId = 1L;
@@ -115,7 +114,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 다른 사용자의 주소를 조회하면 403 에러가 발생한다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void getUserAddress_asCustomerOther_forbidden() throws Exception {
             // given
             Long userId = 2L;
@@ -135,7 +134,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("MASTER 권한으로 다른 사용자의 주소 목록을 조회할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.MASTER)
+        @CustomWithMockUser(userId = 1L, authority = "MASTER")
         void getUserAddressList_asMaster_success() throws Exception {
             // given
             Long userId = 2L;
@@ -169,7 +168,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 본인의 주소 목록을 조회할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void getUserAddressList_asCustomerOwn_success() throws Exception {
             // given
             Long userId = 1L;
@@ -187,7 +186,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 다른 사용자의 주소 목록을 조회하면 403 에러가 발생한다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void getUserAddressList_asCustomerOther_forbidden() throws Exception {
             // given
             Long userId = 2L;
@@ -206,7 +205,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("MASTER 권한으로 다른 사용자의 주소를 생성할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.MASTER)
+        @CustomWithMockUser(userId = 1L, authority = "MASTER")
         void createUserAddress_asMaster_success() throws Exception {
             // given
             Long userId = 2L;
@@ -234,7 +233,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 본인의 주소를 생성할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void createUserAddress_asCustomerOwn_success() throws Exception {
             // given
             Long userId = 1L;
@@ -262,7 +261,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 다른 사용자의 주소를 생성하면 403 에러가 발생한다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void createUserAddress_asCustomerOther_forbidden() throws Exception {
             // given
             Long userId = 2L;
@@ -288,7 +287,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("필수 필드가 누락되면 400 에러가 발생한다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void createUserAddress_withInvalidRequest_badRequest() throws Exception {
             // given
             Long userId = 1L;
@@ -318,7 +317,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("MASTER 권한으로 다른 사용자의 주소를 수정할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.MASTER)
+        @CustomWithMockUser(userId = 1L, authority = "MASTER")
         void updateUserAddress_asMaster_success() throws Exception {
             // given
             Long userId = 2L;
@@ -347,7 +346,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 본인의 주소를 수정할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void updateUserAddress_asCustomerOwn_success() throws Exception {
             // given
             Long userId = 1L;
@@ -376,7 +375,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 다른 사용자의 주소를 수정하면 403 에러가 발생한다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void updateUserAddress_asCustomerOther_forbidden() throws Exception {
             // given
             Long userId = 2L;
@@ -408,7 +407,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("MASTER 권한으로 다른 사용자의 주소를 삭제할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.MASTER)
+        @CustomWithMockUser(userId = 1L, authority = "MASTER")
         void deleteUserAddress_asMaster_success() throws Exception {
             // given
             Long userId = 2L;
@@ -425,7 +424,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 본인의 주소를 삭제할 수 있다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void deleteUserAddress_asCustomerOwn_success() throws Exception {
             // given
             Long userId = 1L;
@@ -442,7 +441,7 @@ class UserAddressControllerTest {
 
         @Test
         @DisplayName("CUSTOMER 권한으로 다른 사용자의 주소를 삭제하면 403 에러가 발생한다")
-        @CustomWithMockUser(userId = 1L, authority = UserRole.CUSTOMER)
+        @CustomWithMockUser(userId = 1L, authority = "CUSTOMER")
         void deleteUserAddress_asCustomerOther_forbidden() throws Exception {
             // given
             Long userId = 2L;
