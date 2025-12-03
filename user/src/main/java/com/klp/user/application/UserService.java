@@ -1,27 +1,19 @@
 package com.klp.user.application;
 
 import com.klp.common.exception.BusinessException;
-import com.klp.common.model.PageResponse;
 import com.klp.user.application.command.ValidateUserCommand;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.exception.UserErrorCode;
 import com.klp.user.domain.repository.UserRepository;
 import com.klp.user.presentation.dto.request.UserCreateRequest;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
-import com.klp.user.presentation.dto.response.DriverDetailResponse;
-import com.klp.user.presentation.dto.response.DriverInfo;
-import com.klp.user.presentation.dto.response.HubDriverListResponse;
-import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
 import com.klp.user.presentation.dto.response.UserDataResponse;
-import com.klp.user.presentation.dto.response.UserDetailResponse;
-import com.klp.user.presentation.dto.response.UserInfoResponse;
 import com.klp.user.presentation.dto.response.UsernameCheckResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,55 +34,23 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDetailResponse getMyDetails(Long userId) {
-        // TODO 업체Id를 통해 업체 이름을 받아오는 요청 필요
-        String affiliationName = "tempAffiliation";
-
-        User user = findNotDeletedUser(userId);
-
-        return UserDetailResponse.of(affiliationName, user);
-    }
-
-
-    @Transactional(readOnly = true)
-    public UserDetailResponse getUserDetails(Long userId) {
-        // TODO 업체Id를 통해 업체 이름을 받아오는 요청 필요
-        String affiliationName = "tempAffiliation";
-
-        User user = findNotDeletedUser(userId);
-
-        return UserDetailResponse.of(affiliationName, user);
-    }
-
-    @Transactional(readOnly = true)
-    public PageResponse<UserInfoResponse> getUserList(String keyword, Pageable pageable) {
-        Page<User> userPage;
-
+    public Page<User> getUserList(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            userPage = userRepository.findAll(pageable);
+            return userRepository.findAll(pageable);
         } else {
-            userPage = userRepository.searchByKeyword(keyword, pageable);
+            return userRepository.searchByKeyword(keyword, pageable);
         }
-
-        // TODO 업체Id를 통해 업체 이름을 받아오는 요청 필요
-        return PageResponse.of(userPage, user ->
-            UserInfoResponse.of(user, "tempAffiliation")
-        );
     }
 
     @Transactional
-    public void updateUserInfo(Long userId, UserUpdateRequest request) {
-        User user = findNotDeletedUser(userId);
+    public void updateUserInfo(User user, UserUpdateRequest request) {
         String encodedPassword = passwordEncoder.encode(request.password());
-
-        user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.email(), request.role());
+        user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.email(),
+            request.role());
     }
 
     @Transactional
-    public Long createPendingUser(UserCreateRequest request) {
-        // TODO 업체 이름을 통해 업체 ID를 받아오는 요청 필요
-        UUID affiliationId = UUID.randomUUID();
-
+    public User createPendingUser(UserCreateRequest request, UUID affiliationId) {
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = User.create(
             affiliationId,
@@ -103,8 +63,7 @@ public class UserService {
             request.role()
         );
 
-        User saved = userRepository.save(user);
-        return saved.getUserId();
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
@@ -120,54 +79,36 @@ public class UserService {
     }
 
     @Transactional
-    public void approvePendingUser(Long userId) {
-        User user = findNotDeletedUser(userId);
-
+    public void approvePendingUser(User user) {
         user.approve();
     }
 
     @Transactional
-    public void rejectPendingUser(Long userId) {
-        User user = findNotDeletedUser(userId);
-
+    public void rejectPendingUser(User user) {
         user.reject();
     }
 
     @Transactional(readOnly = true)
-    public HubDriverListResponse getDriversByHubId(UUID hubId) {
-        List<User> drivers = userRepository.findDriversByHubId(hubId);
-
-        List<DriverInfo> driverInfoList = drivers.stream()
-            .map(DriverInfo::from)
-            .toList();
-
-        return HubDriverListResponse.of(hubId, driverInfoList);
+    public List<User> findDriversByHubId(UUID hubId) {
+        return userRepository.findDriversByHubId(hubId);
     }
 
     @Transactional(readOnly = true)
-    public LogisticsDriverListResponse getDriversByLogistics() {
-        List<User> drivers = userRepository.findDriversByLogistics();
-
-        List<DriverInfo> driverInfoList = drivers.stream()
-            .map(DriverInfo::from)
-            .toList();
-
-        return LogisticsDriverListResponse.of(driverInfoList);
+    public List<User> findDriversByLogistics() {
+        return userRepository.findDriversByLogistics();
     }
 
     @Transactional(readOnly = true)
-    public DriverDetailResponse getDriverById(Long driverId) {
-        User driver = userRepository.findDriverById(driverId)
+    public User findDriverById(Long driverId) {
+        return userRepository.findDriverById(driverId)
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-
-        return DriverDetailResponse.from(driver);
     }
 
     private boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
-    private User findNotDeletedUser(Long userId) {
+    public User findNotDeletedUser(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 

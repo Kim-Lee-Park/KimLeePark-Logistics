@@ -29,7 +29,7 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column
     private UUID affiliationId;
 
     @Column(nullable = false)
@@ -146,6 +146,13 @@ public class User extends BaseEntity {
                 if (affiliationType != AffiliationType.LOGISTICS && affiliationType != AffiliationType.HUB) {
                     throw new BusinessException(
                         UserErrorCode.BAD_REQUEST, "배송 담당자는 LOGISTICS 또는 HUB 소속이어야 합니다."
+                    );
+                }
+                break;
+            case CUSTOMER:
+                if (affiliationType != AffiliationType.CUSTOMER) {
+                    throw new BusinessException(
+                        UserErrorCode.BAD_REQUEST, "고객은 CUSTOMER 소속이어야 합니다."
                     );
                 }
                 break;

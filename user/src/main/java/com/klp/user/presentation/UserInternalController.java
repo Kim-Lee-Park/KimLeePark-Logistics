@@ -1,6 +1,6 @@
 package com.klp.user.presentation;
 
-import com.klp.user.application.UserService;
+import com.klp.user.application.UserFacade;
 import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
 import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
@@ -19,32 +19,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserInternalController {
 
-    private final UserService userService;
+    private final UserFacade userFacade;
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDetailResponse> getUserDetails(
         @PathVariable Long userId
     ) {
-        UserDetailResponse response = userService.getUserDetails(userId);
+        UserDetailResponse response = userFacade.getUserDetails(userId);
         return ResponseEntity.ok().body(response);
     }
 
 
     @GetMapping("/driver/logistics")
     public ResponseEntity<LogisticsDriverListResponse> getDriversByLogistics() {
-        LogisticsDriverListResponse response = userService.getDriversByLogistics();
+        LogisticsDriverListResponse response = userFacade.getDriversByLogistics();
         return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/driver/{hubId}")
     public ResponseEntity<HubDriverListResponse> getDriversByHubId(@PathVariable UUID hubId) {
-        HubDriverListResponse response = userService.getDriversByHubId(hubId);
+        HubDriverListResponse response = userFacade.getDriversByHubId(hubId);
         return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/driver")
     public ResponseEntity<DriverDetailResponse> getDriverById(@RequestParam("id") Long driverId) {
-        DriverDetailResponse response = userService.getDriverById(driverId);
+        DriverDetailResponse response = userFacade.getDriverById(driverId);
         return ResponseEntity.ok().body(response);
     }
 }

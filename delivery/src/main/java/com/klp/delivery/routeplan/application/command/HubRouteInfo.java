@@ -6,7 +6,9 @@ import java.util.UUID;
 public record HubRouteInfo(
     UUID routeInfoId,
     UUID departureId,
+    String departureName,
     UUID arrivalId,
+    String arrivalName,
     Long durationMin,
     Double distanceKm
 ) {

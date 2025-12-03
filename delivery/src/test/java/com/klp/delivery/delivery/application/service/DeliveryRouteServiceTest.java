@@ -1,9 +1,11 @@
 package com.klp.delivery.delivery.application.service;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_VENDOR_DRIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_ID;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.ROUTE_PLAN_ID;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.TOTAL_DISTANCE;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.TOTAL_DURATION;
@@ -55,14 +57,18 @@ class DeliveryRouteServiceTest extends MockTest {
         DeliveryRouteCommand deliveryCommand = new DeliveryRouteCommand(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         DeliveryRoutePlanCommand planCommand = new DeliveryRoutePlanCommand(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             new ArrayList<>() // planItems가 비어있음 (직행)
@@ -70,9 +76,11 @@ class DeliveryRouteServiceTest extends MockTest {
 
         DeliveryRoute savedRoute = DeliveryRoute.create(
             DEFAULT_DELIVERY_ID_FIRST,
-            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_USER_DRIVER_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             1,
             TOTAL_DISTANCE,
             TOTAL_DURATION,
@@ -106,8 +114,10 @@ class DeliveryRouteServiceTest extends MockTest {
         DeliveryRouteCommand deliveryCommand = new DeliveryRouteCommand(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         // 첫 번째 PlanItem 생성
@@ -115,7 +125,9 @@ class DeliveryRouteServiceTest extends MockTest {
             routePlanItemId,
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             midHubId,
+            DEFAULT_ARRIVAL_NAME,
             20L,
             50.0,
             1
@@ -124,7 +136,9 @@ class DeliveryRouteServiceTest extends MockTest {
         DeliveryRoutePlanCommand planCommand = new DeliveryRoutePlanCommand(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             List.of(firstPlanItem) // 첫 번째 아이템만 포함
@@ -140,7 +154,9 @@ class DeliveryRouteServiceTest extends MockTest {
             DEFAULT_DELIVERY_ID_FIRST,
             100L, // 물류 담당자 ID
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             midHubId,
+            "중간허브",
             1,
             50.0,
             20L,
@@ -170,14 +186,18 @@ class DeliveryRouteServiceTest extends MockTest {
         DeliveryRouteCommand deliveryCommand = new DeliveryRouteCommand(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         DeliveryRoutePlanCommand planCommand = new DeliveryRoutePlanCommand(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             new ArrayList<>()
@@ -228,9 +248,11 @@ class DeliveryRouteServiceTest extends MockTest {
         List<DeliveryRoute> routes = List.of(
             DeliveryRoute.create(
                 deliveryId,
-                DEFAULT_VENDOR_DRIVER_ID,
+                DEFAULT_USER_DRIVER_ID,
                 DEFAULT_DEPARTURE_ID,
+                DEFAULT_DEPARTURE_NAME,
                 DEFAULT_ARRIVAL_ID,
+                DEFAULT_ARRIVAL_NAME,
                 1,
                 TOTAL_DISTANCE,
                 TOTAL_DURATION,
@@ -275,7 +297,9 @@ class DeliveryRouteServiceTest extends MockTest {
         GetRoutePlanDetailResponse routePlan = new GetRoutePlanDetailResponse(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             List.of(),
@@ -284,7 +308,7 @@ class DeliveryRouteServiceTest extends MockTest {
 
         // when & then: 배송 완료 상태일 때 예외 발생
         assertThatThrownBy(() -> deliveryRouteService.appendDeliveryRoute(
-            deliveryId, routePlan, DeliveryRouteStatus.DELIVERED, DEFAULT_VENDOR_DRIVER_ID))
+            deliveryId, routePlan, DeliveryRouteStatus.DELIVERED, DEFAULT_USER_DRIVER_ID))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -301,7 +325,9 @@ class DeliveryRouteServiceTest extends MockTest {
         GetRoutePlanDetailResponse routePlan = new GetRoutePlanDetailResponse(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             List.of(),
@@ -312,7 +338,7 @@ class DeliveryRouteServiceTest extends MockTest {
 
         // when & then: 경로 목록이 비어있을 때 예외 발생
         assertThatThrownBy(() -> deliveryRouteService.appendDeliveryRoute(
-            deliveryId, routePlan, DeliveryRouteStatus.IN_HUB_TRANSIT, DEFAULT_VENDOR_DRIVER_ID))
+            deliveryId, routePlan, DeliveryRouteStatus.IN_HUB_TRANSIT, DEFAULT_USER_DRIVER_ID))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
@@ -333,9 +359,11 @@ class DeliveryRouteServiceTest extends MockTest {
         // 기존 경로 (sequence 1)
         DeliveryRoute existingRoute = DeliveryRoute.create(
             deliveryId,
-            DEFAULT_VENDOR_DRIVER_ID,
+            DEFAULT_USER_DRIVER_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             midHubId,
+            "중간허브",
             1,
             50.0,
             20L,
@@ -348,7 +376,9 @@ class DeliveryRouteServiceTest extends MockTest {
         GetRoutePlanDetailResponse routePlan = new GetRoutePlanDetailResponse(
             ROUTE_PLAN_ID,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
+            DEFAULT_ARRIVAL_NAME,
             TOTAL_DURATION,
             TOTAL_DISTANCE,
             List.of(), // planItems가 비어있음
@@ -359,7 +389,7 @@ class DeliveryRouteServiceTest extends MockTest {
 
         // when & then: 다음 경로 계획을 찾을 수 없을 때 예외 발생
         assertThatThrownBy(() -> deliveryRouteService.appendDeliveryRoute(
-            deliveryId, routePlan, DeliveryRouteStatus.IN_HUB_TRANSIT, DEFAULT_VENDOR_DRIVER_ID))
+            deliveryId, routePlan, DeliveryRouteStatus.IN_HUB_TRANSIT, DEFAULT_USER_DRIVER_ID))
             .isInstanceOf(BusinessException.class)
             .satisfies(exception -> {
                 BusinessException businessException = (BusinessException) exception;
