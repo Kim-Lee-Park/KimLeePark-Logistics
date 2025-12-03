@@ -5,8 +5,10 @@ import java.util.UUID;
 public record DeliveryRouteCreateEvent(
     UUID deliveryId,
     UUID departureId,
+    String departureName,
     UUID arrivalId,
-    Long vendorDrvierId
+    String arrivalName,
+    Long drvierId
 ) {
 
 }

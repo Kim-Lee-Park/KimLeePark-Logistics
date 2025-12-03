@@ -20,13 +20,15 @@ public class DeliveryRouteCreateEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleDeliveryRouteCreateEvent(DeliveryRouteCreateEvent event) {
         log.info("배송 경로 생성 이벤트 수신: deliveryId={}, departureId={}, arrivalId={}, vendorDrvierId={} ",
-            event.deliveryId(), event.departureId(), event.arrivalId(), event.vendorDrvierId());
+            event.deliveryId(), event.departureId(), event.arrivalId(), event.drvierId());
 
         DeliveryRouteCommand command = new DeliveryRouteCommand(
             event.deliveryId(),
             event.departureId(),
+            event.departureName(),
             event.arrivalId(),
-            event.vendorDrvierId()
+            event.arrivalName(),
+            event.drvierId()
         );
         deliveryRouteFacade.CreateDeliveryRoute(command);
     }

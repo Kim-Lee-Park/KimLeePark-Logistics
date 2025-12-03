@@ -78,7 +78,7 @@ public class DeliveryRouteFacade {
             deliveryId,
             routePlan,
             currentRouteStatus,
-            delivery.getVendorDrvierId()
+            delivery.getUserDrvierId()
         );
 
         // Delivery 상태 업데이트

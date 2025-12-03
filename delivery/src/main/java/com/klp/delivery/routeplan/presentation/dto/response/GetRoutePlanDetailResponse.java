@@ -8,7 +8,9 @@ import java.util.UUID;
 public record GetRoutePlanDetailResponse(
     UUID routePlanId,
     UUID departureId,
+    String departureName,
     UUID arrivalId,
+    String arrivalName,
     Long totalDurationMin,
     Double totalDistanceKm,
     List<PlanItem> planItems,
@@ -19,7 +21,9 @@ public record GetRoutePlanDetailResponse(
         UUID routePlanItemId,
         UUID planId,
         UUID departureId,
+        String departureName,
         UUID arrivalId,
+        String arrivalName,
         Long durationMin,
         Double distanceKm,
         Integer sequence
@@ -30,7 +34,9 @@ public record GetRoutePlanDetailResponse(
                 routePlanItem.getRoutePlanItemId(),
                 planId,
                 routePlanItem.getDepartureId(),
+                routePlanItem.getDepartureName(),
                 routePlanItem.getArrivalId(),
+                routePlanItem.getArrivalName(),
                 routePlanItem.getDurationMin(),
                 routePlanItem.getDistanceKm(),
                 routePlanItem.getSequence()
@@ -42,7 +48,9 @@ public record GetRoutePlanDetailResponse(
         return new GetRoutePlanDetailResponse(
             routePlan.getRoutePlanId(),
             routePlan.getDepartureId(),
+            routePlan.getDepartureName(),
             routePlan.getArrivalId(),
+            routePlan.getArrvalName(),
             routePlan.getTotalDurationMin(),
             routePlan.getTotalDistanceKm(),
             routePlan.getRoutePlanItems().stream()
