@@ -115,7 +115,7 @@ public class Coupon extends BaseEntity {
         }
     }
 
-    private static void validateExpiredAt(LocalDateTime expiredAt) {
+    public static void validateExpiredAt(LocalDateTime expiredAt) {
         if (expiredAt.isBefore(LocalDateTime.now())) {
             throw new BusinessException(INVALID_COUPON_EXPIRED_AT);
         }
