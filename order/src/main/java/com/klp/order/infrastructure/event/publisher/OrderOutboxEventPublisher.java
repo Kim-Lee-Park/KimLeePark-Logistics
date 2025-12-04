@@ -53,7 +53,7 @@ public class OrderOutboxEventPublisher {
             orderOutboxEventRepository.save(event);
         } catch (Exception e) {
             // 실패 시 재시도 카운트만 증가 (PENDING 유지)
-            // 그 대신 이제 재시도 카운트가 100 이상이면 markAsFailed에서 자동으로 Failed로 상태변화
+            // 그 대신 이제 재시도 카운트가 20 이상이면 markAsFailed에서 자동으로 Failed로 상태변화
             event.markAsFailed();
             orderOutboxEventRepository.save(event);
             if (event.getStatus() == OrderOutboxStatus.FAILED) {
