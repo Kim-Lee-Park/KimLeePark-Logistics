@@ -15,7 +15,7 @@ public class RecommendationCacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String KEY_PREFIX = "recommendation:";
-    private static final Duration TTL = Duration.ofDays(1);
+    private static final Duration TTL = Duration.ofHours(1);
 
     public void saveRecommendations(UUID orderId, List<ProductRecommendation> recommendations) {
         String key = KEY_PREFIX + orderId;
