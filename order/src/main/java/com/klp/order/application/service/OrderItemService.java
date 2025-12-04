@@ -1,9 +1,9 @@
 package com.klp.order.application.service;
 
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.orderitem.OrderItem;
 import com.klp.order.domain.repository.OrderItemRepository;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.OrderItemErrorCode;
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.klp.authservice.auth.exception.AuthErrorCode;
-import com.klp.common.exception.BusinessException;
+import com.klp.authservice.global.exception.BusinessException;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

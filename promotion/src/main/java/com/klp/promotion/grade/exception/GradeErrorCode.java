@@ -1,6 +1,6 @@
 package com.klp.promotion.grade.exception;
 
-import com.klp.common.exception.ErrorCode;
+import com.klp.promotion.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

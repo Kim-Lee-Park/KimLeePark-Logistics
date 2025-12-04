@@ -23,10 +23,10 @@ import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
 import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
 import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
+import com.klp.authservice.global.exception.BusinessException;
 import com.klp.authservice.global.exception.GlobalExceptionHandler;
 import com.klp.authservice.global.security.config.SecurityConfig;
 import com.klp.authservice.global.security.filter.AuthorizationFilter;
-import com.klp.common.exception.BusinessException;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -655,7 +655,8 @@ class AuthControllerTest {
             String affiliationName = "testCompany";
             AffiliationType type = AffiliationType.COMPANY;
 
-            SignUpRequest signUpRequest = new SignUpRequest(username, password, slackId, phone, email, role,
+            SignUpRequest signUpRequest = new SignUpRequest(username, password, slackId, phone,
+                email, role,
                 affiliationName,
                 type);
 

@@ -1,8 +1,8 @@
 package com.klp.delivery.routeplan.domain.model;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.BaseEntity;
 import com.klp.delivery.common.enums.RoutePlanStatus;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.domain.vo.PlanDetailVo;
 import com.klp.delivery.routeplan.domain.vo.RouteInfoVo;
 import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
@@ -84,7 +84,8 @@ public class RoutePlan extends BaseEntity {
         routePlan.totalDurationMin = totalDurationMin;
         routePlan.totalDistanceKm = totalDistanceKm;
         routePlan.routePlanItems.add(
-            RoutePlanItem.create(departureId, departureName, arrivalId, arrivalName, totalDurationMin, totalDistanceKm, 1,
+            RoutePlanItem.create(departureId, departureName, arrivalId, arrivalName,
+                totalDurationMin, totalDistanceKm, 1,
                 routePlan));
         routePlan.status = RoutePlanStatus.ACTIVE;
         return routePlan;

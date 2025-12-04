@@ -15,71 +15,71 @@ locals {
   ecs_services = {
     config = {
       port          = 8888
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     discovery = {
       port          = 8761
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     gateway = {
       port          = 8080
-      cpu           = 512
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 2
       attach_to_alb = true
     }
     user = {
       port          = 8080
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     order = {
       port          = 8080
-      cpu           = 512
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 2
       attach_to_alb = false
     }
     hub = {
       port          = 8080
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     delivery = {
       port          = 8080
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     notification = {
       port          = 8080
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     promotion = {
       port          = 8080
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }
     auth = {
       port          = 8080
-      cpu           = 256
-      memory        = 1024
+      cpu           = 1024
+      memory        = 2048
       desired_count = 1
       attach_to_alb = false
     }

@@ -1,7 +1,7 @@
 package com.klp.hub.hub.application.service;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.hub.common.model.UserDetailsImpl;
+import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;

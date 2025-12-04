@@ -1,7 +1,7 @@
 package com.klp.user.domain.entity;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.common.model.BaseEntity;
+import com.klp.global.exception.BusinessException;
 import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
 import com.klp.user.domain.enums.UserStatus;
@@ -99,7 +99,8 @@ public class User extends BaseEntity {
         validateNotBlank(email, "이메일은 필수입니다.");
         validateRoleAndAffiliationType(role, affiliationType);
 
-        User user = new User(affiliationId, affiliationType, name, password, slackId, phone, email, role);
+        User user = new User(affiliationId, affiliationType, name, password, slackId, phone, email,
+            role);
         user.status = UserStatus.PENDING;
         return user;
     }
@@ -143,7 +144,8 @@ public class User extends BaseEntity {
                 }
                 break;
             case DRIVER:
-                if (affiliationType != AffiliationType.LOGISTICS && affiliationType != AffiliationType.HUB) {
+                if (affiliationType != AffiliationType.LOGISTICS
+                    && affiliationType != AffiliationType.HUB) {
                     throw new BusinessException(
                         UserErrorCode.BAD_REQUEST, "배송 담당자는 LOGISTICS 또는 HUB 소속이어야 합니다."
                     );
@@ -181,7 +183,8 @@ public class User extends BaseEntity {
         this.status = UserStatus.REJECTED;
     }
 
-    public void update(String username, String password, String slackId, String phone, String email, UserRole role) {
+    public void update(String username, String password, String slackId, String phone, String email,
+        UserRole role) {
         this.name = username;
         this.password = password;
         this.slackId = slackId;

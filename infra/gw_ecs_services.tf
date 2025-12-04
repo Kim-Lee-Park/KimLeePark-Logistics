@@ -18,6 +18,7 @@ resource "aws_ecs_service" "gateway" {
   }
 
   depends_on = [
+    aws_ecs_service.config,
     aws_ecs_service.discovery,
     aws_lb_target_group.gateway_tg
   ]
