@@ -7,7 +7,9 @@ import java.util.UUID;
 public record DeliveryRoutePlanCommand(
     UUID routePlanId,
     UUID departureId,
+    String departureName,
     UUID arrivalId,
+    String arrivalName,
     Long totalDurationMin,
     Double totalDistanceKm,
     List<PlanItem> planItems
@@ -18,7 +20,9 @@ public record DeliveryRoutePlanCommand(
         return new DeliveryRoutePlanCommand(
             response.routePlanId(),
             response.departureId(),
+            response.departureName(),
             response.arrivalId(),
+            response.arrivalName(),
             response.totalDurationMin(),
             response.totalDistanceKm(),
             response.planItems().stream()
@@ -26,7 +30,9 @@ public record DeliveryRoutePlanCommand(
                     item.routePlanItemId(),
                     item.planId(),
                     item.departureId(),
+                    item.departureName(),
                     item.arrivalId(),
+                    item.arrivalName(),
                     item.durationMin(),
                     item.distanceKm(),
                     item.sequence()
@@ -41,7 +47,9 @@ public record DeliveryRoutePlanCommand(
         UUID routePlanItemId,
         UUID planId,
         UUID departureId,
+        String departureName,
         UUID arrivalId,
+        String arrivalName,
         Long durationMin,
         Double distanceKm,
         Integer sequence

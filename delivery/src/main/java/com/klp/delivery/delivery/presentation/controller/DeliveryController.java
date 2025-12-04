@@ -6,7 +6,6 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
-import com.klp.delivery.delivery.presentation.dto.DeliveryStatusUpdateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryUpdateRequest;
 import jakarta.validation.Valid;
 import java.util.List;

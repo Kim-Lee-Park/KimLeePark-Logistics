@@ -12,10 +12,9 @@ public record DeliveryDetailResponse(
     UUID orderId,
     UUID departureId,
     UUID arrivalId,
-    UUID receiverId,
-    String receiverName,
-    String address,
-    String receiverSlackId,
+    String userName,
+    String userAddress,
+    String userDriverSlackId,
     CustomerDeliveryStatus status
 ) {
 
@@ -25,10 +24,9 @@ public record DeliveryDetailResponse(
             delivery.getOrderId(),
             delivery.getDepartureId(),
             delivery.getArrivalId(),
-            delivery.getReceiverId(),
-            delivery.getReceiverName(),
-            delivery.getAddress(),
-            delivery.getReceiverSlackId(),
+            delivery.getUserName(),
+            delivery.getUserAddress(),
+            delivery.getUserDriverSlackId(),
             delivery.getStatus()
         );
     }

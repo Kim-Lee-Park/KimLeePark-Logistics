@@ -1,9 +1,11 @@
 package com.klp.delivery.delivery.application.event;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_VENDOR_DRIVER_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,8 +35,10 @@ class DeliveryRouteCreateEventListenerTest extends MockTest {
         DeliveryRouteCreateEvent event = new DeliveryRouteCreateEvent(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         // when
@@ -51,8 +55,10 @@ class DeliveryRouteCreateEventListenerTest extends MockTest {
         DeliveryRouteCreateEvent event = new DeliveryRouteCreateEvent(
             DEFAULT_DELIVERY_ID_FIRST,
             DEFAULT_DEPARTURE_ID,
+            DEFAULT_DEPARTURE_NAME,
             DEFAULT_ARRIVAL_ID,
-            DEFAULT_VENDOR_DRIVER_ID
+            DEFAULT_ARRIVAL_NAME,
+            DEFAULT_USER_DRIVER_ID
         );
 
         // when

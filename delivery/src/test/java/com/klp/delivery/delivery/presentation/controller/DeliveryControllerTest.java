@@ -1,12 +1,14 @@
 package com.klp.delivery.delivery.presentation.controller;
 
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_ADDRESS;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_COMPANY_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.CUSTOMER_ADDRESS;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.CUSTOMER_NAME;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ORDER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_ID;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_RECEIVER_SLACK_ID;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_SLACK_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_FIRST;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.common.exception.BusinessException;
+import com.klp.delivery.common.CustomWithMockUser;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.application.service.DeliveryService;
@@ -43,6 +46,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+@CustomWithMockUser
 @WebMvcTest(controllers = DeliveryController.class)
 class DeliveryControllerTest {
 
@@ -162,10 +166,10 @@ class DeliveryControllerTest {
             .andExpect(jsonPath("$.deliveryId").value(DEFAULT_DELIVERY_ID_FIRST.toString()))
             .andExpect(jsonPath("$.orderId").value(DEFAULT_ORDER_ID.toString()))
             .andExpect(jsonPath("$.departureId").value(DEFAULT_DEPARTURE_ID.toString()))
-            .andExpect(jsonPath("$.receiverId").value(DEFAULT_RECEIVER_ID.toString()))
-            .andExpect(jsonPath("$.receiverName").value(DEFAULT_COMPANY_NAME))
-            .andExpect(jsonPath("$.address").value(DEFAULT_COMPANY_ADDRESS))
-            .andExpect(jsonPath("$.receiverSlackId").value(DEFAULT_RECEIVER_SLACK_ID))
+            .andExpect(jsonPath("$.arrivalId").value(DEFAULT_ARRIVAL_ID.toString()))
+            .andExpect(jsonPath("$.userName").value(CUSTOMER_NAME))
+            .andExpect(jsonPath("$.userAddress").value(CUSTOMER_ADDRESS))
+            .andExpect(jsonPath("$.userDriverSlackId").value(DEFAULT_USER_DRIVER_SLACK_ID))
             .andExpect(jsonPath("$.status").value(CustomerDeliveryStatus.CREATED.name()));
 
         // then: 배송 조회 서비스 호출 검증
@@ -188,4 +192,3 @@ class DeliveryControllerTest {
     }
 
 }
-
