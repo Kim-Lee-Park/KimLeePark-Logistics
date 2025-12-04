@@ -34,6 +34,11 @@ resource "aws_ecs_task_definition" "discovery" {
         { name = "EUREKA_HOSTNAME", value = "discovery.klp.local" },
         { name = "EUREKA_URL", value = "http://discovery.klp.local:8761/eureka/" },
         { name = "CONFIG_SERVER_URL", value = "http://config.klp.local:8888" },
+        { name = "CONFIG_FAIL_FAST", value = "true" },
+        { name = "CONFIG_RETRY_INITIAL_INTERVAL", value = "2000" },
+        { name = "CONFIG_RETRY_MAX_ATTEMPTS", value = "8" },
+        { name = "CONFIG_RETRY_MULTIPLIER", value = "1.5" },
+        { name = "CONFIG_RETRY_MAX_INTERVAL", value = "10000" },
         { name = "DISCOVERY_SERVICE_PORT", value = "8761" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap }
       ]
