@@ -34,6 +34,13 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private UUID orderId;
 
+    @Column(nullable = false)
+    @Comment("결제 요청 사용자 ID")
+    private Long userId;
+
+    @Comment("허브 ID")
+    private UUID hubId;
+
     @Comment("PG사 거래 ID")
     private String pgTransactionId;
 
@@ -67,10 +74,12 @@ public class Payment extends BaseEntity {
     @Comment("결제 완료 시각")
     private LocalDateTime paidAt;
 
-    public static Payment create(UUID orderId, PaymentMethodType methodType, Long amount) {
+    public static Payment create(UUID orderId, Long userId, UUID hubId, PaymentMethodType methodType, Long amount) {
         Payment payment = new Payment();
 
         payment.orderId = orderId;
+        payment.userId = userId;
+        payment.hubId = hubId;
         payment.method = methodType;
         payment.amount = amount;
         payment.status = PaymentStatus.READY;

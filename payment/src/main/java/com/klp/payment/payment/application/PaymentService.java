@@ -2,6 +2,8 @@ package com.klp.payment.payment.application;
 
 import com.klp.payment.global.exception.BusinessException;
 import com.klp.payment.global.exception.PaymentErrorCode;
+import com.klp.payment.infrastructure.client.UserClient;
+import com.klp.payment.infrastructure.client.dto.UserDetailResponse;
 import com.klp.payment.payment.application.command.ApprovePaymentCommand;
 import com.klp.payment.payment.application.command.CancelPaymentCommand;
 import com.klp.payment.payment.application.command.FailPaymentCommand;
@@ -27,6 +29,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final PaymentMockService paymentMockService;
+    private final UserClient userClient;
 
     /**
      * 결제 준비 메소드. 현재는 카드 결제만 지원
@@ -35,6 +38,8 @@ public class PaymentService {
     public PreparePaymentResponse preparePayment(PreparePaymentCommand command) {
         Payment payment = Payment.create(
             command.orderId(),
+            command.userId(),
+            command.hubId(),
             PaymentMethodType.CARD,
             command.amount()
         );
@@ -55,11 +60,29 @@ public class PaymentService {
     }
 
     /**
-     * 모든 결제 리스트 페이징 방식으로 조회
+     * 모든 결제 리스트 페이징 방식으로 조회 (MASTER 전용)
      */
     @Transactional(readOnly = true)
     public Page<Payment> getAllPayments(Pageable pageable) {
         return paymentRepository.findAll(pageable);
+    }
+
+    /**
+     * 사용자 ID로 결제 리스트 페이징 방식으로 조회 (CUSTOMER 전용)
+     */
+    @Transactional(readOnly = true)
+    public Page<Payment> getPaymentsByUserId(Long userId, Pageable pageable) {
+        return paymentRepository.findByUserId(userId, pageable);
+    }
+
+    /**
+     * 허브 ID로 결제 리스트 페이징 방식으로 조회 (HUB 전용)
+     */
+    @Transactional(readOnly = true)
+    public Page<Payment> getPaymentsByHubId(Long userId, Pageable pageable) {
+        UserDetailResponse response = userClient.getUserDetails(userId);
+        UUID hubId = response.affiliationId();
+        return paymentRepository.findByHubId(hubId, pageable);
     }
 
     @Transactional(readOnly = true)

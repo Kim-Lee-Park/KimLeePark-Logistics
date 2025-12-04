@@ -35,4 +35,14 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public Page<Payment> findAll(Pageable pageable) {
         return paymentJpaRepository.findAll(pageable);
     }
+
+    @Override
+    public Page<Payment> findByUserId(Long userId, Pageable pageable) {
+        return paymentJpaRepository.findByUserId(userId, pageable);
+    }
+
+    @Override
+    public Page<Payment> findByHubId(UUID hubId, Pageable pageable) {
+        return paymentJpaRepository.findByHubId(hubId, pageable);
+    }
 }
