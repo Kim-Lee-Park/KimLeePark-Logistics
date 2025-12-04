@@ -9,7 +9,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.command.CreateRoutePlanCommand;
 import com.klp.delivery.routeplan.application.command.HubInfo;
 import com.klp.delivery.routeplan.application.command.HubRouteInfo;
@@ -135,7 +135,8 @@ public class RoutePlanServiceTest {
 
         HubInfo departureHub = HubFixture.createHubWithId(dep);
         HubInfo arrivalHub = HubFixture.createHubWithId(arr);
-        HubRouteInfo hubRouteInfo = new HubRouteInfo(routeInfoId, dep,DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME, 1L, 10.0);
+        HubRouteInfo hubRouteInfo = new HubRouteInfo(routeInfoId, dep, DEFAULT_DEPARTURE_NAME, arr,
+            DEFAULT_ARRIVAL_NAME, 1L, 10.0);
 
         given(routePlanRepository.existsByDepartureIdAndArrivalId(dep, arr))
             .willReturn(false);
@@ -147,7 +148,8 @@ public class RoutePlanServiceTest {
             .willReturn(true);
 
         RoutePlan savedRoutePlan =
-            RoutePlan.create(dep,DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME, hubRouteInfo.durationMin(), hubRouteInfo.distanceKm());
+            RoutePlan.create(dep, DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME,
+                hubRouteInfo.durationMin(), hubRouteInfo.distanceKm());
         ReflectionTestUtils.setField(savedRoutePlan, "routePlanId", routePlanId);
 
         given(routePlanRepository.save(any(RoutePlan.class)))
@@ -183,7 +185,8 @@ public class RoutePlanServiceTest {
         HubInfo arrivalHub = HubFixture.createHubWithId(arr);
 
         // 직행 허브간 이동 정보 (정책상 직행 불가라서 plan()에서는 directRoute 로만 쓰임)
-        HubRouteInfo directHubRoute = new HubRouteInfo(routeInfoId, dep, DEFAULT_DEPARTURE_NAME, arr, DEFAULT_ARRIVAL_NAME, 200L, 150.0);
+        HubRouteInfo directHubRoute = new HubRouteInfo(routeInfoId, dep, DEFAULT_DEPARTURE_NAME,
+            arr, DEFAULT_ARRIVAL_NAME, 200L, 150.0);
         RouteInfoVo directRouteVo = directHubRoute.toVo(); // plan() 의 directRoute 인자
 
         UUID mid = UUID.randomUUID();

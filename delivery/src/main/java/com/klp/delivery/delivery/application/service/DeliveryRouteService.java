@@ -2,7 +2,6 @@ package com.klp.delivery.delivery.application.service;
 
 import static com.klp.delivery.routeplan.exception.RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
@@ -15,6 +14,7 @@ import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.List;
 import java.util.UUID;
@@ -120,10 +120,8 @@ public class DeliveryRouteService {
     }
 
     /**
-     * 고객 노출 상태 매핑
-     * CREATED → CREATED
-     * (IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB, OUT_FOR_DELIVERY) → SHIPPING
-     * DELIVERED → ARRIVED
+     * 고객 노출 상태 매핑 CREATED → CREATED (IN_HUB_TRANSIT, AT_INTERMEDIATE_HUB, ARRIVED_AT_FINAL_HUB,
+     * OUT_FOR_DELIVERY) → SHIPPING DELIVERED → ARRIVED
      */
     CustomerDeliveryStatus convertToCustomerDeliveryStatus(
         DeliveryRouteStatus deliveryRouteStatus) {
@@ -207,7 +205,8 @@ public class DeliveryRouteService {
             log.info(
                 "배송 경로 추가 완료: deliveryId={}, routeId={}, sequence={}, routeStatus={}, deliveryStatus={}, driverId={}, departureId={}, arrivalId={}",
                 deliveryId, savedRoute.getDeliveryRouteId(), nextSequence, routeStatus,
-                deliveryStatus, driverId, currentLastRoute.getDepartureId(), nextPlanItem.arrivalName());
+                deliveryStatus, driverId, currentLastRoute.getDepartureId(),
+                nextPlanItem.arrivalName());
 
             return new DeliveryRouteStatusCommand(savedRoute.getDeliveryRouteId(),
                 deliveryStatus);
@@ -269,7 +268,6 @@ public class DeliveryRouteService {
             nextSequence, nextPlanItem.departureId(), nextPlanItem.arrivalId());
         return DeliveryRouteStatus.IN_HUB_TRANSIT;
     }
-
 
 
     private CustomerDeliveryStatus determineDeliveryStatus(DeliveryRouteStatus currentStatus,

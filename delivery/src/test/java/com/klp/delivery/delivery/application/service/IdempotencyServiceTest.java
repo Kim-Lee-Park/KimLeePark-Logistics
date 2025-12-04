@@ -7,12 +7,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
 import com.klp.delivery.delivery.domain.repository.IdempotencyKeyRepository;
+import com.klp.delivery.global.exception.BusinessException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;

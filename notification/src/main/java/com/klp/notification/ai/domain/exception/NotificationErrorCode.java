@@ -1,6 +1,6 @@
 package com.klp.notification.ai.domain.exception;
 
-import com.klp.common.exception.ErrorCode;
+import com.klp.notification.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

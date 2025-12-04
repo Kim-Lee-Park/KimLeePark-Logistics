@@ -1,7 +1,5 @@
 package com.klp.global.exception;
 
-import com.klp.common.exception.BusinessException;
-import com.klp.common.exception.ErrorResponse;
 import com.klp.user.domain.exception.ExternalApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
@@ -46,7 +44,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    protected ResponseEntity<String> handleMethodArgumentNotValidException(
+        MethodArgumentNotValidException e) {
         log.warn("handleMethodArgumentNotValidException : {}", e.getMessage());
 
         String errorMessage = e.getBindingResult().getFieldErrors().stream()
@@ -103,7 +102,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
-    protected ResponseEntity<String> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
+    protected ResponseEntity<String> handleAuthorizationDeniedException(
+        AuthorizationDeniedException e) {
         log.warn("handleAuthorizationDeniedException : {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(e.getMessage());

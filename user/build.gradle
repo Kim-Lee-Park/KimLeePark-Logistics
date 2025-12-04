@@ -22,7 +22,6 @@ configurations {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 ext {
@@ -46,8 +45,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // common-module
-    implementation 'com.klp.common:common-module:1.0.0'
+    //spring aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     //trace
     implementation 'io.micrometer:micrometer-tracing'

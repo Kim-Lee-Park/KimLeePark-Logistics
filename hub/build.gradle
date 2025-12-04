@@ -16,7 +16,6 @@ java {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 ext {
@@ -52,6 +51,9 @@ dependencies {
     //eureka
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+    //spring aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     //lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -61,9 +63,6 @@ dependencies {
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation("org.springframework.boot:spring-boot-starter-cache")
-
-    //공통 모듈
-    implementation 'com.klp.common:common-module:1.0.0'
 
     //shedLock
     implementation 'net.javacrumbs.shedlock:shedlock-spring:6.10.0'

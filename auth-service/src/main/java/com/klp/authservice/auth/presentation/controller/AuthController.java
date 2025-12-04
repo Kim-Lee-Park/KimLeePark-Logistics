@@ -9,7 +9,7 @@ import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
 import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
 import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
-import com.klp.common.exception.BusinessException;
+import com.klp.authservice.global.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +41,11 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request.toCommand());
 
-        String refreshToken = refreshTokenProvider.generate(response.userId(), response.username(), response.role());
+        String refreshToken = refreshTokenProvider.generate(response.userId(), response.username(),
+            response.role());
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(refreshToken).toString());
+        headers.add(HttpHeaders.SET_COOKIE,
+            RefreshTokenCookieFactory.create(refreshToken).toString());
 
         return ResponseEntity.ok()
             .headers(headers)
@@ -77,9 +79,11 @@ public class AuthController {
 
         ReissueResponse response = authService.reissue(accessToken, refreshToken);
 
-        String newRefreshToken = refreshTokenProvider.generate(response.userId(), response.username(), response.role());
+        String newRefreshToken = refreshTokenProvider.generate(response.userId(),
+            response.username(), response.role());
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieFactory.create(newRefreshToken).toString());
+        headers.add(HttpHeaders.SET_COOKIE,
+            RefreshTokenCookieFactory.create(newRefreshToken).toString());
 
         return ResponseEntity.ok()
             .headers(headers)

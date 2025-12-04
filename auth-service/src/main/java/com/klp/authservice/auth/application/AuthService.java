@@ -12,7 +12,7 @@ import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDup
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
 import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
-import com.klp.common.exception.BusinessException;
+import com.klp.authservice.global.exception.BusinessException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,8 @@ public class AuthService {
      * 로그인: 유저 자격 증명 검증 요청 -> 액세스 토큰 생성
      */
     public LoginResponse login(LoginCommand command) {
-        UserDataResponse dto = userClient.validateUserCredentials(command.username(), command.password());
+        UserDataResponse dto = userClient.validateUserCredentials(command.username(),
+            command.password());
 
         String accessToken = accessTokenProvider.generate(dto.userId(), dto.userName(), dto.role());
 

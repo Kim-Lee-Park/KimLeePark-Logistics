@@ -1,6 +1,6 @@
 package com.klp.user.domain.exception;
 
-import com.klp.common.exception.ErrorCode;
+import com.klp.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +14,7 @@ public enum UserErrorCode implements ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다"),
     CONFLICT(HttpStatus.CONFLICT, "요청이 현재 서버 상태와 충돌합니다"),
+    USER_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "유저의 주소를 찾을 수 없습니다."),
 
     INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "지원하지 않는 회원 권한입니다"),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다"),
