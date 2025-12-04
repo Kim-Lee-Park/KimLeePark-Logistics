@@ -1,6 +1,8 @@
 package com.klp.promotion.coupon.domain.entity;
 
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_OUT_OF_STOCK;
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.INVALID_COUPON_DISCOUNT_TYPE;
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.INVALID_COUPON_EXPIRED_AT;
 
 import com.klp.common.exception.BusinessException;
 import com.klp.promotion.common.model.BaseEntity;
@@ -86,8 +88,37 @@ public class Coupon extends BaseEntity {
     public static Coupon create(String name, CouponType discount_type, Long discount_value,
         int min_amount, Long max_discount_amount, Long total_quantity, Long remain_quantity,
         LocalDateTime expired_at) {
+        
+        validateDiscountType(discount_type, min_amount, max_discount_amount, discount_value);
+        validateExpiredAt(expired_at);
+        
         return new Coupon(name, discount_type, discount_value, min_amount, max_discount_amount,
             total_quantity, remain_quantity, expired_at);
+    }
+
+    private static void validateDiscountType(CouponType discountType, int minAmount, Long maxDiscountAmount, Long discountValue) {
+        if (discountType == CouponType.FIXED) {
+            if (minAmount != 0) {
+                throw new BusinessException(INVALID_COUPON_DISCOUNT_TYPE);
+            }
+            if (!maxDiscountAmount.equals(discountValue)) {
+                throw new BusinessException(INVALID_COUPON_DISCOUNT_TYPE);
+            }
+        }
+
+        if(discountType == CouponType.RATE) {
+            if(minAmount <= 0 ){
+                throw new BusinessException(INVALID_COUPON_DISCOUNT_TYPE);
+            }
+
+
+        }
+    }
+
+    private static void validateExpiredAt(LocalDateTime expiredAt) {
+        if (expiredAt.isBefore(LocalDateTime.now())) {
+            throw new BusinessException(INVALID_COUPON_EXPIRED_AT);
+        }
     }
 
     public void useStock() {

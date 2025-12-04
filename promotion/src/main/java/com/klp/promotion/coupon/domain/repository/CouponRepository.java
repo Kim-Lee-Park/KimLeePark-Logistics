@@ -8,4 +8,6 @@ public interface CouponRepository {
     boolean decreaseStock(UUID couponId);
 
     Coupon findByCouponId(UUID couponId);
+
+    Coupon save(Coupon coupon);
 }

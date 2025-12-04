@@ -44,4 +44,9 @@ public class CouponRepositoryImpl implements CouponRepository {
     public Coupon findByCouponId(UUID couponId) {
         return couponJpaRepositroy.findByCouponId(couponId);
     }
+
+    @Override
+    public Coupon save(Coupon coupon) {
+        return couponJpaRepositroy.save(coupon);
+    }
 }

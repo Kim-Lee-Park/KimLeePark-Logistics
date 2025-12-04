@@ -1,8 +1,10 @@
 package com.klp.promotion.coupon.application.service;
 
-
+import com.klp.promotion.coupon.application.command.CouponCommand;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.repository.CouponRepository;
+import com.klp.promotion.coupon.presentation.dto.CouponResponse;
+import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class CouponService {
 
     }
 
+    @Transactional
     public Coupon updateStock(UUID couponId) {
         Coupon coupon = findByCouponId(couponId);
         coupon.useStock();
@@ -30,5 +33,25 @@ public class CouponService {
     @Transactional(readOnly = true)
     public Coupon findByCouponId(UUID couponId){
         return couponRepository.findByCouponId(couponId);
+    }
+
+    @Transactional
+    public CouponResponse createCoupon(CreateCouponRequest request) {
+        CouponCommand command = request.toCommand();
+
+        Coupon coupon = Coupon.create(
+            command.name(),
+            command.discount_type(),
+            command.discount_value(),
+            command.min_amount(),
+            command.max_discount_amount(),
+            command.total_quantity(),
+            command.total_quantity(), // 초기에는 remain_quantity = total_quantity
+            command.expired_at()
+        );
+
+        Coupon result = couponRepository.save(coupon);
+
+        return new CouponResponse(result.getCouponId());
     }
 }
