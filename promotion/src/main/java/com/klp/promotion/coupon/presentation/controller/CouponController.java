@@ -6,11 +6,13 @@ import com.klp.promotion.coupon.presentation.dto.CouponDetailResponse;
 import com.klp.promotion.coupon.presentation.dto.CouponResponse;
 import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
 import com.klp.promotion.coupon.presentation.dto.UpdateCouponRequest;
+import com.klp.promotion.global.security.model.UserDetailsImpl;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -47,5 +49,10 @@ public class CouponController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{couponId}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable UUID couponId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        couponService.deleteCoupon(couponId, userDetails.getUserId());
+        return ResponseEntity.noContent().build();
+    }
 
 }

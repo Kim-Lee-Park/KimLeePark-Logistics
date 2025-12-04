@@ -1,5 +1,6 @@
 package com.klp.promotion.coupon.application.service;
 
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_DELETE_NOT_ALLOWED;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
 
 import com.klp.common.exception.BusinessException;
@@ -67,5 +68,19 @@ public class CouponService {
         }
 
         coupon.updateCoupon(name, expiredAt);
+    }
+
+    @Transactional
+    public void deleteCoupon(UUID couponId, Long userId) {
+        Coupon coupon = findByCouponId(couponId);
+        if (coupon == null || coupon.isDeleted()) {
+            throw new BusinessException(COUPON_NOT_FOUND);
+        }
+
+        if (coupon.getTotal_quantity() != coupon.getRemain_quantity()) {
+            throw new BusinessException(COUPON_DELETE_NOT_ALLOWED);
+        }
+
+        coupon.delete(userId);
     }
 }
