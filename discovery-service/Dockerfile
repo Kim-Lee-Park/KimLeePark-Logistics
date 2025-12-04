@@ -7,8 +7,8 @@ COPY build/libs/*.jar app.jar
 
 ENV JAVA_OPTS="\
  -XX:+UseContainerSupport \
- -XX:MaxRAMPercentage=75 \
- -XX:InitialRAMPercentage=40 \
+ -XX:MaxRAMPercentage=50 \
+ -XX:InitialRAMPercentage=25 \
  -XX:+UseG1GC \
 "
 
