@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -23,6 +24,7 @@ public class StuckPublishEventRecovery {
      * PUBLISHING 상태로 멈춘 이벤트 복구 30초마다 실행 (AWS/Google 권장)
      */
     @Scheduled(fixedDelay = 30000)
+    @Transactional
     public void recoverStuckPublishingEvents() {
         try {
             List<OrderOutboxEvent> stuckEvents =
@@ -42,7 +44,7 @@ public class StuckPublishEventRecovery {
                     && event.getLastRetryAt().isBefore(threshold)) {
 
                     event.resetToPending();
-                    orderOutboxEventRepository.save(event);
+                    orderOutboxEventRepository.saveAndFlush(event);
                     recoveredCount++;
 
                     log.warn("PUBLISHING 상태 이벤트 복구: eventId={}, retryCount={}",
@@ -74,7 +76,7 @@ public class StuckPublishEventRecovery {
 
             log.error("========================================");
             log.error("⚠️ FAILED 상태 이벤트 {}건 발견!", failedEvents.size());
-            log.error("⚠️ 최대 재시도 횟수(15회) 초과로 실패 처리됨");
+            log.error("⚠️ 최대 재시도 횟수(20회) 초과로 실패 처리됨");
             log.error("⚠️ 수동 처리가 필요합니다!");
             log.error("========================================");
 

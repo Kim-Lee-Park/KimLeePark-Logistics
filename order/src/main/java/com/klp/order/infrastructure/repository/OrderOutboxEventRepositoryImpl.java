@@ -38,4 +38,9 @@ public class OrderOutboxEventRepositoryImpl implements OrderOutboxEventRepositor
     public List<OrderOutboxEvent> findFailedEvents() {
         return jpaRepository.findFailedEvents();
     }
+
+    @Override
+    public OrderOutboxEvent saveAndFlush(OrderOutboxEvent event) {
+        return jpaRepository.saveAndFlush(event);
+    }
 }

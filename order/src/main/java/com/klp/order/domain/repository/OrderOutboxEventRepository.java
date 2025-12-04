@@ -9,6 +9,8 @@ public interface OrderOutboxEventRepository {
 
     OrderOutboxEvent save(OrderOutboxEvent event);
 
+    OrderOutboxEvent saveAndFlush(OrderOutboxEvent event);
+
     List<OrderOutboxEvent> findPendingEvents();
 
     Optional<OrderOutboxEvent> findById(UUID id);
