@@ -1,5 +1,6 @@
 package com.klp.order.infrastructure.client.dto.inventory.response;
 
+import com.klp.order.domain.vo.Product;
 import java.util.UUID;
 
 public record GetProductResponse(
@@ -9,4 +10,7 @@ public record GetProductResponse(
     String productName
 ) {
 
+    public Product toVo() {
+        return new Product(productId, hubId, companyName, productName);
+    }
 }
