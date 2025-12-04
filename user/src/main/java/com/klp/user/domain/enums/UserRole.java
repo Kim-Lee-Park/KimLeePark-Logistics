@@ -9,7 +9,8 @@ public enum UserRole {
     MASTER("마스터"),
     HUB("허브 관리자"),
     COMPANY("업체 담당자"),
-    DRIVER("배송 담당자");
+    DRIVER("배송 담당자"),
+    CUSTOMER("고객");
 
     private final String description;
 }

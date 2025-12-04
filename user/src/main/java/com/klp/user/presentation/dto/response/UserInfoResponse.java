@@ -10,10 +10,11 @@ public record UserInfoResponse(
     String phone,
     String email,
     String role,
-    String status
+    String status,
+    String gradeName
 ) {
 
-    public static UserInfoResponse of(User user, String affiliationName) {
+    public static UserInfoResponse of(User user, String affiliationName, String gradeName) {
         return new UserInfoResponse(
             user.getUserId(),
             affiliationName,
@@ -22,7 +23,8 @@ public record UserInfoResponse(
             user.getPhone(),
             user.getEmail(),
             user.getRole().name(),
-            user.getStatus().name()
+            user.getStatus().name(),
+            gradeName
         );
     }
 }

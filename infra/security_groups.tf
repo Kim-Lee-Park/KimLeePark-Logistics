@@ -34,6 +34,13 @@ resource "aws_security_group" "ecs_service" {
     security_groups = [aws_security_group.alb.id]
   }
 
+  ingress {
+    from_port = 0
+    to_port   = 65535
+    protocol  = "tcp"
+    self      = true
+  }
+
   egress {
     from_port = 0
     to_port   = 0
@@ -56,6 +63,13 @@ resource "aws_security_group" "db" {
     to_port   = 5432
     protocol  = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  ingress {
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
+    security_groups = [aws_security_group.bastion.id]
   }
 
   egress {
@@ -131,10 +145,24 @@ resource "aws_security_group" "kafka" {
   }
 
   ingress {
+    from_port = 9092
+    to_port   = 9092
+    protocol  = "tcp"
+    self      = true
+  }
+
+  ingress {
     from_port = 22
     to_port   = 22
     protocol  = "tcp"
     security_groups = [aws_security_group.bastion.id]
+  }
+
+  ingress {
+    from_port = 2181
+    to_port   = 2181
+    protocol  = "tcp"
+    self      = true
   }
 
   egress {
@@ -190,4 +218,13 @@ resource "aws_security_group" "observability_stack" {
   tags = {
     Name = "${local.project}-obs-sg"
   }
+}
+
+resource "aws_security_group_rule" "obs_sg_kafka_otel" {
+  type                     = "ingress"
+  from_port                = 9464
+  to_port                  = 9464
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.observability_stack.id
+  source_security_group_id = aws_security_group.observability_stack.id
 }
