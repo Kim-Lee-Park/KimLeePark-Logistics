@@ -1,4 +1,4 @@
-package com.klp.user.application.event.dto;
+package com.klp.user.infrastructure.event.dto;
 
 public record UserProfileChangedMessage(
     Long userId,

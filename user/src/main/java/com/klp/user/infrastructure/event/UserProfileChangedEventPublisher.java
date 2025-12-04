@@ -1,7 +1,7 @@
-package com.klp.user.application.event;
+package com.klp.user.infrastructure.event;
 
-import com.klp.user.application.event.dto.UserProfileChangedMessage;
-import com.klp.user.domain.event.UserProfileChangedEvent;
+import com.klp.user.application.event.UserProfileChangedEvent;
+import com.klp.user.infrastructure.event.dto.UserProfileChangedMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

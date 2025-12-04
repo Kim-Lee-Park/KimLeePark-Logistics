@@ -1,4 +1,4 @@
-package com.klp.user.domain.event;
+package com.klp.user.application.event;
 
 public record UserProfileChangedEvent(
     Long userId
