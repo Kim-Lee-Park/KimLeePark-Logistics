@@ -5,12 +5,15 @@ import com.klp.promotion.coupon.presentation.dto.CouponDetailResponse;
 
 import com.klp.promotion.coupon.presentation.dto.CouponResponse;
 import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
+import com.klp.promotion.coupon.presentation.dto.UpdateCouponRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +40,12 @@ public class CouponController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{couponId}")
+    public ResponseEntity<Void> updateCoupon(@PathVariable UUID couponId, @RequestBody
+        UpdateCouponRequest request){
+        couponService.updateCoupon(couponId, request.name(), request.expiredAt());
+        return ResponseEntity.noContent().build();
+    }
 
 
 }

@@ -1,10 +1,14 @@
 package com.klp.promotion.coupon.application.service;
 
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
+
+import com.klp.common.exception.BusinessException;
 import com.klp.promotion.coupon.application.command.CouponCommand;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.repository.CouponRepository;
 import com.klp.promotion.coupon.presentation.dto.CouponResponse;
 import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,5 +57,15 @@ public class CouponService {
         Coupon result = couponRepository.save(coupon);
 
         return new CouponResponse(result.getCouponId());
+    }
+
+    @Transactional
+    public void updateCoupon(UUID couponId, String name, LocalDateTime expiredAt) {
+        Coupon coupon = findByCouponId(couponId);
+        if (coupon == null) {
+            throw new BusinessException(COUPON_NOT_FOUND);
+        }
+
+        coupon.updateCoupon(name, expiredAt);
     }
 }

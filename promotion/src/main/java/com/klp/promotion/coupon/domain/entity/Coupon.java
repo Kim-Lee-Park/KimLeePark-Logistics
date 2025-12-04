@@ -128,4 +128,16 @@ public class Coupon extends BaseEntity {
         this.remain_quantity -= 1;
     }
 
+
+    public void updateCoupon(String couponName, LocalDateTime expiredAt) {
+        if (couponName != null) {
+            this.name = couponName;
+        }
+
+        if (expiredAt != null) {
+            validateExpiredAt(expiredAt);
+            this.expired_at = expiredAt;
+        }
+    }
+
 }
