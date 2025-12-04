@@ -7,6 +7,8 @@ import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.repository.CouponRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -48,5 +50,10 @@ public class CouponRepositoryImpl implements CouponRepository {
     @Override
     public Coupon save(Coupon coupon) {
         return couponJpaRepositroy.save(coupon);
+    }
+
+    @Override
+    public Page<Coupon> findAll(Pageable pageable) {
+        return couponJpaRepositroy.findAll(pageable);
     }
 }

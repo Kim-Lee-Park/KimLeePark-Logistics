@@ -7,11 +7,14 @@ import com.klp.common.exception.BusinessException;
 import com.klp.promotion.coupon.application.command.CouponCommand;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.repository.CouponRepository;
+import com.klp.promotion.coupon.presentation.dto.CouponDetailResponse;
 import com.klp.promotion.coupon.presentation.dto.CouponResponse;
 import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,5 +85,11 @@ public class CouponService {
         }
 
         coupon.delete(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CouponDetailResponse> findCoupons(Pageable pageable) {
+        Page<Coupon> couponPage = couponRepository.findAll(pageable);
+        return couponPage.map(CouponDetailResponse::from);
     }
 }
