@@ -8,7 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.promotion.global.exception.BusinessException;
 import com.klp.promotion.grade.application.dto.CreateGradeCommand;
 import com.klp.promotion.grade.application.dto.UpdateGradeCommand;
 import com.klp.promotion.grade.domain.entity.Grade;
@@ -242,7 +242,8 @@ class GradeServiceTest {
         @DisplayName("다른 등급에서 사용 중인 이름으로 수정 시 예외가 발생한다")
         void updateGrade_DuplicateName_ThrowsException() {
             // given
-            UpdateGradeCommand command = new UpdateGradeCommand("Platinum", 25, 50000000L, 100000000L);
+            UpdateGradeCommand command = new UpdateGradeCommand("Platinum", 25, 50000000L,
+                100000000L);
             when(gradeRepository.findById(testGradeId)).thenReturn(Optional.of(testGrade));
             when(gradeRepository.existsByGradeName("Platinum")).thenReturn(true);
 

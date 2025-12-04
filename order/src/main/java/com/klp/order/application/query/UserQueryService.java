@@ -1,8 +1,8 @@
 package com.klp.order.application.query;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.application.cache.UserProfileCache;
 import com.klp.order.domain.vo.UserProfile;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.UserRefErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

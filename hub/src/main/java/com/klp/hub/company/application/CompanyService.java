@@ -1,11 +1,11 @@
 package com.klp.hub.company.application;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import com.klp.hub.company.exception.CompanyErrorCode;
 import com.klp.hub.company.presentation.dto.CompanyListResponse;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.global.exception.BusinessException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

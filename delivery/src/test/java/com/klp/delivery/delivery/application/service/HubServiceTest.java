@@ -1,26 +1,20 @@
 package com.klp.delivery.delivery.application.service;
 
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFALT_HUB_ADDRESS;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFALT_HUB_ADDRESS;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createArrivalHubInfo;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createArrivalInfoResponse;
-import com.klp.delivery.delivery.infrastructure.client.dto.HubInfoResponse;
-
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDepartureHubInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.HubInfoCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.service.HubClientService;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

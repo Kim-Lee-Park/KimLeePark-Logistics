@@ -2,7 +2,7 @@ package com.klp.authservice.auth.domain.entity;
 
 import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.common.model.BaseEntity;
-import com.klp.common.exception.BusinessException;
+import com.klp.authservice.global.exception.BusinessException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,6 +1,6 @@
 package com.klp.hub.inventory.application;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.exception.InventoryErrorCode;

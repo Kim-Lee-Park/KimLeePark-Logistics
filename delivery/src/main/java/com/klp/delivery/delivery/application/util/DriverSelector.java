@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.application.util;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.global.exception.BusinessException;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;

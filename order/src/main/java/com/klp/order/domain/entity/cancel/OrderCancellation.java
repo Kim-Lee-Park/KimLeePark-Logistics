@@ -1,7 +1,7 @@
 package com.klp.order.domain.entity.cancel;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.OrderCancellationErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,17 +1,16 @@
 package com.klp.delivery.delivery.application.service;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.domain.entity.IdempotencyKey;
 import com.klp.delivery.delivery.domain.repository.IdempotencyKeyRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.global.exception.BusinessException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Slf4j
 @Service

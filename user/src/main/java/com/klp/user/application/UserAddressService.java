@@ -1,6 +1,6 @@
 package com.klp.user.application;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.global.exception.BusinessException;
 import com.klp.user.application.command.UserAddressCreateCommand;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.entity.UserAddress;

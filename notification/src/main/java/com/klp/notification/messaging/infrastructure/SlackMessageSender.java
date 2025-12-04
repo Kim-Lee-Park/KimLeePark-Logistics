@@ -1,6 +1,6 @@
 package com.klp.notification.messaging.infrastructure;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.notification.global.exception.BusinessException;
 import com.klp.notification.messaging.domain.MessageSender;
 import com.klp.notification.messaging.domain.entity.SlackMessage;
 import com.klp.notification.messaging.domain.exception.MessagingErrorCode;

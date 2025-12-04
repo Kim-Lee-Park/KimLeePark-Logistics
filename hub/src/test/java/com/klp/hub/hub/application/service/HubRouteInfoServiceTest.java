@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.hub.application.command.hubRouteInfo.RegisterHubRouteInfoCommand;
 import com.klp.hub.hub.domain.model.Hub;
 import com.klp.hub.hub.domain.model.HubRouteInfo;
@@ -37,15 +37,17 @@ public class HubRouteInfoServiceTest {
         //given
         UUID departureId = UUID.randomUUID();
         UUID arrivalId = UUID.randomUUID();
-        RegisterHubRouteInfoCommand command=new RegisterHubRouteInfoCommand(departureId, arrivalId);
-        Hub departureHub=Hub.create("test1",11.,12.,"test1Address");
-        Hub arrivalHub=Hub.create("test2",13.,14.,"test2Address");
-        given(hubService.getHubById(departureId)).willThrow(new BusinessException(HubErrorCode.NOT_EXISTS));
+        RegisterHubRouteInfoCommand command = new RegisterHubRouteInfoCommand(departureId,
+            arrivalId);
+        Hub departureHub = Hub.create("test1", 11., 12., "test1Address");
+        Hub arrivalHub = Hub.create("test2", 13., 14., "test2Address");
+        given(hubService.getHubById(departureId)).willThrow(
+            new BusinessException(HubErrorCode.NOT_EXISTS));
 
         //when
 
         //then
-        assertThatThrownBy(()->hubRouteInfoService.registerHubRouteInfo(command))
+        assertThatThrownBy(() -> hubRouteInfoService.registerHubRouteInfo(command))
             .isInstanceOf(BusinessException.class)
             .hasFieldOrPropertyWithValue("errorCode", HubErrorCode.NOT_EXISTS);
     }
@@ -56,14 +58,16 @@ public class HubRouteInfoServiceTest {
         //given
         UUID departureId = UUID.randomUUID();
         UUID arrivalId = UUID.randomUUID();
-        RegisterHubRouteInfoCommand command=new RegisterHubRouteInfoCommand(departureId, arrivalId);
-        Hub departureHub=Hub.create("test1",11.,12.,"test1Address");
+        RegisterHubRouteInfoCommand command = new RegisterHubRouteInfoCommand(departureId,
+            arrivalId);
+        Hub departureHub = Hub.create("test1", 11., 12., "test1Address");
         given(hubService.getHubById(departureId)).willReturn(departureHub);
-        given(hubService.getHubById(arrivalId)).willThrow(new BusinessException(HubErrorCode.NOT_EXISTS));
+        given(hubService.getHubById(arrivalId)).willThrow(
+            new BusinessException(HubErrorCode.NOT_EXISTS));
         //when
 
         //then
-        assertThatThrownBy(()->hubRouteInfoService.registerHubRouteInfo(command))
+        assertThatThrownBy(() -> hubRouteInfoService.registerHubRouteInfo(command))
             .isInstanceOf(BusinessException.class)
             .hasFieldOrPropertyWithValue("errorCode", HubErrorCode.NOT_EXISTS);
     }
@@ -74,9 +78,10 @@ public class HubRouteInfoServiceTest {
         //given
         UUID departureId = UUID.randomUUID();
         UUID arrivalId = UUID.randomUUID();
-        RegisterHubRouteInfoCommand command=new RegisterHubRouteInfoCommand(departureId, arrivalId);
-        Hub departureHub=Hub.create("test1",11.,12.,"test1Address");
-        Hub arrivalHub=Hub.create("test2",13.,14.,"test2Address");
+        RegisterHubRouteInfoCommand command = new RegisterHubRouteInfoCommand(departureId,
+            arrivalId);
+        Hub departureHub = Hub.create("test1", 11., 12., "test1Address");
+        Hub arrivalHub = Hub.create("test2", 13., 14., "test2Address");
         given(hubService.getHubById(departureId)).willReturn(departureHub);
         given(hubService.getHubById(arrivalId)).willReturn(arrivalHub);
 
@@ -86,7 +91,7 @@ public class HubRouteInfoServiceTest {
         given(hubRouteInfoRepository.save(any(HubRouteInfo.class))).willReturn(saved);
 
         //when
-        RegisterHubRouteInfoResponse response=hubRouteInfoService.registerHubRouteInfo(command);
+        RegisterHubRouteInfoResponse response = hubRouteInfoService.registerHubRouteInfo(command);
 
         //then
         assertThat(response).isNotNull();
