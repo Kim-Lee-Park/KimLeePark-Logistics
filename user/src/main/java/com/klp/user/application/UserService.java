@@ -4,6 +4,7 @@ import com.klp.common.exception.BusinessException;
 import com.klp.common.model.PageResponse;
 import com.klp.user.application.command.ValidateUserCommand;
 import com.klp.user.domain.entity.User;
+import com.klp.user.domain.event.UserProfileChangedEvent;
 import com.klp.user.domain.exception.UserErrorCode;
 import com.klp.user.domain.repository.UserRepository;
 import com.klp.user.presentation.dto.request.UserCreateRequest;
@@ -20,8 +21,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(readOnly = true)
     public UsernameCheckResponse checkUserNameAvailable(String username) {
@@ -83,7 +86,10 @@ public class UserService {
         User user = findNotDeletedUser(userId);
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.email(), request.role());
+        user.update(request.username(), encodedPassword, request.slackId(), request.phone(),
+            request.email(), request.role());
+
+        applicationEventPublisher.publishEvent(new UserProfileChangedEvent(userId));
     }
 
     @Transactional
