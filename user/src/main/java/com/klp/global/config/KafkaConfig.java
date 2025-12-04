@@ -33,6 +33,10 @@ public class KafkaConfig {
         props.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
         props.put("spring.json.trusted.packages", "*");
 
+        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+        props.put(ProducerConfig.ACKS_CONFIG, "1");
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+
         return new DefaultKafkaProducerFactory<>(props);
     }
 
