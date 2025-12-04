@@ -6,6 +6,17 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids = [aws_security_group.bastion.id]
   associate_public_ip_address = true
 
+  user_data = <<-EOF
+    #!/bin/bash
+    set -xe
+
+    # 패키지 메타데이터 업데이트
+    dnf update -y
+
+    # PostgreSQL 15 클라이언트 설치 (psql 포함)
+    dnf install -y postgresql15
+  EOF
+
   tags = {
     Name = "${local.project}-bastion"
   }

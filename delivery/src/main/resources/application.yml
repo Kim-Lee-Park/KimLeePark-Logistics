@@ -1,13 +1,13 @@
 server:
-  port: 8040
+  port: ${DELIVERY_SERVICE_PORT:8040}
 
 spring:
   application:
     name: delivery-service
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     config:
       fail-fast: false
