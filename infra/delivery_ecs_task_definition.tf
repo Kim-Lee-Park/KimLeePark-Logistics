@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "delivery" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "DELIVERY_DOMAIN_NAME",
+          value = "delivery.klp.local"
+        },
+        {
           name  = "DELIVERY_SERVICE_PORT",
           value = "8080"
         },

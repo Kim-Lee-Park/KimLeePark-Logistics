@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.domain.CompanyType;
-import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.company.presentation.dto.response.CompanyResponse;
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.global.exception.ErrorCode;
 import com.klp.hub.inventory.application.InventoryService;

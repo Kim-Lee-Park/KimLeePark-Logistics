@@ -8,14 +8,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.klp.hub.company.application.dto.CreateCompanyCommand;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import com.klp.hub.company.exception.CompanyErrorCode;
-import com.klp.hub.company.presentation.dto.CompanyListResponse;
-import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.company.presentation.dto.response.CompanyListResponse;
+import com.klp.hub.company.presentation.dto.response.CompanyResponse;
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.global.exception.ErrorCode;
+import com.klp.hub.hub.application.service.HubService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +33,9 @@ class CompanyServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
+
+    @Mock
+    private HubService hubService;
 
     @InjectMocks
     private CompanyService companyService;
@@ -102,5 +107,21 @@ class CompanyServiceTest {
 
         assertTrue(result.isEmpty());
         verify(companyRepository).findAllByName(name);
+    }
+
+    @Test
+    @DisplayName("업체 생성시 허브가 존재하지 않는다면 예외가 발생한다")
+    void createCompanyThrowNotFoundHub() {
+        UUID hubId = UUID.randomUUID();
+        CreateCompanyCommand command = new CreateCompanyCommand(
+            hubId,
+            CompanyType.SUPPLIER,
+            "업체명",
+            "업체 주소"
+        );
+        when(hubService.getHubById(hubId))
+            .thenThrow(BusinessException.class);
+
+        assertThrows(BusinessException.class, () -> companyService.create(command));
     }
 }

@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "hub" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "HUB_DOMAIN_NAME",
+          value = "hub.klp.local"
+        },
+        {
           name  = "HUB_SERVICE_PORT",
           value = "8080"
         },
