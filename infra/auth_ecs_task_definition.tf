@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "auth" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "AUTH_DOMAIN_NAME",
+          value = "auth.klp.local"
+        },
+        {
           name  = "AUTH_SERVICE_PORT",
           value = "8080"
         },
