@@ -62,6 +62,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     //trace
+    implementation 'io.micrometer:micrometer-tracing'
     implementation("io.micrometer:micrometer-tracing-bridge-otel")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
@@ -71,6 +72,7 @@ dependencies {
 
     //log
     implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.7.0-alpha'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:2.7.0-alpha'
 
     //kafka
     implementation 'org.springframework.kafka:spring-kafka'
