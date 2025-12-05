@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "promotion" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "PROMOTION_DOMAIN_NAME",
+          value = "promotion.klp.local"
+        },
+        {
           name  = "PROMOTION_SERVICE_PORT",
           value = "8080"
         },

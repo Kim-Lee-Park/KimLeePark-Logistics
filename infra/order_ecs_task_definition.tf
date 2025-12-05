@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "order" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "ORDER_DOMAIN_NAME",
+          value = "order.klp.local"
+        },
+        {
           name  = "ORDER_SERVICE_PORT",
           value = "8080"
         },

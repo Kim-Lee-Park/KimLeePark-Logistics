@@ -1,7 +1,7 @@
 package com.klp.hub.product.application;
 
 import com.klp.hub.company.application.CompanyService;
-import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.company.presentation.dto.response.CompanyResponse;
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
