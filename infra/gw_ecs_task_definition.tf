@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "gateway" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "GATEWAY_DOMAIN_NAME",
+          value = "gateway.klp.local"
+        },
+        {
           name  = "GATEWAY_SERVICE_PORT",
           value = "8080"
         },

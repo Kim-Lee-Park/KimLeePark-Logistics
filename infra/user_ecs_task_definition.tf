@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "user" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "USER_DOMAIN_NAME",
+          value = "user.klp.local"
+        },
+        {
           name  = "USER_SERVICE_PORT",
           value = "8080"
         },
