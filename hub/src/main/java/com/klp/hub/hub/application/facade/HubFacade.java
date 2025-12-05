@@ -1,9 +1,11 @@
 package com.klp.hub.hub.application.facade;
 
 import com.klp.hub.common.model.UserDetailsImpl;
+import com.klp.hub.hub.application.command.hub.NearestHubCommand;
 import com.klp.hub.hub.application.service.HubRouteInfoService;
 import com.klp.hub.hub.application.service.HubService;
 import com.klp.hub.hub.infrastructure.client.DeliveryFeignClient;
+import com.klp.hub.hub.presentation.dto.response.NearestHubResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,5 +29,9 @@ public class HubFacade {
         //경로 계획 삭제
         //TODO: 이벤트로 변경하기
         deliveryFeignClient.deleteRoutePlansByHubId(hubId);
+    }
+
+    public NearestHubResponse getNearestHub(NearestHubCommand command) {
+        return hubService.getNearestHub(command);
     }
 }
