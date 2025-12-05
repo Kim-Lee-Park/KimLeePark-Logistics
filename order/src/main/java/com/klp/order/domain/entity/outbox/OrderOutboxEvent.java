@@ -26,20 +26,17 @@ public class OrderOutboxEvent extends BaseEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private String aggregateType;   // "ORDER" -> 우선은 블로그 탐색 결과 대부분 이런 형식 사용
+    private UUID orderId;
 
     @Column(nullable = false)
-    private UUID aggregateId;   // orderId
-
-    @Column(nullable = false)
-    private String eventType;   // "ORDER_CREATED, ORDER_CANCELLED"
+    private String eventType;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String payload; //JSON
+    private String payload;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderOutboxStatus status;   //PENDING,PUBLISHED,FAILED
+    private OrderOutboxStatus status;
 
     @Column(nullable = false)
     private Integer retryCount = 0;
@@ -48,11 +45,10 @@ public class OrderOutboxEvent extends BaseEntity {
 
     private LocalDateTime lastRetryAt;
 
-    public static OrderOutboxEvent create(String aggregateType, UUID aggregateId,
+    public static OrderOutboxEvent create(UUID orderId,
         String eventType, String payload) {
         OrderOutboxEvent event = new OrderOutboxEvent();
-        event.aggregateType = aggregateType;
-        event.aggregateId = aggregateId;
+        event.orderId = orderId;
         event.eventType = eventType;
         event.payload = payload;
         event.status = OrderOutboxStatus.PENDING;

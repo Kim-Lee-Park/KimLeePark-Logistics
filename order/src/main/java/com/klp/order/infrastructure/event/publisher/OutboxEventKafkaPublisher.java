@@ -23,7 +23,7 @@ public class OutboxEventKafkaPublisher {
         String topic = determineTopicByEventType(event.getEventType());
         Object eventData = deserializePayload(event.getPayload(), event.getEventType());
 
-        kafkaTemplate.send(topic, event.getAggregateId().toString(), eventData)
+        kafkaTemplate.send(topic, event.getOrderId().toString(), eventData)
             .whenComplete((result, ex) -> {
                 if (ex != null) {
                     log.error("Kafka 발행 실패: topic={}, eventId={}", topic, event.getId(), ex);
