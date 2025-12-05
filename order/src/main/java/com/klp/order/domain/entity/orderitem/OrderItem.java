@@ -1,9 +1,9 @@
 package com.klp.order.domain.entity.orderitem;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.OrderItemErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

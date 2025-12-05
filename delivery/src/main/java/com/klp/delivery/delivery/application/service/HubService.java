@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.application.service;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.application.command.HubInfoCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

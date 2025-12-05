@@ -7,12 +7,12 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.defaultDelivery;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.fixture.DeliveryFixture;
+import com.klp.delivery.global.exception.BusinessException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

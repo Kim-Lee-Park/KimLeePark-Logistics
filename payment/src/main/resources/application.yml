@@ -1,0 +1,16 @@
+server:
+  port: 9010
+
+spring:
+  application:
+    name: payment-service
+  profiles:
+    active: local
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        initial-interval: 1000
+        max-attempts: 3

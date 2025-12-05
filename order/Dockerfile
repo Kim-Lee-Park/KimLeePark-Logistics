@@ -5,13 +5,12 @@ ENV TZ=Asia/Seoul
 
 ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.7.0/opentelemetry-javaagent.jar /otel-javaagent.jar
 
-# Gradle 빌드로 만들어진 jar 복사
 COPY build/libs/*.jar app.jar
 
 ENV JAVA_OPTS="\
  -XX:+UseContainerSupport \
- -XX:MaxRAMPercentage=75 \
- -XX:InitialRAMPercentage=40 \
+ -XX:MaxRAMPercentage=50 \
+ -XX:InitialRAMPercentage=25 \
  -XX:+UseG1GC \
 "
 

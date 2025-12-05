@@ -1,8 +1,8 @@
 package com.klp.delivery.delivery.application.service;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.global.exception.BusinessException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,8 @@ public class DriverService {
             return DriverCommand.from(driverClientService.findLogisticsDrivers());
         } catch (Exception e) {
             log.error("물류 배송 담당자들 조회 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "물류 배송 담당자 조회에 실패했습니다.");
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR,
+                "물류 배송 담당자 조회에 실패했습니다.");
         }
     }
 }

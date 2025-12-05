@@ -1,7 +1,6 @@
 package com.klp.notification.ai.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.klp.common.exception.BusinessException;
 import com.klp.notification.ai.application.command.GenerateMessageCommand;
 import com.klp.notification.ai.application.dto.DeliveryPlanResponse;
 import com.klp.notification.ai.domain.AITextGenerator;
@@ -9,6 +8,7 @@ import com.klp.notification.ai.domain.entity.AI;
 import com.klp.notification.ai.domain.event.AITextGeneratedEvent;
 import com.klp.notification.ai.domain.exception.NotificationErrorCode;
 import com.klp.notification.ai.domain.repository.AIRepository;
+import com.klp.notification.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -72,7 +72,8 @@ public class AIService {
         return response.trim();
     }
 
-    private String formatDeliveryMessage(GenerateMessageCommand command, DeliveryPlanResponse planResponse) {
+    private String formatDeliveryMessage(GenerateMessageCommand command,
+        DeliveryPlanResponse planResponse) {
         StringBuilder message = new StringBuilder();
 
         message.append("안녕하세요. KLP 물류 배송 시스템입니다. 다음 배송 정보를 확인해주세요.").append("\n");
@@ -91,7 +92,8 @@ public class AIService {
         message.append("발송지 : ").append(command.departureHubName()).append("\n");
 
         if (!command.transitHubNames().isEmpty()) {
-            message.append("경유지 : ").append(String.join(", ", command.transitHubNames())).append("\n");
+            message.append("경유지 : ").append(String.join(", ", command.transitHubNames()))
+                .append("\n");
         }
 
         message.append("도착지 : ").append(command.destinationAddress()).append("\n");

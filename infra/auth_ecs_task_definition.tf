@@ -43,11 +43,11 @@ resource "aws_ecs_task_definition" "auth" {
         },
         {
           name  = "EUREKA_URL",
-          value = "discovery.klp.local"
+          value = "http://discovery.klp.local:8761/eureka/"
         },
         {
           name  = "CONFIG_SERVER_URL",
-          value = "config.klp.local"
+          value = "http://config.klp.local:8888"
         },
         {
           name  = "AUTH_SERVICE_PORT",
@@ -168,8 +168,6 @@ resource "aws_ecs_task_definition" "auth" {
           value = "service.namespace=klp,service.name=klp-logistics-auth"
         }
       ]
-
-      command = ["--config=/etc/otel-config.yaml"]
 
       logConfiguration = {
         logDriver = "awslogs"

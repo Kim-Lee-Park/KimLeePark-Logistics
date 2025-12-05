@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.exception;
 
-import com.klp.common.exception.ErrorCode;
+import com.klp.delivery.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

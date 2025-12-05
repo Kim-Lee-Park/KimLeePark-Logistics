@@ -7,7 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.global.exception.BusinessException;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.entity.UserGrade;
 import com.klp.user.domain.enums.AffiliationType;

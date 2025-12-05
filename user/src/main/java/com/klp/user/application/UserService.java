@@ -1,6 +1,6 @@
 package com.klp.user.application;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.global.exception.BusinessException;
 import com.klp.user.application.command.ValidateUserCommand;
 import com.klp.user.application.event.UserProfileChangedEvent;
 import com.klp.user.domain.entity.User;
@@ -49,7 +49,8 @@ public class UserService {
     @Transactional
     public void updateUserInfo(User user, UserUpdateRequest request) {
         String encodedPassword = passwordEncoder.encode(request.password());
-        user.update(request.username(), encodedPassword, request.slackId(), request.phone(), request.email(),
+        user.update(request.username(), encodedPassword, request.slackId(), request.phone(),
+            request.email(),
             request.role());
 
         applicationEventPublisher.publishEvent(new UserProfileChangedEvent(userId));

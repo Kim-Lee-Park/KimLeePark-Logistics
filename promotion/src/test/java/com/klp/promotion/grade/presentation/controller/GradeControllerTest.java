@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.klp.common.exception.BusinessException;
+import com.klp.promotion.global.exception.BusinessException;
 import com.klp.promotion.global.security.model.UserDetailsImpl;
 import com.klp.promotion.grade.application.GradeService;
 import com.klp.promotion.grade.application.dto.CreateGradeCommand;
@@ -61,7 +61,8 @@ class GradeControllerTest {
         void createGrade_Success() throws Exception {
             // given
             CreateGradeRequest request = new CreateGradeRequest("VIP", 15, 20000000L, 50000000L);
-            GradeResponse response = new GradeResponse(UUID.randomUUID(), "VIP", 15, 20000000L, 50000000L);
+            GradeResponse response = new GradeResponse(UUID.randomUUID(), "VIP", 15, 20000000L,
+                50000000L);
 
             when(gradeService.createGrade(any(CreateGradeCommand.class))).thenReturn(response);
 
@@ -175,7 +176,8 @@ class GradeControllerTest {
         void getGrade_NotFound_ThrowsException() throws Exception {
             // given
             UUID gradeId = UUID.randomUUID();
-            when(gradeService.getGrade(gradeId)).thenThrow(new BusinessException(GradeErrorCode.GRADE_NOT_FOUND));
+            when(gradeService.getGrade(gradeId)).thenThrow(
+                new BusinessException(GradeErrorCode.GRADE_NOT_FOUND));
 
             // when & then
             mockMvc.perform(get("/v1/promotions/grades/{gradeId}", gradeId))
@@ -239,7 +241,8 @@ class GradeControllerTest {
             UpdateGradeRequest request = new UpdateGradeRequest("VVIP", 20, 50000000L, 100000000L);
             GradeResponse response = new GradeResponse(gradeId, "VVIP", 20, 50000000L, 100000000L);
 
-            when(gradeService.updateGrade(eq(gradeId), any(UpdateGradeCommand.class))).thenReturn(response);
+            when(gradeService.updateGrade(eq(gradeId), any(UpdateGradeCommand.class))).thenReturn(
+                response);
 
             // when & then
             mockMvc.perform(put("/v1/promotions/grades/{gradeId}", gradeId)

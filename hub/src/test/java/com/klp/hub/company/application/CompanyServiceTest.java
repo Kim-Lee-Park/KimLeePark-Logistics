@@ -8,14 +8,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
-import com.klp.common.exception.ErrorCode;
 import com.klp.hub.company.domain.Company;
 import com.klp.hub.company.domain.CompanyType;
 import com.klp.hub.company.domain.repository.CompanyRepository;
 import com.klp.hub.company.exception.CompanyErrorCode;
 import com.klp.hub.company.presentation.dto.CompanyListResponse;
 import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.global.exception.BusinessException;
+import com.klp.hub.global.exception.ErrorCode;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

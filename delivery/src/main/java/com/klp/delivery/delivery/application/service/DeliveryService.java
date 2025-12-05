@@ -1,7 +1,6 @@
 package com.klp.delivery.delivery.application.service;
 
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
@@ -9,6 +8,7 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
+import com.klp.delivery.global.exception.BusinessException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -89,13 +89,15 @@ public class DeliveryService {
         }
     }
 
-    public void applyRouteCreation(UUID deliveryId, UUID routePlanId, CustomerDeliveryStatus status) {
+    public void applyRouteCreation(UUID deliveryId, UUID routePlanId,
+        CustomerDeliveryStatus status) {
         try {
             Delivery delivery = findDelivery(deliveryId);
             delivery.updateRouteInfo(routePlanId, status);
         } catch (Exception e) {
             log.error("배송 경로 정보 적용 실패: {}", e.getMessage(), e);
-            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR, "배송 경로 정보 적용에 실패했습니다.", e);
+            throw new BusinessException(DeliveryErrorCode.EXTERNAL_API_ERROR,
+                "배송 경로 정보 적용에 실패했습니다.", e);
         }
     }
 

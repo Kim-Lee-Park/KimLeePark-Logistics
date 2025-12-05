@@ -3,7 +3,7 @@ package com.klp.user.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.global.exception.BusinessException;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
@@ -33,7 +33,8 @@ class UserTest {
 
         // when
         User user = User.create(
-            affiliationId, AffiliationType.COMPANY, name, password, slackId, phone, email, UserRole.COMPANY
+            affiliationId, AffiliationType.COMPANY, name, password, slackId, phone, email,
+            UserRole.COMPANY
         );
 
         // then
@@ -186,14 +187,22 @@ class UserTest {
         String email = "test@example.com";
 
         return Stream.of(
-            Arguments.of(null, AffiliationType.HUB, name, password, slackId, phone, email, UserRole.DRIVER),
-            Arguments.of(affiliationId, null, name, password, slackId, phone, email, UserRole.DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, null, password, slackId, phone, email, UserRole.DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, null, slackId, phone, email, UserRole.DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, null, phone, email, UserRole.DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, null, email, UserRole.DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, null, UserRole.DRIVER),
-            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, email, null)
+            Arguments.of(null, AffiliationType.HUB, name, password, slackId, phone, email,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, null, name, password, slackId, phone, email,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, null, password, slackId, phone, email,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, null, slackId, phone, email,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, null, phone, email,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, null, email,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, null,
+                UserRole.DRIVER),
+            Arguments.of(affiliationId, AffiliationType.HUB, name, password, slackId, phone, email,
+                null)
         );
     }
 }

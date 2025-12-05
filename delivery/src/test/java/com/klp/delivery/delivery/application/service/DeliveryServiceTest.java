@@ -20,7 +20,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
@@ -29,6 +28,7 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.repository.DeliveryRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.List;
 import java.util.UUID;
@@ -84,8 +84,6 @@ public class DeliveryServiceTest extends MockTest {
         assertThat(result).isNotNull();
         assertThat(result.getOrderId()).isEqualTo(orderId);
     }
-
-
 
 
     @Test
@@ -175,8 +173,6 @@ public class DeliveryServiceTest extends MockTest {
         // then: Repository 호출 검증
         verify(deliveryRepository, times(1)).findDeliveryAll(pageable);
     }
-
-
 
 
     @Test
