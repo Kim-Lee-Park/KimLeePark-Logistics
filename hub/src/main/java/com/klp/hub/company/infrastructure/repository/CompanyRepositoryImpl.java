@@ -36,6 +36,11 @@ public class CompanyRepositoryImpl implements CompanyRepository {
             .fetch();
     }
 
+    @Override
+    public Company save(Company company) {
+        return companyJpaRepository.save(company);
+    }
+
     private BooleanExpression nameEqual(String name) {
         if (name == null) {
             return null;

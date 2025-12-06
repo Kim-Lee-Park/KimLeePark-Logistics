@@ -1,27 +1,33 @@
 package com.klp.hub.company.presentation.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.hub.company.application.CompanyService;
+import com.klp.hub.company.application.dto.CreateCompanyCommand;
 import com.klp.hub.company.domain.CompanyType;
-import com.klp.hub.company.presentation.dto.CompanyListResponse.CompanySummaryResponse;
-import com.klp.hub.company.presentation.dto.CompanyResponse;
+import com.klp.hub.company.presentation.dto.request.CreateCompanyRequest;
+import com.klp.hub.company.presentation.dto.response.CompanyListResponse.CompanySummaryResponse;
+import com.klp.hub.company.presentation.dto.response.CompanyResponse;
+import com.klp.hub.company.presentation.dto.response.CreateCompanyResponse;
 import com.klp.hub.global.config.SecurityConfig;
 import com.klp.hub.global.exception.GlobalExceptionHandler;
 import com.klp.hub.global.filter.AuthorizationFilter;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,6 +37,9 @@ class CompanyControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private CompanyService companyService;
@@ -86,21 +95,27 @@ class CompanyControllerTest {
             .andExpect(jsonPath("$.companies[1].companyName").value("업체A"));
     }
 
-    @Disabled
     @Test
-    @DisplayName("name 파라미터가 없다면 전체 업체 목록 조회를 할 수 있다")
-    void getAllCompaniesWithoutName() throws Exception {
-        List<CompanySummaryResponse> mockList = List.of(
-            new CompanySummaryResponse(UUID.randomUUID(), "업체A"),
-            new CompanySummaryResponse(UUID.randomUUID(), "업체B")
+    @DisplayName("업체 생성 요청 시 업체를 생성할 수 있다")
+    @WithMockUser(roles = "MASTER")
+    void createCompany() throws Exception {
+        UUID hubId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
+        CreateCompanyRequest request = new CreateCompanyRequest(
+            hubId,
+            CompanyType.SUPPLIER.name(),
+            "업체명",
+            "업체주소"
         );
-        when(companyService.getAllByName(null))
-            .thenReturn(mockList);
+        CreateCompanyResponse response = new CreateCompanyResponse(companyId);
+        when(companyService.create(any(CreateCompanyCommand.class)))
+            .thenReturn(response);
 
-        mockMvc.perform(get("/v1/companies"))
+        mockMvc.perform(post("/v1/companies")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.companies").isArray())
-            .andExpect(jsonPath("$.companies.length()").value(2));
+            .andExpect(jsonPath("$.companyId").isString());
     }
 }

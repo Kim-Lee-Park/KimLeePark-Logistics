@@ -50,6 +50,10 @@ resource "aws_ecs_task_definition" "notification" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "NOTIFICATION_DOMAIN_NAME",
+          value = "notification.klp.local"
+        },
+        {
           name  = "NOTIFICATION_SERVICE_PORT",
           value = "8080"
         },

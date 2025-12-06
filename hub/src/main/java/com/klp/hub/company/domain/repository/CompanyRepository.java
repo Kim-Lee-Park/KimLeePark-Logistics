@@ -10,4 +10,6 @@ public interface CompanyRepository {
     Optional<Company> findById(UUID companyId);
 
     List<Company> findAllByName(String name);
+
+    Company save(Company company);
 }
