@@ -8,9 +8,14 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
+    // 구독용 토픽
     public static final String ORDER_CREATED_EVENTS = "order.created";
     public static final String ORDER_CANCELLED_EVENTS = "order.cancelled";
-    public static final String INVENTORY_EVENTS = "inventory.deducted";
+    public static final String COUPON_EVENTS = "coupon.topic";
+    public static final String PAYMENT_EVENTS = "payment.topic";
+
+    // 발행용 토픽
+    public static final String INVENTORY_EVENTS = "inventory.topic";
 
     /**
      * 주문 성공 이벤트 토픽 (구독용)
@@ -41,6 +46,28 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic inventoryEventsTopic() {
         return TopicBuilder.name(INVENTORY_EVENTS)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    /**
+     * 쿠폰 이벤트 토픽 (구독용)
+     */
+    @Bean
+    public NewTopic couponEventsTopic() {
+        return TopicBuilder.name(COUPON_EVENTS)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    /**
+     * 결제 이벤트 토픽 (구독용)
+     */
+    @Bean
+    public NewTopic paymentEventsTopic() {
+        return TopicBuilder.name(PAYMENT_EVENTS)
             .partitions(3)
             .replicas(1)
             .build();
