@@ -1,4 +1,4 @@
-package com.klp.hub.inventory.presentation.dto;
+package com.klp.hub.inventory.presentation.dto.response;
 
 import java.util.UUID;
 

@@ -2,9 +2,9 @@ package com.klp.hub.inventory.presentation.controller;
 
 import com.klp.hub.inventory.application.InventoryFacade;
 import com.klp.hub.inventory.application.InventoryService;
-import com.klp.hub.inventory.presentation.dto.InventoryReplenishRequest;
-import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import com.klp.hub.inventory.presentation.dto.request.InventoryReplenishRequest;
+import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
