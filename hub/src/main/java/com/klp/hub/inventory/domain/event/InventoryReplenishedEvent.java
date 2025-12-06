@@ -11,6 +11,7 @@ public record InventoryReplenishedEvent(
 ) {
 
     public record ReplenishedItem(
+
         UUID productId,
         UUID hubId,
         Integer replenishedQuantity
