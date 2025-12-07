@@ -27,6 +27,14 @@ resource "aws_ecs_task_definition" "order" {
         }
       ]
 
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+        interval    = 10
+        timeout     = 5
+        retries     = 3
+        startPeriod = 30
+      }
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -48,6 +56,14 @@ resource "aws_ecs_task_definition" "order" {
         {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
+          value = "10"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
+          value = "30"
         },
         {
           name  = "ORDER_DOMAIN_NAME",
@@ -104,6 +120,14 @@ resource "aws_ecs_task_definition" "order" {
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES",
           value = "service.namespace=klp"
+        },
+        {
+          name  = "REDIS_HOST",
+          value = aws_elasticache_cluster.redis.cache_nodes[0].address
+        },
+        {
+          name  = "REDIS_PORT",
+          value = tostring(aws_elasticache_cluster.redis.port)
         }
       ]
 

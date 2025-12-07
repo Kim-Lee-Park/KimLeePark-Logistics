@@ -1,0 +1,95 @@
+name: Deploy gateway
+
+on:
+  push:
+    branches: [ "deploy/142/cicd-pipeline" ]
+    paths:
+      - "gateway-service/**"
+      - ".github/workflows/deploy-gateway.yml"
+      - "appspec/appspec-ecs.yaml"
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: klp-logistics-gateway
+  ECS_CLUSTER: klp-logistics-ecs-cluster
+  ECS_SERVICE: klp-logistics-gateway-svc
+  ECS_TASK_FAMILY: klp-logistics-gateway
+  CODEDEPLOY_APP: ${{ vars.CODEDEPLOY_APP_GATEWAY }}
+  CODEDEPLOY_GROUP: ${{ vars.CODEDEPLOY_GROUP_GATEWAY }}
+  PROD_LISTENER_ARN: ${{ vars.GATEWAY_PROD_LISTENER_ARN }}
+  BLUE_TARGET_GROUP: ${{ vars.GATEWAY_BLUE_TARGET_GROUP }}
+  GREEN_TARGET_GROUP: ${{ vars.GATEWAY_GREEN_TARGET_GROUP }}
+  CONTAINER_NAME: gateway
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run tests
+        working-directory: gateway-service
+        run: ./gradlew test
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: build-image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE_URI=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}
+
+          docker build -t "${IMAGE_URI}" ./gateway-service
+          docker push "${IMAGE_URI}"
+
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${ECS_TASK_FAMILY}" \
+            --query 'taskDefinition' \
+            --region "${AWS_REGION}" \
+            > taskdef-current.json
+
+      - name: Render new task definition
+        run: |
+          jq --arg IMAGE_URI "$IMAGE_URI" --arg CONTAINER "$CONTAINER_NAME" '
+            .
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+            | .containerDefinitions |=
+                map(if .name == $CONTAINER then .image = $IMAGE_URI else . end)
+          ' taskdef-current.json > taskdef-rendered.json
+
+      - name: Render AppSpec
+        run: |
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP PROD_LISTENER_ARN BLUE_TARGET_GROUP GREEN_TARGET_GROUP; do
+            if [ -z "${!var}" ]; then
+              echo "$var is required" >&2
+              exit 1
+            fi
+          done
+
+          envsubst < appspec/appspec-ecs.yaml > appspec-rendered.yaml
+
+      - name: Create deployment
+        uses: aws-actions/aws-codedeploy-deploy-ecs@v1
+        with:
+          application-name: ${{ env.CODEDEPLOY_APP }}
+          deployment-group: ${{ env.CODEDEPLOY_GROUP }}
+          task-definition: taskdef-rendered.json
+          app-spec: appspec-rendered.yaml
+          deployment-config: CodeDeployDefault.ECSAllAtOnce
+          wait-for-completion: true

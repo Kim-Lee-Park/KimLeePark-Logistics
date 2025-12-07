@@ -24,6 +24,24 @@ resource "aws_lb_target_group" "gateway_tg" {
   }
 }
 
+resource "aws_lb_target_group" "gateway_tg_green" {
+  name     = "${local.project}-gateway-green-tg"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  target_type = "ip"
+
+  health_check {
+    path                = "/actuator/health"
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 15
+    matcher             = "200-399"
+  }
+}
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.public_alb.arn
   port              = 80

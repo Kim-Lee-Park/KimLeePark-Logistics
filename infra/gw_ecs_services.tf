@@ -5,6 +5,10 @@ resource "aws_ecs_service" "gateway" {
   desired_count   = 2
   launch_type     = "FARGATE"
 
+  deployment_controller {
+    type = "CODE_DEPLOY"
+  }
+
   network_configuration {
     subnets = [aws_subnet.private_app_az1.id, aws_subnet.private_app_az2.id]
     security_groups = [aws_security_group.ecs_service.id]
@@ -20,6 +24,7 @@ resource "aws_ecs_service" "gateway" {
   depends_on = [
     aws_ecs_service.config,
     aws_ecs_service.discovery,
-    aws_lb_target_group.gateway_tg
+    aws_lb_target_group.gateway_tg,
+    aws_lb_target_group.gateway_tg_green
   ]
 }

@@ -1,0 +1,92 @@
+name: Deploy user
+
+on:
+  push:
+    branches: [ "deploy/142/cicd-pipeline" ]
+    paths:
+      - "user/**"
+      - ".github/workflows/deploy-user.yml"
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: klp-logistics-user
+  ECS_CLUSTER: klp-logistics-ecs-cluster
+  ECS_SERVICE: klp-logistics-user-svc
+  ECS_TASK_FAMILY: klp-logistics-user
+  CONTAINER_NAME: user
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run tests
+        working-directory: user
+        run: ./gradlew test
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: build-image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE_URI=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}
+
+          docker build -t "${IMAGE_URI}" ./user
+          docker push "${IMAGE_URI}"
+
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${ECS_TASK_FAMILY}" \
+            --query 'taskDefinition' \
+            --region "${AWS_REGION}" \
+            > taskdef-current.json
+
+      - name: Render new task definition
+        run: |
+          jq --arg IMAGE_URI "$IMAGE_URI" --arg CONTAINER "$CONTAINER_NAME" '
+            .
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+            | .containerDefinitions |=
+                map(if .name == $CONTAINER then .image = $IMAGE_URI else . end)
+          ' taskdef-current.json > taskdef-rendered.json
+
+      - name: Register new task definition
+        run: |
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://taskdef-rendered.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text \
+            --region "${AWS_REGION}")
+
+          echo "TASK_DEF_ARN=${TASK_DEF_ARN}" >> "$GITHUB_ENV"
+
+      - name: Update ECS Service
+        run: |
+          aws ecs update-service \
+            --cluster "${ECS_CLUSTER}" \
+            --service "${ECS_SERVICE}" \
+            --task-definition "${TASK_DEF_ARN}" \
+            --force-new-deployment \
+            --region "${AWS_REGION}"
+
+          aws ecs wait services-stable \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}" \
+            --region "${AWS_REGION}"

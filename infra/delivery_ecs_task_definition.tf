@@ -27,6 +27,14 @@ resource "aws_ecs_task_definition" "delivery" {
         }
       ]
 
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+        interval    = 10
+        timeout     = 5
+        retries     = 3
+        startPeriod = 30
+      }
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -48,6 +56,14 @@ resource "aws_ecs_task_definition" "delivery" {
         {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
+          value = "10"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
+          value = "30"
         },
         {
           name  = "DELIVERY_DOMAIN_NAME",
