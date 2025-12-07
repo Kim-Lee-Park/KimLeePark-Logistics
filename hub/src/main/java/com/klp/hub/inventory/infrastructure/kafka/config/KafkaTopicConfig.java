@@ -17,6 +17,9 @@ public class KafkaTopicConfig {
     // 발행용 토픽
     public static final String INVENTORY_EVENTS = "inventory.topic";
 
+    // DLT 토픽
+    public static final String INVENTORY_DLT = "inventory.dlt";
+
     /**
      * 주문 성공 이벤트 토픽 (구독용)
      */
@@ -68,6 +71,17 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic paymentEventsTopic() {
         return TopicBuilder.name(PAYMENT_EVENTS)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    /**
+     * Inventory DLT 토픽 (단일 DLT - 모든 실패 메시지 통합)
+     */
+    @Bean
+    public NewTopic inventoryDltTopic() {
+        return TopicBuilder.name(INVENTORY_DLT)
             .partitions(3)
             .replicas(1)
             .build();
