@@ -53,7 +53,7 @@ public class UserService {
             request.email(),
             request.role());
 
-        applicationEventPublisher.publishEvent(new UserProfileChangedEvent(userId));
+        applicationEventPublisher.publishEvent(new UserProfileChangedEvent(user.getUserId()));
     }
 
     @Transactional

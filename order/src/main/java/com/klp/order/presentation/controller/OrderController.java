@@ -4,6 +4,7 @@ import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
 import com.klp.order.application.facade.OrderFacade;
+import com.klp.order.application.query.UserQueryService;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.common.PageResponse;
 import com.klp.order.domain.entity.order.Order;
@@ -45,6 +46,7 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderFacade orderFacade;
+    private final UserQueryService userQueryService;
 
     @PostMapping
     public ResponseEntity<CreateOrderResponse> createOrder(
@@ -146,4 +148,9 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/cache-test")
+    public ResponseEntity<Void> cache(@PathVariable Long userId) {
+        userQueryService.getUserProfile(userId);
+        return ResponseEntity.ok().build();
+    }
 }
