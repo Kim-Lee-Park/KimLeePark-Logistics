@@ -1,6 +1,7 @@
 package com.klp.user.presentation;
 
 import com.klp.user.application.UserFacade;
+import com.klp.user.presentation.docs.UserGradeControllerDoc;
 import com.klp.user.presentation.dto.request.UserGradeUpdateRequest;
 import com.klp.user.presentation.dto.response.UserGradeResponse;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/users/grades")
 @RequiredArgsConstructor
-public class UserGradeController {
+public class UserGradeController implements UserGradeControllerDoc {
 
     private final UserFacade userFacade;
 
