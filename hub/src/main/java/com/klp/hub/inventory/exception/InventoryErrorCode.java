@@ -13,7 +13,9 @@ public enum InventoryErrorCode implements ErrorCode {
     PARTIAL_INVENTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "일부 재고를 찾을 수 없습니다."),
     INVENTORY_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 해당 상품의 재고가 존재합니다"),
     IDEMPOTENCY_ALREADY_PROCESSING(HttpStatus.CONFLICT, "동일한 멱등키로 요청이 이미 처리 중 입니다."),
-    OUTBOX_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 직렬화에 실패했습니다.");
+    OUTBOX_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 직렬화에 실패했습니다."),
+    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "선점 정보를 찾을 수 없습니다."),
+    RESERVATION_ALREADY_PROCESSED(HttpStatus.CONFLICT, "이미 처리된 선점입니다.");
 
     private final HttpStatus status;
     private final String message;

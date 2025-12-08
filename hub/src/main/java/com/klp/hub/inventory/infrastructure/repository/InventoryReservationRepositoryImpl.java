@@ -4,7 +4,6 @@ import com.klp.hub.inventory.domain.InventoryReservation;
 import com.klp.hub.inventory.domain.repository.InventoryReservationRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -14,20 +13,15 @@ import org.springframework.stereotype.Repository;
 public class InventoryReservationRepositoryImpl implements InventoryReservationRepository {
 
     private final InventoryReservationJpaRepository jpaRepository;
-
-    @Override
-    public InventoryReservation save(InventoryReservation reservation) {
-        return jpaRepository.save(reservation);
-    }
-
+    
     @Override
     public List<InventoryReservation> saveAll(List<InventoryReservation> reservations) {
         return jpaRepository.saveAll(reservations);
     }
 
     @Override
-    public Optional<InventoryReservation> findByOrderIdAndProductId(UUID orderId, UUID productId) {
-        return jpaRepository.findByOrderIdAndProductId(orderId, productId);
+    public void deleteAll(List<InventoryReservation> reservations) {
+        jpaRepository.deleteAll(reservations);
     }
 
     @Override
@@ -41,8 +35,8 @@ public class InventoryReservationRepositoryImpl implements InventoryReservationR
     }
 
     @Override
-    public int getReservedQuantity(UUID productId, UUID hubId) {
-        return jpaRepository.getReservedQuantity(productId, hubId);
+    public int getAvailableQuantity(UUID productId, UUID hubId) {
+        return jpaRepository.getAvailableQuantity(productId, hubId);
     }
 
     @Override
