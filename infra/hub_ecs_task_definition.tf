@@ -46,6 +46,14 @@ resource "aws_ecs_task_definition" "hub" {
           value = "http://discovery.klp.local:8761/eureka/"
         },
         {
+          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
+          value = "10"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
+          value = "30"
+        },
+        {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
         },
@@ -128,6 +136,14 @@ resource "aws_ecs_task_definition" "hub" {
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES",
           value = "service.namespace=klp"
+        },
+        {
+          name  = "REDIS_HOST",
+          value = aws_elasticache_cluster.redis.cache_nodes[0].address
+        },
+        {
+          name = "REDIS_PORT",
+          value = tostring(aws_elasticache_cluster.redis.port)
         }
       ]
 
