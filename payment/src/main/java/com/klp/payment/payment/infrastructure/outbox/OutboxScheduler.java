@@ -3,6 +3,7 @@ package com.klp.payment.payment.infrastructure.outbox;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
+import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import com.klp.payment.payment.domain.outbox.PaymentOutbox;
 import com.klp.payment.payment.domain.repository.PaymentOutboxRepository;
 import com.klp.payment.payment.infrastructure.kafka.producer.PaymentEventProducer;
@@ -51,6 +52,10 @@ public class OutboxScheduler {
             case "PaymentCancelledEvent" -> {
                 PaymentCancelledEvent event = objectMapper.readValue(payload, PaymentCancelledEvent.class);
                 eventProducer.publishPaymentCancelledEvent(event);
+            }
+            case "PaymentFailedEvent" -> {
+                PaymentFailedEvent event = objectMapper.readValue(payload, PaymentFailedEvent.class);
+                eventProducer.publishPaymentFailedEvent(event);
             }
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         }

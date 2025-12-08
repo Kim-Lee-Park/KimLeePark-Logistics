@@ -6,6 +6,7 @@ import com.klp.payment.global.exception.BusinessException;
 import com.klp.payment.global.exception.PaymentErrorCode;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
+import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import com.klp.payment.payment.domain.outbox.PaymentOutbox;
 import com.klp.payment.payment.domain.repository.PaymentOutboxRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,10 @@ public class PaymentOutboxService {
 
     public void savePaymentCancelledEvent(PaymentCancelledEvent event) {
         saveOutbox(event.orderId(), "PaymentCancelledEvent", event);
+    }
+
+    public void savePaymentFailedEvent(PaymentFailedEvent event) {
+        saveOutbox(event.orderId(), "PaymentFailedEvent", event);
     }
 
     private void saveOutbox(java.util.UUID orderId, String eventType, Object event) {

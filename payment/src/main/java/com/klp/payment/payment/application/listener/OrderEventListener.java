@@ -5,6 +5,7 @@ import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
+import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +61,16 @@ public class OrderEventListener {
             outboxService.savePaymentApprovedEvent(approvedEvent);
             log.info("결제 승인 완료: paymentId={}", payment.getPaymentId());
         } else {
-            log.warn("결제 실패: orderId={}", event.orderId());
+            PaymentFailedEvent failedEvent = PaymentFailedEvent.from(
+                payment.getPaymentId(),
+                event.orderId(),
+                event.userId(),
+                payment.getReason(),
+                event
+            );
+
+            outboxService.savePaymentFailedEvent(failedEvent);
+            log.warn("결제 실패: orderId={}, reason={}", event.orderId(), payment.getReason());
         }
     }
 
