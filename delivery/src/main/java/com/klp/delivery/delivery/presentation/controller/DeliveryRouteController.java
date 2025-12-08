@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/deliveries")
 @RequiredArgsConstructor
-public class DliveryRouteController implements DeliveryRouteControllerDocs {
+public class DeliveryRouteController implements DeliveryRouteControllerDocs {
 
-    private final DeliveryRouteFacade  deliveryRouteFacade;
+    private final DeliveryRouteFacade deliveryRouteFacade;
     private final DeliveryRouteService deliveryRouteService;
 
 
