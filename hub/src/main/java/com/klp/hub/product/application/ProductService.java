@@ -7,6 +7,7 @@ import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.InventoryResponse;
 import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.application.dto.ProductUpdateCommand;
+import com.klp.hub.product.application.event.ProductInfoChangedEvent;
 import com.klp.hub.product.domain.Product;
 import com.klp.hub.product.domain.repository.ProductRepository;
 import com.klp.hub.product.exception.ProductErrorCode;
@@ -16,6 +17,7 @@ import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,8 @@ public class ProductService {
     private final CompanyService companyService;
 
     private final InventoryService inventoryService;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID productId) {
@@ -67,6 +71,8 @@ public class ProductService {
         Product product = getById(command.productId());
 
         product.updateName(command.name());
+
+        applicationEventPublisher.publishEvent(new ProductInfoChangedEvent(product.getId()));
 
         return new ProductUpdateResponse(
             product.getId(),
