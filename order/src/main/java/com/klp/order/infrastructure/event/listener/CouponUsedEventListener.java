@@ -47,7 +47,7 @@ public class CouponUsedEventListener {
         Acknowledgment acknowledgment) {
 
         log.info("=== 쿠폰 사용 완료 이벤트 수신: orderId={},couponId={}, partition={}, offset={} ===",
-            event.orderId(), event.couponId(), partition, offset);
+            event.orderId(), event.userCouponId(), partition, offset);
 
         try {
             // 1. 주문 조회 후 상태 변경
@@ -66,7 +66,7 @@ public class CouponUsedEventListener {
             order.changeStatus(OrderStatus.COUPON_CONFIRMED);
             orderRepository.save(order);
             log.info("=== 쿠폰 사용 완료 이벤트 처리 완료: orderId={}, couponId={} ===", event.orderId(),
-                event.couponId());
+                event.userCouponId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
@@ -75,7 +75,7 @@ public class CouponUsedEventListener {
 
         } catch (Exception e) {
             log.error("쿠폰 사용 완료 이벤트 처리 실패: orderId={}, couponId={}, partition={}, offset={}",
-                event.orderId(), event.couponId(), partition, offset, e);
+                event.orderId(), event.userCouponId(), partition, offset, e);
             throw e;
         }
     }

@@ -47,8 +47,8 @@ public class DeliveryArrivedFailedEventListener {
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 배송 완료 실패 이벤트 수신: orderId={}, partition={}, offset={}, items={} ===",
-            event.orderId(), partition, offset, event.items().size());
+        log.info("=== 배송 완료 실패 이벤트 수신: orderId={}, partition={}, offset={}, products={} ===",
+            event.orderId(), partition, offset, event.products().size());
 
         try {
             // 1. 주문 조회

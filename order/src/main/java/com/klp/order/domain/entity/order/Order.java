@@ -180,11 +180,12 @@ public class Order extends BaseEntity {
         return this.cancellation;
     }
 
-    public void updateDiscountPrice(int couponDiscountPrice, int gradeDiscountPrice) {
-        validateDiscounts(couponDiscountPrice, gradeDiscountPrice);
+    public void updateDiscountPrice(int couponDiscountPrice, int gradeDiscountPrice,
+        int finalPrice) {
+        validateDiscounts(couponDiscountPrice, gradeDiscountPrice, finalPrice);
         this.couponDiscountPrice = couponDiscountPrice;
         this.gradeDiscountPrice = gradeDiscountPrice;
-        this.orderPrice = originalPrice - couponDiscountPrice - gradeDiscountPrice;
+        this.orderPrice = finalPrice;
     }
 
     private void validateUserId(Long userId) {
@@ -236,9 +237,12 @@ public class Order extends BaseEntity {
         }
     }
 
-    private void validateDiscounts(int couponDiscount, int gradeDiscount) {
+    private void validateDiscounts(int couponDiscount, int gradeDiscount, int finalPrice) {
         if (userCouponId == null && couponDiscount > 0) {
             throw new BusinessException(OrderErrorCode.COUPON_DISCOUNT_WITHOUT_COUPON);
+        }
+        if (originalPrice - couponDiscount - gradeDiscount != finalPrice) {
+            throw new BusinessException(OrderErrorCode.INVALID_DISCOUNT_AMOUNT);
         }
 
         if (couponDiscount < 0) {

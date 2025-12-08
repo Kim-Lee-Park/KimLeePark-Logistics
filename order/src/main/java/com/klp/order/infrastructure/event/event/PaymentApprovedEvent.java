@@ -1,11 +1,46 @@
 package com.klp.order.infrastructure.event.event;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
-// 아직 결제 쪽이 구현이 안되어있기 때문에 추후에 코드 수정하겠습니다.
 public record PaymentApprovedEvent(
     UUID orderId,
-    UUID paymentId
+    Long userId,
+    UUID supplierId,
+    UUID userCouponId,
+    String email,
+
+    int originalPrice,
+    int couponDiscountPrice,
+    int gradeDiscountPrice,
+    int finalOrderPrice,
+
+    UUID addressId,
+    UUID userAddressHubId,
+    String address,
+    BigDecimal deliveryLatitude,
+    BigDecimal deliveryLongitude,
+
+    List<OrderItem> products,
+
+    String inventoryIdempotencyKey,
+    String deliveryIdempotencyKey,
+
+    LocalDateTime createdAt,
+    LocalDateTime occurredAt
 ) {
 
+    public record OrderItem(
+        UUID orderItemId,
+        UUID productId,
+        String productName,
+        UUID hubId,
+        Integer quantity,
+        int unitPrice,
+        int totalPrice
+    ) {
+
+    }
 }

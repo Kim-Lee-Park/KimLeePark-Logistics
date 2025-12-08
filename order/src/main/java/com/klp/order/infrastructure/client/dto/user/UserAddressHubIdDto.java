@@ -4,12 +4,14 @@ import com.klp.order.domain.vo.UserAddressHubId;
 import java.util.UUID;
 
 public record UserAddressHubIdDto(
-    UUID userAddressHubId
+    UUID userAddressHubId,
+    String address
 ) {
 
     public UserAddressHubId toVo() {
         return new UserAddressHubId(
-            userAddressHubId
+            userAddressHubId,
+            address
         );
     }
 }
