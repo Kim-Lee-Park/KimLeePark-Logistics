@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OutboxScheduler {
 
     private final InventoryOutboxRepository outboxRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private static final int BATCH_SIZE = 100;
     private static final int MAX_RETRY = 3;

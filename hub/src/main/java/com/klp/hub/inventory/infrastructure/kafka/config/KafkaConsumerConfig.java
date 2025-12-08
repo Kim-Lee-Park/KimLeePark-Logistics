@@ -3,7 +3,6 @@ package com.klp.hub.inventory.infrastructure.kafka.config;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +14,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
 @Slf4j
@@ -31,15 +28,11 @@ public class KafkaConsumerConfig {
     private static final long RETRY_INTERVAL_MS = 1000L;
 
     /**
-     * Consumer Factory 설정. application.yml 설정을 기반으로 추가 옵션 설정
+     * Consumer Factory 설정. application.yml 설정을 기반으로 구성
      */
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
         Map<String, Object> configProps = kafkaProperties.buildConsumerProperties(null);
-
-        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
-
         return new DefaultKafkaConsumerFactory<>(configProps);
     }
 
@@ -59,12 +52,17 @@ public class KafkaConsumerConfig {
     }
 
     /**
-     * 에러 핸들러 설정 (3회 재시도 후 DLT로 이동)
+     * 에러 핸들러 설정 (3회 재시도 후 DLT로 이동) 역직렬화 예외는 재시도 없이 바로 DLT로 이동
      */
     @Bean
     public DefaultErrorHandler errorHandler(DeadLetterPublishingRecoverer recoverer) {
         FixedBackOff backOff = new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRY_ATTEMPTS);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        errorHandler.addNotRetryableExceptions(
+            org.springframework.kafka.support.serializer.DeserializationException.class,
+            org.springframework.messaging.converter.MessageConversionException.class
+        );
 
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) ->
             log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
