@@ -20,27 +20,39 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO hub_schema.p_companies (company_id, hub_id, type, name, address, created_at)
-VALUES
-(gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '서울특별시 센터'), 'SUPPLIER', '서울 반도체 협력사', '서울특별시 금천구 가산디지털1로 30', NOW()),
-(gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '경기 남부 센터'), 'CUSTOMER', '용인 가전 리테일', '경기도 용인시 기흥구 흥덕중앙로 120', NOW()),
-(gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '부산광역시 센터'), 'SUPPLIER', '부산 해운 포장재', '부산광역시 사하구 감천항로 45', NOW()),
-(gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '대구광역시 센터'), 'CUSTOMER', '대구 식자재 납품처', '대구광역시 달서구 달서대로 109', NOW()),
-(gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '인천광역시 센터'), 'CUSTOMER', '인천 공항 면세 물류', '인천광역시 중구 공항로 272', NOW());
+SELECT gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '서울특별시 센터'), 'SUPPLIER', '서울 반도체 협력사', '서울특별시 금천구 가산디지털1로 30', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hub_schema.p_companies WHERE name = '서울 반도체 협력사');
+
+INSERT INTO hub_schema.p_companies (company_id, hub_id, type, name, address, created_at)
+SELECT gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '경기 남부 센터'), 'CUSTOMER', '용인 가전 리테일', '경기도 용인시 기흥구 흥덕중앙로 120', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hub_schema.p_companies WHERE name = '용인 가전 리테일');
+
+INSERT INTO hub_schema.p_companies (company_id, hub_id, type, name, address, created_at)
+SELECT gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '부산광역시 센터'), 'SUPPLIER', '부산 해운 포장재', '부산광역시 사하구 감천항로 45', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hub_schema.p_companies WHERE name = '부산 해운 포장재');
+
+INSERT INTO hub_schema.p_companies (company_id, hub_id, type, name, address, created_at)
+SELECT gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '대구광역시 센터'), 'CUSTOMER', '대구 식자재 납품처', '대구광역시 달서구 달서대로 109', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hub_schema.p_companies WHERE name = '대구 식자재 납품처');
+
+INSERT INTO hub_schema.p_companies (company_id, hub_id, type, name, address, created_at)
+SELECT gen_random_uuid(), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '인천광역시 센터'), 'CUSTOMER', '인천 공항 면세 물류', '인천광역시 중구 공항로 272', NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hub_schema.p_companies WHERE name = '인천 공항 면세 물류');
 
 INSERT INTO hub_schema.p_products (product_id, company_id, name, created_at)
 VALUES
-(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '서울 반도체 협력사'), 'LED 모듈 세트', NOW()),
-(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '용인 가전 리테일'), '스마트TV 패널', NOW()),
-(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '부산 해운 포장재'), '선적용 포장 박스', NOW()),
-(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '대구 식자재 납품처'), '냉동 수산 세트', NOW()),
-(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '인천 공항 면세 물류'), '면세 화장품 키트', NOW())
+(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '서울 반도체 협력사' ORDER BY company_id LIMIT 1), 'LED 모듈 세트', NOW()),
+(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '용인 가전 리테일' ORDER BY company_id LIMIT 1), '스마트TV 패널', NOW()),
+(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '부산 해운 포장재' ORDER BY company_id LIMIT 1), '선적용 포장 박스', NOW()),
+(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '대구 식자재 납품처' ORDER BY company_id LIMIT 1), '냉동 수산 세트', NOW()),
+(gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '인천 공항 면세 물류' ORDER BY company_id LIMIT 1), '면세 화장품 키트', NOW())
 ON CONFLICT DO NOTHING;
 
 INSERT INTO hub_schema.p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
 VALUES
-(gen_random_uuid(), 120, (SELECT product_id FROM hub_schema.p_products WHERE name = 'LED 모듈 세트'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '서울특별시 센터'), NOW()),
-(gen_random_uuid(), 75, (SELECT product_id FROM hub_schema.p_products WHERE name = '스마트TV 패널'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '경기 남부 센터'), NOW()),
-(gen_random_uuid(), 200, (SELECT product_id FROM hub_schema.p_products WHERE name = '선적용 포장 박스'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '부산광역시 센터'), NOW()),
-(gen_random_uuid(), 90, (SELECT product_id FROM hub_schema.p_products WHERE name = '냉동 수산 세트'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '대구광역시 센터'), NOW()),
-(gen_random_uuid(), 60, (SELECT product_id FROM hub_schema.p_products WHERE name = '면세 화장품 키트'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '인천광역시 센터'), NOW())
+(gen_random_uuid(), 120, (SELECT product_id FROM hub_schema.p_products WHERE name = 'LED 모듈 세트' ORDER BY product_id LIMIT 1), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '서울특별시 센터' ORDER BY hub_id LIMIT 1), NOW()),
+(gen_random_uuid(), 75, (SELECT product_id FROM hub_schema.p_products WHERE name = '스마트TV 패널' ORDER BY product_id LIMIT 1), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '경기 남부 센터' ORDER BY hub_id LIMIT 1), NOW()),
+(gen_random_uuid(), 200, (SELECT product_id FROM hub_schema.p_products WHERE name = '선적용 포장 박스' ORDER BY product_id LIMIT 1), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '부산광역시 센터' ORDER BY hub_id LIMIT 1), NOW()),
+(gen_random_uuid(), 90, (SELECT product_id FROM hub_schema.p_products WHERE name = '냉동 수산 세트' ORDER BY product_id LIMIT 1), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '대구광역시 센터' ORDER BY hub_id LIMIT 1), NOW()),
+(gen_random_uuid(), 60, (SELECT product_id FROM hub_schema.p_products WHERE name = '면세 화장품 키트' ORDER BY product_id LIMIT 1), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '인천광역시 센터' ORDER BY hub_id LIMIT 1), NOW())
 ON CONFLICT (product_id, hub_id) DO NOTHING;
