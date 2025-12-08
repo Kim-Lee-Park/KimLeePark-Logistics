@@ -1,5 +1,8 @@
 package com.klp.payment.payment.infrastructure.kafka.config;
 
+import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
+import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
+import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +37,17 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
         configProps.put(ProducerConfig.LINGER_MS_CONFIG, 10);
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
+        configProps.put(JsonSerializer.TYPE_MAPPINGS, buildTypeMappings());
 
         return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    private String buildTypeMappings() {
+        return String.join(",",
+            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName(),
+            "PaymentFailedEvent:" + PaymentFailedEvent.class.getName(),
+            "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName()
+        );
     }
 
     @Bean
