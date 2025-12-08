@@ -215,7 +215,7 @@ public class UserFacade {
     private String getAffiliationName(User user) {
         return switch (user.getAffiliationType()) {
             case CUSTOMER -> "고객";
-            case LOGISTICS -> "KLP 물류"; // DB에 저장된 값 사용
+            case LOGISTICS -> "KLP 물류";
             case HUB -> getHubName(user.getAffiliationId());
             case COMPANY -> getCompanyName(user.getAffiliationId());
         };
