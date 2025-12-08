@@ -2,11 +2,15 @@ package com.klp.hub.inventory.application;
 
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
+import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.PaymentCancelledEvent;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,7 +21,7 @@ import org.springframework.stereotype.Component;
 public class InventoryFacade {
 
     private final InventoryService inventoryService;
-
+    private final InventoryReservationService inventoryReservationService;
     private final DistributedLockManager lockManager;
 
     public InventoryDeductResponse deduct(OrderCreatedEvent event) {
@@ -36,10 +40,62 @@ public class InventoryFacade {
 
         lock(idempotencyKey);
         try {
-            InventoryReplenishResponse response = inventoryService.replenish(command);
-            return response;
+            return inventoryService.replenish(command);
         } finally {
             unLock(idempotencyKey);
+        }
+    }
+
+    public InventoryReservationResponse reserve(InventoryReservationCommand command) {
+        String lockKey = "inventory:reserve:" + command.orderId();
+
+        lock(lockKey);
+        try {
+            return inventoryReservationService.reserve(command);
+        } finally {
+            unLock(lockKey);
+        }
+    }
+
+    /**
+     * 선점 확정 (쿠폰 확정 후 호출)
+     */
+    public void confirm(UUID orderId) {
+        String lockKey = "inventory:confirm:" + orderId;
+
+        lock(lockKey);
+        try {
+            inventoryReservationService.confirm(orderId);
+        } finally {
+            unLock(lockKey);
+        }
+    }
+
+    /**
+     * 선점 해제 (결제 실패 시 호출)
+     */
+    public void release(UUID orderId) {
+        String lockKey = "inventory:release:" + orderId;
+
+        lock(lockKey);
+        try {
+            inventoryReservationService.release(orderId);
+        } finally {
+            unLock(lockKey);
+        }
+    }
+
+    /**
+     * 재고 복원 (결제 취소 시 호출)
+     */
+    public void replenishFromCancellation(PaymentCancelledEvent event) {
+        String lockKey = "inventory:replenish:" + event.orderId();
+
+        lock(lockKey);
+        try {
+            inventoryService.replenishFromCancellation(event);
+        } finally {
+            unLock(lockKey);
         }
     }
 

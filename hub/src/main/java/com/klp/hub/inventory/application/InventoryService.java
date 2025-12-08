@@ -5,16 +5,17 @@ import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.PaymentCancelledEvent;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
-import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
-import com.klp.hub.inventory.presentation.dto.InventoryDeductResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryReplenishResponse;
-import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
-    private final InventoryEventProducer inventoryEventProducer;
+    private final OutboxService outboxService;
 
     @Transactional(readOnly = true)
     public InventoryResponse getByProductId(UUID productId) {
@@ -84,7 +85,6 @@ public class InventoryService {
         }
         inventoryRepository.idempotencySuccess(idempotencyKey);
 
-        // 재고 차감 이후 이벤트 발행
         InventoryDeductedEvent deductedEvent = InventoryDeductedEvent.of(
             event.orderId(),
             event.items().stream()
@@ -95,7 +95,7 @@ public class InventoryService {
                 ))
                 .toList()
         );
-        inventoryEventProducer.publishInventoryDeductedEvent(deductedEvent);
+        outboxService.saveInventoryDeductedEvent(deductedEvent);
 
         return InventoryDeductResponse.success();
     }
@@ -126,6 +126,45 @@ public class InventoryService {
         inventoryRepository.idempotencySuccess(idempotencyKey);
 
         return InventoryReplenishResponse.success();
+    }
+
+    /**
+     * 결제 취소 시 재고 복원
+     */
+    @Transactional
+    public void replenishFromCancellation(PaymentCancelledEvent event) {
+        String idempotencyKey = event.idempotencyKey();
+        InventoryIdempotencyStatus status = inventoryRepository.acquireIdempotencyKey(idempotencyKey);
+
+        if (status.isUsed()) {
+            log.info("이미 처리된 결제 취소 복원 요청입니다. idempotencyKey = {}", idempotencyKey);
+            return;
+        }
+
+        List<InventoryReplenish> plans = event.items().stream()
+            .map(item -> new InventoryReplenish(item.productId(), item.hubId(), item.quantity()))
+            .toList();
+
+        int updated = inventoryRepository.replenishAll(plans);
+        if (updated != plans.size()) {
+            log.error("복원하려는 일부 재고를 찾을 수 없습니다. orderId={}", event.orderId());
+            throw new BusinessException(InventoryErrorCode.PARTIAL_INVENTORY_NOT_FOUND);
+        }
+        inventoryRepository.idempotencySuccess(idempotencyKey);
+
+        InventoryReplenishedEvent replenishedEvent = InventoryReplenishedEvent.of(
+            event.orderId(),
+            event.items().stream()
+                .map(item -> new InventoryReplenishedEvent.ReplenishedItem(
+                    item.productId(),
+                    item.hubId(),
+                    item.quantity()
+                ))
+                .toList()
+        );
+        outboxService.saveInventoryReplenishedEvent(replenishedEvent);
+
+        log.info("결제 취소로 인한 재고 복원 완료. orderId={}", event.orderId());
     }
 
     @Transactional
