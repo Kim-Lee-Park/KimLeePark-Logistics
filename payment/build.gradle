@@ -46,6 +46,20 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    //trace
+    implementation 'io.micrometer:micrometer-tracing'
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    //metric
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "io.micrometer:micrometer-registry-prometheus"
+
+    //log
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:2.7.0-alpha'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.10.0-alpha'
 }
 
 dependencyManagement {

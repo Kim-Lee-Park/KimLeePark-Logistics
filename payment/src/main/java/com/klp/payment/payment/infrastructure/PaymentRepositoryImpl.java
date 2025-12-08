@@ -1,6 +1,7 @@
 package com.klp.payment.payment.infrastructure;
 
 import com.klp.payment.payment.domain.entity.Payment;
+import com.klp.payment.payment.domain.enums.PaymentStatus;
 import com.klp.payment.payment.domain.repository.PaymentRepository;
 import java.util.List;
 import java.util.Optional;
@@ -44,5 +45,15 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     @Override
     public Page<Payment> findByHubId(UUID hubId, Pageable pageable) {
         return paymentJpaRepository.findByHubId(hubId, pageable);
+    }
+
+    @Override
+    public boolean existsByOrderId(UUID orderId) {
+        return paymentJpaRepository.existsByOrderId(orderId);
+    }
+
+    @Override
+    public Optional<Payment> findFirstByOrderIdAndStatusApproved(UUID orderId) {
+        return paymentJpaRepository.findFirstByOrderIdAndStatus(orderId, PaymentStatus.APPROVED);
     }
 }

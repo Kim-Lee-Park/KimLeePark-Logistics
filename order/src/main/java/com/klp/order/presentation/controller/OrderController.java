@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -48,7 +49,9 @@ public class OrderController implements OrderControllerDoc {
     private final OrderFacade orderFacade;
     private final UserQueryService userQueryService;
 
+
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<CreateOrderResponse> createOrder(
         @Valid @RequestBody CreateOrderRequest request
     ) {
@@ -62,6 +65,7 @@ public class OrderController implements OrderControllerDoc {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'COMPANY', 'HUB', 'DRIVER', 'MASTER')")
     public ResponseEntity<PageResponse<GetOrdersResponse>> getOrders(
         @RequestParam(required = false) UUID supplierId,
         @RequestParam(required = false) Long customerId,
@@ -83,6 +87,7 @@ public class OrderController implements OrderControllerDoc {
     }
 
     @GetMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'COMPANY', 'HUB', 'DRIVER', 'MASTER')")
     public ResponseEntity<GetOneOrderResponse> getOrder(@PathVariable UUID orderId) {
         Order order = orderService.findById(orderId);
         GetOneOrderResponse response = GetOneOrderResponse.from(order);
@@ -91,6 +96,7 @@ public class OrderController implements OrderControllerDoc {
     }
 
     @PatchMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MASTER')")
     public ResponseEntity<UpdateOrderResponse> updateOrder(
         @PathVariable UUID orderId,
         @Valid @RequestBody UpdateOrderRequest request
@@ -103,6 +109,7 @@ public class OrderController implements OrderControllerDoc {
     }
 
     @DeleteMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('MASTER')")
     public ResponseEntity<DeleteOrderResponse> deleteOrder(
         @PathVariable UUID orderId,
         @RequestHeader("X-User-Id") Long deletedBy
@@ -114,6 +121,7 @@ public class OrderController implements OrderControllerDoc {
     }
 
     @PostMapping("/{orderId}/cancel")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'COMPANY', 'HUB', 'MASTER')")
     public ResponseEntity<CancelOrderResponse> cancelOrder(
         @PathVariable UUID orderId,
         @RequestHeader("X-User-Id") Long cancelledBy,
@@ -138,6 +146,7 @@ public class OrderController implements OrderControllerDoc {
     }
 
     @GetMapping("/progressing")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'COMPANY', 'HUB', 'DRIVER', 'MASTER')")
     public ResponseEntity<GetOrderProgressResponse> getOrderStatus(@RequestParam UUID hubId) {
         boolean isOrderProgressing = orderService.hasProgressingOrders(hubId);
         GetOrderProgressResponse response = GetOrderProgressResponse.of(isOrderProgressing);

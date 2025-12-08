@@ -20,4 +20,8 @@ public interface PaymentRepository {
     Page<Payment> findByUserId(Long userId, Pageable pageable);
 
     Page<Payment> findByHubId(UUID hubId, Pageable pageable);
+
+    boolean existsByOrderId(UUID orderId);
+
+    Optional<Payment> findFirstByOrderIdAndStatusApproved(UUID orderId);
 }

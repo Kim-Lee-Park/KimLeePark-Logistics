@@ -61,6 +61,14 @@ public class DeliveryCompletedEventListener {
             Order order = orderService.findById(event.orderId());
             log.info("주문 조회 완료 - orderId: {}, 현재 상태: {}",
                 order.getOrderId(), order.getOrderStatus());
+
+            if (order.getOrderStatus() == OrderStatus.COMPLETE) {
+                log.info("이미 처리된 배송 완료 이벤트 - orderId: {}", event.orderId());
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                }
+                return;
+            }
             order.changeStatus(OrderStatus.COMPLETE);
 
             // 4. 수동 커밋

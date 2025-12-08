@@ -78,6 +78,10 @@ resource "aws_ecs_task_definition" "auth" {
           value = local.kafka_bootstrap
         },
         {
+          name  = "SERVER_URL",
+          value = "http://gateway.klp.local"
+        },
+        {
           name  = "JWT_ACCESS_EXPIRATION",
           value = "3600000"
         },

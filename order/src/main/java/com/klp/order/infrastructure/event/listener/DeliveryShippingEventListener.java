@@ -63,6 +63,14 @@ public class DeliveryShippingEventListener {
             Order order = orderService.findById(event.orderId());
             log.info("주문 조회 완료 - orderId: {}, 현재 상태: {}",
                 order.getOrderId(), order.getOrderStatus());
+
+            if (order.getOrderStatus() == OrderStatus.DELIVERY_SHIPPING) {
+                log.info("이미 처리된 배송 중 이벤트 - orderId: {}", event.orderId());
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                }
+                return;
+            }
             order.changeStatus(OrderStatus.DELIVERY_SHIPPING);
             orderRepository.save(order);
 
