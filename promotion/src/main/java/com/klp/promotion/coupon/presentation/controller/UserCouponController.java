@@ -2,6 +2,7 @@ package com.klp.promotion.coupon.presentation.controller;
 
 import com.klp.promotion.coupon.application.facade.UserCouponFacade;
 import com.klp.promotion.coupon.application.service.UserCouponService;
+import com.klp.promotion.coupon.presentation.controller.docs.UserCouponControllerDoc;
 import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
 import com.klp.promotion.coupon.presentation.dto.UserCouponDetailResponse;
 import com.klp.promotion.global.security.model.UserDetailsImpl;
@@ -22,9 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/user-coupons")
+@RequestMapping("/v1/promotions/user-coupons")
 @RequiredArgsConstructor
-public class UserCouponController {
+public class UserCouponController implements UserCouponControllerDoc {
 
     private final UserCouponFacade userCouponFacade;
     private final UserCouponService userCouponService;
@@ -52,7 +53,8 @@ public class UserCouponController {
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<UserCouponDetailResponse> getUserCoupon(
         @PathVariable UUID userCouponId) {
-        UserCouponDetailResponse response = UserCouponDetailResponse.from(userCouponService.findByUserCouponId(userCouponId));
+        UserCouponDetailResponse response = UserCouponDetailResponse.from(
+            userCouponService.findByUserCouponId(userCouponId));
         return ResponseEntity.ok(response);
     }
 
@@ -60,7 +62,8 @@ public class UserCouponController {
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<List<UserCouponDetailResponse>> getUserCoupons(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<UserCouponDetailResponse> response = UserCouponDetailResponse.fromList(userCouponService.findAllByUserId(userDetails.getUserId()));
+        List<UserCouponDetailResponse> response = UserCouponDetailResponse.fromList(
+            userCouponService.findAllByUserId(userDetails.getUserId()));
         return ResponseEntity.ok(response);
     }
 
@@ -71,7 +74,6 @@ public class UserCouponController {
         userCouponFacade.deleteUserCoupon(userCouponId, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
-
 
 
 }
