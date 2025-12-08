@@ -101,6 +101,8 @@ locals {
   )
 
   otel_image = "${data.aws_ecr_repository.service["otel-collector"].repository_url}:latest"
+
+  alb_server_url = "http://${aws_lb.public_alb.dns_name}"
 }
 
 resource "aws_service_discovery_service" "ecs" {
