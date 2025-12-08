@@ -2,7 +2,6 @@ package com.klp.user.application;
 
 import com.klp.global.exception.BusinessException;
 import com.klp.user.application.command.ValidateUserCommand;
-import com.klp.user.application.event.UserProfileChangedEvent;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.exception.UserErrorCode;
 import com.klp.user.domain.repository.UserRepository;
@@ -53,7 +52,7 @@ public class UserService {
             request.email(),
             request.role());
 
-        applicationEventPublisher.publishEvent(new UserProfileChangedEvent(userId));
+//        applicationEventPublisher.publishEvent(new UserProfileChangedEvent(userId));
     }
 
     @Transactional

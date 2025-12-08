@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "Resources": [
+    {
+      "TargetService": {
+        "Type": "AWS::ECS::Service",
+        "Properties": {
+          "TaskDefinition": "<TASK_DEFINITION>",
+          "LoadBalancerInfo": {
+            "TargetGroupPairInfoList": [
+              {
+                "ProdTrafficRoute": {
+                  "ListenerArns": [
+                    "${PROD_LISTENER_ARN}"
+                  ]
+                },
+                "TargetGroups": [
+                  { "Name": "${BLUE_TARGET_GROUP}" },
+                  { "Name": "${GREEN_TARGET_GROUP}" }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
