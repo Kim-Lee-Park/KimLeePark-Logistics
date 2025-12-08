@@ -3,8 +3,7 @@ package com.klp.order.infrastructure.event.listener;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.infrastructure.event.event.DeliveryCompletedEvent;
-import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderDeliveryEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -34,19 +33,28 @@ public class DeliveryCompletedEventListener {
         topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
     )
     @KafkaListener(
-        topics = "delivery.completed",
+        topics = "delivery.topic",
         groupId = "order-service-group",
         containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
     public void handleDeliveryCompleted(
-        @Payload DeliveryCompletedEvent event,
+        @Payload OrderDeliveryEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 배송 완료 이벤트 수신: orderId={}, partition={}, offset={}, items={} ===",
-            event.orderId(), partition, offset, event.items().size());
+        log.info("=== 배송 이벤트 수신: orderId={}, status={}, partition={}, offset={}, items={} ===",
+            event.orderId(), event.status(), partition, offset, event.items().size());
+
+        // ARRIVED 상태가 아니면 무시
+        if (!"ARRIVED".equals(event.status())) {
+            log.debug("ARRIVED 상태가 아닌 이벤트 무시: status={}", event.status());
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+            return;
+        }
 
         try {
             // 1. 주문 조회
@@ -62,7 +70,7 @@ public class DeliveryCompletedEventListener {
             }
 
             log.info("=== 배송 완료 이벤트 처리 완료: orderId={}, 상태={} ===",
-                event.orderId(), OrderStatus.DELIVERY_CREATED);
+                event.orderId(), OrderStatus.COMPLETE);
 
         } catch (Exception e) {
             log.error("배송 완료 이벤트 처리 실패: orderId={}, partition={}, offset={}",
@@ -76,8 +84,8 @@ public class DeliveryCompletedEventListener {
 
     // 실패시 자동으로 호출한다고 합니다.
     @DltHandler
-    public void handleDeliveryCreatedDlt(
-        @Payload DeliveryCreatedEvent event,
+    public void handleDeliveryCompletedDlt(
+        @Payload OrderDeliveryEvent event,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
 
@@ -85,6 +93,6 @@ public class DeliveryCompletedEventListener {
         log.error("⚠️ DLT 도착: Delivery Completed Event");
         log.error("⚠️ 수동 처리가 필요합니다!");
         log.error("========================================");
-        log.error("orderId={}, error={}", event.orderId(), exceptionMessage);
+        log.error("orderId={}, status={}, error={}", event.orderId(), event.status(), exceptionMessage);
     }
 }

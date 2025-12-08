@@ -92,7 +92,7 @@ public class KafkaConfig {
         props.put(JsonDeserializer.TYPE_MAPPINGS,
             "PaymentCompletedEvent:com.klp.order.infrastructure.event.event.PaymentCompletedEvent,"
                 +
-                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
+                "OrderDeliveryEvent:com.klp.order.infrastructure.event.event.OrderDeliveryEvent");
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
