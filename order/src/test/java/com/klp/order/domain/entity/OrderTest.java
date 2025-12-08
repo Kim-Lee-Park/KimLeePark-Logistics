@@ -3,12 +3,12 @@ package com.klp.order.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
+import com.klp.order.global.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

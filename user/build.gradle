@@ -22,7 +22,6 @@ configurations {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 ext {
@@ -36,7 +35,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.cloud:spring-cloud-starter-bus-kafka'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     compileOnly 'org.projectlombok:lombok'
@@ -46,8 +44,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // common-module
-    implementation 'com.klp.common:common-module:1.0.0'
+    //spring aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     //trace
     implementation 'io.micrometer:micrometer-tracing'
@@ -62,6 +60,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.7.0-alpha'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:2.7.0-alpha'
+
+    //kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
 }
 
 dependencyManagement {

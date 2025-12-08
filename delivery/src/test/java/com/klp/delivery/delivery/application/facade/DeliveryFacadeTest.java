@@ -6,13 +6,11 @@ import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_ADDRESS_HUB_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createArrivalHubInfo;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createArrivalInfoCommand;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDelivery;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryFromCommand;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryWithItems;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryRequest;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeliveryWithItems;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDepartureHubInfo;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDeparutreInfoCommand;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.createDrivers;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.DEFAULT_HUB_ID_UUID_SECOND;
 import static com.klp.delivery.delivery.fixture.OrderItemFixture.ORDER_ITEM_ID_FIRST;
@@ -30,7 +28,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.delivery.MockTest;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
@@ -39,16 +36,15 @@ import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.HubService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
-import com.klp.delivery.routeplan.application.service.HubClientService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
-import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
+import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
+import com.klp.delivery.global.exception.BusinessException;
+import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -88,8 +84,10 @@ public class DeliveryFacadeTest extends MockTest {
 
         doNothing().when(idempotencyKeyService)
             .registerIdempotencyKey(any(IdempotencyCommand.class));
-        when(hubClientService.getHubById(DEFAULT_USER_ADDRESS_HUB_ID)).thenReturn(createArrivalHubInfo());
-        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(createDepartureHubInfo());
+        when(hubClientService.getHubById(DEFAULT_USER_ADDRESS_HUB_ID)).thenReturn(
+            createArrivalHubInfo());
+        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(
+            createDepartureHubInfo());
         when(driverService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
             delivery);
@@ -144,8 +142,10 @@ public class DeliveryFacadeTest extends MockTest {
 //
 //                return null;
 //            });
-        when(hubClientService.getHubById(DEFAULT_USER_ADDRESS_HUB_ID)).thenReturn(createArrivalHubInfo());
-        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(createDepartureHubInfo());
+        when(hubClientService.getHubById(DEFAULT_USER_ADDRESS_HUB_ID)).thenReturn(
+            createArrivalHubInfo());
+        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(
+            createDepartureHubInfo());
         when(hubClientService.getHubById(DEFAULT_HUB_ID_UUID_SECOND)).thenReturn(
             new com.klp.delivery.routeplan.application.command.HubInfo(
                 DEFAULT_HUB_ID_UUID_SECOND,
@@ -224,8 +224,10 @@ public class DeliveryFacadeTest extends MockTest {
         // 멱등키 등록 수정 정상적으로 수행 된다고 가정
         doNothing().when(idempotencyKeyService)
             .registerIdempotencyKey(any(IdempotencyCommand.class));
-        when(hubClientService.getHubById(DEFAULT_USER_ADDRESS_HUB_ID)).thenReturn(createArrivalHubInfo());
-        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(createDepartureHubInfo());
+        when(hubClientService.getHubById(DEFAULT_USER_ADDRESS_HUB_ID)).thenReturn(
+            createArrivalHubInfo());
+        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(
+            createDepartureHubInfo());
         when(driverService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList())).thenReturn(
             delivery);
@@ -323,7 +325,8 @@ public class DeliveryFacadeTest extends MockTest {
         doNothing().when(idempotencyKeyService)
             .registerIdempotencyKey(any(IdempotencyCommand.class));
         when(hubClientService.getHubById(DEFAULT_ARRIVAL_ID)).thenReturn(createArrivalHubInfo());
-        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(createDepartureHubInfo());
+        when(hubClientService.getHubById(DEFAULT_DEPARTURE_ID)).thenReturn(
+            createDepartureHubInfo());
         when(driverService.findArrivalHubDrivers(any(UUID.class))).thenReturn(createDrivers());
         when(deliveryService.registerDelivery(any(DeliveryCommand.class), anyList()))
             .thenThrow(new BusinessException(DeliveryErrorCode.DELIVERY_CREATION_FAILED));
@@ -383,7 +386,6 @@ public class DeliveryFacadeTest extends MockTest {
         verify(idempotencyKeyService, times(1)).deleteIdempotencyKey(idempotencyKey);
         verify(deliveryService, never()).registerDelivery(any(DeliveryCommand.class), anyList());
     }
-
 
 
 }

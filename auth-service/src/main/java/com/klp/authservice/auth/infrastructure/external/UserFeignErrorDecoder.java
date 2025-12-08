@@ -1,7 +1,7 @@
 package com.klp.authservice.auth.infrastructure.external;
 
 import com.klp.authservice.auth.exception.AuthErrorCode;
-import com.klp.common.exception.BusinessException;
+import com.klp.authservice.global.exception.BusinessException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;

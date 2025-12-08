@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class InventoryEventProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplateAcksAll;
 
     public void publishInventoryDeductedEvent(InventoryDeductedEvent event) {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
+            kafkaTemplateAcksAll.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {

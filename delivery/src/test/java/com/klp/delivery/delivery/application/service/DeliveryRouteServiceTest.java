@@ -2,8 +2,8 @@ package com.klp.delivery.delivery.application.service;
 
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_ARRIVAL_NAME;
-import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DELIVERY_ID_FIRST;
+import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_ID;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_DEPARTURE_NAME;
 import static com.klp.delivery.delivery.fixture.DeliveryFixture.DEFAULT_USER_DRIVER_ID;
 import static com.klp.delivery.routeplan.fixture.RoutePlanFixture.ROUTE_PLAN_ID;
@@ -16,7 +16,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.MockTest;
@@ -27,6 +26,7 @@ import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
 import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +97,8 @@ class DeliveryRouteServiceTest extends MockTest {
 
         // then: 상태가 SHIPPING (ARRIVED_AT_FINAL_HUB → SHIPPING 변환)이고, vendorDriverId가 사용되었는지 검증
         assertThat(result).isNotNull();
-        assertThat(result.status()).isEqualTo(CustomerDeliveryStatus.SHIPPING); // DeliveryStatus.ARRIVED_AT_FINAL_HUB → CustomerDeliveryStatus.SHIPPING
+        assertThat(result.status()).isEqualTo(
+            CustomerDeliveryStatus.SHIPPING); // DeliveryStatus.ARRIVED_AT_FINAL_HUB → CustomerDeliveryStatus.SHIPPING
         assertThat(result.deliveryRouteId()).isEqualTo(savedRoute.getDeliveryRouteId());
 
         verify(deliveryRouteRepository, times(1)).save(any(DeliveryRoute.class));
@@ -146,7 +147,8 @@ class DeliveryRouteServiceTest extends MockTest {
 
         // 물류 배송 담당자 조회 결과
         List<DriverResponse> logisticsDrivers = List.of(
-            new DriverResponse(100L, "logistics-driver", "U999", "010-9999-9999", "logistics@test.com")
+            new DriverResponse(100L, "logistics-driver", "U999", "010-9999-9999",
+                "logistics@test.com")
         );
         when(driverClientService.findLogisticsDrivers()).thenReturn(logisticsDrivers);
 
@@ -172,7 +174,8 @@ class DeliveryRouteServiceTest extends MockTest {
 
         // then: 상태가 SHIPPING (IN_HUB_TRANSIT → SHIPPING 변환)이고, 첫 번째 PlanItem 정보를 사용했는지 검증
         assertThat(result).isNotNull();
-        assertThat(result.status()).isEqualTo(CustomerDeliveryStatus.SHIPPING); // DeliveryStatus.IN_HUB_TRANSIT → CustomerDeliveryStatus.SHIPPING
+        assertThat(result.status()).isEqualTo(
+            CustomerDeliveryStatus.SHIPPING); // DeliveryStatus.IN_HUB_TRANSIT → CustomerDeliveryStatus.SHIPPING
         assertThat(result.deliveryRouteId()).isEqualTo(savedRoute.getDeliveryRouteId());
 
         verify(deliveryRouteRepository, times(1)).save(any(DeliveryRoute.class));
@@ -227,10 +230,13 @@ class DeliveryRouteServiceTest extends MockTest {
         "DELIVERED, ARRIVED"
     })
     @DisplayName("DeliveryRouteStatus → CustomerDeliveryStatus 변환 테스트")
-    void convertToCustomerDeliveryStatus(String deliveryRouteStatusStr, String expectedCustomerStatusStr) {
+    void convertToCustomerDeliveryStatus(String deliveryRouteStatusStr,
+        String expectedCustomerStatusStr) {
         // given
-        DeliveryRouteStatus deliveryRouteStatus = DeliveryRouteStatus.valueOf(deliveryRouteStatusStr);
-        CustomerDeliveryStatus expectedStatus = CustomerDeliveryStatus.valueOf(expectedCustomerStatusStr);
+        DeliveryRouteStatus deliveryRouteStatus = DeliveryRouteStatus.valueOf(
+            deliveryRouteStatusStr);
+        CustomerDeliveryStatus expectedStatus = CustomerDeliveryStatus.valueOf(
+            expectedCustomerStatusStr);
 
         // when
         CustomerDeliveryStatus result = deliveryRouteService.convertToCustomerDeliveryStatus(
@@ -385,7 +391,8 @@ class DeliveryRouteServiceTest extends MockTest {
             "ACTIVE"
         );
 
-        when(deliveryRouteRepository.findByDeliveryId(deliveryId)).thenReturn(List.of(existingRoute));
+        when(deliveryRouteRepository.findByDeliveryId(deliveryId)).thenReturn(
+            List.of(existingRoute));
 
         // when & then: 다음 경로 계획을 찾을 수 없을 때 예외 발생
         assertThatThrownBy(() -> deliveryRouteService.appendDeliveryRoute(

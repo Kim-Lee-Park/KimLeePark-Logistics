@@ -23,7 +23,7 @@ import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDup
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
 import com.klp.authservice.auth.presentation.dto.response.ReissueResponse;
-import com.klp.common.exception.BusinessException;
+import com.klp.authservice.global.exception.BusinessException;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -93,7 +93,8 @@ class AuthServiceTest {
         }
 
         /**
-         * 우선 호출 실패 시에 추가적인 작업이 이루어져야할 것으로 생각해 1차로 RuntimeException으로 처리. Timeout 처리 등에 관해서 적용 시 테스트 코드 내용 수정 필요
+         * 우선 호출 실패 시에 추가적인 작업이 이루어져야할 것으로 생각해 1차로 RuntimeException으로 처리. Timeout 처리 등에 관해서 적용 시 테스트
+         * 코드 내용 수정 필요
          */
         @Test
         @DisplayName("UserClient 호출 실패 시 예외가 발생한다")

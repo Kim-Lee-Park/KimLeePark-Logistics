@@ -1,7 +1,5 @@
 package com.klp.hub.global.exception;
 
-import com.klp.common.exception.BusinessException;
-import com.klp.common.exception.ErrorResponse;
 import com.klp.hub.common.exception.ExternalApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.TypeMismatchException;

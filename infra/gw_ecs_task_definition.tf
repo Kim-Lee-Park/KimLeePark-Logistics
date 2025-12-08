@@ -37,13 +37,66 @@ resource "aws_ecs_task_definition" "gateway" {
       }
 
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
-        { name = "CONFIG_SERVER_URL", value = "config.klp.local" },
-        { name = "EUREKA_URL", value = "discovery.klp.local" },
-        { name = "GATEWAY_SERVICE_PORT", value = "8080" },
-        { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
-        { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "http://localhost:4317" },
-        { name = "OTEL_SERVICE_NAME", value = "klp-logistics-gateway" }
+        {
+          name  = "SPRING_PROFILES_ACTIVE",
+          value = "prod"
+        },
+        {
+          name  = "EUREKA_URL",
+          value = "http://discovery.klp.local:8761/eureka/"
+        },
+        {
+          name  = "CONFIG_SERVER_URL",
+          value = "http://config.klp.local:8888"
+        },
+        {
+          name  = "GATEWAY_DOMAIN_NAME",
+          value = "gateway.klp.local"
+        },
+        {
+          name  = "GATEWAY_SERVICE_PORT",
+          value = "8080"
+        },
+        {
+          name  = "KAFKA_BOOTSTRAP_SERVERS",
+          value = local.kafka_bootstrap
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_ENDPOINT",
+          value = "http://localhost:4318"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+          value = "http://localhost:4318/v1/traces"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+          value = "http://localhost:4318/v1/logs"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+          value = "http://localhost:4318/v1/metrics"
+        },
+        {
+          name  = "OTEL_TRACES_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_METRICS_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_LOGS_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_SERVICE_NAME",
+          value = "klp-logistics-gateway"
+        },
+        {
+          name  = "OTEL_RESOURCE_ATTRIBUTES",
+          value = "service.namespace=klp"
+        }
       ]
 
       secrets = [
@@ -66,6 +119,10 @@ resource "aws_ecs_task_definition" "gateway" {
         {
           containerPort = 4318
           protocol      = "tcp"
+        },
+        {
+          containerPort = 9464,
+          protocol      = "tcp"
         }
       ]
 
@@ -75,12 +132,18 @@ resource "aws_ecs_task_definition" "gateway" {
           value = var.aws_region
         },
         {
+          name  = "TEMPO_HOST"
+          value = aws_instance.observability_stack.private_ip
+        },
+        {
+          name  = "LOKI_HOST"
+          value = aws_instance.observability_stack.private_ip
+        },
+        {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
           value = "service.namespace=klp,service.name=klp-logistics-gateway"
         }
       ]
-
-      command = ["--config=/etc/otel-config.yaml"]
 
       logConfiguration = {
         logDriver = "awslogs"

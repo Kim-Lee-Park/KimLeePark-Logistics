@@ -37,15 +37,74 @@ resource "aws_ecs_task_definition" "promotion" {
       }
 
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
-        { name = "EUREKA_URL", value = "discovery.klp.local" },
-        { name = "CONFIG_SERVER_URL", value = "config.klp.local" },
-        { name = "PROMOTION_SERVICE_PORT", value = "8080" },
-        { name = "PROMOTION_DB_DRIVER", value = "org.postgresql.Driver" },
-        { name = "PROMOTION_DB_URL", value = local.db_urls.promotion },
-        { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
-        { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "http://localhost:4317" },
-        { name = "OTEL_SERVICE_NAME", value = "klp-logistics-promotion" }
+        {
+          name  = "SPRING_PROFILES_ACTIVE",
+          value = "prod"
+        },
+        {
+          name  = "EUREKA_URL",
+          value = "http://discovery.klp.local:8761/eureka/"
+        },
+        {
+          name  = "CONFIG_SERVER_URL",
+          value = "http://config.klp.local:8888"
+        },
+        {
+          name  = "PROMOTION_DOMAIN_NAME",
+          value = "promotion.klp.local"
+        },
+        {
+          name  = "PROMOTION_SERVICE_PORT",
+          value = "8080"
+        },
+        {
+          name  = "PROMOTION_DB_DRIVER",
+          value = "org.postgresql.Driver"
+        },
+        {
+          name  = "PROMOTION_DB_URL",
+          value = local.db_urls.promotion
+        },
+        {
+          name  = "KAFKA_BOOTSTRAP_SERVERS",
+          value = local.kafka_bootstrap
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_ENDPOINT",
+          value = "http://localhost:4318"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+          value = "http://localhost:4318/v1/traces"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+          value = "http://localhost:4318/v1/logs"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+          value = "http://localhost:4318/v1/metrics"
+        },
+        {
+          name  = "OTEL_TRACES_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_METRICS_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_LOGS_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_SERVICE_NAME",
+          value = "klp-logistics-promotion"
+        },
+        {
+          name  = "OTEL_RESOURCE_ATTRIBUTES",
+          value = "service.namespace=klp"
+        }
       ]
 
       secrets = [
@@ -72,6 +131,10 @@ resource "aws_ecs_task_definition" "promotion" {
         {
           containerPort = 4318
           protocol      = "tcp"
+        },
+        {
+          containerPort = 9464,
+          protocol      = "tcp"
         }
       ]
 
@@ -81,12 +144,18 @@ resource "aws_ecs_task_definition" "promotion" {
           value = var.aws_region
         },
         {
+          name  = "TEMPO_HOST"
+          value = aws_instance.observability_stack.private_ip
+        },
+        {
+          name  = "LOKI_HOST"
+          value = aws_instance.observability_stack.private_ip
+        },
+        {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
           value = "service.namespace=klp,service.name=klp-logistics-promotion"
         }
       ]
-
-      command = ["--config=/etc/otel-config.yaml"]
 
       logConfiguration = {
         logDriver = "awslogs"

@@ -1,7 +1,7 @@
 package com.klp.delivery.routeplan.application.service;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.UserDetailsImpl;
+import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.command.CreateRoutePlanCommand;
 import com.klp.delivery.routeplan.application.command.HubInfo;
 import com.klp.delivery.routeplan.application.command.HubRouteInfo;

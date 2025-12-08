@@ -160,4 +160,11 @@ public class ProductCache {
         productLocalCache.put(key, new CachedProduct(null, true));
         log.debug("[ProductCache] Cached NEGATIVE product for key={}", key);
     }
+
+    public void evictProduct(UUID productId) {
+        String key = buildKey(productId);
+        productLocalCache.invalidate(key);
+        redisTemplate.delete(key);
+        log.debug("[ProductCache] Evicted product cache for key={}", key);
+    }
 }
