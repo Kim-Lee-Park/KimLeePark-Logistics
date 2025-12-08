@@ -23,6 +23,7 @@ import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.DriverInfo;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
 import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
+import com.klp.user.presentation.dto.response.UserAddressHubResponse;
 import com.klp.user.presentation.dto.response.UserAddressListResponse;
 import com.klp.user.presentation.dto.response.UserAddressResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
@@ -341,5 +342,14 @@ public class UserFacade {
     public void deleteUserAddress(UUID userAddressId, Long userId) {
         userAddressService.deleteUserAddress(userAddressId, userId);
         log.info("회원 주소 삭제 완료 - addressId: {}, deletedBy: {}", userAddressId, userId);
+    }
+
+    /**
+     * 회원 주소의 허브 ID 조회
+     */
+    @Transactional(readOnly = true)
+    public UserAddressHubResponse getUserAddressHub(UUID userAddressId) {
+        UserAddress userAddress = userAddressService.getUserAddress(userAddressId);
+        return new UserAddressHubResponse(userAddress.getHubId());
     }
 }
