@@ -27,14 +27,6 @@ resource "aws_ecs_task_definition" "order" {
         }
       ]
 
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
-        interval    = 10
-        timeout     = 5
-        retries     = 3
-        startPeriod = 30
-      }
-
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -126,7 +118,7 @@ resource "aws_ecs_task_definition" "order" {
           value = aws_elasticache_cluster.redis.cache_nodes[0].address
         },
         {
-          name  = "REDIS_PORT",
+          name = "REDIS_PORT",
           value = tostring(aws_elasticache_cluster.redis.port)
         }
       ]

@@ -100,6 +100,8 @@ resource "aws_instance" "observability_stack" {
         environment:
           GF_SECURITY_ADMIN_USER: "admin"
           GF_SECURITY_ADMIN_PASSWORD: "admin1234"
+          GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
+          GF_SERVER_SERVE_FROM_SUB_PATH: "true"
         depends_on:
           - loki
           - tempo
