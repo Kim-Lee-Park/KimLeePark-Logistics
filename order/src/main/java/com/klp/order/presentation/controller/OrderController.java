@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/orders")
 @RequiredArgsConstructor
-public class OrderController {
+public class OrderController implements OrderControllerDoc {
 
     private final OrderService orderService;
     private final OrderFacade orderFacade;
@@ -83,9 +83,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<GetOneOrderResponse> getOrder(
-        @PathVariable UUID orderId
-    ) {
+    public ResponseEntity<GetOneOrderResponse> getOrder(@PathVariable UUID orderId) {
         Order order = orderService.findById(orderId);
         GetOneOrderResponse response = GetOneOrderResponse.from(order);
 
@@ -140,9 +138,7 @@ public class OrderController {
     }
 
     @GetMapping("/progressing")
-    public ResponseEntity<GetOrderProgressResponse> getOrderStatus(
-        @RequestParam UUID hubId
-    ) {
+    public ResponseEntity<GetOrderProgressResponse> getOrderStatus(@RequestParam UUID hubId) {
         boolean isOrderProgressing = orderService.hasProgressingOrders(hubId);
         GetOrderProgressResponse response = GetOrderProgressResponse.of(isOrderProgressing);
         return ResponseEntity.ok(response);
