@@ -51,7 +51,14 @@ public class UserAddressController implements UserAddressControllerDoc {
         @PathVariable(name = "userId") Long userId,
         @Valid @RequestBody UserAddressCreateRequest request
     ) {
-        userFacade.createUserAddress(request.toCommand(userId));
+        userFacade.createUserAddress(
+            userId,
+            request.latitude(),
+            request.longitude(),
+            request.address(),
+            request.detail(),
+            request.isDefault()
+        );
         return ResponseEntity.ok().build();
     }
 
@@ -62,7 +69,15 @@ public class UserAddressController implements UserAddressControllerDoc {
         @PathVariable(name = "addressId") UUID addressId,
         @Valid @RequestBody UserAddressCreateRequest request
     ) {
-        userFacade.updateUserAddress(addressId, request.toCommand(userId));
+        userFacade.updateUserAddress(
+            addressId,
+            userId,
+            request.latitude(),
+            request.longitude(),
+            request.address(),
+            request.detail(),
+            request.isDefault()
+        );
         return ResponseEntity.ok().build();
     }
 
