@@ -39,7 +39,8 @@ public class InventoryReservationService {
             );
 
             if (available < item.quantity()) {
-                reservationRepository.deleteAll(reservations);
+                log.error("재고 부족: productId={}, hubId={}, available={}, requested={}",
+                    item.productId(), item.hubId(), available, item.quantity());
                 throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
             }
 
