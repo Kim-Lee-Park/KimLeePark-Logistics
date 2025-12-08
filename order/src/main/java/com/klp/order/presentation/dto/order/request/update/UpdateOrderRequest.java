@@ -18,6 +18,7 @@ public record UpdateOrderRequest(
     public UpdateOrderCommand toCommand() {
         List<OrderItemCommand> itemCommands = orderItems.stream()
             .map(item -> new OrderItemCommand(item.productId(), item.productName(), item.hubId(),
+                item.price(),
                 item.quantity()))
             .toList();
 

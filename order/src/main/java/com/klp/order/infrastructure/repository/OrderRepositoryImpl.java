@@ -53,13 +53,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findBySupplierId(Long supplierId) {
+    public List<Order> findBySupplierId(UUID supplierId) {
         return orderJpaRepository.findBySupplierId(supplierId);
     }
 
     @Override
-    public List<Order> findByCustomerId(Long customerId) {
-        return orderJpaRepository.findByCustomerId(customerId);
+    public List<Order> findByUserId(Long userId) {
+        return orderJpaRepository.findByUserId(userId);
     }
 
     @Override
@@ -69,8 +69,8 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public Page<Order> searchOrders(
-        Long supplierId,
-        Long customerId,
+        UUID supplierId,
+        Long userId,
         Long createdBy,
         LocalDateTime startDate,
         LocalDateTime endDate,
@@ -78,7 +78,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     ) {
         return orderJpaRepository.searchOrders(
             supplierId,
-            customerId,
+            userId,
             createdBy,
             startDate,
             endDate,

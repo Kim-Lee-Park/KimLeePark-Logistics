@@ -31,9 +31,13 @@ public class OrderService {
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
         Order order = Order.create(
+            command.userId(),
+            command.userCouponId(),
             command.supplierId(),
-            command.customerId(),
             command.comment(),
+            command.deliveryAddress(),
+            command.deliveryLatitude(),
+            command.deliveryLongitude(),
             command.items()
         );
 
@@ -66,13 +70,13 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Order> findBySupplierId(Long supplierId) {
+    public List<Order> findBySupplierId(UUID supplierId) {
         return orderRepository.findBySupplierId(supplierId);
     }
 
     @Transactional(readOnly = true)
-    public List<Order> findByCustomerId(Long customerId) {
-        return orderRepository.findByCustomerId(customerId);
+    public List<Order> findByCustomerId(Long userId) {
+        return orderRepository.findByUserId(userId);
     }
 
     @Transactional(readOnly = true)
@@ -101,8 +105,8 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public PageResponse<GetOrdersResponse> searchOrders(
-        Long supplierId,
-        Long customerId,
+        UUID supplierId,
+        Long userId,
         Long createdBy,
         LocalDate startDate,
         LocalDate endDate,
@@ -113,7 +117,7 @@ public class OrderService {
 
         Page<Order> orderPage = orderRepository.searchOrders(
             supplierId,
-            customerId,
+            userId,
             createdBy,
             startDateTime,
             endDateTime,
@@ -133,6 +137,14 @@ public class OrderService {
         return orderRepository.existsByHubIdAndOrderStatusNotComplete(hubId);
     }
 
+    @Transactional
+    public void updateDiscountPrice(Order order, int couponDiscountPrice, int gradeDiscountPrice) {
+        checkCouponDiscountPrice(couponDiscountPrice);
+        checkGradeDiscountPrice(gradeDiscountPrice);
+        order.updateDiscountPrice(couponDiscountPrice, gradeDiscountPrice);
+        orderRepository.save(order);
+    }
+
     private void checkDeletedBy(Long deletedBy) {
         if (deletedBy == null) {
             throw new BusinessException(OrderErrorCode.DELETED_BY_REQUIRED);
@@ -150,6 +162,18 @@ public class OrderService {
     private void checkHubId(UUID hubId) {
         if (hubId == null) {
             throw new BusinessException(OrderErrorCode.HUB_ID_REQUIRED);
+        }
+    }
+
+    private void checkCouponDiscountPrice(int couponDiscountPrice) {
+        if (couponDiscountPrice < 0) {
+            throw new BusinessException(OrderErrorCode.INVALID_COUPON_DISCOUNT);
+        }
+    }
+
+    private void checkGradeDiscountPrice(int gradeDiscountPrice) {
+        if (gradeDiscountPrice < 0) {
+            throw new BusinessException(OrderErrorCode.INVALID_GRADE_DISCOUNT);
         }
     }
 }

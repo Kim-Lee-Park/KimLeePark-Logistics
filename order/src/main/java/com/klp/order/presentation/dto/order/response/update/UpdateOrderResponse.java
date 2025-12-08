@@ -4,6 +4,7 @@ import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.presentation.dto.ordercancellation.response.OrderCancellationResponse;
 import com.klp.order.presentation.dto.orderitem.response.OrderItemResponse;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -11,10 +12,18 @@ import java.util.stream.Collectors;
 
 public record UpdateOrderResponse(
     UUID orderId,
-    Long supplierId,
-    Long customerId,
+    UUID supplierId,
+    Long userId,
+    UUID userCouponId,
     String comment,
     OrderStatus orderStatus,
+    int originalPrice,
+    int couponDiscountPrice,
+    int gradeDiscountPrice,
+    int orderPrice,
+    String deliveryAddress,
+    BigDecimal deliveryLatitude,
+    BigDecimal deliveryLongitude,
     List<OrderItemResponse> orderItems,
     OrderCancellationResponse cancellation,
     LocalDateTime createdAt,
@@ -31,9 +40,17 @@ public record UpdateOrderResponse(
         return new UpdateOrderResponse(
             order.getOrderId(),
             order.getSupplierId(),
-            order.getCustomerId(),
+            order.getUserId(),
+            order.getUserCouponId(),
             order.getComment(),
             order.getOrderStatus(),
+            order.getOriginalPrice(),
+            order.getCouponDiscountPrice(),
+            order.getGradeDiscountPrice(),
+            order.getOrderPrice(),
+            order.getDeliveryAddress(),
+            order.getDeliveryLatitude(),
+            order.getDeliveryLongitude(),
             orderItemResponses,
             OrderCancellationResponse.from(order.getCancellation()),
             order.getCreatedAt(),

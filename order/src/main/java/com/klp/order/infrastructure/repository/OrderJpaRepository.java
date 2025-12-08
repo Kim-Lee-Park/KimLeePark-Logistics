@@ -15,21 +15,21 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByDeletedAtIsNull();
 
-    List<Order> findBySupplierId(Long supplierId);
+    List<Order> findBySupplierId(UUID supplierId);
 
-    List<Order> findByCustomerId(Long customerId);
+    List<Order> findByUserId(Long userId);
 
     Optional<Order> findByOrderIdAndDeletedAtIsNull(UUID orderId);
 
     @Query("SELECT o FROM Order o WHERE o.deletedAt IS NULL " +
         "AND (:supplierId IS NULL OR o.supplierId = :supplierId) " +
-        "AND (:customerId IS NULL OR o.customerId = :customerId) " +
+        "AND (:userId IS NULL OR o.userId = :userId) " +
         "AND (:createdBy IS NULL OR o.createdBy = :createdBy) " +
-        "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
-        "AND (:endDate IS NULL OR o.createdAt <= :endDate)")
+        "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
+        "AND (CAST(:endDate AS timestamp) IS NULL OR o.createdAt <= :endDate)")
     Page<Order> searchOrders(
-        @Param("supplierId") Long supplierId,
-        @Param("customerId") Long customerId,
+        @Param("supplierId") UUID supplierId,
+        @Param("userId") Long userId,
         @Param("createdBy") Long createdBy,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate,
