@@ -4,16 +4,20 @@ import com.klp.order.application.service.OrderItemService;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.infrastructure.event.DeliveryCreatedEvent;
-import com.klp.order.infrastructure.event.DeliveryCreatedEvent.DeliveryItem;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent.DeliveryItem;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,13 @@ public class DeliveryEventListener {
     private final OrderService orderService;
     private final OrderItemService orderItemService;
 
+    @RetryableTopic(
+        attempts = "3",
+        backoff = @Backoff(delay = 1000L, multiplier = 2.0, maxDelay = 4000L),
+        autoCreateTopics = "true",
+        include = Exception.class,
+        topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
+    )
     @KafkaListener(
         topics = "delivery.created",
         groupId = "order-service-group",
@@ -88,5 +99,19 @@ public class DeliveryEventListener {
         }
 
         log.info("모든 deliveryId 할당 완료 - 총 {}개", deliveryItems.size());
+    }
+
+    // 실패시 자동으로 호출한다고 합니다.
+    @DltHandler
+    public void handleDeliveryCreatedDlt(
+        @Payload DeliveryCreatedEvent event,
+        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
+
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: Delivery Created Event");
+        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("========================================");
+        log.error("orderId={}, error={}", event.orderId(), exceptionMessage);
     }
 }

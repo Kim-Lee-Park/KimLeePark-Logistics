@@ -1,4 +1,4 @@
-package com.klp.order.infrastructure.event;
+package com.klp.order.infrastructure.event.event;
 
 import java.util.UUID;
 

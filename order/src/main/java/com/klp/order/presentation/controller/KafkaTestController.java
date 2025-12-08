@@ -1,8 +1,8 @@
 package com.klp.order.presentation.controller;
 
-import com.klp.order.infrastructure.event.DeliveryCreatedEvent;
-import com.klp.order.infrastructure.event.DeliveryCreatedEvent.DeliveryItem;
-import com.klp.order.infrastructure.event.PaymentCompletedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent.DeliveryItem;
+import com.klp.order.infrastructure.event.event.PaymentCompletedEvent;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
