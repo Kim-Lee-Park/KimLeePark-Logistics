@@ -37,6 +37,10 @@ jobs:
         working-directory: promotion
         run: ./gradlew test
 
+      - name: Build application
+        working-directory: promotion
+        run: ./gradlew clean build -x test
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
