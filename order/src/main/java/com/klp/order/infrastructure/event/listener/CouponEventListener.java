@@ -55,6 +55,15 @@ public class CouponEventListener {
             Order order = orderService.findById(event.orderId());
             log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
 
+            if (order.getOrderStatus() == OrderStatus.COMPLETE
+                || order.getOrderStatus() == OrderStatus.COUPON_CONFIRMED) {
+                log.info("이미 처리된 쿠폰 사용 이벤트 - orderId: {}", event.orderId());
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                }
+                return;
+            }
+
             order.changeStatus(OrderStatus.COUPON_CONFIRMED);
             log.info("=== 쿠폰 사용 완료 이벤트 처리 완료: orderId={}, couponId={} ===", event.orderId(),
                 event.couponId());
