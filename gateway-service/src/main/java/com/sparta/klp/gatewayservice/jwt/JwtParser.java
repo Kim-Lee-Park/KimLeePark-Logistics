@@ -13,7 +13,7 @@ public class JwtParser {
     private static final int TOKEN_PREFIX_LENGTH = 7;
 
     public static Optional<String> extractTokenFromHeader(String authorizationHeader) {
-        log.info("test deploy gateway v5");
+        log.info("test deploy gateway v6");
         return Optional.ofNullable(authorizationHeader)
             .filter(header -> header.startsWith(TOKEN_PREFIX))
             .map(header -> header.substring(TOKEN_PREFIX_LENGTH))
