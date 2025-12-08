@@ -93,11 +93,12 @@ jobs:
           envsubst < appspec/appspec-ecs.yaml > appspec-rendered.yaml
 
       - name: Create deployment
-        uses: aws-actions/aws-codedeploy-deploy-ecs@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          application-name: ${{ env.CODEDEPLOY_APP }}
-          deployment-group: ${{ env.CODEDEPLOY_GROUP }}
           task-definition: taskdef-rendered.json
-          app-spec: appspec-rendered.yaml
-          deployment-config: CodeDeployDefault.ECSAllAtOnce
-          wait-for-completion: true
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          codedeploy-appspec: appspec-rendered.yaml
+          codedeploy-application: ${{ env.CODEDEPLOY_APP }}
+          codedeploy-deployment-group: ${{ env.CODEDEPLOY_GROUP }}
