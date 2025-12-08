@@ -4,10 +4,12 @@ import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
+import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
+import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteResponse;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
@@ -30,6 +32,7 @@ public class DeliveryRouteFacade {
     private final DeliveryService deliveryService;
     private final RoutePlanService routePlanService;
     private final DeliveryRouteRepository deliveryRouteRepository;
+    private final DeliveryEventPublisher deliveryEventPublisher;
 
     @Async("DeliveryRouteExecutor")
     @Transactional
@@ -50,7 +53,24 @@ public class DeliveryRouteFacade {
         deliveryService.applyRouteCreation(command.deliveryId(), routePlancommand.routePlanId(),
             statusCommand.status());
 
+        // 배송 경로 생성 완료 이벤트: 오더에 보내기
+        Delivery delivery = deliveryService.findDelivery(command.deliveryId());
+        List<OrderDeliveryEvent.DeliveryItem> eventItems = delivery.getDeliveryItems().stream()
+            .map(item -> new OrderDeliveryEvent.DeliveryItem(
+                item.getOrderItemId(),
+                delivery.getDeliveryId()
+            ))
+            .toList();
 
+        OrderDeliveryEvent orderDeliveryEvent = new OrderDeliveryEvent(
+            delivery.getOrderId(),
+            delivery.getStatus().name(),
+            eventItems
+        );
+        deliveryEventPublisher.publishDeliveryEvent(orderDeliveryEvent);
+
+        log.info("배송 경로 생성 완료 및 이벤트 발행: deliveryId={}, orderId={}, status={}",
+            command.deliveryId(), delivery.getOrderId(), delivery.getStatus());
     }
 
     @Transactional
