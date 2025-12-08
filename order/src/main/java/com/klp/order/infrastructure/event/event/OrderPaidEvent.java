@@ -1,4 +1,4 @@
-package com.klp.order.infrastructure.event;
+package com.klp.order.infrastructure.event.event;
 
 import com.klp.order.domain.entity.order.Order;
 import java.time.LocalDateTime;
@@ -8,8 +8,8 @@ import java.util.UUID;
 public record OrderPaidEvent(
     UUID orderId,
     String idempotencyKey,
-    Long supplierId,
-    Long customerId,
+    UUID supplierId,
+    Long userId,
     List<DeliveryItem> items,
     LocalDateTime occurredAt
 ) {
@@ -37,7 +37,7 @@ public record OrderPaidEvent(
             order.getOrderId(),
             idempotencyKey,
             order.getSupplierId(),
-            order.getCustomerId(),
+            order.getUserId(),
             items,
             LocalDateTime.now()
         );
