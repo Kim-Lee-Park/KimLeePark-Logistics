@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @KafkaListener(
     topics = KafkaTopicConfig.ORDER_CREATED_EVENTS,
     groupId = "inventory-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
+    containerFactory = "inventoryKafkaListenerContainerFactory"
 )
 public class OrderCreatedEventListener {
 

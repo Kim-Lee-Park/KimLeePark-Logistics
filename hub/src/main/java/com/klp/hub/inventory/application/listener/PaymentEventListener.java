@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @KafkaListener(
     topics = KafkaTopicConfig.PAYMENT_EVENTS,
     groupId = "inventory-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
+    containerFactory = "inventoryKafkaListenerContainerFactory"
 )
 public class PaymentEventListener {
 

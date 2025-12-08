@@ -4,9 +4,9 @@ import com.klp.hub.inventory.domain.outbox.InventoryOutbox;
 import com.klp.hub.inventory.domain.outbox.InventoryOutboxRepository;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,11 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class OutboxScheduler {
 
     private final InventoryOutboxRepository outboxRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public OutboxScheduler(
+        InventoryOutboxRepository outboxRepository,
+        @Qualifier("inventoryKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate
+    ) {
+        this.outboxRepository = outboxRepository;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     private static final int BATCH_SIZE = 100;
     private static final int MAX_RETRY = 3;
