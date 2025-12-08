@@ -1,6 +1,6 @@
 package com.klp.promotion.coupon.common.exception;
 
-import com.klp.common.exception.ErrorCode;
+import com.klp.promotion.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,8 +15,7 @@ public enum CouponErrorCode implements ErrorCode {
     INVALID_COUPON_DISCOUNT_TYPE(HttpStatus.BAD_REQUEST, "할인 타입에 맞지 않는 금액 설정입니다"),
     INVALID_COUPON_EXPIRED_AT(HttpStatus.BAD_REQUEST, "유효기간이 과거입니다"),
     COUPON_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "이미 발급된 쿠폰은 삭제할 수 없습니다"),
-    COUPON_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용된 쿠폰입니다")
-    ;
+    COUPON_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용된 쿠폰입니다");
 
     private final HttpStatus status;
     private final String message;

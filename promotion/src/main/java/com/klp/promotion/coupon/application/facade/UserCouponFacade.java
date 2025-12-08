@@ -3,7 +3,6 @@ package com.klp.promotion.coupon.application.facade;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_OUT_OF_STOCK;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.promotion.coupon.application.service.CouponService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.common.exception.CouponErrorCode;
@@ -11,6 +10,7 @@ import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
+import com.klp.promotion.global.exception.BusinessException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,13 +28,13 @@ public class UserCouponFacade {
 
         UserCoupon userCoupon = userCouponService.findByUserIdAndCouponId(userId, couponId);
 
-        if(userCoupon != null){
+        if (userCoupon != null) {
             throw new BusinessException(CouponErrorCode.COUPON_ALREADY_ISSUED);
         }
 
-       boolean result = couponService.decreaseStock(couponId);
+        boolean result = couponService.decreaseStock(couponId);
 
-        if(!result){
+        if (!result) {
             throw new BusinessException(COUPON_OUT_OF_STOCK);
         }
 

@@ -2,9 +2,9 @@ package com.klp.promotion.coupon.infrastructure.repository;
 
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.repository.CouponRepository;
+import com.klp.promotion.global.exception.BusinessException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
