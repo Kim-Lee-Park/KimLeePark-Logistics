@@ -73,8 +73,24 @@ services:
     networks:
       - telemetry
 
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - '--kafka.server=kafka:29092'
+    ports:
+      - "9308:9308"
+    restart: unless-stopped
+    networks:
+      - telemetry
+      - db-net
+
 networks:
   telemetry:
+    name: telemetry
+  db-net:
+    external: true
+    name: db-net
 
 volumes:
   tempo-data:

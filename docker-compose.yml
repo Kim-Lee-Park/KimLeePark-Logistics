@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -12,6 +12,8 @@ services:
       - ./init-sql:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
+    networks:
+      - db-net
 
   redis:
     image: redis
@@ -20,6 +22,8 @@ services:
       - klp_redis_data:/data
     ports:
       - "6379:6379"
+    networks:
+      - db-net
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.9.4
@@ -32,6 +36,8 @@ services:
     volumes:
       - klp-zookeeper-data:/var/lib/zookeeper/data
       - klp-zookeeper-logs:/var/lib/zookeeper/log
+    networks:
+      - db-net
 
   kafka:
     image: confluentinc/cp-kafka:7.9.4
@@ -55,6 +61,8 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     volumes:
       - klp-kafka-data:/var/lib/kafka/data
+    networks:
+      - db-net
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
@@ -69,6 +77,12 @@ services:
       KAFKA_CLUSTERS_0_NAME: klp-local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - db-net
+
+networks:
+  db-net:
+    name: db-net
 
 volumes:
   klp_postgres_data:
