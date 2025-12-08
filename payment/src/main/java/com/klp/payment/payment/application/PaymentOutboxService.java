@@ -2,6 +2,8 @@ package com.klp.payment.payment.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.payment.global.exception.BusinessException;
+import com.klp.payment.global.exception.PaymentErrorCode;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import com.klp.payment.payment.domain.outbox.PaymentOutbox;
@@ -37,7 +39,7 @@ public class PaymentOutboxService {
 
         } catch (JsonProcessingException e) {
             log.error("이벤트 직렬화 실패: orderId={}", orderId, e);
-            throw new RuntimeException("이벤트 직렬화 실패", e);
+            throw new BusinessException(PaymentErrorCode.EVENT_SERIALIZATION_FAILED);
         }
     }
 
