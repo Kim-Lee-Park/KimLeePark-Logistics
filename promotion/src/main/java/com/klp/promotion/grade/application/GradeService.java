@@ -1,6 +1,6 @@
 package com.klp.promotion.grade.application;
 
-import com.klp.common.exception.BusinessException;
+import com.klp.promotion.global.exception.BusinessException;
 import com.klp.promotion.grade.application.dto.CreateGradeCommand;
 import com.klp.promotion.grade.application.dto.UpdateGradeCommand;
 import com.klp.promotion.grade.domain.entity.Grade;

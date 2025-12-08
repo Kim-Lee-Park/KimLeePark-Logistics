@@ -1,10 +1,10 @@
 package com.klp.delivery.delivery.domain.entity;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.delivery.common.entity.BaseEntity;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
+import com.klp.delivery.global.exception.BusinessException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -102,7 +102,8 @@ public class Delivery extends BaseEntity {
         }
     }
 
-    public static Delivery create(UUID orderId, Long userDrvierId, String userDriverSlackId, UUID departureId,
+    public static Delivery create(UUID orderId, Long userDrvierId, String userDriverSlackId,
+        UUID departureId,
         String departureName, UUID arrivalId, String arrivalName, String userName,
         String userAddress, List<OrderItemCommand> items) {
         validateDeliveryData(userDrvierId, userName, userAddress, userDriverSlackId);

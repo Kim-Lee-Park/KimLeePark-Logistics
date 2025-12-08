@@ -1,7 +1,7 @@
 package com.klp.user.application;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.common.model.PageResponse;
+import com.klp.global.exception.BusinessException;
 import com.klp.user.application.command.UserAddressCreateCommand;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.entity.UserAddress;
@@ -247,7 +247,8 @@ public class UserFacade {
             }
 
             UUID companyId = response.companies().get(0).companyId();
-            log.debug("업체 ID 조회 성공 - affiliationName: {}, companyId: {}", affiliationName, companyId);
+            log.debug("업체 ID 조회 성공 - affiliationName: {}, companyId: {}", affiliationName,
+                companyId);
             return companyId;
 
         } catch (BusinessException e) {

@@ -37,21 +37,114 @@ resource "aws_ecs_task_definition" "hub" {
       }
 
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
-        { name = "EUREKA_URL", value = "discovery.klp.local" },
-        { name = "CONFIG_SERVER_URL", value = "config.klp.local" },
-        { name = "HUB_SERVICE_PORT", value = "8080" },
-        { name = "HUB_DB_DRIVER", value = "org.postgresql.Driver" },
-        { name = "HUB_DB_URL", value = local.db_urls.hub },
-        { name = "SCHEDULER_ROUTE_INFOS_FIXED_RATE", value = "PT2H" },
-        { name = "SCHEDULER_ROUTE_INFOS_INITIAL_DELAY", value = "PT0S" },
-        { name = "SCHEDULER_HUB_DELETE_FIXED_RATE", value = "PT3H" },
-        { name = "SCHEDULER_HUB_DELETE_INITIAL_DELAY", value = "PT0S" },
-        { name = "SHEDLOCK_ROUTE_INFOS_AT_LEAST", value = "1m" },
-        { name = "SHEDLOCK_ROUTE_INFOS_AT_MOST", value = "30m" },
-        { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
-        { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "http://localhost:4317" },
-        { name = "OTEL_SERVICE_NAME", value = "klp-logistics-hub" }
+        {
+          name  = "SPRING_PROFILES_ACTIVE",
+          value = "prod"
+        },
+        {
+          name  = "EUREKA_URL",
+          value = "http://discovery.klp.local:8761/eureka/"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
+          value = "10"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
+          value = "30"
+        },
+        {
+          name  = "CONFIG_SERVER_URL",
+          value = "http://config.klp.local:8888"
+        },
+        {
+          name  = "HUB_DOMAIN_NAME",
+          value = "hub.klp.local"
+        },
+        {
+          name  = "HUB_SERVICE_PORT",
+          value = "8080"
+        },
+        {
+          name  = "HUB_DB_DRIVER",
+          value = "org.postgresql.Driver"
+        },
+        {
+          name  = "HUB_DB_URL",
+          value = local.db_urls.hub
+        },
+        {
+          name  = "SCHEDULER_ROUTE_INFOS_FIXED_RATE",
+          value = "PT2H"
+        },
+        {
+          name  = "SCHEDULER_ROUTE_INFOS_INITIAL_DELAY",
+          value = "PT0S"
+        },
+        {
+          name  = "SCHEDULER_HUB_DELETE_FIXED_RATE",
+          value = "PT3H"
+        },
+        {
+          name  = "SCHEDULER_HUB_DELETE_INITIAL_DELAY",
+          value = "PT0S"
+        },
+        {
+          name  = "SHEDLOCK_ROUTE_INFOS_AT_LEAST",
+          value = "1m"
+        },
+        {
+          name  = "SHEDLOCK_ROUTE_INFOS_AT_MOST",
+          value = "30m"
+        },
+        {
+          name  = "KAFKA_BOOTSTRAP_SERVERS",
+          value = local.kafka_bootstrap
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_ENDPOINT",
+          value = "http://localhost:4318"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+          value = "http://localhost:4318/v1/traces"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+          value = "http://localhost:4318/v1/logs"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+          value = "http://localhost:4318/v1/metrics"
+        },
+        {
+          name  = "OTEL_TRACES_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_METRICS_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_LOGS_EXPORTER",
+          value = "otlp"
+        },
+        {
+          name  = "OTEL_SERVICE_NAME",
+          value = "klp-logistics-hub"
+        },
+        {
+          name  = "OTEL_RESOURCE_ATTRIBUTES",
+          value = "service.namespace=klp"
+        },
+        {
+          name  = "REDIS_HOST",
+          value = aws_elasticache_cluster.redis.cache_nodes[0].address
+        },
+        {
+          name = "REDIS_PORT",
+          value = tostring(aws_elasticache_cluster.redis.port)
+        }
       ]
 
       secrets = [
@@ -78,6 +171,10 @@ resource "aws_ecs_task_definition" "hub" {
         {
           containerPort = 4318
           protocol      = "tcp"
+        },
+        {
+          containerPort = 9464,
+          protocol      = "tcp"
         }
       ]
 
@@ -87,12 +184,18 @@ resource "aws_ecs_task_definition" "hub" {
           value = var.aws_region
         },
         {
+          name  = "TEMPO_HOST"
+          value = aws_instance.observability_stack.private_ip
+        },
+        {
+          name  = "LOKI_HOST"
+          value = aws_instance.observability_stack.private_ip
+        },
+        {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
           value = "service.namespace=klp,service.name=klp-logistics-hub"
         }
       ]
-
-      command = ["--config=/etc/otel-config.yaml"]
 
       logConfiguration = {
         logDriver = "awslogs"

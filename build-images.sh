@@ -28,13 +28,6 @@ aws ecr get-login-password --region "${AWS_REGION}" \
 echo ">>> ECR login OK"
 echo
 
-if [ -d "common-module" ]; then
-  echo ">>> Publishing common-module to mavenLocal..."
-  (cd common-module && ./gradlew publishToMavenLocal --no-daemon)
-  echo ">>> common-module publishToMavenLocal DONE"
-  echo
-fi
-
 SERVICES_DIRS=(
   "auth-service"
   "config-server"

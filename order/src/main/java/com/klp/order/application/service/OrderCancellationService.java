@@ -1,8 +1,8 @@
 package com.klp.order.application.service;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.repository.OrderCancellationRepository;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.OrderCancellationErrorCode;
 import java.util.List;
 import java.util.UUID;

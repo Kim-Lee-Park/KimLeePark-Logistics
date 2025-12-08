@@ -3,6 +3,8 @@ package com.klp.order.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -37,6 +40,7 @@ public class KafkaConfig {
     /**
      * ObjectMapper 설정 - LocalDateTime 등 Java 8 시간 타입 처리
      */
+    @Primary
     @Bean
     @Qualifier("kafkaObjectMapper")
     public ObjectMapper kafkaObjectMapper() {
@@ -63,9 +67,10 @@ public class KafkaConfig {
 
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
-            "OrderCreatedEvent:com.klp.order.infrastructure.event.OrderCreatedEvent," +
-                "OrderCancelledEvent:com.klp.order.infrastructure.event.OrderCancelledEvent," +
-                "OrderPaidEvent:com.klp.order.infrastructure.event.OrderPaidEvent");
+            "OrderCreatedEvent:com.klp.order.infrastructure.event.event.OrderCreatedEvent," +
+                "OrderCancelledEvent:com.klp.order.infrastructure.event.event.OrderCancelledEvent,"
+                +
+                "OrderPaidEvent:com.klp.order.infrastructure.event.event.OrderPaidEvent");
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -95,8 +100,9 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentCompletedEvent:com.klp.order.infrastructure.event.PaymentCompletedEvent," +
-                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.DeliveryCreatedEvent");
+            "PaymentCompletedEvent:com.klp.order.infrastructure.event.event.PaymentCompletedEvent,"
+                +
+                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
@@ -124,5 +130,58 @@ public class KafkaConfig {
         // 최대 3번 재시도, 초기 1초 간격
         FixedBackOff fixedBackOff = new FixedBackOff(1000L, 3L);
         return new DefaultErrorHandler(fixedBackOff);
+    }
+
+    @Bean
+    public Map<String, Object> commonConsumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "order-service-group");
+
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+            org.apache.kafka.common.serialization.StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            org.springframework.kafka.support.serializer.JsonDeserializer.class);
+
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.klp.order.infrastructure.event.dto");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return props;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserProfileChangedMessage> userProfileChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new org.apache.kafka.common.serialization.StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserProfileChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserProfileChangedMessage>
+    userProfileChangedKafkaListenerContainerFactory() {
+
+        ConcurrentKafkaListenerContainerFactory<String, UserProfileChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userProfileChangedConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, ProductInfoChangedMessage> productInfoChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(ProductInfoChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> productInfoChangedKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(productInfoChangedConsumerFactory());
+        return factory;
     }
 }

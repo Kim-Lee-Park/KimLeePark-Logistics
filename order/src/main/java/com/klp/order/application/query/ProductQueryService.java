@@ -1,8 +1,8 @@
 package com.klp.order.application.query;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.application.cache.ProductCache;
 import com.klp.order.domain.vo.Product;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.ProductRefErrorCode;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

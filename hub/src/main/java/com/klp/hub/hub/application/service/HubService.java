@@ -1,13 +1,18 @@
 package com.klp.hub.hub.application.service;
 
-import com.klp.common.exception.BusinessException;
+import static com.klp.hub.hub.util.DistanceTimeUtil.calculateDistanceKm;
+
 import com.klp.hub.common.model.UserDetailsImpl;
+import com.klp.hub.global.exception.BusinessException;
+import com.klp.hub.hub.application.command.hub.NearestHubCommand;
 import com.klp.hub.hub.application.command.hub.RegisterHubCommand;
 import com.klp.hub.hub.application.command.hub.UpdateHubCommand;
 import com.klp.hub.hub.domain.model.Hub;
+import com.klp.hub.hub.domain.model.HubStatus;
 import com.klp.hub.hub.domain.repository.HubRepository;
 import com.klp.hub.hub.exception.HubErrorCode;
 import com.klp.hub.hub.presentation.dto.response.GetHubByNameResponse;
+import com.klp.hub.hub.presentation.dto.response.NearestHubResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubDetailResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.GetHubListResponse;
 import com.klp.hub.hub.presentation.dto.response.hub.RegisterHubResponse;
@@ -15,6 +20,7 @@ import com.klp.hub.hub.presentation.dto.response.hub.UpdatedHubResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -26,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class HubService {
 
     private final HubRepository hubRepository;
@@ -112,5 +119,26 @@ public class HubService {
         Hub hub = hubRepository.findByName(hubName)
             .orElseThrow(() -> new BusinessException(HubErrorCode.NOT_EXISTS));
         return GetHubByNameResponse.from(hub);
+    }
+
+    @Transactional(readOnly = true)
+    public NearestHubResponse getNearestHub(NearestHubCommand command) {
+        List<Hub> hubs = hubRepository.findAllByStatus(HubStatus.ACTIVE);
+        if (hubs.isEmpty()) {
+            log.warn("[HubService] 허브 리스트가 비었습니다.");
+            throw new BusinessException(HubErrorCode.NOT_EXISTS);
+        }
+
+        Hub nearestHub = hubs.get(0);
+        double minDistance = Double.MAX_VALUE;
+        for (Hub hub : hubs) {
+            double distance = calculateDistanceKm(hub.getLatitude(), hub.getLongitude(),
+                command.latitude(), command.longitude());
+            if (distance < minDistance) {
+                nearestHub = hub;
+                minDistance = distance;
+            }
+        }
+        return new NearestHubResponse(nearestHub.getHubId());
     }
 }

@@ -22,7 +22,6 @@ configurations {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 ext {
@@ -54,7 +53,13 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation 'com.klp.common:common-module:1.0.0'
+    //spring aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    //cache caffeine redis
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.2.3'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     //cache caffeine redis
     implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -71,12 +76,16 @@ dependencies {
     implementation "io.micrometer:micrometer-registry-prometheus"
 
     //log
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.7.0-alpha'
+    implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:2.7.0-alpha'
 
     //kafka
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    //kafka DLT - @RetryableTopic 사용을 위한 의존성
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework:spring-aspects'
 }
 
 dependencyManagement {

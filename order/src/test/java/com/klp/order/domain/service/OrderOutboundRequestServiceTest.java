@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
@@ -15,6 +14,7 @@ import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.repository.OrderOutboundRequestRepository;
 import com.klp.order.domain.repository.OrderRepository;
+import com.klp.order.global.exception.BusinessException;
 import com.klp.order.presentation.dto.OrderOutboundRequestResponse;
 import java.util.List;
 import java.util.Optional;
