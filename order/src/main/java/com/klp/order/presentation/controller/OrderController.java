@@ -148,7 +148,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/cache-test")
+    @GetMapping("/cache-test/{userId}")
     public ResponseEntity<Void> cache(@PathVariable Long userId) {
         userQueryService.getUserProfile(userId);
         return ResponseEntity.ok().build();

@@ -83,6 +83,7 @@ public class ProductCache {
                     log.debug(
                         "[ProductCache] L2 ttl={} (invalid or about to expire) for key={}, reload from origin",
                         ttl, key);
+                    cacheMetrics.recordL2Miss(CACHE_NAME, "L2");
                     return loadFromDbAndCache(productId, key);
                 }
 
@@ -92,7 +93,7 @@ public class ProductCache {
                 double random = ThreadLocalRandom.current().nextDouble();
 
                 // refresh 확률 = 1 - ttlRatio
-                boolean shouldRefresh = random > ttlRatio;
+                boolean shouldRefresh = random < ttlRatio;
                 if (shouldRefresh) {
                     log.debug(
                         "[ProductCache] L2 PER refresh triggered (ttl={}s, ratio={}, random={}) for key={}",

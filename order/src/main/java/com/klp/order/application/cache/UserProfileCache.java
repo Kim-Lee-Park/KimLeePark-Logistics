@@ -93,11 +93,12 @@ public class UserProfileCache {
                 double random = ThreadLocalRandom.current().nextDouble();
 
                 // refresh 확률 = 1 - ttlRatio
-                boolean shouldRefresh = random > ttlRatio;
+                boolean shouldRefresh = random < ttlRatio;
                 if (shouldRefresh) {
                     log.debug(
                         "[UserProfileCache] L2 PER refresh triggered (ttl={}s, ratio={}, random={}) for key={}",
                         ttl, ttlRatio, random, key);
+                    cacheMetrics.recordL2Miss(CACHE_NAME, "L2");
                     return loadFromDbAndCache(userId, key);
                 }
 
