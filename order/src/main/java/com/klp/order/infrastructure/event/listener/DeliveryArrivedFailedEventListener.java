@@ -4,8 +4,8 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
-import com.klp.order.infrastructure.event.event.DeliveryShippingEvent;
+import com.klp.order.infrastructure.event.event.DeliveryArrivedFailedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DeliveryShippingEventListener {
+public class DeliveryArrivedFailedEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
@@ -41,13 +41,13 @@ public class DeliveryShippingEventListener {
         containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
-    public void handleDeliveryShipping(
-        @Payload DeliveryShippingEvent event,
+    public void handleDeliveryArrivedFailed(
+        @Payload DeliveryArrivedFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 배송 중 이벤트 수신: orderId={}, partition={}, offset={}, items={} ===",
+        log.info("=== 배송 완료 실패 이벤트 수신: orderId={}, partition={}, offset={}, items={} ===",
             event.orderId(), partition, offset, event.items().size());
 
         try {
@@ -56,14 +56,15 @@ public class DeliveryShippingEventListener {
             log.info("주문 조회 완료 - orderId: {}, 현재 상태: {}",
                 order.getOrderId(), order.getOrderStatus());
 
-            if (order.getOrderStatus() == OrderStatus.DELIVERY_SHIPPING) {
-                log.info("이미 처리된 배송 중 이벤트 - orderId: {}", event.orderId());
+            if (order.getOrderStatus() == OrderStatus.FAILED
+                || order.getOrderStatus() == OrderStatus.DELIVERY_ARRIVED_FAILED) {
+                log.info("이미 처리된 배송 완료 실패 이벤트 - orderId: {}", event.orderId());
                 if (acknowledgment != null) {
                     acknowledgment.acknowledge();
                 }
                 return;
             }
-            order.changeStatus(OrderStatus.DELIVERY_SHIPPING);
+            order.changeStatus(OrderStatus.DELIVERY_ARRIVED_FAILED);
             orderRepository.save(order);
 
             // 4. 수동 커밋
@@ -72,11 +73,11 @@ public class DeliveryShippingEventListener {
                 log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
             }
 
-            log.info("=== 배송 중 이벤트 처리 완료: orderId={}, 상태={} ===",
-                event.orderId(), OrderStatus.DELIVERY_CREATED);
+            log.info("=== 배송 완료 실패 이벤트 처리 완료: orderId={}, 상태={} ===",
+                event.orderId(), OrderStatus.DELIVERY_ARRIVED_FAILED);
 
         } catch (Exception e) {
-            log.error("배송 중 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+            log.error("배송 완료 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
 
             // 이벤트 처리 실패 시 재시도를 위해 예외를 다시 던짐
@@ -87,13 +88,13 @@ public class DeliveryShippingEventListener {
 
     // 실패시 자동으로 호출한다고 합니다.
     @DltHandler
-    public void handleDeliveryCreatedDlt(
-        @Payload DeliveryCreatedEvent event,
+    public void handleDeliveryArrivedFailedDlt(
+        @Payload DeliveryCreatedFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
 
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Delivery Shipping Event");
+        log.error("⚠️ DLT 도착: Delivery Arrived Failed Event");
         log.error("⚠️ 수동 처리가 필요합니다!");
         log.error("========================================");
         log.error("orderId={}, error={}", event.orderId(), exceptionMessage);

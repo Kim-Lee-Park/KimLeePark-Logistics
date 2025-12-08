@@ -2,8 +2,9 @@ package com.klp.order.infrastructure.event.event;
 
 import java.util.UUID;
 
-public record InventoryConfirmedFailedEvent(
-    UUID orderId
+public record CouponUsedFailedEvent(
+    UUID orderId,
+    UUID couponId
 ) {
 
 }

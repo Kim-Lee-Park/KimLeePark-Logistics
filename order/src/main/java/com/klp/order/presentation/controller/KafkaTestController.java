@@ -2,7 +2,7 @@
 //
 //import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
 //import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent.DeliveryItem;
-//import com.klp.order.infrastructure.event.event.PaymentCompletedEvent;
+//import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
 //import java.util.List;
 //import java.util.UUID;
 //import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@
 //    public String publishPaymentCompleted(@PathVariable UUID orderId) {
 //        log.info("=== Payment Completed 이벤트 테스트 발행: orderId={} ===", orderId);
 //
-//        PaymentCompletedEvent event = new PaymentCompletedEvent(
+//        PaymentApprovedEvent event = new PaymentApprovedEvent(
 //            orderId,
 //            UUID.randomUUID()
 //        );

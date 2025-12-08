@@ -13,6 +13,7 @@ public enum OrderStatus {
     DELIVERY_CREATED_FAILED("배송 생성 중 실패"),
     DELIVERY_SHIPPING("배송 중"),
     DELIVERY_SHIPPING_FAILED("배송 중 상태 변화 중 실패"),
+    DELIVERY_ARRIVED_FAILED("배송 중 상태 변화 중 실패"),
     COMPLETE("완료"),
     CANCELLED("취소됨"),
     FAILED("실패");

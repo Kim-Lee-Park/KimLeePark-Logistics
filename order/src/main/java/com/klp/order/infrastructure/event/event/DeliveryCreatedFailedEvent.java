@@ -3,7 +3,7 @@ package com.klp.order.infrastructure.event.event;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryCompletedEvent(
+public record DeliveryCreatedFailedEvent(
     UUID orderId,
     List<DeliveryItem> items
 ) {
