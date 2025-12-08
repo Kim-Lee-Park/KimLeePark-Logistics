@@ -17,4 +17,6 @@ public interface DeliveryRepository {
 
     Page<Delivery> findDeliveryAll(Pageable pageable);
 
+    boolean existsActiveDeliveryByRoutePlanId(UUID routePlanId);
+
 }
