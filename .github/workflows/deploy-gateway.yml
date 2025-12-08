@@ -142,9 +142,38 @@ jobs:
             fi
           done
 
-          envsubst < appspec/appspec-ecs.json | \
-            sed "s|<TASK_DEFINITION>|${TASK_DEF_ARN}|g" \
-            > appspec-rendered.json
+          cat > appspec-rendered.json <<EOF
+          {
+            "version": 1,
+            "Resources": [
+              {
+                "TargetService": {
+                  "Type": "AWS::ECS::Service",
+                  "Properties": {
+                    "TaskDefinition": "${TASK_DEF_ARN}",
+                    "LoadBalancerInfo": {
+                      "TargetGroupPairInfoList": [
+                        {
+                          "ProdTrafficRoute": {
+                            "ListenerArns": [
+                              "${PROD_LISTENER_ARN}"
+                            ]
+                          },
+                          "TargetGroups": [
+                            { "Name": "${BLUE_TARGET_GROUP}" },
+                            { "Name": "${GREEN_TARGET_GROUP}" }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+          EOF
+
+          jq . appspec-rendered.json >/dev/null
 
       - name: Create deployment
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
