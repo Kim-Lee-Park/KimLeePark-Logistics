@@ -82,7 +82,7 @@ resource "aws_lb_listener_rule" "grafana" {
 
   condition {
     path_pattern {
-      values = ["/grafana/*"]
+      values = ["/grafana*", "/grafana/*"]
     }
   }
 }

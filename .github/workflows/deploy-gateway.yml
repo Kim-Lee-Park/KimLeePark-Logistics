@@ -6,7 +6,7 @@ on:
     paths:
       - "gateway-service/**"
       - ".github/workflows/deploy-gateway.yml"
-      - "appspec/appspec-ecs.yaml"
+      - "appspec/appspec-ecs.json"
 
 permissions:
   id-token: write
@@ -142,9 +142,9 @@ jobs:
             fi
           done
 
-          envsubst < appspec/appspec-ecs.yaml | \
+          envsubst < appspec/appspec-ecs.json | \
             sed "s|<TASK_DEFINITION>|${TASK_DEF_ARN}|g" \
-            > appspec-rendered.yaml
+            > appspec-rendered.json
 
       - name: Create deployment
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
@@ -153,6 +153,6 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-          codedeploy-appspec: appspec-rendered.yaml
+          codedeploy-appspec: appspec-rendered.json
           codedeploy-application: ${{ env.CODEDEPLOY_APP }}
           codedeploy-deployment-group: ${{ env.CODEDEPLOY_GROUP }}
