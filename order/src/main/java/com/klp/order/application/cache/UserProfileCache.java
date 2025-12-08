@@ -24,6 +24,7 @@ public class UserProfileCache {
 
     private static final String USER_PROFILE_KEY_PREFIX = "user:profile:";
     private static final String NEGATIVE_TOKEN = "__NULL__";
+    private static final String CACHE_NAME = "user_profile"; // 메트릭 tag용
 
     // TTL 설정
     private static final long POSITIVE_L2_TTL_SECONDS = 20 * 60;
@@ -36,13 +37,18 @@ public class UserProfileCache {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
     private final UserClient userClient;
+    private final MultiLevelCacheMetrics cacheMetrics;
 
     public UserProfile getUserProfile(Long userId) {
         String key = buildKey(userId);
 
+        cacheMetrics.recordRequest(CACHE_NAME, "L1");
+
         // L1 Caffeine 로컬 캐시 조회
         CachedUserProfile localCacheValue = userProfileLocalCache.getIfPresent(key);
         if (localCacheValue != null) {
+            cacheMetrics.recordL1Hit(CACHE_NAME, "L1");
+
             if (localCacheValue.isNegative()) {
                 log.debug("[UserProfileCache] L1 NEGATIVE hit for key={}", key);
                 return null;
@@ -51,10 +57,16 @@ public class UserProfileCache {
             return localCacheValue.getProfile();
         }
 
+        cacheMetrics.recordL1Miss(CACHE_NAME, "L1");
+
+        cacheMetrics.recordRequest(CACHE_NAME, "L2");
+
         // L2 Redis 공유 캐시 조회
         try {
             String redisCacheValue = redisTemplate.opsForValue().get(key);
             if (redisCacheValue != null) {
+                cacheMetrics.recordL2Hit(CACHE_NAME, "L2");
+
                 if (NEGATIVE_TOKEN.equals(redisCacheValue)) {
                     log.debug("[UserProfileCache] L2 NEGATIVE hit for key={}", key);
                     // L1에도 Negative 캐시
@@ -81,11 +93,12 @@ public class UserProfileCache {
                 double random = ThreadLocalRandom.current().nextDouble();
 
                 // refresh 확률 = 1 - ttlRatio
-                boolean shouldRefresh = random > ttlRatio;
+                boolean shouldRefresh = random < ttlRatio;
                 if (shouldRefresh) {
                     log.debug(
                         "[UserProfileCache] L2 PER refresh triggered (ttl={}s, ratio={}, random={}) for key={}",
                         ttl, ttlRatio, random, key);
+                    cacheMetrics.recordL2Miss(CACHE_NAME, "L2");
                     return loadFromDbAndCache(userId, key);
                 }
 
@@ -110,12 +123,16 @@ public class UserProfileCache {
         }
 
         // L2 miss → DB 조회
+        cacheMetrics.recordL2Miss(CACHE_NAME, "L2");
         return loadFromDbAndCache(userId, key);
     }
 
     private UserProfile loadFromDbAndCache(Long userId, String key) {
+        long start = System.currentTimeMillis();
         try {
             UserProfile userProfile = userClient.getUserProfileById(userId);
+            long duration = System.currentTimeMillis() - start;
+            cacheMetrics.recordLoadDuration(CACHE_NAME, duration);
             if (userProfile == null) {
                 cacheNegative(key);
                 return null;
