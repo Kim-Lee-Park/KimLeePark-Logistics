@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.presentation.controller;
 
 import com.klp.hub.inventory.application.InventoryFacade;
+import com.klp.hub.inventory.presentation.docs.InventoryReservationInternalControllerDocs;
 import com.klp.hub.inventory.presentation.dto.request.InventoryReservationRequest;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
 import jakarta.validation.Valid;
@@ -14,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/internal/v1/inventories")
 @RequiredArgsConstructor
-public class InventoryReservationInternalController {
+public class InventoryReservationInternalController implements InventoryReservationInternalControllerDocs {
 
     private final InventoryFacade inventoryFacade;
 
+    @Override
     @PostMapping("/reserve")
     public ResponseEntity<InventoryReservationResponse> reserveInventory(
         @Valid @RequestBody InventoryReservationRequest request

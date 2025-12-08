@@ -36,7 +36,7 @@ VALUES
 (gen_random_uuid(), (SELECT company_id FROM hub_schema.p_companies WHERE name = '인천 공항 면세 물류'), '면세 화장품 키트', NOW())
 ON CONFLICT DO NOTHING;
 
-INSERT INTO hub_schema.p_inventory (invevntory_id, quantity, product_id, hub_id, created_at)
+INSERT INTO hub_schema.p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
 VALUES
 (gen_random_uuid(), 120, (SELECT product_id FROM hub_schema.p_products WHERE name = 'LED 모듈 세트'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '서울특별시 센터'), NOW()),
 (gen_random_uuid(), 75, (SELECT product_id FROM hub_schema.p_products WHERE name = '스마트TV 패널'), (SELECT hub_id FROM hub_schema.p_hubs WHERE name = '경기 남부 센터'), NOW()),

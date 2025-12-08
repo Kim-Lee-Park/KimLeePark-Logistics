@@ -2,6 +2,7 @@ package com.klp.hub.inventory.presentation.controller;
 
 import com.klp.hub.inventory.application.InventoryFacade;
 import com.klp.hub.inventory.application.InventoryService;
+import com.klp.hub.inventory.presentation.docs.InventoryControllerDocs;
 import com.klp.hub.inventory.presentation.dto.request.InventoryReplenishRequest;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
@@ -21,12 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/v1/inventories")
-public class InventoryController {
+public class InventoryController implements InventoryControllerDocs {
 
     private final InventoryService inventoryService;
 
     private final InventoryFacade inventoryFacade;
 
+    @Override
     @GetMapping("/{productId}")
     public ResponseEntity<InventoryResponse> getInventoryByProductId(
         @PathVariable("productId") String productId
@@ -37,6 +39,7 @@ public class InventoryController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Override
     @PostMapping("/replenish")
     public ResponseEntity<InventoryReplenishResponse> replenish(
         @Valid @RequestBody InventoryReplenishRequest request
