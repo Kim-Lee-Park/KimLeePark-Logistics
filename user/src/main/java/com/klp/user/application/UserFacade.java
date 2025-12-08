@@ -350,6 +350,12 @@ public class UserFacade {
     @Transactional(readOnly = true)
     public UserAddressHubResponse getUserAddressHub(UUID userAddressId) {
         UserAddress userAddress = userAddressService.getUserAddress(userAddressId);
-        return new UserAddressHubResponse(userAddress.getHubId());
+        String address;
+        if (userAddress.getDetail() == null) {
+            address = userAddress.getAddress();
+        } else {
+            address = userAddress.getAddress() + " " + userAddress.getDetail();
+        }
+        return new UserAddressHubResponse(userAddress.getHubId(), address);
     }
 }
