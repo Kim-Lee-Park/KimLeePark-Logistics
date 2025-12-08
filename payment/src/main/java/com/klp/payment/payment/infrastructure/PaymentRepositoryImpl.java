@@ -45,4 +45,9 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public Page<Payment> findByHubId(UUID hubId, Pageable pageable) {
         return paymentJpaRepository.findByHubId(hubId, pageable);
     }
+
+    @Override
+    public boolean existsByOrderId(UUID orderId) {
+        return paymentJpaRepository.existsByOrderId(orderId);
+    }
 }
