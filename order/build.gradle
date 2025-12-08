@@ -61,6 +61,11 @@ dependencies {
     implementation 'com.github.ben-manes.caffeine:caffeine:3.2.3'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    //cache caffeine redis
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.2.3'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     //trace
     implementation 'io.micrometer:micrometer-tracing'
     implementation("io.micrometer:micrometer-tracing-bridge-otel")
