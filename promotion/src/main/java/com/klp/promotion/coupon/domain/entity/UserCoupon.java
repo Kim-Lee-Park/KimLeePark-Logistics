@@ -3,9 +3,9 @@ package com.klp.promotion.coupon.domain.entity;
 
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_ALREADY_USED;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.promotion.common.model.BaseEntity;
 import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
+import com.klp.promotion.global.exception.BusinessException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -52,20 +52,19 @@ public class UserCoupon extends BaseEntity {
     private LocalDateTime usedAt;
 
 
-
-    private UserCoupon(UUID couponId, Long userId, UserCouponStatus status){
+    private UserCoupon(UUID couponId, Long userId, UserCouponStatus status) {
         this.couponId = couponId;
         this.userId = userId;
         this.status = status;
     }
 
 
-    public static UserCoupon create(UUID couponId, Long userId){
+    public static UserCoupon create(UUID couponId, Long userId) {
         return new UserCoupon(couponId, userId, UserCouponStatus.READY);
     }
 
 
-    public void useCoupon(){
+    public void useCoupon() {
         this.status = UserCouponStatus.USED;
         this.usedAt = LocalDateTime.now();
     }
