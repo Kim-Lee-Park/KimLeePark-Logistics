@@ -1,5 +1,7 @@
 package com.klp.delivery.delivery.infrastructure.repository;
 
+import static com.klp.delivery.common.enums.CustomerDeliveryStatus.CREATED;
+import static com.klp.delivery.common.enums.CustomerDeliveryStatus.SHIPPING;
 import static com.querydsl.core.types.Order.ASC;
 import static com.querydsl.core.types.Order.DESC;
 
@@ -87,5 +89,23 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
 
         return new PageImpl<>(content, pageable, total);
 
+    }
+
+    @Override
+    public boolean existsActiveDeliveryByRoutePlanId(UUID routePlanId) {
+        // 존재 여부만 확인하므로 ID만 선택하여 효율적으로 조회
+        return queryFactory
+            .select(qDelivery.deliveryId)
+            .from(qDelivery)
+            .where(
+                qDelivery.routePlanId.eq(routePlanId)
+                    .and(qDelivery.status.in(
+                        CREATED,
+                        SHIPPING
+                    ))
+                    .and(qDelivery.deletedAt.isNull())
+            )
+            .limit(1)
+            .fetchFirst() != null;
     }
 }

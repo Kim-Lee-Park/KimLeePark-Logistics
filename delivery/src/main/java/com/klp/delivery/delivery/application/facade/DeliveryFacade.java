@@ -80,12 +80,10 @@ public class DeliveryFacade {
             try {
                 // 실패 시 멱등키 삭제하여 재시도 가능하도록 처리
                 idempotencyKeyService.deleteIdempotencyKey(idempotencyCommand.idempotencyKey());
-                log.info("배송 생성 실패로 인한 멱등키 삭제 완료: idempotencyKey={}",
-                    idempotencyCommand.idempotencyKey());
+                log.info("배송 생성 실패로 인한 멱등키 삭제 완료: idempotencyKey={}", idempotencyCommand.idempotencyKey());
             } catch (Exception deleteException) {
                 log.error("배송 생성 실패로 인한  멱등키 삭제 실패: idempotencyKey={}, error={}",
-                    idempotencyCommand.idempotencyKey(), deleteException.getMessage(),
-                    deleteException);
+                    idempotencyCommand.idempotencyKey(), deleteException.getMessage(), deleteException);
             }
             throw new BusinessException(DELIVERY_CREATION_FAILED);
         }
@@ -155,5 +153,9 @@ public class DeliveryFacade {
 
         delivery.updateUserDriverId(vendorDrvierId);
 
+    }
+
+    public boolean hasActiveDeliveries(UUID routePlanId) {
+        return deliveryService.hasActiveDeliveriesByRoutePlanId(routePlanId);
     }
 }

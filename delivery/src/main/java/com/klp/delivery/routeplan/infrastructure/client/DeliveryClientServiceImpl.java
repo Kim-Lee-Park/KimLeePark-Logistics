@@ -14,7 +14,6 @@ public class DeliveryClientServiceImpl implements DeliveryClientService {
 
     @Override
     public boolean hasActiveDeliveries(UUID routePlanId) {
-        //TODO: 배송에서 구현되면 수정
-        return true;
+        return deliveryFacade.hasActiveDeliveries(routePlanId);
     }
 }
