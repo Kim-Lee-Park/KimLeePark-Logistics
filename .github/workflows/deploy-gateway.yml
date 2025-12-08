@@ -1,0 +1,187 @@
+name: Deploy gateway
+
+on:
+  push:
+    branches: [ "deploy/142/cicd-pipeline" ]
+    paths:
+      - "gateway-service/**"
+      - ".github/workflows/deploy-gateway.yml"
+      - "appspec/appspec-ecs.json"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: klp-logistics-gateway
+  ECS_CLUSTER: klp-logistics-ecs-cluster
+  ECS_SERVICE: klp-logistics-gateway-svc
+  ECS_TASK_FAMILY: klp-logistics-gateway
+  CODEDEPLOY_APP: ${{ vars.CODEDEPLOY_APP_GATEWAY }}
+  CODEDEPLOY_GROUP: ${{ vars.CODEDEPLOY_GROUP_GATEWAY }}
+  PROD_LISTENER_ARN: ${{ vars.GATEWAY_PROD_LISTENER_ARN }}
+  BLUE_TARGET_GROUP: ${{ vars.GATEWAY_BLUE_TARGET_GROUP }}
+  GREEN_TARGET_GROUP: ${{ vars.GATEWAY_GREEN_TARGET_GROUP }}
+  CONTAINER_NAME: gateway
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run tests
+        working-directory: gateway-service
+        run: ./gradlew test
+
+      - name: Build application
+        working-directory: gateway-service
+        run: ./gradlew clean build -x test
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: build-image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE_URI=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}
+
+          docker build -t "${IMAGE_URI}" ./gateway-service
+          docker push "${IMAGE_URI}"
+
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${ECS_TASK_FAMILY}" \
+            --query 'taskDefinition' \
+            --region "${AWS_REGION}" \
+            > taskdef-current.json
+
+      - name: Render new task definition
+        run: |
+          jq --arg IMAGE_URI "$IMAGE_URI" --arg CONTAINER "$CONTAINER_NAME" '
+            .
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+            | .containerDefinitions |=
+                map(if .name == $CONTAINER then .image = $IMAGE_URI else . end)
+          ' taskdef-current.json > taskdef-rendered.json
+
+      - name: Register task definition
+        run: |
+          set -euo pipefail
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://taskdef-rendered.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> "$GITHUB_ENV"
+
+      - name: Resolve deployment variables
+        run: |
+          set -euo pipefail
+
+          # Defaults from Terraform naming
+          DEFAULT_CODEDEPLOY_APP="klp-logistics-gateway-app"
+          DEFAULT_CODEDEPLOY_GROUP="klp-logistics-gateway-dg"
+          DEFAULT_BLUE_TG="klp-logistics-gateway-tg"
+          DEFAULT_GREEN_TG="klp-logistics-gateway-green-tg"
+          DEFAULT_ALB_NAME="klp-logistics-alb"
+
+          CODEDEPLOY_APP="${CODEDEPLOY_APP:-$DEFAULT_CODEDEPLOY_APP}"
+          CODEDEPLOY_GROUP="${CODEDEPLOY_GROUP:-$DEFAULT_CODEDEPLOY_GROUP}"
+          BLUE_TARGET_GROUP="${BLUE_TARGET_GROUP:-$DEFAULT_BLUE_TG}"
+          GREEN_TARGET_GROUP="${GREEN_TARGET_GROUP:-$DEFAULT_GREEN_TG}"
+
+          ALB_ARN=$(aws elbv2 describe-load-balancers \
+            --names "$DEFAULT_ALB_NAME" \
+            --query 'LoadBalancers[0].LoadBalancerArn' \
+            --output text)
+
+          PROD_LISTENER_ARN="${PROD_LISTENER_ARN:-$(
+            aws elbv2 describe-listeners \
+              --load-balancer-arn "$ALB_ARN" \
+              --query 'Listeners[?Port==`80`].ListenerArn' \
+              --output text | head -n1
+          )}"
+
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP PROD_LISTENER_ARN BLUE_TARGET_GROUP GREEN_TARGET_GROUP; do
+            if [ -z "${!var}" ] || [ "${!var}" = "None" ]; then
+              echo "$var is required" >&2
+              exit 1
+            fi
+          done
+
+          cat <<EOF >> "$GITHUB_ENV"
+          CODEDEPLOY_APP=$CODEDEPLOY_APP
+          CODEDEPLOY_GROUP=$CODEDEPLOY_GROUP
+          PROD_LISTENER_ARN=$PROD_LISTENER_ARN
+          BLUE_TARGET_GROUP=$BLUE_TARGET_GROUP
+          GREEN_TARGET_GROUP=$GREEN_TARGET_GROUP
+          EOF
+
+      - name: Render AppSpec
+        run: |
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP PROD_LISTENER_ARN BLUE_TARGET_GROUP GREEN_TARGET_GROUP TASK_DEF_ARN; do
+            if [ -z "${!var}" ]; then
+              echo "$var is required" >&2
+              exit 1
+            fi
+          done
+
+          cat > appspec-rendered.json <<EOF
+          {
+            "version": 1,
+            "Resources": [
+              {
+                "TargetService": {
+                  "Type": "AWS::ECS::Service",
+                  "Properties": {
+                    "TaskDefinition": "${TASK_DEF_ARN}",
+                    "LoadBalancerInfo": {
+                      "TargetGroupPairInfoList": [
+                        {
+                          "ProdTrafficRoute": {
+                            "ListenerArns": [
+                              "${PROD_LISTENER_ARN}"
+                            ]
+                          },
+                          "TargetGroups": [
+                            { "Name": "${BLUE_TARGET_GROUP}" },
+                            { "Name": "${GREEN_TARGET_GROUP}" }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+          EOF
+
+          jq . appspec-rendered.json >/dev/null
+
+      - name: Create deployment
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: taskdef-rendered.json
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          codedeploy-appspec: appspec-rendered.json
+          codedeploy-application: ${{ env.CODEDEPLOY_APP }}
+          codedeploy-deployment-group: ${{ env.CODEDEPLOY_GROUP }}

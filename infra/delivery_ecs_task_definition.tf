@@ -50,6 +50,14 @@ resource "aws_ecs_task_definition" "delivery" {
           value = "http://config.klp.local:8888"
         },
         {
+          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
+          value = "10"
+        },
+        {
+          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
+          value = "30"
+        },
+        {
           name  = "DELIVERY_DOMAIN_NAME",
           value = "delivery.klp.local"
         },

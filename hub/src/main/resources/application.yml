@@ -14,3 +14,7 @@ spring:
       retry:
         initial-interval: 1000
         max-attempts: 3
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
