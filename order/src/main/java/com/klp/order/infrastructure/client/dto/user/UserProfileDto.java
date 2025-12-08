@@ -1,9 +1,12 @@
 package com.klp.order.infrastructure.client.dto.user;
 
 import com.klp.order.domain.vo.UserProfile;
+import java.util.UUID;
 
 public record UserProfileDto(
     Long userId,
+    UUID affiliationId,
+    String affiliationType,
     String affiliationName,
     String username,
     String slackId,
