@@ -43,6 +43,15 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // h2 (for test)
+    testImplementation "com.h2database:h2"
+
+    //redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // e2e test
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+
     //spring aop
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
