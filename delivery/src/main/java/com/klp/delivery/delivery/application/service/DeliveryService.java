@@ -101,4 +101,8 @@ public class DeliveryService {
         }
     }
 
+    public boolean hasActiveDeliveriesByRoutePlanId(UUID routePlanId) {
+        return deliveryRepository.existsActiveDeliveryByRoutePlanId(routePlanId);
+    }
+
 }
