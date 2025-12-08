@@ -19,7 +19,7 @@ public class DeliveryProducer implements DeliveryEventPublisher {
     public void publishCreatedEvent(OrderDeliveryEvent event) {
         try {
             String key = event.orderId().toString();
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_CREATED_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
             log.info("배송 생성 이벤트 발행 완료: orderId={}, status={}", event.orderId(), event.status());
         } catch (Exception e) {
             log.error("배송 생성 이벤트 발행 실패: orderId={}", event.orderId(), e);
@@ -30,7 +30,7 @@ public class DeliveryProducer implements DeliveryEventPublisher {
     public void publishShippingEvent(OrderDeliveryEvent event) {
         try {
             String key = event.orderId().toString();
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_SHIPPING_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
             log.info("배송 중 이벤트 발행 완료: orderId={}, status={}", event.orderId(), event.status());
         } catch (Exception e) {
             log.error("배송 중 이벤트 발행 실패: orderId={}", event.orderId(), e);
@@ -41,7 +41,7 @@ public class DeliveryProducer implements DeliveryEventPublisher {
     public void publishArrivedEvent(OrderDeliveryEvent event) {
         try {
             String key = event.orderId().toString();
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_COMPLETED_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
             log.info("배송 완료 이벤트 발행 완료: orderId={}, status={}", event.orderId(), event.status());
         } catch (Exception e) {
             log.error("배송 완료 이벤트 발행 실패: orderId={}", event.orderId(), e);
