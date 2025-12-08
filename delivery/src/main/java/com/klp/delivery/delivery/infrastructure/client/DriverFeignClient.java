@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestParam;
     configuration = DeliveryFeignClientConfig.class)
 public interface DriverFeignClient {
 
-    @GetMapping("/v1/users/driver/{hubId}")
+    @GetMapping("/v1/internal/users/driver/{hubId}")
     List<DriverResponse> findArrivalHubDrivers(@PathVariable("hubId") UUID hubId);
 
-    @GetMapping("/v1/users/driver")
+    @GetMapping("/v1/internal/users/driver")
     DriverResponse findDriverAtArrivalHub(@RequestParam("id") Long driverId);
 
-    @GetMapping("/driver/logistics")
+    @GetMapping("/v1/internal/users/driver/logistics")
     List<DriverResponse> findLogisticsDrivers();
 
 }
