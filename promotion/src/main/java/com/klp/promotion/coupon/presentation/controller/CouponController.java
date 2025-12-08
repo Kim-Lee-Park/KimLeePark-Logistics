@@ -1,8 +1,8 @@
 package com.klp.promotion.coupon.presentation.controller;
 
 import com.klp.promotion.coupon.application.service.CouponService;
+import com.klp.promotion.coupon.presentation.controller.docs.CouponControllerDoc;
 import com.klp.promotion.coupon.presentation.dto.CouponDetailResponse;
-
 import com.klp.promotion.coupon.presentation.dto.CouponResponse;
 import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
 import com.klp.promotion.coupon.presentation.dto.UpdateCouponRequest;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/promotions/coupons")
 @RequiredArgsConstructor
-public class CouponController {
+public class CouponController implements CouponControllerDoc {
 
     private final CouponService couponService;
 

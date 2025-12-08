@@ -2,6 +2,7 @@ package com.klp.promotion.grade.presentation.controller;
 
 import com.klp.promotion.global.security.model.UserDetailsImpl;
 import com.klp.promotion.grade.application.GradeService;
+import com.klp.promotion.grade.presentation.controller.docs.GradeControllerDoc;
 import com.klp.promotion.grade.presentation.dto.request.CreateGradeRequest;
 import com.klp.promotion.grade.presentation.dto.request.UpdateGradeRequest;
 import com.klp.promotion.grade.presentation.dto.response.GradeResponse;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/promotions/grades")
 @RequiredArgsConstructor
-public class GradeController {
+public class GradeController implements GradeControllerDoc {
 
     private final GradeService gradeService;
 

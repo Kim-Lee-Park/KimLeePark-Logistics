@@ -5,6 +5,7 @@ import com.klp.authservice.auth.exception.AuthErrorCode;
 import com.klp.authservice.auth.infrastructure.jwt.RefreshTokenCookieFactory;
 import com.klp.authservice.auth.infrastructure.jwt.TokenExtractor;
 import com.klp.authservice.auth.infrastructure.jwt.TokenProvider;
+import com.klp.authservice.auth.presentation.controller.docs.AuthControllerDoc;
 import com.klp.authservice.auth.presentation.dto.request.LoginRequest;
 import com.klp.authservice.auth.presentation.dto.request.SignUpRequest;
 import com.klp.authservice.auth.presentation.dto.response.LoginResponse;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthControllerDoc {
 
     private final AuthService authService;
     private final TokenProvider refreshTokenProvider;

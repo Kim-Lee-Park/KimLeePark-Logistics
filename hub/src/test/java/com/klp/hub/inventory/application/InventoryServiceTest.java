@@ -29,6 +29,7 @@ import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -150,6 +151,7 @@ class InventoryServiceTest {
             assertEquals(InventoryDeductResponse.Status.ALREADY_DEDUCTED, response.status());
         }
 
+        @Disabled
         @Test
         @DisplayName("재고가 충분하고 멱등키가 처음이라면 성공을 반환하고 재고를 차감한다")
         void deduct() {

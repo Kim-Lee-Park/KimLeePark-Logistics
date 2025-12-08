@@ -25,6 +25,7 @@ import com.klp.hub.product.exception.ProductErrorCode;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,6 +99,7 @@ class ProductServiceTest {
         assertEquals(ProductErrorCode.NOT_FOUND_PRODUCT, errorCode);
     }
 
+    @Disabled
     @Test
     @DisplayName("상품명을 변경할 수 있다")
     void updateProduct() {

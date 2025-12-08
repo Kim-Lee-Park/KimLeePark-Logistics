@@ -1,31 +1,37 @@
 package com.klp.hub.inventory.domain;
 
 import com.klp.hub.common.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
-import java.util.UUID;
-
 @Entity
 @Table(
-        name = "p_inventory",
-        schema = "hub_schema",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_inventory_product_hub",
-                        columnNames = {"product_id", "hub_id"}
-                )
-        }
+    name = "p_inventory",
+    schema = "hub_schema",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_inventory_product_hub",
+            columnNames = {"product_id", "hub_id"}
+        )
+    }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Inventory extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "invevntory_id", nullable = false)
+    @Column(name = "inventory_id", nullable = false)
     private UUID id;
 
     @Comment("재고 수량")
@@ -58,8 +64,7 @@ public class Inventory extends BaseEntity {
     }
 
     /**
-     * @param quantity 재고 수량
-     * 재고 수량을 증가시킨다
+     * @param quantity 재고 수량 재고 수량을 증가시킨다
      */
     public void replenish(Integer quantity) {
         validQuantity(quantity);
@@ -68,8 +73,7 @@ public class Inventory extends BaseEntity {
     }
 
     /**
-     * @param quantity 재고 수량
-     * 재고 수량을 차감시킨다
+     * @param quantity 재고 수량 재고 수량을 차감시킨다
      */
     public void deduct(Integer quantity) {
         validQuantity(quantity);

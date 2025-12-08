@@ -1,6 +1,7 @@
 package com.klp.user.presentation;
 
 import com.klp.user.application.UserFacade;
+import com.klp.user.presentation.docs.UserAddressControllerDoc;
 import com.klp.user.presentation.dto.request.UserAddressCreateRequest;
 import com.klp.user.presentation.dto.response.UserAddressListResponse;
 import com.klp.user.presentation.dto.response.UserAddressResponse;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/users/address")
 @RequiredArgsConstructor
-public class UserAddressController {
+public class UserAddressController implements UserAddressControllerDoc {
 
     private final UserFacade userFacade;
 

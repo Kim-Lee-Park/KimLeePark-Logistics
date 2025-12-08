@@ -14,3 +14,9 @@ spring:
       retry:
         initial-interval: 1000
         max-attempts: 3
+
+springdoc:
+  api-docs:
+    path: /v1/api-docs
+  swagger-ui:
+    path: /swagger-ui

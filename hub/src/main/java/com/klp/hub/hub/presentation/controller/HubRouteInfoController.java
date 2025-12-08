@@ -2,6 +2,7 @@ package com.klp.hub.hub.presentation.controller;
 
 import com.klp.hub.common.model.UserDetailsImpl;
 import com.klp.hub.hub.application.service.HubRouteInfoService;
+import com.klp.hub.hub.presentation.controller.doc.HubRouteInfoControllerDoc;
 import com.klp.hub.hub.presentation.dto.request.hubrouteinfo.RegisterHubRouteInfoRequest;
 import com.klp.hub.hub.presentation.dto.request.hubrouteinfo.UpdateHubRouteInfoRequest;
 import com.klp.hub.hub.presentation.dto.response.hubrouteinfo.GetHubRouteInfoDetailResponse;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/hubs/routes/info")
-public class HubRouteInfoController {
+public class HubRouteInfoController implements HubRouteInfoControllerDoc {
 
     private final HubRouteInfoService hubRouteInfoService;
 
@@ -85,7 +86,7 @@ public class HubRouteInfoController {
     //모든 허브간 이동 정보 조회 ( 페이지네이션 X )
     @GetMapping("/all")
     @PreAuthorize("hasRole('MASTER')")
-    public ResponseEntity<GetHubRouteInfoListResponse> getHubRouteInfos() {
+    public ResponseEntity<GetHubRouteInfoListResponse> getAllHubRouteInfos() {
         return ResponseEntity.ok(hubRouteInfoService.getAllHubRouteInfos());
     }
 }

@@ -71,6 +71,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
 
+    // swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
     //trace
     implementation 'io.micrometer:micrometer-tracing'
     implementation("io.micrometer:micrometer-tracing-bridge-otel")

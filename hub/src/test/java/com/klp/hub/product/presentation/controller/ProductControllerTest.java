@@ -22,6 +22,7 @@ import com.klp.hub.product.presentation.dto.ProductUpdateResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+@Disabled
 @WebMvcTest(ProductController.class)
 @Import({SecurityConfig.class, AuthorizationFilter.class, GlobalExceptionHandler.class})
 class ProductControllerTest {

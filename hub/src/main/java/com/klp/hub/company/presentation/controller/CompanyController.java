@@ -2,6 +2,7 @@ package com.klp.hub.company.presentation.controller;
 
 import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.application.dto.CreateCompanyCommand;
+import com.klp.hub.company.presentation.docs.CompanyControllerDocs;
 import com.klp.hub.company.presentation.dto.request.CreateCompanyRequest;
 import com.klp.hub.company.presentation.dto.response.CompanyListResponse;
 import com.klp.hub.company.presentation.dto.response.CompanyListResponse.CompanySummaryResponse;
@@ -26,10 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/v1/companies")
-public class CompanyController {
+public class CompanyController implements CompanyControllerDocs {
 
     private final CompanyService companyService;
 
+    @Override
     @GetMapping("/{companyId}")
     public ResponseEntity<CompanyResponse> getById(@PathVariable("companyId") String companyId) {
         log.info("== 단일 업체 조회 companyId: {} ==", companyId);
@@ -38,6 +40,7 @@ public class CompanyController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Override
     @GetMapping
     public ResponseEntity<CompanyListResponse> getAllByName(
         @RequestParam(value = "name", required = true) String name
@@ -48,6 +51,7 @@ public class CompanyController {
         return ResponseEntity.ok().body(new CompanyListResponse(response));
     }
 
+    @Override
     @PostMapping
     @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<CreateCompanyResponse> create(
