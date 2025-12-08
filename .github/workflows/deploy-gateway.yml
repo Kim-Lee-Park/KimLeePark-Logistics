@@ -8,6 +8,10 @@ on:
       - ".github/workflows/deploy-gateway.yml"
       - "appspec/appspec-ecs.yaml"
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: klp-logistics-gateway

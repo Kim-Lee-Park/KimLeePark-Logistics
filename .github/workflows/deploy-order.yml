@@ -7,6 +7,10 @@ on:
       - "order/**"
       - ".github/workflows/deploy-order.yml"
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: klp-logistics-order
