@@ -167,4 +167,20 @@ public class PaymentService {
     public boolean existsByOrderId(UUID orderId) {
         return paymentRepository.existsByOrderId(orderId);
     }
+
+    /**
+     * 주문 취소로 인한 결제 취소 처리
+     */
+    @Transactional
+    public Payment cancelPaymentByOrderId(UUID orderId, String reason) {
+        Payment payment = paymentRepository.findFirstByOrderIdAndStatusApproved(orderId)
+            .orElse(null);
+
+        if (payment == null) {
+            return null;
+        }
+
+        payment.cancel(reason);
+        return payment;
+    }
 }

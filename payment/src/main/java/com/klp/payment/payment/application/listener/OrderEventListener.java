@@ -3,8 +3,10 @@ package com.klp.payment.payment.application.listener;
 import com.klp.payment.payment.application.PaymentOutboxService;
 import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
+import com.klp.payment.payment.domain.event.OrderCancelledEvent;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
+import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.UUID;
@@ -71,6 +73,35 @@ public class OrderEventListener {
 
             outboxService.savePaymentFailedEvent(failedEvent);
             log.warn("결제 실패: orderId={}, reason={}", event.orderId(), payment.getReason());
+        }
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handleOrderCancelled(OrderCancelledEvent event) {
+        log.info("주문 취소 이벤트 수신: orderId={}", event.orderId());
+
+        Payment payment = paymentService.cancelPaymentByOrderId(event.orderId(), "주문 취소");
+
+        if (payment != null) {
+            PaymentCancelledEvent cancelledEvent = PaymentCancelledEvent.from(
+                payment.getPaymentId(),
+                event.orderId(),
+                payment.getUserId(),
+                "주문 취소",
+                event.products().stream()
+                    .map(p -> new PaymentCancelledEvent.ProductInfo(
+                        p.productId(),
+                        p.hubId(),
+                        p.quantity()
+                    ))
+                    .toList()
+            );
+
+            outboxService.savePaymentCancelledEvent(cancelledEvent);
+            log.info("결제 취소 완료: paymentId={}", payment.getPaymentId());
+        } else {
+            log.info("취소할 결제가 없습니다: orderId={}", event.orderId());
         }
     }
 

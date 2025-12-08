@@ -1,6 +1,7 @@
 package com.klp.payment.payment.domain.event;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -8,8 +9,16 @@ import java.util.UUID;
  */
 public record OrderCancelledEvent(
     UUID orderId,
-    Long userId,
-    String reason,
+    String inventoryIdempotencyKey,
+    String deliveryIdempotencyKey,
+    List<ProductReplenishment> products,
     LocalDateTime occurredAt
 ) {
+
+    public record ProductReplenishment(
+        UUID productId,
+        UUID hubId,
+        Integer quantity
+    ) {
+    }
 }
