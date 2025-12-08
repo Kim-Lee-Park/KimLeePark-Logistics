@@ -138,4 +138,8 @@ public class Payment extends BaseEntity {
             throw new IllegalStateException("승인된 결제만 취소 가능합니다.");
         }
     }
+
+    public boolean isApproved() {
+        return this.status == PaymentStatus.APPROVED;
+    }
 }

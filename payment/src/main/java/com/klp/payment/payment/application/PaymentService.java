@@ -9,6 +9,7 @@ import com.klp.payment.payment.application.command.CancelPaymentCommand;
 import com.klp.payment.payment.application.command.FailPaymentCommand;
 import com.klp.payment.payment.application.command.PreparePaymentCommand;
 import com.klp.payment.payment.domain.entity.Payment;
+import com.klp.payment.payment.domain.enums.CardType;
 import com.klp.payment.payment.domain.enums.PaymentMethodType;
 import com.klp.payment.payment.domain.repository.PaymentRepository;
 import com.klp.payment.payment.infrastructure.PaymentMockService;
@@ -30,6 +31,31 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMockService paymentMockService;
     private final UserClient userClient;
+
+    /**
+     * 자동 결제 흐름(결제 준비 + 결제 승인)
+     */
+    @Transactional
+    public Payment processPayment(UUID orderId, Long userId, UUID hubId, Long amount) {
+        Payment payment = Payment.create(orderId, userId, hubId, PaymentMethodType.CARD, amount);
+        paymentRepository.save(payment);
+
+        PaymentMockResult mockResult = paymentMockService.mockApprovePayment();
+
+        if (mockResult.success()) {
+            payment.approve(
+                mockResult.pgTransactionId(),
+                mockResult.billingKey(),
+                CardType.KAKAO,
+                0
+            );
+        } else {
+            payment.fail(mockResult.failReason());
+        }
+
+        return payment;
+    }
+
 
     /**
      * 결제 준비 메소드. 현재는 카드 결제만 지원
@@ -135,5 +161,26 @@ public class PaymentService {
         payment.fail(command.reason());
 
         return PaymentResponse.from(payment);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByOrderId(UUID orderId) {
+        return paymentRepository.existsByOrderId(orderId);
+    }
+
+    /**
+     * 주문 취소로 인한 결제 취소 처리
+     */
+    @Transactional
+    public Payment cancelPaymentByOrderId(UUID orderId, String reason) {
+        Payment payment = paymentRepository.findFirstByOrderIdAndStatusApproved(orderId)
+            .orElse(null);
+
+        if (payment == null) {
+            return null;
+        }
+
+        payment.cancel(reason);
+        return payment;
     }
 }
