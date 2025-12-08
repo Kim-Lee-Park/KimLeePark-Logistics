@@ -67,8 +67,8 @@ public class Order extends BaseEntity {
     @Column(name = "order_price", nullable = false)
     private int orderPrice;
 
-    @Column(name = "delivery_address", nullable = false)
-    private String deliveryAddress;
+    @Column(name = "address_id", nullable = false)
+    private UUID addressId;
 
     @Column(name = "delivery_latitude", nullable = false, precision = 10, scale = 8)
     private BigDecimal deliveryLatitude;
@@ -91,7 +91,7 @@ public class Order extends BaseEntity {
         UUID userCouponId,
         UUID supplierId,
         String comment,
-        String deliveryAddress,
+        UUID addressId,
         BigDecimal deliveryLatitude,
         BigDecimal deliveryLongitude,
         List<OrderItemCommand> itemCommands
@@ -100,14 +100,14 @@ public class Order extends BaseEntity {
 
         order.validateUserId(userId);
         order.validateSupplierId(supplierId);
-        order.validateDeliveryInfo(deliveryAddress, deliveryLatitude, deliveryLongitude);
+        order.validateDeliveryInfo(addressId, deliveryLatitude, deliveryLongitude);
         order.validateItemCommands(itemCommands);
 
         order.userId = userId;
         order.userCouponId = userCouponId;
         order.supplierId = supplierId;
         order.comment = comment;
-        order.deliveryAddress = deliveryAddress;
+        order.addressId = addressId;
         order.deliveryLatitude = deliveryLatitude;
         order.deliveryLongitude = deliveryLongitude;
         order.orderStatus = OrderStatus.PENDING;
@@ -200,11 +200,11 @@ public class Order extends BaseEntity {
     }
 
     private void validateDeliveryInfo(
-        String deliveryAddress,
+        UUID deliveryAddress,
         BigDecimal deliveryLatitude,
         BigDecimal deliveryLongitude
     ) {
-        if (deliveryAddress == null || deliveryAddress.isBlank()) {
+        if (deliveryAddress == null) {
             throw new BusinessException(OrderErrorCode.DELIVERY_ADDRESS_REQUIRED);
         }
         if (deliveryLatitude == null) {

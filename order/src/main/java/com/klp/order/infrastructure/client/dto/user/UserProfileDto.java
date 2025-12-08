@@ -24,6 +24,7 @@ public record UserProfileDto(
             affiliationName,
             slackId,
             phone,
+            email,
             gradeName
         );
     }

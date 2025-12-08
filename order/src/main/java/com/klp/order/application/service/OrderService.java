@@ -35,7 +35,7 @@ public class OrderService {
             command.userCouponId(),
             command.supplierId(),
             command.comment(),
-            command.deliveryAddress(),
+            command.addressId(),
             command.deliveryLatitude(),
             command.deliveryLongitude(),
             command.items()
