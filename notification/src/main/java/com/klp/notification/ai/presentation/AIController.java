@@ -1,6 +1,7 @@
 package com.klp.notification.ai.presentation;
 
 import com.klp.notification.ai.application.AIService;
+import com.klp.notification.ai.presentation.docs.AIControllerDoc;
 import com.klp.notification.ai.presentation.dto.request.GenerateMessageRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/notification/ai")
 @RequiredArgsConstructor
-public class AIController {
+public class AIController implements AIControllerDoc {
 
     private final AIService aiService;
 

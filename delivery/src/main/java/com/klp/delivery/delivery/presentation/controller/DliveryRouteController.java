@@ -3,6 +3,7 @@ package com.klp.delivery.delivery.presentation.controller;
 import com.klp.delivery.delivery.application.facade.DeliveryRouteFacade;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
+import com.klp.delivery.delivery.presentation.controller.docs.DeliveryRouteControllerDocs;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteResponse;
 import java.util.List;
@@ -20,12 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/deliveries")
 @RequiredArgsConstructor
-public class DliveryRouteController {
+public class DliveryRouteController implements DeliveryRouteControllerDocs {
 
     private final DeliveryRouteFacade  deliveryRouteFacade;
     private final DeliveryRouteService deliveryRouteService;
 
 
+    @Override
     @PostMapping("/{deliveryId}/routes")
     public ResponseEntity<DeliveryRouteResponse> appendDeliveryRoute(@PathVariable UUID deliveryId) {
 
@@ -38,6 +40,7 @@ public class DliveryRouteController {
     }
 
 
+    @Override
     @GetMapping("/{deliveryId}/routes")
     public ResponseEntity<List<DeliveryRouteDetailResponse>> findDeliveryRoutes(@PathVariable UUID deliveryId) {
 
