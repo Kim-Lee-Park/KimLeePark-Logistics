@@ -1,4 +1,4 @@
-package com.klp.hub.inventory.presentation.dto;
+package com.klp.hub.inventory.presentation.dto.request;
 
 import com.klp.hub.inventory.application.dto.InventoryDeductCommand;
 import jakarta.validation.Valid;

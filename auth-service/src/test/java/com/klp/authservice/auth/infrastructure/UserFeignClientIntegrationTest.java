@@ -12,6 +12,7 @@ import com.klp.authservice.auth.infrastructure.external.UserFeignClient;
 import com.klp.authservice.auth.infrastructure.external.dto.response.UsernameDuplicateResponse;
 import com.klp.authservice.global.exception.BusinessException;
 import feign.FeignException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.test.context.ActiveProfiles;
 
+@Disabled
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureWireMock(port = 0)

@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtLeastFor = "10s", defaultLockAtMostFor = "90s") //Lock 이 유지되는 최소,최대 시간
+@EnableSchedulerLock(defaultLockAtLeastFor = "10s", defaultLockAtMostFor = "90s")
 public class SchedulingConfig {
 
     @Value("${spring.profiles.active}")
