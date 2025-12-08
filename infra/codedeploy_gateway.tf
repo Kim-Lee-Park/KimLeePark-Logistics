@@ -15,7 +15,7 @@ resource "aws_iam_role" "codedeploy_ecs" {
 
 resource "aws_iam_role_policy_attachment" "codedeploy_ecs_managed" {
   role       = aws_iam_role.codedeploy_ecs.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForECS"
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
 }
 
 resource "aws_codedeploy_app" "gateway" {
@@ -35,8 +35,8 @@ resource "aws_codedeploy_deployment_group" "gateway" {
 
   blue_green_deployment_config {
     terminate_blue_instances_on_deployment_success {
-      action                              = "TERMINATE"
-      termination_wait_time_in_minutes    = 5
+      action                           = "TERMINATE"
+      termination_wait_time_in_minutes = 5
     }
   }
 
