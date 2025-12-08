@@ -1,4 +1,4 @@
-package com.klp.hub.hub.presentation.dto.request;
+package com.klp.hub.hub.presentation.dto.request.hub;
 
 import com.klp.hub.hub.application.command.hub.NearestHubCommand;
 import jakarta.validation.constraints.NotNull;

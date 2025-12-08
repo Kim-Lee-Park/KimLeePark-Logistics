@@ -1,6 +1,7 @@
 package com.klp.ai.recommendation.presentation;
 
 import com.klp.ai.recommendation.application.EmbeddingService;
+import com.klp.ai.recommendation.presentation.docs.EmbeddingControllerDoc;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/embeddings")
 @RequiredArgsConstructor
-public class EmbeddingController {
+public class EmbeddingController implements EmbeddingControllerDoc {
 
     private final EmbeddingService embeddingService;
 

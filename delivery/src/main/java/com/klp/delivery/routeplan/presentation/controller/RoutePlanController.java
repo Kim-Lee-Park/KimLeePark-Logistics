@@ -2,6 +2,7 @@ package com.klp.delivery.routeplan.presentation.controller;
 
 import com.klp.delivery.common.entity.UserDetailsImpl;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
+import com.klp.delivery.routeplan.presentation.controller.docs.RoutePlanControllerDoc;
 import com.klp.delivery.routeplan.presentation.dto.request.CreateRoutePlanRequest;
 import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/routes/plans")
-public class RoutePlanController {
+public class RoutePlanController implements RoutePlanControllerDoc {
 
     private final RoutePlanService routePlanService;
 
@@ -43,7 +44,8 @@ public class RoutePlanController {
 
     //출발 ID, 도착 ID로 조회
     @GetMapping("/{departureId}/{arrivalId}")
-    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlan(@PathVariable UUID departureId,
+    public ResponseEntity<GetRoutePlanDetailResponse> getRoutePlanByDepartureAndArrival(
+        @PathVariable UUID departureId,
         @PathVariable UUID arrivalId) {
         return ResponseEntity.ok(routePlanService.getRoutePlan(departureId, arrivalId));
     }

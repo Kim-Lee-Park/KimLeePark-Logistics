@@ -4,6 +4,7 @@ import com.klp.common.model.PageResponse;
 import com.klp.global.security.model.UserDetailsImpl;
 import com.klp.user.application.UserFacade;
 import com.klp.user.application.UserService;
+import com.klp.user.presentation.docs.UserControllerDoc;
 import com.klp.user.presentation.dto.request.UserCreateRequest;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
 import com.klp.user.presentation.dto.request.ValidateUserRequest;
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserControllerDoc {
 
     private final UserService userService;
     private final UserFacade userFacade;

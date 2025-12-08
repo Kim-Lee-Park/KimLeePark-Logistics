@@ -5,6 +5,7 @@ import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
 import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/internal/users")
 @RequiredArgsConstructor
+@Hidden
 public class UserInternalController {
 
     private final UserFacade userFacade;
