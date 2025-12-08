@@ -61,7 +61,7 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<PageResponse<GetOrdersResponse>> getOrders(
-        @RequestParam(required = false) Long supplierId,
+        @RequestParam(required = false) UUID supplierId,
         @RequestParam(required = false) Long customerId,
         @RequestParam(required = false) Long createdBy,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,

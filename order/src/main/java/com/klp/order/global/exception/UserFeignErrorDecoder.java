@@ -16,8 +16,6 @@ public class UserFeignErrorDecoder implements ErrorDecoder {
         int status = response.status();
 
         return switch (status) {
-
-            // 5xx - 외부 서비스 장애
             case 500, 502, 503, 504 -> {
                 log.error("[UserFeignErrorDecoder] 외부 서비스 장애 발생. status={}", status);
                 yield new ExternalApiException(ExternalApiErrorCode.USER_SERVICE_UNAVAILABLE);
@@ -41,8 +39,7 @@ public class UserFeignErrorDecoder implements ErrorDecoder {
             default -> {
                 if (status >= 400 && status < 500) {
                     log.warn("[UserFeignErrorDecoder] 기타 4xx 오류. status={}", status);
-                    yield new ExternalApiException(
-                        ExternalApiErrorCode.USER_SERVICE_BAD_REQUEST);
+                    yield new ExternalApiException(ExternalApiErrorCode.USER_SERVICE_BAD_REQUEST);
                 }
                 yield errorDecoder.decode(methodKey, response);
             }

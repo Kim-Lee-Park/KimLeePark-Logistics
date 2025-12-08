@@ -8,9 +8,12 @@ import java.util.UUID;
 
 public record GetOrdersResponse(
     UUID orderId,
-    Long supplierId,
-    Long customerId,
+    UUID supplierId,
+    Long userId,
+    UUID userCouponId,
     OrderStatus orderStatus,
+    int originalPrice,
+    int orderPrice,
     OrderCancellationResponse cancellation,
     Long createdBy,
     LocalDateTime createdAt
@@ -20,8 +23,11 @@ public record GetOrdersResponse(
         return new GetOrdersResponse(
             order.getOrderId(),
             order.getSupplierId(),
-            order.getCustomerId(),
+            order.getUserId(),
+            order.getUserCouponId(),
             order.getOrderStatus(),
+            order.getOriginalPrice(),
+            order.getOrderPrice(),
             OrderCancellationResponse.from(order.getCancellation()),
             order.getCreatedBy(),
             order.getCreatedAt()

@@ -2,8 +2,10 @@ package com.klp.order.infrastructure.client;
 
 
 import com.klp.order.global.config.InventoryFeignClientConfig;
+import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
+import com.klp.order.infrastructure.client.dto.inventory.response.AllocationsProductResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.DeductInventoryResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.GetProductResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.ReplenishInventoryResponse;
@@ -25,4 +27,7 @@ public interface InventoryClient {
 
     @PostMapping("/v1/inventories/replenish")
     ReplenishInventoryResponse replenishInventory(@RequestBody ReplenishInventoryRequest request);
+
+    @PostMapping("v1/inventories/allocations")
+    AllocationsProductResponse allocateProduct(@RequestBody AllocationsProductRequest request);
 }

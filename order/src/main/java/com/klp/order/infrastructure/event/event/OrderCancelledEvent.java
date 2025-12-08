@@ -7,7 +7,8 @@ import java.util.UUID;
 
 public record OrderCancelledEvent(
     UUID orderId,
-    String idempotencyKey,
+    String InventoryIdempotencyKey,
+    String DeliveryIdempotencyKey,
     List<ProductReplenishment> products,
     LocalDateTime occurredAt
 ) {
@@ -20,7 +21,8 @@ public record OrderCancelledEvent(
 
     }
 
-    public static OrderCancelledEvent from(Order order, String idempotencyKey) {
+    public static OrderCancelledEvent from(Order order, String InventoryIdempotencyKey,
+        String DeliveryIdempotencyKey) {
         List<ProductReplenishment> products = order.getOrderItems().stream()
             .map(item -> new ProductReplenishment(
                 item.getProductId(),
@@ -31,7 +33,8 @@ public record OrderCancelledEvent(
 
         return new OrderCancelledEvent(
             order.getOrderId(),
-            idempotencyKey,
+            InventoryIdempotencyKey,
+            DeliveryIdempotencyKey,
             products,
             LocalDateTime.now()
         );

@@ -40,6 +40,9 @@ public class OrderItem extends BaseEntity {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
+    @Column(name = "price", nullable = false)
+    private int price;
+
     @Column(name = "hub_id", nullable = false)
     private UUID hubId;
 
@@ -49,23 +52,27 @@ public class OrderItem extends BaseEntity {
     @Column(name = "delivery_id")
     private UUID deliveryId;
 
-    private OrderItem(Order order, UUID productId, String productName, UUID hubId, int quantity) {
+    private OrderItem(Order order, UUID productId, String productName, int price, UUID hubId,
+        int quantity) {
         validateOrder(order);
         validateProductId(productId);
         validateProductName(productName);
+        validatePrice(price);
         validateHubId(hubId);
         validateQuantity(quantity);
 
         this.order = order;
         this.productId = productId;
         this.productName = productName;
+        this.price = price;
         this.hubId = hubId;
         this.quantity = quantity;
     }
 
 
     public static OrderItem of(Order order, OrderItemCommand command) {
-        return new OrderItem(order, command.productId(), command.productName(), command.hubId(),
+        return new OrderItem(order, command.productId(), command.productName(), command.price(),
+            command.hubId(),
             command.quantity());
     }
 
@@ -99,6 +106,12 @@ public class OrderItem extends BaseEntity {
         }
     }
 
+    private void validatePrice(int price) {
+        if (price < 0) {
+            throw new BusinessException(OrderItemErrorCode.PRICE_MUST_OVER_ZERO);
+        }
+    }
+
     public void assignDeliveryId(UUID deliveryId) {
         this.deliveryId = deliveryId;
     }
@@ -106,6 +119,10 @@ public class OrderItem extends BaseEntity {
     public void updateQuantity(Integer quantity) {
         validateQuantity(quantity);
         this.quantity = quantity;
+    }
+
+    public int getTotalPrice() {
+        return price * quantity;
     }
 
 }
