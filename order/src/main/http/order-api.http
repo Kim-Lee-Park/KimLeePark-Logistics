@@ -1,4 +1,8 @@
-### 1. 주문 생성
+### ============================================
+### Order Service API 테스트
+### ============================================
+
+### 1. 주문 생성 (Create Order)
 POST http://localhost:8020/v1/orders
 Content-Type: application/json
 X-User-Id: 1
@@ -6,45 +10,106 @@ X-User-Name: testuser
 X-User-Role: USER
 
 {
-  "supplierId": 1,
-  "customerId": 2,
+  "userId": 1,
+  "supplierId": "550e8400-e29b-41d4-a716-446655440001",
+  "userCouponId": null,
   "comment": "Kafka 테스트 주문",
+  "deliveryAddress": "서울시 강남구 테헤란로 123",
+  "deliveryLatitude": 37.5012,
+  "deliveryLongitude": 127.0396,
   "orderItems": [
     {
-      "productId": "550e8400-e29b-41d4-a716-446655440001",
-      "productName": "테스트 상품",
-      "hubId": "550e8400-e29b-41d4-a716-446655440002",
-      "quantity": 5
+      "productId": "550e8400-e29b-41d4-a716-446655440010",
+      "productName": "테스트 상품 A",
+      "hubId": "550e8400-e29b-41d4-a716-446655440020",
+      "quantity": 5,
+      "price": 10000
+    },
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440011",
+      "productName": "테스트 상품 B",
+      "hubId": "550e8400-e29b-41d4-a716-446655440020",
+      "quantity": 3,
+      "price": 20000
     }
   ]
 }
 
-### 2. 주문 조회 (생성 직후 상태 확인 - PENDING)
-GET http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+### ============================================
+
+### 2. 단일 주문 조회 (Get One Order)
+### orderId는 1번에서 생성된 값으로 교체하세요
+GET http://localhost:8020/v1/orders/091f815c-11ad-49d3-a7d3-ee880fd69a86
 X-User-Id: 1
 X-User-Name: testuser
 X-User-Role: USER
 
-### 3. Payment Completed 이벤트 발행 (PENDING -> PAID)
-POST http://localhost:8020/test/kafka/payment/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+### ============================================
 
-### 4. 주문 상태 확인 (PAID 확인)
-GET http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+### 3. 주문 목록 조회 (Get Orders - 페이지네이션)
+GET http://localhost:8020/v1/orders?page=0&size=10
 X-User-Id: 1
 X-User-Name: testuser
 X-User-Role: USER
 
-### 5. Delivery Created 이벤트 발행 (PAID -> DELIVERY_ASSIGNED)
-POST http://localhost:8020/test/kafka/delivery/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd/d234932c-fbf6-44d7-8beb-d2dd49fa537d
+### ============================================
 
-### 6. 최종 상태 확인 (DELIVERY_ASSIGNED 확인)
-GET http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd
+### 4. 주문 목록 조회 (필터링 포함)
+GET http://localhost:8020/v1/orders?supplierId=550e8400-e29b-41d4-a716-446655440001&page=0&size=10
 X-User-Id: 1
 X-User-Name: testuser
 X-User-Role: USER
 
-### 7. 주문 취소 테스트 (선택사항)
-POST http://localhost:8020/v1/orders/여기에-orderId-붙여넣기/cancel
+### ============================================
+
+### 5. 주문 목록 조회 (날짜 필터링)
+GET http://localhost:8020/v1/orders?startDate=2025-01-01&endDate=2025-12-31&page=0&size=10
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### ============================================
+
+### 6. 주문 수정 (Update Order)
+### orderId는 생성된 값으로 교체하세요
+PATCH http://localhost:8020/v1/orders/091f815c-11ad-49d3-a7d3-ee880fd69a86
+Content-Type: application/json
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+{
+  "comment": "수정된 코멘트입니다",
+  "orderItems": [
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440010",
+      "productName": "테스트 상품 A (수정)",
+      "hubId": "550e8400-e29b-41d4-a716-446655440020",
+      "quantity": 10,
+      "price": 10000
+    }
+  ]
+}
+
+### ============================================
+
+### 7. 주문 상태 변경 (Change Order Status)
+### orderId는 생성된 값으로 교체하세요
+PATCH http://localhost:8020/v1/orders/091f815c-11ad-49d3-a7d3-ee880fd69a86/status
+Content-Type: application/json
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+{
+  "orderStatus": "PAID"
+}
+
+### ============================================
+
+### 8. 주문 취소 (Cancel Order)
+### orderId는 생성된 값으로 교체하세요
+POST http://localhost:8020/v1/orders/8d7f82d3-94f8-409c-89c9-fcae5f1856c7/cancel
 Content-Type: application/json
 X-User-Id: 1
 X-User-Name: testuser
@@ -55,4 +120,118 @@ X-User-Role: USER
   "cancelType": "USER_REQUEST"
 }
 
+### ============================================
+
+### 9. 주문 삭제 (Soft Delete)
+### orderId는 생성된 값으로 교체하세요
+DELETE http://localhost:8020/v1/orders/8d7f82d3-94f8-409c-89c9-fcae5f1856c7
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### ============================================
+
+### 10. 진행 중인 주문 확인 (Check Progressing Orders by Hub)
+GET http://localhost:8020/v1/orders/progressing?hubId=550e8400-e29b-41d4-a716-446655440020
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### ============================================
+### Kafka 이벤트 테스트용 (테스트 컨트롤러 필요)
+### ============================================
+
+### 11. Payment Completed 이벤트 발행 테스트
+### 주문이 PENDING -> PAID 상태로 변경됨
+### 테스트 컨트롤러가 있어야 동작합니다
+POST http://localhost:8020/test/kafka/payment/091f815c-11ad-49d3-a7d3-ee880fd69a86
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### ============================================
+
+### 12. Delivery Created 이벤트 발행 테스트
+### 주문이 PAID -> DELIVERY_ASSIGNED 상태로 변경됨
+### 테스트 컨트롤러가 있어야 동작합니다
+POST http://localhost:8020/test/kafka/delivery/{여기에-orderId}/{여기에-deliveryId}
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### ============================================
+### 전체 플로우 테스트 시나리오
+### ============================================
 ###
+### 1단계: 주문 생성 (POST /v1/orders)
+###    -> orderId 복사
+###    -> 상태: PENDING
+###
+### 2단계: 주문 조회로 상태 확인 (GET /v1/orders/{orderId})
+###    -> orderStatus가 PENDING인지 확인
+###
+### 3단계: 결제 완료 이벤트 (실제 환경에서는 Payment 서비스가 발행)
+###    -> 테스트용 엔드포인트 호출 또는 Kafka UI로 직접 발행
+###    -> 상태: PENDING -> PAID
+###
+### 4단계: 배송 생성 이벤트 (실제 환경에서는 Delivery 서비스가 발행)
+###    -> 테스트용 엔드포인트 호출 또는 Kafka UI로 직접 발행
+###    -> 상태: PAID -> DELIVERY_ASSIGNED
+###
+### 5단계: 주문 완료 처리 (PATCH /v1/orders/{orderId}/status)
+###    -> orderStatus를 COMPLETE로 변경
+###
+### ============================================
+
+### ============================================
+### Cancel Type 값 참고
+### ============================================
+### - USER_REQUEST: 고객 요청
+### - ADMIN_CANCEL: 관리자 요청
+### - OUT_OF_STOCK: 재고 소진
+
+### ============================================
+### Order Status 값 참고
+### ============================================
+### - PENDING: 진행 중
+### - PAID: 결제 완료
+### - DELIVERY_ASSIGNED: 배송 할당
+### - COMPLETE: 완료
+### - CANCELLED: 취소됨
+### - FAILED: 실패
+
+### ============================================
+### 예시: 실제 orderId로 테스트
+### ============================================
+
+### 주문 생성 후 응답에서 orderId 확인
+### 예: "orderId": "bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd"
+
+### 해당 orderId로 조회
+GET http://localhost:8020/v1/orders/091f815c-11ad-49d3-a7d3-ee880fd69a86
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+### 해당 orderId로 상태 변경
+PATCH http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd/status
+Content-Type: application/json
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+{
+  "orderStatus": "COMPLETE"
+}
+
+### 해당 orderId로 취소
+POST http://localhost:8020/v1/orders/bf6f21b7-5a1b-46aa-b7cc-940ea5d71bdd/cancel
+Content-Type: application/json
+X-User-Id: 1
+X-User-Name: testuser
+X-User-Role: USER
+
+{
+  "cancelReason": "테스트 취소",
+  "cancelType": "USER_REQUEST"
+}

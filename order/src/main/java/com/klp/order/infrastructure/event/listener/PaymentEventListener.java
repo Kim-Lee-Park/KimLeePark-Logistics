@@ -1,15 +1,10 @@
 package com.klp.order.infrastructure.event.listener;
 
 
-import com.klp.order.application.service.OrderOutboundRequestService;
-import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
-import com.klp.order.domain.entity.idempotencykey.OperationType;
-import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.event.OrderPaidEvent;
 import com.klp.order.infrastructure.event.event.PaymentCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +27,6 @@ public class PaymentEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
-    private final OrderOutboundRequestService orderOutboundRequestService;
-    private final OrderOutboxEventService orderOutboxEventService;
 
     @RetryableTopic(
         attempts = "3",
@@ -63,29 +56,22 @@ public class PaymentEventListener {
             Order order = orderService.findById(event.orderId());
             log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
 
-            order.changeStatus(OrderStatus.PAID);
-            orderRepository.save(order);
-
-            // 2. 배송 요청 이벤트 발행
-            String deliveryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
-                order.getOrderId(),
-                Target.DELIVERY,
-                OperationType.MAKING
-            );
-
-            OrderPaidEvent orderPaidEvent = OrderPaidEvent.from(
-                order,
-                deliveryIdempotencyKey
-            );
-            orderOutboxEventService.saveEvent("ORDER", order.getOrderId(),
-                "ORDER_PAID", orderPaidEvent);
-
-            // 3. 수동 커밋
-            if (acknowledgment != null) {
-                acknowledgment.acknowledge();
+            if (order.getOrderStatus() == OrderStatus.PAID) {
+                log.info("이미 처리된 결제 완료 이벤트 - orderId: {}", event.orderId());
+                if (acknowledgment != null) {
+                    acknowledgment.acknowledge();
+                }
+                return;
             }
 
+            order.changeStatus(OrderStatus.PAID);
+            orderRepository.save(order);
             log.info("=== 결제 완료 이벤트 처리 완료: orderId={} ===", event.orderId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
 
         } catch (Exception e) {
             log.error("결제 완료 이벤트 처리 실패: orderId={}, partition={}, offset={}",

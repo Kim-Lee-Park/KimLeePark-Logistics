@@ -2,18 +2,23 @@ package com.klp.order.infrastructure.client.service;
 
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
+import com.klp.order.common.exception.ExternalApiErrorCode;
+import com.klp.order.common.exception.ExternalApiException;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.global.exception.BusinessException;
 import com.klp.order.global.exception.OrderErrorCode;
 import com.klp.order.infrastructure.client.InventoryClient;
+import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest.ProductReplenishment;
+import com.klp.order.infrastructure.client.dto.inventory.response.AllocationsProductResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.DeductInventoryResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.ReplenishInventoryResponse;
+import feign.FeignException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +33,18 @@ public class InventoryIntegrationService {
 
     private final InventoryClient inventoryClient;
     private final OrderOutboundRequestService orderOutboundRequestService;
+
+    public AllocationsProductResponse allocateProduct(AllocationsProductRequest request) {
+        try {
+            return inventoryClient.allocateProduct(request);
+        } catch (FeignException.NotFound e) {
+            return null;
+        } catch (FeignException e) {
+            log.error("[InventoryClient] 재고 선점 호출 중 오류 - productId: {}, status: {}, message: {}",
+                request.productId(), e.status(), e.getMessage());
+            throw new ExternalApiException(ExternalApiErrorCode.INVENTORY_SERVICE_UNAVAILABLE);
+        }
+    }
 
     @Transactional
     public void deductInventory(Order order) {

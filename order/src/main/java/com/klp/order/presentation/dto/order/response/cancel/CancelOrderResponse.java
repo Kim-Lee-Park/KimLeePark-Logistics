@@ -12,8 +12,13 @@ import java.util.stream.Collectors;
 public record CancelOrderResponse(
     UUID orderId,
     OrderStatus orderStatus,
-    Long supplierId,
-    Long customerId,
+    UUID supplierId,
+    Long userId,
+    UUID userCouponId,
+    int originalPrice,
+    int couponDiscountPrice,
+    int gradeDiscountPrice,
+    int orderPrice,
     List<OrderItemResponse> orderItems,
     OrderCancellationResponse cancellation,
     LocalDateTime createdAt,
@@ -31,7 +36,12 @@ public record CancelOrderResponse(
             order.getOrderId(),
             order.getOrderStatus(),
             order.getSupplierId(),
-            order.getCustomerId(),
+            order.getUserId(),
+            order.getUserCouponId(),
+            order.getOriginalPrice(),
+            order.getCouponDiscountPrice(),
+            order.getGradeDiscountPrice(),
+            order.getOrderPrice(),
             orderItemResponses,
             OrderCancellationResponse.from(order.getCancellation()),
             order.getCreatedAt(),
@@ -41,10 +51,3 @@ public record CancelOrderResponse(
         );
     }
 }
-
-
-
-
-
-
-

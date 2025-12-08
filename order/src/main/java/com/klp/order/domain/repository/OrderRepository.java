@@ -24,15 +24,15 @@ public interface OrderRepository {
 
     List<Order> findByDeletedAtIsNull();
 
-    List<Order> findBySupplierId(Long supplierId);
+    List<Order> findBySupplierId(UUID supplierId);
 
-    List<Order> findByCustomerId(Long customerId);
+    List<Order> findByUserId(Long userId);
 
     Optional<Order> findByOrderIdAndDeletedAtIsNull(UUID orderId);
 
     Page<Order> searchOrders(
-        Long supplierId,
-        Long customerId,
+        UUID supplierId,
+        Long userId,
         Long createdBy,
         LocalDateTime startDate,
         LocalDateTime endDate,
