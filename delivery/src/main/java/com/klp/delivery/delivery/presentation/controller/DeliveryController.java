@@ -3,6 +3,7 @@ package com.klp.delivery.delivery.presentation.controller;
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.presentation.controller.docs.DeliveryControllerDocs;
 import com.klp.delivery.delivery.presentation.dto.DeliveryCreateRequest;
 import com.klp.delivery.delivery.presentation.dto.DeliveryDetailResponse;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/deliveries")
 @RequiredArgsConstructor
-public class DeliveryController {
+public class DeliveryController implements DeliveryControllerDocs {
 
     private final DeliveryFacade deliveryFacade;
     private final DeliveryService deliveryService;
 
+    @Override
     @PostMapping
     public ResponseEntity<DeliveryResponse> createDelivery(
         @Valid @RequestBody DeliveryCreateRequest request) {
@@ -48,6 +51,7 @@ public class DeliveryController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Override
     @GetMapping("/{deliveryId}")
     public ResponseEntity<DeliveryDetailResponse> getDelivery(@PathVariable UUID deliveryId) {
         Delivery delivery = deliveryService.findDelivery(deliveryId);
@@ -55,7 +59,7 @@ public class DeliveryController {
         return ResponseEntity.ok(response);
     }
 
-
+    @Override
     @GetMapping("/{deliveryId}/{orderId}")
     public ResponseEntity<List<DeliveryDetailResponse>> getDeliveriesByOrderId(
         @PathVariable UUID orderId) {
@@ -63,12 +67,14 @@ public class DeliveryController {
         return ResponseEntity.ok(responses);
     }
 
+    @Override
     @GetMapping
-    public ResponseEntity<Page<DeliveryDetailResponse>> getAllDeliveries(Pageable pageable) {
+    public ResponseEntity<Page<DeliveryDetailResponse>> getAllDeliveries(@ParameterObject Pageable pageable) {
         Page<DeliveryDetailResponse> responses = deliveryService.findDeliveryAll(pageable);
         return ResponseEntity.ok(responses);
     }
 
+    @Override
     @PatchMapping("/{deliveryId}")
     public ResponseEntity<Void> updateDeliveryStatus(@PathVariable UUID deliveryId,
         @RequestBody DeliveryUpdateRequest request) {
@@ -76,6 +82,7 @@ public class DeliveryController {
         return ResponseEntity.noContent().build();
     }
 
+    @Override
     @DeleteMapping("/{deliveryId}")
     public ResponseEntity<Void> deleteDelivery(
         @PathVariable UUID deliveryId,
@@ -85,4 +92,3 @@ public class DeliveryController {
     }
 
 }
-
