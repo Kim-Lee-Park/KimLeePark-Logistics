@@ -1,7 +1,7 @@
 package com.klp.hub.hub.presentation.controller;
 
 import com.klp.hub.hub.application.facade.HubFacade;
-import com.klp.hub.hub.presentation.dto.request.NearestHubRequest;
+import com.klp.hub.hub.presentation.dto.request.hub.NearestHubRequest;
 import com.klp.hub.hub.presentation.dto.response.NearestHubResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

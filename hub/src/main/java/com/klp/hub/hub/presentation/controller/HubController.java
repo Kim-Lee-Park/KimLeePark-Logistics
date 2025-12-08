@@ -3,6 +3,7 @@ package com.klp.hub.hub.presentation.controller;
 import com.klp.hub.common.model.UserDetailsImpl;
 import com.klp.hub.hub.application.facade.HubFacade;
 import com.klp.hub.hub.application.service.HubService;
+import com.klp.hub.hub.presentation.controller.doc.HubControllerDoc;
 import com.klp.hub.hub.presentation.dto.request.hub.RegisterHubRequest;
 import com.klp.hub.hub.presentation.dto.request.hub.UpdateHubRequest;
 import com.klp.hub.hub.presentation.dto.response.GetHubByNameResponse;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/hubs")
 @RequiredArgsConstructor
-public class HubController {
+public class HubController implements HubControllerDoc {
 
     private final HubFacade hubFacade;
     private final HubService hubService;
