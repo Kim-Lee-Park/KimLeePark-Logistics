@@ -3,6 +3,7 @@ package com.klp.payment.payment.presentation;
 import com.klp.payment.global.security.model.UserDetailsImpl;
 import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
+import com.klp.payment.payment.presentation.docs.PaymentControllerDoc;
 import com.klp.payment.payment.presentation.dto.request.ApprovePaymentRequest;
 import com.klp.payment.payment.presentation.dto.request.CancelPaymentRequest;
 import com.klp.payment.payment.presentation.dto.request.FailPaymentRequest;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/payments")
 @RequiredArgsConstructor
-public class PaymentController {
+public class PaymentController implements PaymentControllerDoc {
 
     private final PaymentService paymentService;
 
