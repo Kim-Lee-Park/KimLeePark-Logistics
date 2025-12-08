@@ -5,6 +5,7 @@ import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.presentation.dto.request.InventoryReplenishRequest;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/v1/inventories")
+@Hidden
 public class InventoryController {
 
     private final InventoryService inventoryService;

@@ -6,6 +6,7 @@ import com.klp.hub.inventory.presentation.dto.response.InventoryReservationRespo
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/internal/v1/inventories")
 @RequiredArgsConstructor
+@Hidden
 public class InventoryReservationInternalController {
 
     private final InventoryFacade inventoryFacade;
