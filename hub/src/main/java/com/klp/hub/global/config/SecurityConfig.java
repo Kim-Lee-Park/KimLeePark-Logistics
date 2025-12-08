@@ -30,13 +30,6 @@ public class SecurityConfig {
             .logout(AbstractHttpConfigurer::disable)
             .sessionManagement(sessionManagement ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/v1/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html"
-                ).permitAll()
-                .anyRequest().authenticated())
             .addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class)
         ;
         return http.build();
