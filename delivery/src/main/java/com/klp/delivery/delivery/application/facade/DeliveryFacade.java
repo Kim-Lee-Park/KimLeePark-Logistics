@@ -117,7 +117,7 @@ public class DeliveryFacade {
             createdDeliveries.add(delivery);
 
             // 각 배송 생성 직후 경로 생성 이벤트 발행 (비동기)
-            publishDeliveryRouteCreateEvent(delivery);
+            publishDeliveryRouteCreateEvent(delivery, orderCommand, driverCommand, orderItems);
         }
 
         // 3. Response 생성
@@ -196,15 +196,28 @@ public class DeliveryFacade {
             orderId, CustomerDeliveryStatus.CREATED, eventItems.size());
     }
 
-    private void publishDeliveryRouteCreateEvent(Delivery delivery) {
+    private void publishDeliveryRouteCreateEvent(
+        Delivery delivery,
+        OrderToDeliveryCommand orderCommand,
+        DriverCommand driverCommand,
+        List<OrderItemCommand> orderItems) {
         eventPublisher.publishEvent(
             new DeliveryRouteCreateEvent(
                 delivery.getDeliveryId(),
+                delivery.getOrderId(),
                 delivery.getDepartureId(),
                 delivery.getDepartureName(),
                 delivery.getArrivalId(),
                 delivery.getArrivalName(),
-                delivery.getUserDrvierId()
+                delivery.getUserDrvierId(),
+                // Notification 이벤트에 필요한 정보
+                orderCommand.name(),
+                orderCommand.email(),
+                orderCommand.orderCreateAt(),
+                orderCommand.comment() != null ? orderCommand.comment() : "",
+                orderItems,
+                driverCommand.username(),
+                driverCommand.email()
             )
         );
         log.info("배송 경로 생성 이벤트 발행: deliveryId={}, orderId={}",

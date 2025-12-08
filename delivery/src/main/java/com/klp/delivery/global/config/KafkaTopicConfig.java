@@ -10,6 +10,9 @@ public class KafkaTopicConfig {
     // 발행용 토픽 (단일 토픽으로 통합)
     public static final String DELIVERY_EVENTS = "delivery.topic";
 
+    // 구독용 토픽
+    public static final String INVENTORY_EVENTS = "inventory.topic";
+
     @Bean
     public NewTopic deliveryEventsTopic() {
         return TopicBuilder.name(DELIVERY_EVENTS)
@@ -18,6 +21,11 @@ public class KafkaTopicConfig {
             .build();
     }
 
-
-
+    @Bean
+    public NewTopic inventoryEventsTopic() {
+        return TopicBuilder.name(INVENTORY_EVENTS)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
 }
