@@ -4,7 +4,7 @@ import com.klp.hub.company.application.CompanyService;
 import com.klp.hub.company.presentation.dto.response.CompanyResponse;
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.InventoryService;
-import com.klp.hub.inventory.presentation.dto.InventoryResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
 import com.klp.hub.product.application.dto.ProductCreateCommand;
 import com.klp.hub.product.application.dto.ProductUpdateCommand;
 import com.klp.hub.product.application.event.ProductInfoChangedEvent;

@@ -1,7 +1,7 @@
 package com.klp.hub.inventory.application.listener;
 
 import com.klp.hub.inventory.application.InventoryFacade;
-import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,18 +13,18 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @KafkaListener(
-    topics = KafkaTopicConfig.ORDER_CREATED_EVENTS,
+    topics = KafkaTopicConfig.COUPON_EVENTS,
     groupId = "inventory-service-group",
     containerFactory = "inventoryKafkaListenerContainerFactory"
 )
-public class OrderCreatedEventListener {
+public class CouponUsedEventListener {
 
     private final InventoryFacade inventoryFacade;
 
     @KafkaHandler
-    public void handleOrderCreated(OrderCreatedEvent event) {
-        log.info("Order 이벤트 수신: orderId={}", event.orderId());
-        inventoryFacade.deduct(event);
+    public void handleCouponUsed(CouponUsedEvent event) {
+        log.info("쿠폰 사용 이벤트 수신: orderId={}", event.orderId());
+        inventoryFacade.confirm(event.orderId());
     }
 
     @KafkaHandler(isDefault = true)
