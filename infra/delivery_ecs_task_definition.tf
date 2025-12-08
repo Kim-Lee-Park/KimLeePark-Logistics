@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "delivery" {
           value = local.db_urls.delivery
         },
         {
+          name  = "SERVER_URL",
+          value = "http://gateway.klp.local"
+        },
+        {
           name  = "SCHEDULER_ROUTE_PLAN_DELETE_FIXED_RATE",
           value = "PT3H"
         },

@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "hub" {
           value = local.db_urls.hub
         },
         {
+          name  = "SERVER_URL",
+          value = "http://gateway.klp.local"
+        },
+        {
           name  = "SCHEDULER_ROUTE_INFOS_FIXED_RATE",
           value = "PT2H"
         },
