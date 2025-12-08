@@ -7,6 +7,7 @@ import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
+import com.klp.delivery.delivery.application.service.DeliveryOutboxEventService;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
@@ -39,6 +40,7 @@ public class DeliveryRouteFacade {
     private final RoutePlanService routePlanService;
     private final DeliveryRouteRepository deliveryRouteRepository;
     private final DeliveryEventPublisher deliveryEventPublisher;
+    private final DeliveryOutboxEventService deliveryOutboxEventService;
 
     @Async("DeliveryRouteExecutor")
     @Transactional
@@ -100,40 +102,39 @@ public class DeliveryRouteFacade {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("주문 아이템을 찾을 수 없습니다."));
 
-            // 2. 경유 허브 이름 목록 추출 및 문자열로 변환 (출발지와 도착지 제외)
-            List<String> transitHubs = routePlan.planItems().stream()
+            // 2. 경유 허브 이름 목록 추출 (출발지와 도착지 제외)
+            List<String> transitHubNames = routePlan.planItems().stream()
                 .filter(item -> item.sequence() > 1 && item.sequence() < routePlan.planItems().size())
                 .map(GetRoutePlanDetailResponse.PlanItem::arrivalName)
                 .collect(Collectors.toList());
-            
-            String transitHubNames = transitHubs.isEmpty() 
-                ? "" 
-                : String.join(", ", transitHubs);
-
-            // 3. 배송 마감 시간 계산 (주문 시간 + 총 소요 시간)
-            LocalDateTime deliveryDeadline = routeCreateEvent.orderTime()
-                .plusMinutes(routePlan.totalDurationMin());
-
 
             DeliveryNotificationEvent notificationEvent = new DeliveryNotificationEvent(
-                delivery.getUserDriverSlackId(),
+                delivery.getDeliveryId(),
                 routeCreateEvent.orderId(),
+                delivery.getUserDriverSlackId(),
                 routeCreateEvent.ordererName(),
                 routeCreateEvent.ordererEmail(),
                 routeCreateEvent.orderTime(),
                 firstOrderItem.productName(),
                 firstOrderItem.quantity(),
                 routeCreateEvent.requirements(),
-                deliveryDeadline,
                 delivery.getDepartureName(),
                 transitHubNames,
                 delivery.getUserAddress(),
                 routeCreateEvent.driverName(),
-                routeCreateEvent.driverEmail()
+                routeCreateEvent.driverEmail(),
+                "", // TODO: workingHours 추후 추가 예정
+                routeCreateEvent.orderTime() // occurredAt은 orderCreateAt과 동일
             );
 
-            deliveryEventPublisher.publishNotificationEvent(notificationEvent);
-            log.info("배송 알림 이벤트 발행 완료: deliveryId={}, orderId={}, departureHubName={}",
+            // 아웃박스 패턴으로 이벤트 저장
+            deliveryOutboxEventService.saveEvent(
+                delivery.getDeliveryId(),
+                routeCreateEvent.orderId(),
+                "DELIVERY_NOTIFICATION",
+                notificationEvent
+            );
+            log.info("배송 알림 이벤트 아웃박스 저장 완료: deliveryId={}, orderId={}, departureHubName={}",
                 delivery.getDeliveryId(), delivery.getOrderId(), delivery.getDepartureName());
 
         } catch (Exception e) {
