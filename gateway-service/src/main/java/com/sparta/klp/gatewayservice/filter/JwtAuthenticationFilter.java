@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         String path = request.getURI().getPath();
 
         if (isPublicPath(path)) {
+            log.info("Public path: {}", path);
             return chain.filter(exchange);
         }
 
