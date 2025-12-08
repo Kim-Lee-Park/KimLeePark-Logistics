@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "promotion" {
           value = local.db_urls.promotion
         },
         {
+          name  = "SERVER_URL",
+          value = "http://gateway.klp.local"
+        },
+        {
           name  = "KAFKA_BOOTSTRAP_SERVERS",
           value = local.kafka_bootstrap
         },

@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "notification" {
           value = local.db_urls.notification
         },
         {
+          name  = "SERVER_URL",
+          value = "http://gateway.klp.local"
+        },
+        {
           name  = "KAFKA_BOOTSTRAP_SERVERS",
           value = local.kafka_bootstrap
         },
