@@ -66,4 +66,8 @@ public class InventoryReservation extends BaseEntity {
         reservation.expiresAt = expiresAt;
         return reservation;
     }
+
+    public boolean isReserved() {
+        return this.status == InventoryReservationStatus.RESERVED;
+    }
 }
