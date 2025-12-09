@@ -44,7 +44,7 @@ public class OrderFacade {
 
         try {
             // 1. 유저 조회_ 정보 얻기
-            //grade , email 뽑아오기
+            //grade , email, username 뽑아오기
 //            UserProfile userProfile = userQueryService.getUserProfile(command.userId());
             //2. userAddressHubId, address  받아오기
 //            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
@@ -99,7 +99,7 @@ public class OrderFacade {
             );
 
             UUID tmpAddressHubId = UUID.randomUUID();
-            OrderCreatedEvent event = OrderCreatedEvent.from(order, "email", "address",
+            OrderCreatedEvent event = OrderCreatedEvent.from(order, "email", "USERNAME", "address",
                 InventoryIdempotencyKey,
                 DeliveryIdempotencyKey, tmpAddressHubId);
 

@@ -13,13 +13,18 @@ public record OrderCreatedEvent(
     Long userId,
     UUID supplierId,
     UUID userCouponId,
+    String email,
+    String username,
+    String comment,
 
     int originalPrice,
     int couponDiscountPrice,
     int gradeDiscountPrice,
     int finalOrderPrice,
 
-    String deliveryAddress,
+    UUID addressId,
+    UUID userAddressHubId,
+    String address,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
@@ -28,6 +33,7 @@ public record OrderCreatedEvent(
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
 
+    LocalDateTime createdAt,
     LocalDateTime occurredAt
 ) {
 
@@ -40,5 +46,6 @@ public record OrderCreatedEvent(
         int unitPrice,
         int totalPrice
     ) {
+
     }
 }

@@ -49,15 +49,12 @@ public class OrderEventListener {
         );
 
         if (payment.isApproved()) {
-            String couponIdempotencyKey = UUID.randomUUID().toString();
-
             PaymentApprovedEvent approvedEvent = PaymentApprovedEvent.from(
                 payment.getPaymentId(),
                 payment.getAmount().intValue(),
                 payment.getMethod().name(),
                 payment.getPaidAt(),
-                event,
-                couponIdempotencyKey
+                event
             );
 
             outboxService.savePaymentApprovedEvent(approvedEvent);
