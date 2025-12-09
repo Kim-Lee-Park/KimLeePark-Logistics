@@ -31,7 +31,11 @@ public record PaymentApprovedEvent(
     String deliveryIdempotencyKey,
 
     LocalDateTime createdAt,
-    LocalDateTime occurredAt
+    LocalDateTime occurredAt,
+    UUID paymentId,
+    int paidAmount,
+    String paymentMethod,
+    LocalDateTime paidAt
 ) {
 
     public record OrderItem(
