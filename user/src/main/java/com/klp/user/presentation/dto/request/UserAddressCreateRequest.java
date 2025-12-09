@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record UserAddressCreateRequest(
-    @NotNull(message = "허브 ID는 필수 입력값입니다")
-    UUID hubId,
     @NotBlank(message = "주소는 필수 입력값입니다")
     String address,
     String detail,
@@ -20,7 +18,7 @@ public record UserAddressCreateRequest(
     Double longitude
 ) {
 
-    public UserAddressCreateCommand toCommand(Long userId) {
+    public UserAddressCreateCommand toCommand(Long userId, UUID hubId) {
         return new UserAddressCreateCommand(userId, hubId, address, detail, isDefault, latitude, longitude);
     }
 }

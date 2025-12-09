@@ -4,7 +4,8 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.event.InventoryConfirmedFailedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryArrivedFailedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InventoryConfirmedFailedEventListener {
+public class DeliveryArrivedFailedEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
@@ -35,59 +36,65 @@ public class InventoryConfirmedFailedEventListener {
         topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
     )
     @KafkaListener(
-        topics = "Inventory.confirmed.failed",
+        topics = "delivery.topic",
         groupId = "order-service-group",
         containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
-    public void handleInventoryConfirmedFailed(
-        @Payload InventoryConfirmedFailedEvent event,
+    public void handleDeliveryArrivedFailed(
+        @Payload DeliveryArrivedFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 재고 확정 실패 이벤트 수신: orderId={}, partition={}, offset={} ===",
-            event.orderId(), partition, offset);
+        log.info("=== 배송 완료 실패 이벤트 수신: orderId={}, partition={}, offset={}, products={} ===",
+            event.orderId(), partition, offset, event.products().size());
 
         try {
-            // 1. 주문 조회 후 상태 변경
+            // 1. 주문 조회
             Order order = orderService.findById(event.orderId());
-            log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
+            log.info("주문 조회 완료 - orderId: {}, 현재 상태: {}",
+                order.getOrderId(), order.getOrderStatus());
 
             if (order.getOrderStatus() == OrderStatus.FAILED
-                || order.getOrderStatus() == OrderStatus.STOCK_CONFIRMED_FAILED) {
-                log.info("이미 처리된 재고 확정 실패 이벤트 - orderId: {}", event.orderId());
+                || order.getOrderStatus() == OrderStatus.DELIVERY_ARRIVED_FAILED) {
+                log.info("이미 처리된 배송 완료 실패 이벤트 - orderId: {}", event.orderId());
                 if (acknowledgment != null) {
                     acknowledgment.acknowledge();
                 }
                 return;
             }
-
-            order.changeStatus(OrderStatus.STOCK_CONFIRMED_FAILED);
+            order.changeStatus(OrderStatus.DELIVERY_ARRIVED_FAILED);
             orderRepository.save(order);
-            log.info("=== 재고 확정 실패 이벤트 처리 완료: orderId={} ===", event.orderId());
 
+            // 4. 수동 커밋
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
                 log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
             }
 
+            log.info("=== 배송 완료 실패 이벤트 처리 완료: orderId={}, 상태={} ===",
+                event.orderId(), OrderStatus.DELIVERY_ARRIVED_FAILED);
+
         } catch (Exception e) {
-            log.error("재고 확정 실패 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+            log.error("배송 완료 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
+
+            // 이벤트 처리 실패 시 재시도를 위해 예외를 다시 던짐
+            // DefaultErrorHandler가 재시도 처리
             throw e;
         }
     }
 
     // 실패시 자동으로 호출한다고 합니다.
     @DltHandler
-    public void handleInventoryConfirmedFailedEventDlt(
-        @Payload InventoryConfirmedFailedEvent event,
+    public void handleDeliveryArrivedFailedDlt(
+        @Payload DeliveryCreatedFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
 
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Inventory Confirmed Failed Event");
+        log.error("⚠️ DLT 도착: Delivery Arrived Failed Event");
         log.error("⚠️ 수동 처리가 필요합니다!");
         log.error("========================================");
         log.error("orderId={}, error={}", event.orderId(), exceptionMessage);

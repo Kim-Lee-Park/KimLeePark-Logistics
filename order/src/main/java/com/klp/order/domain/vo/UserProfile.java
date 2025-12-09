@@ -6,6 +6,7 @@ public record UserProfile(
     String affiliation,
     String slackId,
     String phoneNumber,
+    String email,
     String grade
 ) {
 

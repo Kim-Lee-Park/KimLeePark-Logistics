@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum AffiliationType {
     LOGISTICS("물류 회사"),
     COMPANY("업체"),
-    HUB("허브");
+    HUB("허브"),
+    CUSTOMER("고객");
 
     private final String description;
 }

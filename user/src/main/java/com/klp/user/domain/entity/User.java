@@ -89,7 +89,6 @@ public class User extends BaseEntity {
         String email,
         UserRole role
     ) {
-        validateNotNull(affiliationId, "소속 ID는 필수입니다.");
         validateNotNull(affiliationType, "소속 타입은 필수입니다.");
         validateNotNull(role, "권한은 필수입니다.");
         validateNotBlank(name, "이름은 필수입니다.");
@@ -98,11 +97,20 @@ public class User extends BaseEntity {
         validateNotBlank(phone, "전화번호는 필수입니다.");
         validateNotBlank(email, "이메일은 필수입니다.");
         validateRoleAndAffiliationType(role, affiliationType);
+        validateAffiliationId(affiliationId, affiliationType);
 
         User user = new User(affiliationId, affiliationType, name, password, slackId, phone, email,
             role);
         user.status = UserStatus.PENDING;
         return user;
+    }
+
+    private static void validateAffiliationId(UUID affiliationId, AffiliationType affiliationType) {
+        if (affiliationType == AffiliationType.HUB || affiliationType == AffiliationType.COMPANY) {
+            if (affiliationId == null) {
+                throw new BusinessException(UserErrorCode.BAD_REQUEST, "소속 ID는 필수입니다.");
+            }
+        }
     }
 
     private static void validateNotNull(Object o, String message) {

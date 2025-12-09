@@ -9,7 +9,7 @@ public record CreateOrderCommand(
     UUID supplierId,
     UUID userCouponId,
     String comment,
-    String deliveryAddress,
+    UUID addressId,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
     List<OrderItemCommand> items

@@ -90,9 +90,33 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentCompletedEvent:com.klp.order.infrastructure.event.event.PaymentCompletedEvent,"
+            "PaymentApprovedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedEvent," +
+                "PaymentApprovedFailedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent,"
                 +
-                "OrderDeliveryEvent:com.klp.order.infrastructure.event.event.OrderDeliveryEvent");
+                "InventoryDeductedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedEvent,"
+                +
+                "InventoryDeductedFailedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedFailedEvent,"
+                +
+                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent,"
+                +
+                "DeliveryCreatedFailedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent,"
+                +
+                "DeliveryShippingEvent:com.klp.order.infrastructure.event.event.DeliveryShippingEvent,"
+                +
+                "DeliveryShippingFailedEvent:com.klp.order.infrastructure.event.event.DeliveryShippingFailedEvent,"
+                +
+                "DeliveryArrivedEvent:com.klp.order.infrastructure.event.event.DeliveryArrivedEvent,"
+                +
+                "DeliveryArrivedFailedEvent:com.klp.order.infrastructure.event.event.DeliveryArrivedFailedEvent,"
+                +
+                "CouponUsedEvent:com.klp.order.infrastructure.event.event.CouponUsedEvent," +
+                "CouponUsedFailedEvent:com.klp.order.infrastructure.event.event.CouponUsedFailedEvent,"
+                +
+                "UserProfileChangedMessage:com.klp.order.infrastructure.event.dto.UserProfileChangedMessage,"
+                +
+                "ProductInfoChangedMessage:com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage,"
+                +
+                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
