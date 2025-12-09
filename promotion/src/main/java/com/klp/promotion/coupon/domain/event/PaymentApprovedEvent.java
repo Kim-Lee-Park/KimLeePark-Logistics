@@ -5,9 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * 결제 승인 이벤트 (구독용)
- */
 public record PaymentApprovedEvent(
     // Payment 고유 데이터
     UUID paymentId,
@@ -35,7 +32,7 @@ public record PaymentApprovedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<ProductInfo> products,
+    List<OrderItem> products,  // ⭐ ProductInfo → OrderItem 변경
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
@@ -44,7 +41,8 @@ public record PaymentApprovedEvent(
     LocalDateTime occurredAt
 ) {
 
-    public record ProductInfo(
+    // ⭐ ProductInfo → OrderItem 변경
+    public record OrderItem(
         UUID orderItemId,
         UUID productId,
         String productName,
@@ -56,4 +54,3 @@ public record PaymentApprovedEvent(
 
     }
 }
-

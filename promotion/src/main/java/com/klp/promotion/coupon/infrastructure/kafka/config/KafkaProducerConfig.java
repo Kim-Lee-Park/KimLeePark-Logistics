@@ -1,5 +1,6 @@
 package com.klp.promotion.coupon.infrastructure.kafka.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,12 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    private final ObjectMapper objectMapper;
+
+    public KafkaProducerConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Bean
     public ProducerFactory<String, Object> couponProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -37,12 +44,17 @@ public class KafkaProducerConfig {
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS, buildTypeMappings());
 
-        return new DefaultKafkaProducerFactory<>(configProps);
+        return new DefaultKafkaProducerFactory<>(
+            configProps,
+            new StringSerializer(),
+            new JsonSerializer<>(objectMapper)
+        );
     }
 
     private String buildTypeMappings() {
         return String.join(",",
-            "CouponUsedEvent:" + com.klp.promotion.coupon.domain.event.CouponUsedEvent.class.getName()
+            "CouponUsedEvent:"
+                + com.klp.promotion.coupon.domain.event.CouponUsedEvent.class.getName()
         );
     }
 
