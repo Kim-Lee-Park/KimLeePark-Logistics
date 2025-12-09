@@ -5,9 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * 결제 승인 이벤트 (발행용)
- */
 public record PaymentApprovedEvent(
     // Payment 고유 데이터
     UUID paymentId,
@@ -20,20 +17,27 @@ public record PaymentApprovedEvent(
     Long userId,
     UUID supplierId,
     UUID userCouponId,
+    String email,
+    String username,
+    String comment,
 
     int originalPrice,
     int couponDiscountPrice,
     int gradeDiscountPrice,
+    int finalOrderPrice,
 
-    String deliveryAddress,
+    UUID addressId,
+    UUID userAddressHubId,
+    String address,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
     List<ProductInfo> products,
 
+    String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
-    String couponIdempotencyKey,
 
+    LocalDateTime createdAt,
     LocalDateTime occurredAt
 ) {
 
@@ -54,8 +58,7 @@ public record PaymentApprovedEvent(
         int paidAmount,
         String paymentMethod,
         LocalDateTime paidAt,
-        OrderCreatedEvent orderEvent,
-        String couponIdempotencyKey
+        OrderCreatedEvent orderEvent
     ) {
         List<ProductInfo> products = orderEvent.products().stream()
             .map(p -> new ProductInfo(
@@ -78,15 +81,22 @@ public record PaymentApprovedEvent(
             orderEvent.userId(),
             orderEvent.supplierId(),
             orderEvent.userCouponId(),
+            orderEvent.email(),
+            orderEvent.username(),
+            orderEvent.comment(),
             orderEvent.originalPrice(),
             orderEvent.couponDiscountPrice(),
             orderEvent.gradeDiscountPrice(),
-            orderEvent.deliveryAddress(),
+            orderEvent.finalOrderPrice(),
+            orderEvent.addressId(),
+            orderEvent.userAddressHubId(),
+            orderEvent.address(),
             orderEvent.deliveryLatitude(),
             orderEvent.deliveryLongitude(),
             products,
+            orderEvent.inventoryIdempotencyKey(),
             orderEvent.deliveryIdempotencyKey(),
-            couponIdempotencyKey,
+            orderEvent.createdAt(),
             LocalDateTime.now()
         );
     }

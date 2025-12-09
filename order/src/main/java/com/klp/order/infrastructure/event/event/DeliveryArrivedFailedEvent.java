@@ -11,6 +11,8 @@ public record DeliveryArrivedFailedEvent(
     UUID supplierId,
     UUID userCouponId,
     String email,
+    String username,
+    String comment,
 
     int originalPrice,
     int couponDiscountPrice,
