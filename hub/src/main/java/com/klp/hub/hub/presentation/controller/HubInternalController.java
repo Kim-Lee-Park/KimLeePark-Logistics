@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Hidden
 public class HubInternalController {
 
-    HubFacade hubFacade;
+    private final HubFacade hubFacade;
 
     @PostMapping("/nearest")
     public ResponseEntity<NearestHubResponse> getNearestHub(
