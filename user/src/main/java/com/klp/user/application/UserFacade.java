@@ -11,7 +11,9 @@ import com.klp.user.domain.enums.UserRole;
 import com.klp.user.domain.exception.ExternalApiException;
 import com.klp.user.domain.exception.UserErrorCode;
 import com.klp.user.infrastructure.client.CompanyClient;
+import com.klp.user.infrastructure.client.HubClient;
 import com.klp.user.infrastructure.client.PromotionClient;
+import com.klp.user.infrastructure.client.dto.request.NearestHubRequest;
 import com.klp.user.infrastructure.client.dto.response.CompanyListResponse;
 import com.klp.user.infrastructure.client.dto.response.CompanyResponse;
 import com.klp.user.infrastructure.client.dto.response.DefaultGradeResponse;
@@ -21,6 +23,7 @@ import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.DriverInfo;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
 import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
+import com.klp.user.presentation.dto.response.UserAddressHubResponse;
 import com.klp.user.presentation.dto.response.UserAddressListResponse;
 import com.klp.user.presentation.dto.response.UserAddressResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
@@ -44,6 +47,7 @@ public class UserFacade {
     private final UserGradeService userGradeService;
     private final UserAddressService userAddressService;
     private final CompanyClient companyClient;
+    private final HubClient hubClient;
     private final PromotionClient promotionClient;
 
     /**
@@ -265,13 +269,34 @@ public class UserFacade {
     }
 
     /**
-     * 회원 주소 생성(요청으로 자신 주소 근처 hubId를 받음)
+     * 회원 주소 생성 (위경도 기반으로 가장 가까운 허브 자동 조회)
      */
     @Transactional
-    public void createUserAddress(UserAddressCreateCommand command) {
-        User user = userService.findNotDeletedUser(command.userId());
+    public void createUserAddress(Long userId, Double latitude, Double longitude,
+        String address, String detail, boolean isDefault) {
+        User user = userService.findNotDeletedUser(userId);
+
+        UUID hubId = getNearestHubId(latitude, longitude);
+
+        UserAddressCreateCommand command = new UserAddressCreateCommand(
+            userId, hubId, address, detail, isDefault, latitude, longitude
+        );
         userAddressService.createUserAddress(user, command);
-        log.info("회원 주소 생성 완료 - userId: {}", command.userId());
+        log.info("회원 주소 생성 완료 - userId: {}, hubId: {}", userId, hubId);
+    }
+
+    /**
+     * 가장 가까운 허브 ID 조회 (Hub 서비스)
+     */
+    private UUID getNearestHubId(Double latitude, Double longitude) {
+        try {
+            NearestHubRequest request = new NearestHubRequest(latitude, longitude);
+            return hubClient.getNearestHub(request).hubId();
+        } catch (Exception e) {
+            log.error("가까운 허브 조회 실패 - latitude: {}, longitude: {}", latitude, longitude, e);
+            throw new BusinessException(UserErrorCode.INTERNAL_SERVER_ERROR,
+                "가까운 허브 조회 중 오류가 발생했습니다.");
+        }
     }
 
     /**
@@ -296,12 +321,18 @@ public class UserFacade {
     }
 
     /**
-     * 회원 주소 수정
+     * 회원 주소 수정 (위경도 기반으로 가장 가까운 허브 자동 조회)
      */
     @Transactional
-    public void updateUserAddress(UUID userAddressId, UserAddressCreateCommand command) {
+    public void updateUserAddress(UUID userAddressId, Long userId, Double latitude, Double longitude,
+        String address, String detail, boolean isDefault) {
+        UUID hubId = getNearestHubId(latitude, longitude);
+
+        UserAddressCreateCommand command = new UserAddressCreateCommand(
+            userId, hubId, address, detail, isDefault, latitude, longitude
+        );
         userAddressService.updateUserAddress(userAddressId, command);
-        log.info("회원 주소 수정 완료 - addressId: {}", userAddressId);
+        log.info("회원 주소 수정 완료 - addressId: {}, hubId: {}", userAddressId, hubId);
     }
 
     /**
@@ -311,5 +342,20 @@ public class UserFacade {
     public void deleteUserAddress(UUID userAddressId, Long userId) {
         userAddressService.deleteUserAddress(userAddressId, userId);
         log.info("회원 주소 삭제 완료 - addressId: {}, deletedBy: {}", userAddressId, userId);
+    }
+
+    /**
+     * 회원 주소의 허브 ID 조회
+     */
+    @Transactional(readOnly = true)
+    public UserAddressHubResponse getUserAddressHub(UUID userAddressId) {
+        UserAddress userAddress = userAddressService.getUserAddress(userAddressId);
+        String address;
+        if (userAddress.getDetail() == null) {
+            address = userAddress.getAddress();
+        } else {
+            address = userAddress.getAddress() + " " + userAddress.getDetail();
+        }
+        return new UserAddressHubResponse(userAddress.getHubId(), address);
     }
 }

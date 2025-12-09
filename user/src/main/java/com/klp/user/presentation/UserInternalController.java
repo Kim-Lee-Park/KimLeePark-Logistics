@@ -4,6 +4,7 @@ import com.klp.user.application.UserFacade;
 import com.klp.user.presentation.dto.response.DriverDetailResponse;
 import com.klp.user.presentation.dto.response.HubDriverListResponse;
 import com.klp.user.presentation.dto.response.LogisticsDriverListResponse;
+import com.klp.user.presentation.dto.response.UserAddressHubResponse;
 import com.klp.user.presentation.dto.response.UserDetailResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import java.util.UUID;
@@ -22,6 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserInternalController {
 
     private final UserFacade userFacade;
+
+    @GetMapping("/{addressId}")
+    public ResponseEntity<UserAddressHubResponse> getUserAddressHub(
+        @PathVariable UUID addressId
+    ) {
+        UserAddressHubResponse response = userFacade.getUserAddressHub(addressId);
+        return ResponseEntity.ok().body(response);
+    }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDetailResponse> getUserDetails(
