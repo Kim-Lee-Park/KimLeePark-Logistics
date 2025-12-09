@@ -32,7 +32,7 @@ public record PaymentApprovedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<OrderItem> products,  // ⭐ ProductInfo → OrderItem 변경
+    List<OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
@@ -41,7 +41,6 @@ public record PaymentApprovedEvent(
     LocalDateTime occurredAt
 ) {
 
-    // ⭐ ProductInfo → OrderItem 변경
     public record OrderItem(
         UUID orderItemId,
         UUID productId,

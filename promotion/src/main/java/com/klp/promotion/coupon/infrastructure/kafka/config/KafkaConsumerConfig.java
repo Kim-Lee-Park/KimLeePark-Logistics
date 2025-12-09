@@ -107,7 +107,7 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(couponConsumerFactory());
         factory.setConcurrency(3);
         factory.getContainerProperties()
-            .setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE); // 추가
+            .setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(errorHandler);
 
         return factory;
