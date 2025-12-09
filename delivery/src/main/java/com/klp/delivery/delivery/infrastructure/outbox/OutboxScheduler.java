@@ -2,7 +2,10 @@ package com.klp.delivery.delivery.infrastructure.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.delivery.delivery.domain.entity.outbox.DeliveryOutboxEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryShippingEvent;
 import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
 import com.klp.delivery.delivery.domain.repository.DeliveryOutboxEventRepository;
 import com.klp.delivery.delivery.infrastructure.producer.DeliveryEventProducer;
@@ -31,10 +34,10 @@ public class OutboxScheduler {
             try {
                 publishEvent(outbox);
                 deliveryOutboxEventRepository.markAsPublished(outbox.getId());
-                log.info("{} 이벤트 발행 성공: orderId={}, deliveryId={}", outbox.getEventType(), outbox.getDeliveryId(), outbox.getDeliveryId());
+                log.info("{} 이벤트 발행 성공: deliveryId={}", outbox.getEventType(), outbox.getDeliveryId());
             } catch (Exception e) {
                 deliveryOutboxEventRepository.markAsFailed(outbox.getId());
-                log.error("{} 이벤트 발행 실패: orderId={}, deliveryId={}, error={}", outbox.getEventType(), outbox.getDeliveryId(), outbox.getDeliveryId(), e.getMessage());
+                log.error("{} 이벤트 발행 실패: deliveryId={}, error={}", outbox.getEventType(), outbox.getDeliveryId(), e.getMessage());
             }
         }
     }
@@ -44,17 +47,60 @@ public class OutboxScheduler {
         String payload = outbox.getPayload();
 
         switch (eventType) {
-            case "DELIVERY_CREATED", "DELIVERY_SHIPPING", "DELIVERY_COMPLETED" -> {
-                OrderDeliveryEvent event = objectMapper.readValue(payload, OrderDeliveryEvent.class);
-                switch (eventType) {
-                    case "DELIVERY_CREATED" -> eventProducer.publishCreatedEvent(event);
-                    case "DELIVERY_SHIPPING" -> eventProducer.publishShippingEvent(event);
-                    case "DELIVERY_COMPLETED" -> eventProducer.publishArrivedEvent(event);
-                }
+            case "DELIVERY_CREATED" -> {
+                // 배송 생성 이벤트 발행
+                DeliveryCreatedEvent createEvent = objectMapper.readValue(payload, DeliveryCreatedEvent.class);
+                eventProducer.publishCreatedEvent(createEvent);
             }
             case "DELIVERY_NOTIFICATION" -> {
-                DeliveryNotificationEvent event = objectMapper.readValue(payload, DeliveryNotificationEvent.class);
-                eventProducer.publishNotificationEvent(event);
+                // 배송 알림 이벤트 처리: DeliveryNotificationEvent 정보를 DeliveryCreatedEvent에 포함하여 발행
+                DeliveryNotificationEvent notificationEvent = objectMapper.readValue(payload, DeliveryNotificationEvent.class);
+                
+                // 같은 deliveryId로 저장된 DELIVERY_CREATED 이벤트 찾기
+                List<DeliveryOutboxEvent> createdEvents = deliveryOutboxEventRepository
+                    .findByDeliveryIdAndEventType(outbox.getDeliveryId(), "DELIVERY_CREATED");
+                
+                if (!createdEvents.isEmpty()) {
+                    DeliveryOutboxEvent createdOutbox = createdEvents.get(0);
+                    DeliveryCreatedEvent createEvent = objectMapper.readValue(
+                        createdOutbox.getPayload(), DeliveryCreatedEvent.class);
+                    
+                    // 알림 정보를 포함한 DeliveryCreatedEvent 생성
+                    DeliveryCreatedEvent createEventWithNotification = new DeliveryCreatedEvent(
+                        createEvent.orderId(),
+                        createEvent.status(),
+                        createEvent.items(),
+                        notificationEvent.deliveryId(),
+                        notificationEvent.driverSlackId(),
+                        notificationEvent.ordererName(),
+                        notificationEvent.ordererEmail(),
+                        notificationEvent.orderTime(),
+                        notificationEvent.productName(),
+                        notificationEvent.quantity(),
+                        notificationEvent.requirements(),
+                        notificationEvent.departureHubName(),
+                        notificationEvent.transitHubNames(),
+                        notificationEvent.destinationAddress(),
+                        notificationEvent.driverName(),
+                        notificationEvent.driverEmail(),
+                        notificationEvent.workingHours(),
+                        notificationEvent.occurredAt()
+                    );
+                    
+                    // 알림 정보가 포함된 배송 생성 이벤트 발행
+                    eventProducer.publishCreatedEvent(createEventWithNotification);
+                } else {
+                    log.warn("DELIVERY_NOTIFICATION 처리 중 DELIVERY_CREATED 이벤트를 찾을 수 없음: deliveryId={}",
+                        outbox.getDeliveryId());
+                }
+            }
+            case "DELIVERY_SHIPPING" -> {
+                DeliveryShippingEvent shippingEvent = objectMapper.readValue(payload, DeliveryShippingEvent.class);
+                eventProducer.publishShippingEvent(shippingEvent);
+            }
+            case "DELIVERY_COMPLETED" -> {
+                DeliveryArrivedEvent arrivedEvent = objectMapper.readValue(payload, DeliveryArrivedEvent.class);
+                eventProducer.publishArrivedEvent(arrivedEvent);
             }
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         }

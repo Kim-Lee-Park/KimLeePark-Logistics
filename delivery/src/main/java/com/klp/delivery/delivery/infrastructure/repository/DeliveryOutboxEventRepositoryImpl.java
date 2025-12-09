@@ -35,5 +35,10 @@ public class DeliveryOutboxEventRepositoryImpl implements DeliveryOutboxEventRep
     public void markAsFailed(UUID id) {
         jpaRepository.markAsFailed(id);
     }
+
+    @Override
+    public List<DeliveryOutboxEvent> findByDeliveryIdAndEventType(UUID deliveryId, String eventType) {
+        return jpaRepository.findByDeliveryIdAndEventType(deliveryId, eventType);
+    }
 }
 

@@ -22,5 +22,11 @@ public interface DeliveryOutboxEventJpaRepository extends JpaRepository<Delivery
     @Modifying
     @Query("UPDATE DeliveryOutboxEvent o SET o.status = 'FAILED', o.retryCount = o.retryCount + 1 WHERE o.id = :id")
     void markAsFailed(@Param("id") UUID id);
+
+    @Query("SELECT o FROM DeliveryOutboxEvent o WHERE o.deliveryId = :deliveryId AND o.eventType = :eventType AND o.status = 'PENDING' ORDER BY o.createdAt ASC")
+    List<DeliveryOutboxEvent> findByDeliveryIdAndEventType(
+        @Param("deliveryId") UUID deliveryId,
+        @Param("eventType") String eventType
+    );
 }
 
