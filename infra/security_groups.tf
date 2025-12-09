@@ -198,15 +198,33 @@ resource "aws_security_group" "observability_stack" {
     security_groups = [aws_security_group.alb.id]
   }
 
-  # ECS, Kafka (Prometheus, Loki, Tempo, Otel Collector)
+  # Allow OTLP (Tempo) and Loki from ECS tasks
   ingress {
-    from_port = 0
-    to_port   = 65535
+    from_port = 4317
+    to_port   = 4317
     protocol  = "tcp"
-    security_groups = [
-      aws_security_group.ecs_service.id,
-      aws_security_group.kafka.id,
-    ]
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  ingress {
+    from_port = 4318
+    to_port   = 4318
+    protocol  = "tcp"
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  ingress {
+    from_port = 3100
+    to_port   = 3100
+    protocol  = "tcp"
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  ingress {
+    from_port = 3200
+    to_port   = 3200
+    protocol  = "tcp"
+    security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
@@ -228,11 +246,21 @@ resource "aws_security_group" "observability_stack" {
   }
 }
 
-resource "aws_security_group_rule" "obs_sg_kafka_otel" {
+resource "aws_security_group_rule" "kafka_exporter_from_obs" {
+  type                     = "ingress"
+  from_port                = 9308
+  to_port                  = 9308
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.kafka.id
+  source_security_group_id = aws_security_group.observability_stack.id
+}
+
+# Allow Prometheus in the observability stack to scrape ECS OTEL sidecars on 9464
+resource "aws_security_group_rule" "ecs_otel_scrape_from_obs" {
   type                     = "ingress"
   from_port                = 9464
   to_port                  = 9464
   protocol                 = "tcp"
-  security_group_id        = aws_security_group.observability_stack.id
+  security_group_id        = aws_security_group.ecs_service.id
   source_security_group_id = aws_security_group.observability_stack.id
 }
