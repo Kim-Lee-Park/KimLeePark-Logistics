@@ -13,5 +13,7 @@ public interface DeliveryOutboxEventRepository {
     void markAsPublished(UUID id);
 
     void markAsFailed(UUID id);
+
+    List<DeliveryOutboxEvent> findByDeliveryIdAndEventType(UUID deliveryId, String eventType);
 }
 
