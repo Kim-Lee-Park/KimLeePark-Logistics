@@ -1,19 +1,15 @@
 package com.klp.order.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -90,9 +86,31 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentCompletedEvent:com.klp.order.infrastructure.event.event.PaymentCompletedEvent,"
+            "PaymentApprovedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedEvent," +
+                "PaymentApprovedFailedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent,"
                 +
-                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
+                "InventoryDeductedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedEvent,"
+                +
+                "InventoryDeductedFailedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedFailedEvent,"
+                +
+                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent,"
+                +
+                "DeliveryCreatedFailedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent,"
+                +
+                "DeliveryShippingEvent:com.klp.order.infrastructure.event.event.DeliveryShippingEvent,"
+                +
+                "DeliveryShippingFailedEvent:com.klp.order.infrastructure.event.event.DeliveryShippingFailedEvent,"
+                +
+                "DeliveryArrivedEvent:com.klp.order.infrastructure.event.event.DeliveryArrivedEvent,"
+                +
+                "DeliveryArrivedFailedEvent:com.klp.order.infrastructure.event.event.DeliveryArrivedFailedEvent,"
+                +
+                "CouponUsedEvent:com.klp.order.infrastructure.event.event.CouponUsedEvent," +
+                "CouponUsedFailedEvent:com.klp.order.infrastructure.event.event.CouponUsedFailedEvent,"
+                +
+                "UserProfileChangedMessage:com.klp.order.infrastructure.event.dto.UserProfileChangedMessage,"
+                +
+                "ProductInfoChangedMessage:com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage");
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);

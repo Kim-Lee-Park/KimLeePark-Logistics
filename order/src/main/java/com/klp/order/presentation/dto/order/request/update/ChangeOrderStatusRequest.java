@@ -12,8 +12,11 @@ public record ChangeOrderStatusRequest(
         example = "PAID",
         required = true,
         allowableValues = {
-            "PENDING", "CREATED", "PAID", "STOCK_CONFIRMED",
-            "COUPON_CONFIRMED", "DELIVERY_CREATED", "DELIVERY_SHIPPING",
+            "PENDING", "CREATED", "PAID", "PAID_FAILED", "STOCK_CONFIRMED",
+            "STOCK_CONFIRMED_FAILED",
+            "COUPON_CONFIRMED", "COUPON_CONFIRMED_FAILED", "DELIVERY_CREATED",
+            "DELIVERY_CREATED_FAILED",
+            "DELIVERY_SHIPPING", "DELIVERY_SHIPPING_FAILED",
             "COMPLETE", "CANCELLED", "FAILED"
         }
     )

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryShippingEvent(
+public record DeliveryArrivedFailedEvent(
     UUID orderId,
     Long userId,
     UUID supplierId,
@@ -23,7 +23,7 @@ public record DeliveryShippingEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<OrderItem> products,
+    List<OrderCreatedEvent.OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,

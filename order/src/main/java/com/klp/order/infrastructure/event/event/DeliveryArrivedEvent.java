@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryShippingEvent(
+public record DeliveryArrivedEvent(
     UUID orderId,
     Long userId,
     UUID supplierId,

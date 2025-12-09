@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InventoryEventListener {
+public class InventoryDeductedEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
@@ -34,9 +34,8 @@ public class InventoryEventListener {
         include = Exception.class,
         topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
     )
-    // 결제 완료 이벤트를 받으면 배송 생성 요청 이벤트를 발행
     @KafkaListener(
-        topics = "Inventory.deducted",
+        topics = "inventory.topic",
         groupId = "order-service-group",
         containerFactory = "kafkaListenerContainerFactory"
     )

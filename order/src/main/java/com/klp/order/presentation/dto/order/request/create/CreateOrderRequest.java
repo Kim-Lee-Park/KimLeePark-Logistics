@@ -19,19 +19,19 @@ public record CreateOrderRequest(
     @NotNull(message = "사용자 ID는 필수입니다.")
     Long userId,
 
-    @Schema(description = "공급 업체 ID", example = "UUID", required = true)
+    @Schema(description = "공급 업체 ID", example = "3b8d1f7e-6c4a-4d2b-9e5f-7a3c6b9d2e4f", required = true)
     @NotNull(message = "공급 업체 ID는 필수입니다.")
     UUID supplierId,
 
-    @Schema(description = "사용자 쿠폰 ID", example = "UUID")
+    @Schema(description = "사용자 쿠폰 ID", example = "d7f3c8a2-4b91-4e3d-9f6a-2c1e5b8d4a7f")
     UUID userCouponId,
 
     @Schema(description = "주문 코멘트", example = "빠른 배송 부탁드립니다.")
     String comment,
 
-    @Schema(description = "배송지 주소", example = "그대의 마음 속", required = true)
+    @Schema(description = "배송지 주소 Id", example = "6e2a9f5c-1d84-4c6b-a3e7-8f0b2d5c9e1a", required = true)
     @NotBlank(message = "배송지 주소는 필수입니다.")
-    String deliveryAddress,
+    UUID addressId,
 
     @Schema(description = "배송지 위도", example = "37.5665", required = true)
     @NotNull(message = "배송지 위도는 필수입니다.")
@@ -64,7 +64,7 @@ public record CreateOrderRequest(
             supplierId,
             userCouponId,
             comment,
-            deliveryAddress,
+            addressId,
             deliveryLatitude,
             deliveryLongitude,
             itemCommands

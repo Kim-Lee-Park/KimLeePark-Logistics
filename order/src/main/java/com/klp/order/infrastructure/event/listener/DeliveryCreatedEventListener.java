@@ -39,7 +39,7 @@ public class DeliveryCreatedEventListener {
         topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
     )
     @KafkaListener(
-        topics = "delivery.created",
+        topics = "delivery.topic",
         groupId = "order-service-group",
         containerFactory = "kafkaListenerContainerFactory"
     )

@@ -13,16 +13,16 @@ import java.util.stream.Collectors;
 
 @Schema(description = "주문 상세 조회 응답")
 public record GetOneOrderResponse(
-    @Schema(description = "주문 ID", example = "UUID")
+    @Schema(description = "주문 ID", example = "a9f2e7d4-3c8b-4f1a-b6e5-9d2c7f4a8e1b")
     UUID orderId,
 
-    @Schema(description = "공급 업체 ID", example = "UUID")
+    @Schema(description = "공급 업체 ID", example = "5c3d8f1a-9e4b-4d7c-a2f6-1b8e5d9c3a7f")
     UUID supplierId,
 
     @Schema(description = "사용자 ID", example = "1")
     Long userId,
 
-    @Schema(description = "사용자 쿠폰 ID", example = "UUID")
+    @Schema(description = "사용자 쿠폰 ID", example = "f1b6d9e2-7a4c-4e8f-9d3b-6c2a5f8e1d4a")
     UUID userCouponId,
 
     @Schema(description = "주문 코멘트", example = "빠른 배송 부탁드립니다.")
@@ -43,8 +43,8 @@ public record GetOneOrderResponse(
     @Schema(description = "최종 주문 금액", example = "2800000")
     int orderPrice,
 
-    @Schema(description = "배송지 주소", example = "내 마음 속")
-    String deliveryAddress,
+    @Schema(description = "배송지 주소", example = "8e4a2c7f-6d9b-4f3e-a1c5-9f7d2e6b4a8c")
+    UUID addressId,
 
     @Schema(description = "배송지 위도", example = "37.5665")
     BigDecimal deliveryLatitude,
@@ -87,7 +87,7 @@ public record GetOneOrderResponse(
             order.getCouponDiscountPrice(),
             order.getGradeDiscountPrice(),
             order.getOrderPrice(),
-            order.getDeliveryAddress(),
+            order.getAddressId(),
             order.getDeliveryLatitude(),
             order.getDeliveryLongitude(),
             orderItemResponses,

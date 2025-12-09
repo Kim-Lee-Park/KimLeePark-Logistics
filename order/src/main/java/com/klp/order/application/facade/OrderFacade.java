@@ -8,6 +8,7 @@ import com.klp.order.application.query.UserQueryService;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
+import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
@@ -36,19 +37,24 @@ public class OrderFacade {
     private final ProductQueryService productQueryService;
     private final PromotionDiscountService promotionService;
     private final InventoryIntegrationService inventoryService;
+    private final UserClient userClient;
 
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
 
         try {
             // 1. 유저 조회_ 정보 얻기
+            //grade , email 뽑아오기
 //            UserProfile userProfile = userQueryService.getUserProfile(command.userId());
+            //2. userAddressHubId, address  받아오기
+//            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
+//                command.addressId());
 
-            // 2. 주문 생성
+            // 3. 주문 생성
             Order order = orderService.createOrder(command);
             log.info("주문 생성 완료 - orderId: {}", order.getOrderId());
 
-            // 3. 상품 존재 확인
+            // 4. 상품 존재 확인
             List<OrderItemCommand> orderItems = command.items();
             int originalPriceTotal = 0;
             for (OrderItemCommand orderItem : orderItems) {
@@ -66,7 +72,7 @@ public class OrderFacade {
 //                productQueryService.getProductById(orderItem.productId());
             }
 
-            // 4. 할인 금액 조회 // 추후 사용 예정
+            // 5. 할인 금액 조회 // 추후 사용 예정
 //            PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
 //                userProfile.grade(), originalPriceTotal, command.userCouponId());
 //            PromotionResponse promotionResponse = promotionService.promotionInfo(calculateRequest);
@@ -75,10 +81,11 @@ public class OrderFacade {
             orderService.updateDiscountPrice(
                 order,
                 0,
-                1
+                1,
+                originalPriceTotal - 1
             );
 
-            //5. 이벤트 생성
+            //6. 이벤트 생성
             String InventoryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
                 order.getOrderId(),
                 Target.INVENTORY,
@@ -91,8 +98,10 @@ public class OrderFacade {
                 OperationType.MAKING
             );
 
-            OrderCreatedEvent event = OrderCreatedEvent.from(order, InventoryIdempotencyKey,
-                DeliveryIdempotencyKey);
+            UUID tmpAddressHubId = UUID.randomUUID();
+            OrderCreatedEvent event = OrderCreatedEvent.from(order, "email", "address",
+                InventoryIdempotencyKey,
+                DeliveryIdempotencyKey, tmpAddressHubId);
 
             // Outbox에 이벤트 저장 시도  실패 시 전체 롤백으로 데이터 일관성을 지키도록 구현
             orderOutboxEventService.saveEvent(order.getOrderId(),
