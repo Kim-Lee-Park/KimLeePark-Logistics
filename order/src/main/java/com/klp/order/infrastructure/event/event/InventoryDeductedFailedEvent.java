@@ -11,6 +11,8 @@ public record InventoryDeductedFailedEvent(
     UUID supplierId,
     UUID userCouponId,
     String email,
+    String username,
+    String comment,
 
     int originalPrice,
     int couponDiscountPrice,
@@ -23,7 +25,7 @@ public record InventoryDeductedFailedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<OrderItem> products,
+    List<OrderCreatedEvent.OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,

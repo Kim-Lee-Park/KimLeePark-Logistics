@@ -12,6 +12,8 @@ public record OrderCreatedEvent(
     UUID supplierId,
     UUID userCouponId,
     String email,
+    String username,
+    String comment,
 
     int originalPrice,
     int couponDiscountPrice,
@@ -48,6 +50,7 @@ public record OrderCreatedEvent(
     public static OrderCreatedEvent from(
         Order order,
         String email,
+        String username,
         String address,
         String inventoryIdempotencyKey,
         String deliveryIdempotencyKey,
@@ -71,6 +74,8 @@ public record OrderCreatedEvent(
             order.getSupplierId(),
             order.getUserCouponId(),
             email,
+            username,
+            order.getComment(),
             order.getOriginalPrice(),
             order.getCouponDiscountPrice(),
             order.getGradeDiscountPrice(),
