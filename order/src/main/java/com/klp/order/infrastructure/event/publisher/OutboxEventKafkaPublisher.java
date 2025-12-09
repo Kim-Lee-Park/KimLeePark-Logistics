@@ -20,7 +20,7 @@ public class OutboxEventKafkaPublisher {
 
 
     public void publishToKafka(OrderOutboxEvent event) throws Exception {
-        String topic = determineTopicByEventType(event.getEventType());
+        String topic = "order.topic";
         Object eventData = deserializePayload(event.getPayload(), event.getEventType());
 
         kafkaTemplate.send(topic, event.getOrderId().toString(), eventData)
