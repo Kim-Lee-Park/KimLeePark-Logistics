@@ -25,7 +25,7 @@ public record PaymentApprovedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<OrderCreatedEvent.OrderItem> products,
+    List<OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
