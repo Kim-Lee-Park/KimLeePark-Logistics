@@ -1,6 +1,6 @@
 package com.klp.promotion.coupon.infrastructure.kafka.config;
 
-import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +16,11 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.DeserializationException;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.util.backoff.FixedBackOff;
@@ -31,30 +33,36 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    private final ObjectMapper objectMapper;
+
+    public KafkaConsumerConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final long RETRY_INTERVAL_MS = 1000L;
 
     @Bean
     public ConsumerFactory<String, Object> couponConsumerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
 
-        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "coupon-service-group");
-        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
-        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "com.klp.*");
-        configProps.put(JsonDeserializer.TYPE_MAPPINGS, buildTypeMappings());
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "coupon-service-group");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
-        return new DefaultKafkaConsumerFactory<>(configProps);
-    }
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
+        props.put(JsonDeserializer.TYPE_MAPPINGS,
+            "PaymentApprovedEvent:com.klp.promotion.coupon.domain.event.PaymentApprovedEvent");
 
-    private String buildTypeMappings() {
-        return String.join(",",
-            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName()
-        );
+        return new DefaultKafkaConsumerFactory<>(props,
+            new StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(objectMapper)));
     }
 
     @Bean
@@ -63,8 +71,10 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}", record.topic(), exception.getMessage());
-                return new TopicPartition(KafkaTopicConfig.COUPON_TOPIC + ".dlt", record.partition());
+                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}", record.topic(),
+                    exception.getMessage());
+                return new TopicPartition(KafkaTopicConfig.COUPON_TOPIC + ".dlt",
+                    record.partition());
             });
     }
 
@@ -80,7 +90,8 @@ public class KafkaConsumerConfig {
         );
 
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
-            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}", record.topic(), deliveryAttempt, ex.getMessage());
+            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}", record.topic(), deliveryAttempt,
+                ex.getMessage());
         });
 
         return errorHandler;
@@ -95,9 +106,10 @@ public class KafkaConsumerConfig {
 
         factory.setConsumerFactory(couponConsumerFactory());
         factory.setConcurrency(3);
+        factory.getContainerProperties()
+            .setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(errorHandler);
 
         return factory;
     }
 }
-
