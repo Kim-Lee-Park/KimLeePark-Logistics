@@ -10,7 +10,6 @@ import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
 import com.klp.user.domain.exception.ExternalApiException;
 import com.klp.user.domain.exception.UserErrorCode;
-import com.klp.user.infrastructure.client.CompanyClient;
 import com.klp.user.infrastructure.client.HubClient;
 import com.klp.user.infrastructure.client.PromotionClient;
 import com.klp.user.infrastructure.client.dto.request.NearestHubRequest;
@@ -47,7 +46,6 @@ public class UserFacade {
     private final UserService userService;
     private final UserGradeService userGradeService;
     private final UserAddressService userAddressService;
-    private final CompanyClient companyClient;
     private final HubClient hubClient;
     private final PromotionClient promotionClient;
 
@@ -238,7 +236,7 @@ public class UserFacade {
             return UNKNOWN_AFFILIATION_NAME;
         }
         try {
-            CompanyResponse companyResponse = companyClient.getCompanyById(companyId);
+            CompanyResponse companyResponse = hubClient.getCompanyById(companyId);
             return companyResponse.name();
         } catch (ExternalApiException e) {
             log.error("업체 정보 조회 실패 - companyId: {}, errorCode: {}", companyId, e.getErrorCode().name());
@@ -273,7 +271,7 @@ public class UserFacade {
 
     private UUID getCompanyIdByName(String companyName) {
         try {
-            CompanyListResponse response = companyClient.getCompaniesByName(companyName);
+            CompanyListResponse response = hubClient.getCompaniesByName(companyName);
 
             if (response.companies().isEmpty()) {
                 log.warn("업체 정보를 찾을 수 없음 - companyName: {}", companyName);
