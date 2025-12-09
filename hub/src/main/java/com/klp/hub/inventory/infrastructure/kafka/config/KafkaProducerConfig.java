@@ -1,5 +1,6 @@
 package com.klp.hub.inventory.infrastructure.kafka.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +21,12 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    /**
-     * Inventory 전용 Producer Factory 설정
-     */
+    private final ObjectMapper objectMapper;
+
+    public KafkaProducerConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Bean
     public ProducerFactory<String, Object> inventoryProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -32,15 +36,17 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         configProps.put(ProducerConfig.ACKS_CONFIG, "all");
         configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
         configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
         configProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
         configProps.put(ProducerConfig.LINGER_MS_CONFIG, 10);
 
-        // Type 헤더 추가
-        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
-
-        return new DefaultKafkaProducerFactory<>(configProps);
+        return new DefaultKafkaProducerFactory<>(
+            configProps,
+            new StringSerializer(),
+            new JsonSerializer<>(objectMapper)
+        );
     }
 
     @Bean
