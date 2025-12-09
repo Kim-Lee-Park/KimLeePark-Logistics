@@ -1,5 +1,6 @@
 package com.klp.user.infrastructure.client;
 
+import com.klp.user.global.config.HubFeignClientConfig;
 import com.klp.user.infrastructure.client.dto.response.GetHubIdResponse;
 import com.klp.user.infrastructure.client.dto.response.HubDetailResponse;
 import java.util.UUID;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "hub-service", contextId = "hubClient")
+@FeignClient(name = "hub-service", configuration = HubFeignClientConfig.class)
 public interface HubClient {
 
     @GetMapping("/v1/hubs/by-name")
