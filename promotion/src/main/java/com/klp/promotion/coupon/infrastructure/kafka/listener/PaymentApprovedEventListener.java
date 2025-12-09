@@ -7,7 +7,6 @@ import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +64,8 @@ public class PaymentApprovedEventListener {
                 userCouponService.findByUserCouponId(userCouponId);
 
             if (userCoupon == null) {
-                log.warn("UserCoupon을 찾을 수 없음: userCouponId={}, orderId={}", userCouponId, event.orderId());
+                log.warn("UserCoupon을 찾을 수 없음: userCouponId={}, orderId={}", userCouponId,
+                    event.orderId());
                 if (acknowledgment != null) {
                     acknowledgment.acknowledge();
                 }
@@ -97,27 +97,30 @@ public class PaymentApprovedEventListener {
                 event.userId(),
                 event.supplierId(),
                 event.userCouponId(),
-                null, // email - PaymentApprovedEvent에 없음, TODO: 추가 필요
+                event.email(),
+                event.username(),
+                event.comment(),
                 event.originalPrice(),
                 event.couponDiscountPrice(),
                 event.gradeDiscountPrice(),
-                0, // finalOrderPrice - PaymentApprovedEvent에 없음, TODO: 추가 필요
-                null, // addressId - PaymentApprovedEvent에 없음, TODO: 추가 필요
-                null, // userAddressHubId - PaymentApprovedEvent에 없음, TODO: 추가 필요
-                event.deliveryAddress(), // address
+                event.finalOrderPrice(),
+
+                event.addressId(),
+                event.userAddressHubId(),
+                event.address(),
                 event.deliveryLatitude(),
                 event.deliveryLongitude(),
+
                 orderItems,
-                null, // inventoryIdempotencyKey - PaymentApprovedEvent에 없음, TODO: 추가 필요
+                event.inventoryIdempotencyKey(),
                 event.deliveryIdempotencyKey(),
-                LocalDateTime.now(), // createdAt
-                LocalDateTime.now(), // occurredAt
+                event.createdAt(),
+                event.occurredAt(),
                 // PaymentApprovedEvent 추가 필드
                 event.paymentId(),
                 event.paidAmount(),
                 event.paymentMethod(),
-                event.paidAt(),
-                event.couponIdempotencyKey()
+                event.paidAt()
             );
 
             // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
@@ -126,7 +129,8 @@ public class PaymentApprovedEventListener {
                 "COUPON_USED",
                 couponUsedEvent
             );
-            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(), userCouponId);
+            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
+                userCouponId);
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();

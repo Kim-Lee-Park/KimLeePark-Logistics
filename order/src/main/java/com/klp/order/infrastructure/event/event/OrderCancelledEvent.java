@@ -7,9 +7,12 @@ import java.util.UUID;
 
 public record OrderCancelledEvent(
     UUID orderId,
+    Long userId,
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
+    String cancelReason,
     List<ProductReplenishment> products,
+    LocalDateTime cancelledAt,
     LocalDateTime occurredAt
 ) {
 
@@ -33,9 +36,12 @@ public record OrderCancelledEvent(
 
         return new OrderCancelledEvent(
             order.getOrderId(),
+            order.getUserId(),
             InventoryIdempotencyKey,
             DeliveryIdempotencyKey,
+            order.getCancellation().getCancelReason(),
             products,
+            order.getCancellation().getCancelledAt(),
             LocalDateTime.now()
         );
     }

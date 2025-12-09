@@ -5,7 +5,6 @@ import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.presentation.dto.orderitem.request.OrderItemRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -30,7 +29,7 @@ public record CreateOrderRequest(
     String comment,
 
     @Schema(description = "배송지 주소 Id", example = "6e2a9f5c-1d84-4c6b-a3e7-8f0b2d5c9e1a", required = true)
-    @NotBlank(message = "배송지 주소는 필수입니다.")
+    @NotNull(message = "배송지 주소는 필수입니다.")
     UUID addressId,
 
     @Schema(description = "배송지 위도", example = "37.5665", required = true)
