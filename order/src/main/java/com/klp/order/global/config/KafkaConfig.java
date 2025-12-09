@@ -1,15 +1,19 @@
 package com.klp.order.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -110,7 +114,9 @@ public class KafkaConfig {
                 +
                 "UserProfileChangedMessage:com.klp.order.infrastructure.event.dto.UserProfileChangedMessage,"
                 +
-                "ProductInfoChangedMessage:com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage");
+                "ProductInfoChangedMessage:com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage,"
+                +
+                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);

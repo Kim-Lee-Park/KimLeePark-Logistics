@@ -30,7 +30,7 @@ public class DeliveryRouteCreateEventListener {
             event.arrivalName(),
             event.drvierId()
         );
-        deliveryRouteFacade.CreateDeliveryRoute(command);
+        deliveryRouteFacade.CreateDeliveryRoute(command, event);
     }
 
 }
