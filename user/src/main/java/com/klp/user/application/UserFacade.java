@@ -17,6 +17,7 @@ import com.klp.user.infrastructure.client.dto.request.NearestHubRequest;
 import com.klp.user.infrastructure.client.dto.response.CompanyListResponse;
 import com.klp.user.infrastructure.client.dto.response.CompanyResponse;
 import com.klp.user.infrastructure.client.dto.response.DefaultGradeResponse;
+import com.klp.user.infrastructure.client.dto.response.GetHubIdResponse;
 import com.klp.user.presentation.dto.request.UserCreateRequest;
 import com.klp.user.presentation.dto.request.UserUpdateRequest;
 import com.klp.user.presentation.dto.response.DriverDetailResponse;
@@ -49,6 +50,8 @@ public class UserFacade {
     private final CompanyClient companyClient;
     private final HubClient hubClient;
     private final PromotionClient promotionClient;
+
+    private static final String UNKNOWN_AFFILIATION_NAME = "알 수 없음";
 
     /**
      * 회원가입 플로우 - PENDING 상태로 생성
@@ -207,64 +210,87 @@ public class UserFacade {
     }
 
     /**
-     * 소속명 조회 (Company 서비스)
+     * 소속명 조회
      */
     private String getAffiliationName(User user) {
-        if (user.getAffiliationType() == AffiliationType.CUSTOMER) {
-            return "고객";
-        }
+        return switch (user.getAffiliationType()) {
+            case CUSTOMER -> "고객";
+            case LOGISTICS -> "KLP 물류";
+            case HUB -> getHubName(user.getAffiliationId());
+            case COMPANY -> getCompanyName(user.getAffiliationId());
+        };
+    }
 
-        if (user.getAffiliationId() == null) {
-            log.warn("affiliationId가 null입니다 - userId: {}", user.getUserId());
-            throw new BusinessException(UserErrorCode.INVALID_AFFILIATION);
+    private String getHubName(UUID hubId) {
+        if (hubId == null) {
+            return UNKNOWN_AFFILIATION_NAME;
         }
-
         try {
-            CompanyResponse companyResponse = companyClient.getCompanyById(user.getAffiliationId());
+            return hubClient.getHubById(hubId).name();
+        } catch (Exception e) {
+            log.error("허브 정보 조회 실패 - hubId: {}", hubId, e);
+            return UNKNOWN_AFFILIATION_NAME;
+        }
+    }
+
+    private String getCompanyName(UUID companyId) {
+        if (companyId == null) {
+            return UNKNOWN_AFFILIATION_NAME;
+        }
+        try {
+            CompanyResponse companyResponse = companyClient.getCompanyById(companyId);
             return companyResponse.name();
         } catch (ExternalApiException e) {
-            log.error("업체 정보 조회 실패 - affiliationId: {}, errorCode: {}",
-                user.getAffiliationId(), e.getErrorCode().name());
+            log.error("업체 정보 조회 실패 - companyId: {}, errorCode: {}", companyId, e.getErrorCode().name());
             throw e;
         } catch (Exception e) {
-            log.error("예상치 못한 예외 발생 - affiliationId: {}", user.getAffiliationId(), e);
-            throw new BusinessException(UserErrorCode.INTERNAL_SERVER_ERROR,
-                "업체 정보 조회 중 예상치 못한 오류가 발생했습니다.");
+            log.error("예상치 못한 예외 발생 - companyId: {}", companyId, e);
+            throw new BusinessException(UserErrorCode.INTERNAL_SERVER_ERROR, "업체 정보 조회 중 예상치 못한 오류가 발생했습니다.");
         }
     }
 
     /**
-     * 소속 ID 조회 (Company 서비스)
+     * 소속 ID 조회 (타입별로 다른 서비스 호출)
      */
     private UUID getAffiliationId(String affiliationName, AffiliationType affiliationType) {
-        if (affiliationType == AffiliationType.CUSTOMER) {
-            return null;
-        }
+        return switch (affiliationType) {
+            case CUSTOMER, LOGISTICS -> null;
+            case HUB -> getHubIdByName(affiliationName);
+            case COMPANY -> getCompanyIdByName(affiliationName);
+        };
+    }
 
+    private UUID getHubIdByName(String hubName) {
         try {
-            CompanyListResponse response = companyClient.getCompaniesByName(affiliationName);
+            GetHubIdResponse response = hubClient.getHubByName(hubName);
+            log.debug("허브 ID 조회 성공 - hubName: {}, hubId: {}", hubName, response.hubId());
+            return response.hubId();
+        } catch (Exception e) {
+            log.error("허브 정보 조회 실패 - hubName: {}", hubName, e);
+            throw new BusinessException(UserErrorCode.BAD_REQUEST, "해당 이름의 허브를 찾을 수 없습니다: " + hubName);
+        }
+    }
+
+    private UUID getCompanyIdByName(String companyName) {
+        try {
+            CompanyListResponse response = companyClient.getCompaniesByName(companyName);
 
             if (response.companies().isEmpty()) {
-                log.warn("업체 정보를 찾을 수 없음 - affiliationName: {}", affiliationName);
-                throw new BusinessException(UserErrorCode.BAD_REQUEST,
-                    "해당 이름의 업체를 찾을 수 없습니다: " + affiliationName);
+                log.warn("업체 정보를 찾을 수 없음 - companyName: {}", companyName);
+                throw new BusinessException(UserErrorCode.BAD_REQUEST, "해당 이름의 업체를 찾을 수 없습니다: " + companyName);
             }
 
             UUID companyId = response.companies().get(0).companyId();
-            log.debug("업체 ID 조회 성공 - affiliationName: {}, companyId: {}", affiliationName,
-                companyId);
+            log.debug("업체 ID 조회 성공 - companyName: {}, companyId: {}", companyName, companyId);
             return companyId;
-
         } catch (BusinessException e) {
             throw e;
         } catch (ExternalApiException e) {
-            log.error("업체 정보 조회 실패 - affiliationName: {}, errorCode: {}",
-                affiliationName, e.getErrorCode().name());
+            log.error("업체 정보 조회 실패 - companyName: {}, errorCode: {}", companyName, e.getErrorCode().name());
             throw e;
         } catch (Exception e) {
-            log.error("예상치 못한 예외 발생 - affiliationName: {}", affiliationName, e);
-            throw new BusinessException(UserErrorCode.INTERNAL_SERVER_ERROR,
-                "업체 정보 조회 중 예상치 못한 오류가 발생했습니다.");
+            log.error("예상치 못한 예외 발생 - companyName: {}", companyName, e);
+            throw new BusinessException(UserErrorCode.INTERNAL_SERVER_ERROR, "업체 정보 조회 중 예상치 못한 오류가 발생했습니다.");
         }
     }
 
