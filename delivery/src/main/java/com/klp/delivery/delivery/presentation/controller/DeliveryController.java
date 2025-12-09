@@ -17,6 +17,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -38,6 +39,7 @@ public class DeliveryController implements DeliveryControllerDocs {
 
     @Override
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<DeliveryResponse> createDelivery(
         @Valid @RequestBody DeliveryCreateRequest request) {
 
@@ -53,6 +55,7 @@ public class DeliveryController implements DeliveryControllerDocs {
 
     @Override
     @GetMapping("/{deliveryId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<DeliveryDetailResponse> getDelivery(@PathVariable UUID deliveryId) {
         Delivery delivery = deliveryService.findDelivery(deliveryId);
         DeliveryDetailResponse response = DeliveryDetailResponse.from(delivery);
@@ -61,6 +64,7 @@ public class DeliveryController implements DeliveryControllerDocs {
 
     @Override
     @GetMapping("/{deliveryId}/{orderId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<List<DeliveryDetailResponse>> getDeliveriesByOrderId(
         @PathVariable UUID orderId) {
         List<DeliveryDetailResponse> responses = deliveryService.findDeliveriesByOrderId(orderId);
@@ -69,6 +73,7 @@ public class DeliveryController implements DeliveryControllerDocs {
 
     @Override
     @GetMapping
+    @PreAuthorize("hasAnyRole('MASTER')")
     public ResponseEntity<Page<DeliveryDetailResponse>> getAllDeliveries(@ParameterObject Pageable pageable) {
         Page<DeliveryDetailResponse> responses = deliveryService.findDeliveryAll(pageable);
         return ResponseEntity.ok(responses);
@@ -76,6 +81,7 @@ public class DeliveryController implements DeliveryControllerDocs {
 
     @Override
     @PatchMapping("/{deliveryId}")
+    @PreAuthorize("hasAnyRole('MASTER')")
     public ResponseEntity<Void> updateDeliveryStatus(@PathVariable UUID deliveryId,
         @RequestBody DeliveryUpdateRequest request) {
         deliveryFacade.updateVendorDriver(deliveryId, request.vendorDrvierId());
@@ -84,6 +90,7 @@ public class DeliveryController implements DeliveryControllerDocs {
 
     @Override
     @DeleteMapping("/{deliveryId}")
+    @PreAuthorize("hasAnyRole('MASTER')")
     public ResponseEntity<Void> deleteDelivery(
         @PathVariable UUID deliveryId,
         @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long deletedBy) {
