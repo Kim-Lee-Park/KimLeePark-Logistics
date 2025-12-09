@@ -1,0 +1,39 @@
+package com.klp.promotion.coupon.infrastructure.kafka.config;
+
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
+
+@Configuration
+public class KafkaTopicConfig {
+
+    // 구독용 토픽
+    public static final String PAYMENT_TOPIC = "payment.topic";
+
+    // 발행용 토픽
+    public static final String COUPON_TOPIC = "coupon.topic";
+
+    /**
+     * 결제 이벤트 토픽 (구독용)
+     */
+    @Bean
+    public NewTopic paymentTopic() {
+        return TopicBuilder.name(PAYMENT_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    /**
+     * 쿠폰 이벤트 토픽 (발행용)
+     */
+    @Bean
+    public NewTopic couponTopic() {
+        return TopicBuilder.name(COUPON_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+}
+
