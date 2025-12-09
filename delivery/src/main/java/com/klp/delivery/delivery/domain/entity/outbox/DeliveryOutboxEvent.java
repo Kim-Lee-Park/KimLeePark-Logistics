@@ -28,8 +28,6 @@ public class DeliveryOutboxEvent extends BaseEntity {
     @Column(nullable = false)
     private UUID deliveryId;
 
-    @Column(nullable = false)
-    private UUID orderId;
 
     @Column(nullable = false)
     private String eventType;
@@ -52,7 +50,6 @@ public class DeliveryOutboxEvent extends BaseEntity {
         String eventType, String payload) {
         DeliveryOutboxEvent event = new DeliveryOutboxEvent();
         event.deliveryId = deliveryId;
-        event.orderId = orderId;
         event.eventType = eventType;
         event.payload = payload;
         event.status = DeliveryOutboxStatus.PENDING;

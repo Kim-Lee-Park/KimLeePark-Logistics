@@ -31,10 +31,10 @@ public class OutboxScheduler {
             try {
                 publishEvent(outbox);
                 deliveryOutboxEventRepository.markAsPublished(outbox.getId());
-                log.info("{} 이벤트 발행 성공: orderId={}, deliveryId={}", outbox.getEventType(), outbox.getOrderId(), outbox.getDeliveryId());
+                log.info("{} 이벤트 발행 성공: orderId={}, deliveryId={}", outbox.getEventType(), outbox.getDeliveryId(), outbox.getDeliveryId());
             } catch (Exception e) {
                 deliveryOutboxEventRepository.markAsFailed(outbox.getId());
-                log.error("{} 이벤트 발행 실패: orderId={}, deliveryId={}, error={}", outbox.getEventType(), outbox.getOrderId(), outbox.getDeliveryId(), e.getMessage());
+                log.error("{} 이벤트 발행 실패: orderId={}, deliveryId={}, error={}", outbox.getEventType(), outbox.getDeliveryId(), outbox.getDeliveryId(), e.getMessage());
             }
         }
     }
