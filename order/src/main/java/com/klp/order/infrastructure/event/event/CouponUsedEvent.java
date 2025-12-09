@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryShippingEvent(
+public record CouponUsedEvent(
     UUID orderId,
     Long userId,
     UUID supplierId,
@@ -30,6 +30,7 @@ public record DeliveryShippingEvent(
 
     LocalDateTime createdAt,
     LocalDateTime occurredAt
+
 ) {
 
     public record OrderItem(

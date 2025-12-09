@@ -11,25 +11,29 @@ public record OrderCreatedEvent(
     Long userId,
     UUID supplierId,
     UUID userCouponId,
+    String email,
 
     int originalPrice,
     int couponDiscountPrice,
     int gradeDiscountPrice,
     int finalOrderPrice,
 
-    String deliveryAddress,
+    UUID addressId,
+    UUID userAddressHubId,
+    String address,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<ProductDeduction> products,
+    List<OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
 
+    LocalDateTime createdAt,
     LocalDateTime occurredAt
 ) {
 
-    public record ProductDeduction(
+    public record OrderItem(
         UUID orderItemId,
         UUID productId,
         String productName,
@@ -43,11 +47,14 @@ public record OrderCreatedEvent(
 
     public static OrderCreatedEvent from(
         Order order,
+        String email,
+        String address,
         String inventoryIdempotencyKey,
-        String deliveryIdempotencyKey
+        String deliveryIdempotencyKey,
+        UUID userAddressHubId
     ) {
-        List<ProductDeduction> products = order.getOrderItems().stream()
-            .map(item -> new ProductDeduction(
+        List<OrderItem> orderItems = order.getOrderItems().stream()
+            .map(item -> new OrderItem(
                 item.getOrderItemId(),
                 item.getProductId(),
                 item.getProductName(),
@@ -63,16 +70,20 @@ public record OrderCreatedEvent(
             order.getUserId(),
             order.getSupplierId(),
             order.getUserCouponId(),
+            email,
             order.getOriginalPrice(),
             order.getCouponDiscountPrice(),
             order.getGradeDiscountPrice(),
             order.getOrderPrice(),
-            order.getDeliveryAddress(),
+            order.getAddressId(),
+            userAddressHubId,
+            address,
             order.getDeliveryLatitude(),
             order.getDeliveryLongitude(),
-            products,
+            orderItems,
             inventoryIdempotencyKey,
             deliveryIdempotencyKey,
+            order.getCreatedAt(),
             LocalDateTime.now()
         );
     }

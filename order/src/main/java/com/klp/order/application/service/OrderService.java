@@ -35,7 +35,7 @@ public class OrderService {
             command.userCouponId(),
             command.supplierId(),
             command.comment(),
-            command.deliveryAddress(),
+            command.addressId(),
             command.deliveryLatitude(),
             command.deliveryLongitude(),
             command.items()
@@ -138,10 +138,11 @@ public class OrderService {
     }
 
     @Transactional
-    public void updateDiscountPrice(Order order, int couponDiscountPrice, int gradeDiscountPrice) {
+    public void updateDiscountPrice(Order order, int couponDiscountPrice, int gradeDiscountPrice,
+        int finalPrice) {
         checkCouponDiscountPrice(couponDiscountPrice);
         checkGradeDiscountPrice(gradeDiscountPrice);
-        order.updateDiscountPrice(couponDiscountPrice, gradeDiscountPrice);
+        order.updateDiscountPrice(couponDiscountPrice, gradeDiscountPrice, finalPrice);
         orderRepository.save(order);
     }
 

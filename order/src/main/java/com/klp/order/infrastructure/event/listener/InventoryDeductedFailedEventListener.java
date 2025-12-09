@@ -1,11 +1,10 @@
 package com.klp.order.infrastructure.event.listener;
 
-
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.event.PaymentCompletedEvent;
+import com.klp.order.infrastructure.event.event.InventoryDeductedFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -23,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentEventListener {
+public class InventoryDeductedFailedEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
@@ -35,20 +34,19 @@ public class PaymentEventListener {
         include = Exception.class,
         topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
     )
-    // 결제 완료 이벤트를 받으면 배송 생성 요청 이벤트를 발행
     @KafkaListener(
-        topics = "payment.completed",
+        topics = "inventory.topic",
         groupId = "order-service-group",
         containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
-    public void handlePaymentCompleted(
-        @Payload PaymentCompletedEvent event,
+    public void handleInventoryDeductedFailed(
+        @Payload InventoryDeductedFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 결제 완료 이벤트 수신: orderId={}, partition={}, offset={} ===",
+        log.info("=== 재고 확정 실패 이벤트 수신: orderId={}, partition={}, offset={} ===",
             event.orderId(), partition, offset);
 
         try {
@@ -56,17 +54,18 @@ public class PaymentEventListener {
             Order order = orderService.findById(event.orderId());
             log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
 
-            if (order.getOrderStatus() == OrderStatus.PAID) {
-                log.info("이미 처리된 결제 완료 이벤트 - orderId: {}", event.orderId());
+            if (order.getOrderStatus() == OrderStatus.FAILED
+                || order.getOrderStatus() == OrderStatus.STOCK_CONFIRMED_FAILED) {
+                log.info("이미 처리된 재고 확정 실패 이벤트 - orderId: {}", event.orderId());
                 if (acknowledgment != null) {
                     acknowledgment.acknowledge();
                 }
                 return;
             }
 
-            order.changeStatus(OrderStatus.PAID);
+            order.changeStatus(OrderStatus.STOCK_CONFIRMED_FAILED);
             orderRepository.save(order);
-            log.info("=== 결제 완료 이벤트 처리 완료: orderId={} ===", event.orderId());
+            log.info("=== 재고 확정 실패 이벤트 처리 완료: orderId={} ===", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
@@ -74,7 +73,7 @@ public class PaymentEventListener {
             }
 
         } catch (Exception e) {
-            log.error("결제 완료 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+            log.error("재고 확정 실패 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
             throw e;
         }
@@ -82,13 +81,13 @@ public class PaymentEventListener {
 
     // 실패시 자동으로 호출한다고 합니다.
     @DltHandler
-    public void handlePaymentCompletedDlt(
-        @Payload PaymentCompletedEvent event,
+    public void handleInventoryDeductedFailedEventDlt(
+        @Payload InventoryDeductedFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
 
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Payment Completed Event");
+        log.error("⚠️ DLT 도착: Inventory Confirmed Failed Event");
         log.error("⚠️ 수동 처리가 필요합니다!");
         log.error("========================================");
         log.error("orderId={}, error={}", event.orderId(), exceptionMessage);
