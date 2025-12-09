@@ -15,7 +15,7 @@ import com.klp.user.domain.entity.User;
 import com.klp.user.domain.entity.UserGrade;
 import com.klp.user.domain.enums.AffiliationType;
 import com.klp.user.domain.enums.UserRole;
-import com.klp.user.infrastructure.client.CompanyClient;
+import com.klp.user.infrastructure.client.HubClient;
 import com.klp.user.infrastructure.client.PromotionClient;
 import com.klp.user.infrastructure.client.dto.response.CompanyListResponse;
 import com.klp.user.infrastructure.client.dto.response.CompanyResponse;
@@ -53,7 +53,7 @@ class UserFacadeTest {
     private UserGradeService userGradeService;
 
     @Mock
-    private CompanyClient companyClient;
+    private HubClient hubClient;
 
     @Mock
     private PromotionClient promotionClient;
@@ -120,7 +120,7 @@ class UserFacadeTest {
                 new CompanyListResponse.CompanySummaryResponse(affiliationId, companyName);
             CompanyListResponse companyListResponse = new CompanyListResponse(List.of(companySummaryResponse));
 
-            given(companyClient.getCompaniesByName(companyName)).willReturn(companyListResponse);
+            given(hubClient.getCompaniesByName(companyName)).willReturn(companyListResponse);
             given(userService.createPendingUser(eq(request), eq(affiliationId))).willReturn(testUser);
 
             // when
@@ -128,7 +128,7 @@ class UserFacadeTest {
 
             // then
             assertThat(result).isEqualTo(userId);
-            then(companyClient).should(times(1)).getCompaniesByName(companyName);
+            then(hubClient).should(times(1)).getCompaniesByName(companyName);
             then(userService).should(times(1)).createPendingUser(eq(request), eq(affiliationId));
         }
 
@@ -154,7 +154,7 @@ class UserFacadeTest {
 
             // then
             assertThat(result).isEqualTo(customerId);
-            then(companyClient).should(never()).getCompaniesByName(anyString());
+            then(hubClient).should(never()).getCompaniesByName(anyString());
             then(userService).should(times(1)).createPendingUser(eq(request), eq(null));
         }
     }
@@ -259,7 +259,7 @@ class UserFacadeTest {
             );
 
             given(userService.findNotDeletedUser(userId)).willReturn(testUser);
-            given(companyClient.getCompanyById(affiliationId)).willReturn(companyResponse);
+            given(hubClient.getCompanyById(affiliationId)).willReturn(companyResponse);
 
             // when
             UserDetailResponse response = userFacade.getUserDetails(userId);
@@ -269,7 +269,7 @@ class UserFacadeTest {
             assertThat(response.userId()).isEqualTo(userId);
             assertThat(response.affiliationName()).isEqualTo(companyName);
             assertThat(response.gradeName()).isNull();
-            then(companyClient).should(times(1)).getCompanyById(affiliationId);
+            then(hubClient).should(times(1)).getCompanyById(affiliationId);
             then(userGradeService).should(never()).getCurrentGradeName(anyLong());
         }
     }
@@ -293,7 +293,7 @@ class UserFacadeTest {
             );
 
             given(userService.getUserList(null, pageable)).willReturn(userPage);
-            given(companyClient.getCompanyById(affiliationId)).willReturn(companyResponse);
+            given(hubClient.getCompanyById(affiliationId)).willReturn(companyResponse);
             given(userGradeService.getCurrentGradeName(customerId)).willReturn(gradeName);
 
             // when
@@ -304,7 +304,7 @@ class UserFacadeTest {
             assertThat(response.getData()).hasSize(2);
             assertThat(response.getData().get(0).affiliationName()).isEqualTo(companyName);
             assertThat(response.getData().get(1).gradeName()).isEqualTo(gradeName);
-            then(companyClient).should(times(1)).getCompanyById(affiliationId);
+            then(hubClient).should(times(1)).getCompanyById(affiliationId);
             then(userGradeService).should(times(1)).getCurrentGradeName(customerId);
         }
     }
