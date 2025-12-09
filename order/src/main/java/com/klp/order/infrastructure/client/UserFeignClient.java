@@ -1,6 +1,6 @@
 package com.klp.order.infrastructure.client;
 
-import com.klp.order.global.config.UserFeignClientConfig;
+import com.klp.global.config.UserFeignClientConfig;
 import com.klp.order.infrastructure.client.dto.user.UserAddressHubIdDto;
 import com.klp.order.infrastructure.client.dto.user.UserProfileDto;
 import java.util.UUID;

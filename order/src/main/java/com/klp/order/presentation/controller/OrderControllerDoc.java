@@ -1,6 +1,6 @@
 package com.klp.order.presentation.controller;
 
-import com.klp.order.common.PageResponse;
+import com.klp.common.PageResponse;
 import com.klp.order.presentation.dto.order.request.cancel.CancelOrderRequest;
 import com.klp.order.presentation.dto.order.request.create.CreateOrderRequest;
 import com.klp.order.presentation.dto.order.request.update.ChangeOrderStatusRequest;

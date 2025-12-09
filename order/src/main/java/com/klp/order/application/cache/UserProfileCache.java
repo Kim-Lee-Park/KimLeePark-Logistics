@@ -1,12 +1,12 @@
 package com.klp.order.application.cache;
 
-import static com.klp.order.common.util.JitterUtil.jitterSeconds;
+import static com.klp.common.util.JitterUtil.jitterSeconds;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.klp.common.exception.ExternalApiException;
 import com.klp.order.application.service.UserClient;
-import com.klp.order.common.exception.ExternalApiException;
 import com.klp.order.domain.vo.CachedUserProfile;
 import com.klp.order.domain.vo.UserProfile;
 import java.util.concurrent.ThreadLocalRandom;
