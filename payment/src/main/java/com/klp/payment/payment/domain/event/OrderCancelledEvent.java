@@ -4,14 +4,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Order 서비스에서 발행하는 주문 취소 이벤트 (구독용)
- */
 public record OrderCancelledEvent(
     UUID orderId,
+    Long userId,
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
+    String cancelReason,
     List<ProductReplenishment> products,
+    LocalDateTime cancelledAt,
     LocalDateTime occurredAt
 ) {
 
@@ -20,5 +20,6 @@ public record OrderCancelledEvent(
         UUID hubId,
         Integer quantity
     ) {
+
     }
 }

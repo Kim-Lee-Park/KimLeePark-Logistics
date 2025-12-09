@@ -84,15 +84,16 @@ public class OrderEventListener {
             PaymentCancelledEvent cancelledEvent = PaymentCancelledEvent.from(
                 payment.getPaymentId(),
                 event.orderId(),
-                payment.getUserId(),
-                "주문 취소",
+                event.userId(),
+                event.cancelReason(),
                 event.products().stream()
                     .map(p -> new PaymentCancelledEvent.ProductInfo(
                         p.productId(),
                         p.hubId(),
                         p.quantity()
                     ))
-                    .toList()
+                    .toList(),
+                event.cancelledAt()
             );
 
             outboxService.savePaymentCancelledEvent(cancelledEvent);
