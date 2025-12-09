@@ -4,8 +4,7 @@ import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.infrastructure.event.event.DeliveryArrivedEvent;
-import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderDeliveryEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -41,14 +40,23 @@ public class DeliveryArrivedEventListener {
         containerFactory = "kafkaListenerContainerFactory"
     )
     @Transactional
-    public void handleDeliveryArrived(
-        @Payload DeliveryArrivedEvent event,
+    public void handleDeliveryCompleted(
+        @Payload OrderDeliveryEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 배송 완료 이벤트 수신: orderId={}, partition={}, offset={}, products={} ===",
-            event.orderId(), partition, offset, event.products().size());
+        log.info("=== 배송 이벤트 수신: orderId={}, status={}, partition={}, offset={}, items={} ===",
+            event.orderId(), event.status(), partition, offset, event.items().size());
+
+        // ARRIVED 상태가 아니면 무시
+        if (!"ARRIVED".equals(event.status())) {
+            log.debug("ARRIVED 상태가 아닌 이벤트 무시: status={}", event.status());
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+            return;
+        }
 
         try {
             // 1. 주문 조회
@@ -87,15 +95,15 @@ public class DeliveryArrivedEventListener {
 
     // 실패시 자동으로 호출한다고 합니다.
     @DltHandler
-    public void handleDeliveryArrivedDlt(
-        @Payload DeliveryCreatedEvent event,
+    public void handleDeliveryCompletedDlt(
+        @Payload OrderDeliveryEvent event,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
 
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Delivery Arrived Event");
+        log.error("⚠️ DLT 도착: Delivery Completed Event");
         log.error("⚠️ 수동 처리가 필요합니다!");
         log.error("========================================");
-        log.error("orderId={}, error={}", event.orderId(), exceptionMessage);
+        log.error("orderId={}, status={}, error={}", event.orderId(), event.status(), exceptionMessage);
     }
 }

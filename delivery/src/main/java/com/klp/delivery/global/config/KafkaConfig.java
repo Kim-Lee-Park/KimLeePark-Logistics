@@ -63,7 +63,8 @@ public class KafkaConfig {
 
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
-            "OrderDeliveryEvent:com.klp.delivery.delivery.domain.event.OrderDeliveryEvent");
+            "OrderDeliveryEvent:com.klp.delivery.delivery.domain.event.OrderDeliveryEvent," +
+            "DeliveryNotificationEvent:com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent");
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -92,7 +93,8 @@ public class KafkaConfig {
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
-        // TODO: 이벤트 수신
+        props.put(JsonDeserializer.TYPE_MAPPINGS,
+            "InventoryDeductedEvent:com.klp.delivery.delivery.domain.event.InventoryDeductedEvent");
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
