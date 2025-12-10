@@ -72,7 +72,7 @@ public class InventoryFacade {
     }
 
     /**
-     * 선점 해제 (결제 실패 시 호출)
+     * 선점 해제 (결제, 쿠폰사용 실패 시 호출)
      */
     public void release(UUID orderId) {
         String lockKey = "inventory:release:" + orderId;
