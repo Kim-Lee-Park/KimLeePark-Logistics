@@ -1,0 +1,21 @@
+package com.klp.order.order.domain.repository;
+
+import com.klp.order.order.domain.entity.outbox.OrderOutboxEvent;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface OrderOutboxEventRepository {
+
+    OrderOutboxEvent save(OrderOutboxEvent event);
+
+    OrderOutboxEvent saveAndFlush(OrderOutboxEvent event);
+
+    List<OrderOutboxEvent> findPendingEvents();
+
+    Optional<OrderOutboxEvent> findById(UUID id);
+
+    List<OrderOutboxEvent> findStuckPublishingEvents();
+
+    List<OrderOutboxEvent> findFailedEvents();
+}
