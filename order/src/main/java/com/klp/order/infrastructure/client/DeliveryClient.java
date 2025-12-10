@@ -1,6 +1,6 @@
 package com.klp.order.infrastructure.client;
 
-import com.klp.order.global.config.DeliveryFeignClientConfig;
+import com.klp.global.config.DeliveryFeignClientConfig;
 import com.klp.order.infrastructure.client.dto.delivery.request.CreateDeliveryRequest;
 import com.klp.order.infrastructure.client.dto.delivery.response.CreateDeliveryResponse;
 import java.util.UUID;

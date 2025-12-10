@@ -1,6 +1,6 @@
 package com.klp.order.domain.entity.outbox;
 
-import com.klp.order.common.BaseEntity;
+import com.klp.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

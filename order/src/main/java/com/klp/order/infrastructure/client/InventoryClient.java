@@ -1,7 +1,7 @@
 package com.klp.order.infrastructure.client;
 
 
-import com.klp.order.global.config.InventoryFeignClientConfig;
+import com.klp.global.config.InventoryFeignClientConfig;
 import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
