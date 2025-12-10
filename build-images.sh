@@ -38,6 +38,7 @@ SERVICES_DIRS=(
   "notification"
   "order"
   "promotion"
+  "payment"
   "user"
 )
 

@@ -14,7 +14,11 @@ locals {
     "loki",
     "tempo",
     "prometheus",
-    "grafana"
+    "grafana",
+    "payment",
+    "kafka",
+    "kafka-exporter",
+    "kafka-zookeeper"
   ]
 }
 

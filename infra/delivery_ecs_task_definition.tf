@@ -74,8 +74,16 @@ resource "aws_ecs_task_definition" "delivery" {
           value = local.db_urls.delivery
         },
         {
+          name  = "REDIS_HOST",
+          value = aws_elasticache_cluster.redis.cache_nodes[0].address
+        },
+        {
+          name = "REDIS_PORT",
+          value = tostring(aws_elasticache_cluster.redis.port)
+        },
+        {
           name  = "SERVER_URL",
-          value = "http://gateway.klp.local"
+          value = local.alb_server_url
         },
         {
           name  = "SCHEDULER_ROUTE_PLAN_DELETE_FIXED_RATE",

@@ -38,12 +38,17 @@ scrape_configs:
       - targets:
           - "promotion.klp.local:9464"
 
+  - job_name: "otel-collector-payment"
+    static_configs:
+      - targets:
+          - "payment.klp.local:9464"
+
   - job_name: "otel-collector-gateway"
     static_configs:
       - targets:
           - "gateway.klp.local:9464"
 
-  - job_name: "otel-collector-kafka"
+  - job_name: "kafka-exporter"
     static_configs:
       - targets:
-          - "kafka-otel.klp.local:9464"
+          - "kafka-exporter.klp.local:9308"
