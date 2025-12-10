@@ -22,3 +22,7 @@ management:
     web:
       exposure:
         include: [ health, busrefresh ]
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}

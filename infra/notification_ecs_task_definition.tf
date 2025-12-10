@@ -164,6 +164,10 @@ resource "aws_ecs_task_definition" "notification" {
           value = var.aws_region
         },
         {
+          name  = "OTEL_LOG_LEVEL"
+          value = "error"
+        },
+        {
           name  = "TEMPO_HOST"
           value = aws_instance.observability_stack.private_ip
         },

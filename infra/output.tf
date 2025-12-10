@@ -6,8 +6,8 @@ output "alb_dns_name" {
   value = aws_lb.public_alb.dns_name
 }
 
-output "rds_endpoint" {
-  value = aws_db_instance.postgres.address
+output "rds_endpoints" {
+  value = { for name, db in aws_db_instance.postgres : name => db.address }
 }
 
 output "redis_endpoint" {
