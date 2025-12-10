@@ -1,6 +1,6 @@
 package com.klp.order.infrastructure.client;
 
-import com.klp.order.global.config.PromotionFeignClientConfig;
+import com.klp.global.config.PromotionFeignClientConfig;
 import com.klp.order.infrastructure.client.dto.promotion.request.PromotionCalculateRequest;
 import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
 import org.springframework.cloud.openfeign.FeignClient;

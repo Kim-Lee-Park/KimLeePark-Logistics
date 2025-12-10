@@ -1,8 +1,8 @@
 package com.klp.order.infrastructure.client;
 
+import com.klp.common.exception.ExternalApiErrorCode;
+import com.klp.common.exception.ExternalApiException;
 import com.klp.order.application.service.UserClient;
-import com.klp.order.common.exception.ExternalApiErrorCode;
-import com.klp.order.common.exception.ExternalApiException;
 import com.klp.order.domain.vo.UserAddressHubId;
 import com.klp.order.domain.vo.UserProfile;
 import feign.FeignException;

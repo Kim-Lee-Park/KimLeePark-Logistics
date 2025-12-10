@@ -1,8 +1,8 @@
 package com.klp.order.domain.entity.idempotencykey;
 
+import com.klp.global.exception.BusinessException;
+import com.klp.global.exception.OrderOutboundRequestErrorCode;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.global.exception.BusinessException;
-import com.klp.order.global.exception.OrderOutboundRequestErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

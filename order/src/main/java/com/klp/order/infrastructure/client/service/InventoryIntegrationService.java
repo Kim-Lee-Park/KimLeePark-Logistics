@@ -1,14 +1,14 @@
 package com.klp.order.infrastructure.client.service;
 
+import com.klp.common.exception.ExternalApiErrorCode;
+import com.klp.common.exception.ExternalApiException;
+import com.klp.global.exception.BusinessException;
+import com.klp.global.exception.OrderErrorCode;
 import com.klp.order.application.command.CreateOrderOutboundRequestCommand;
 import com.klp.order.application.service.OrderOutboundRequestService;
-import com.klp.order.common.exception.ExternalApiErrorCode;
-import com.klp.order.common.exception.ExternalApiException;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.global.exception.BusinessException;
-import com.klp.order.global.exception.OrderErrorCode;
 import com.klp.order.infrastructure.client.InventoryClient;
 import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
