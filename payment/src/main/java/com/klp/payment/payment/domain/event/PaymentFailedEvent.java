@@ -48,4 +48,29 @@ public record PaymentFailedEvent(
             LocalDateTime.now()
         );
     }
+
+    public static PaymentFailedEvent from(
+        UUID paymentId,
+        UUID orderId,
+        Long userId,
+        String reason,
+        CouponUseFailedEvent couponEvent
+    ) {
+        List<ProductInfo> products = couponEvent.products().stream()
+            .map(p -> new ProductInfo(
+                p.productId(),
+                p.hubId(),
+                p.quantity()
+            ))
+            .toList();
+
+        return new PaymentFailedEvent(
+            paymentId,
+            orderId,
+            userId,
+            reason,
+            products,
+            LocalDateTime.now()
+        );
+    }
 }
