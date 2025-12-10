@@ -75,7 +75,7 @@ resource "aws_ecs_task_definition" "notification" {
         },
         {
           name  = "SERVER_URL",
-          value = "http://gateway.klp.local"
+          value = local.alb_server_url
         },
         {
           name  = "KAFKA_BOOTSTRAP_SERVERS",
@@ -162,6 +162,10 @@ resource "aws_ecs_task_definition" "notification" {
         {
           name  = "AWS_REGION"
           value = var.aws_region
+        },
+        {
+          name  = "OTEL_LOG_LEVEL"
+          value = "error"
         },
         {
           name  = "TEMPO_HOST"

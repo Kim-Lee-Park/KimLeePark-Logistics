@@ -67,41 +67,59 @@ resource "aws_instance" "observability_stack" {
           --username AWS \
           --password-stdin ${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com
 
-    # 4) docker-compose.yml 생성
+    # 4) docker-compose.yml 생성 (이미지에 설정/대시보드 내장)
     cat > /opt/telemetry/docker-compose.yml << 'COMPOSE'
     version: "3.8"
 
     services:
+      tempo:
+        image: "${data.aws_ecr_repository.service["tempo"].repository_url}:latest"
+        container_name: tempo
+        ports:
+          - "3200:3200"
+
       loki:
         image: "${data.aws_ecr_repository.service["loki"].repository_url}:latest"
         container_name: loki
         ports:
           - "3100:3100"
 
-      tempo:
-        image: "${data.aws_ecr_repository.service["tempo"].repository_url}:latest"
-        container_name: tempo
+      otel-collector:
+        image: "${data.aws_ecr_repository.service["otel-collector"].repository_url}:latest"
+        container_name: otel-collector
+        environment:
+          TEMPO_HOST: tempo
+          LOKI_HOST: loki
         ports:
-          - "3200:3200"
           - "4317:4317"
           - "4318:4318"
+          - "9464:9464"
+        depends_on:
+          - tempo
+          - loki
 
       prometheus:
         image: "${data.aws_ecr_repository.service["prometheus"].repository_url}:latest"
         container_name: prometheus
+        command:
+          - "--enable-feature=remote-write-receiver"
+          - "--web.enable-remote-write-receiver"
         ports:
           - "9090:9090"
+        depends_on:
+          - otel-collector
 
       grafana:
         image: "${data.aws_ecr_repository.service["grafana"].repository_url}:latest"
         container_name: grafana
-        ports:
-          - "3000:3000"
         environment:
           GF_SECURITY_ADMIN_USER: "admin"
           GF_SECURITY_ADMIN_PASSWORD: "admin1234"
           GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
           GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+          GF_PATHS_PROVISIONING: "/etc/grafana/provisioning"
+        ports:
+          - "3000:3000"
         depends_on:
           - loki
           - tempo

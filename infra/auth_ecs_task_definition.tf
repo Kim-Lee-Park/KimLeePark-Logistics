@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "auth" {
         },
         {
           name  = "SERVER_URL",
-          value = "http://gateway.klp.local"
+          value = local.alb_server_url
         },
         {
           name  = "JWT_ACCESS_EXPIRATION",
@@ -170,6 +170,10 @@ resource "aws_ecs_task_definition" "auth" {
         {
           name  = "AWS_REGION"
           value = var.aws_region
+        },
+        {
+          name  = "OTEL_LOG_LEVEL"
+          value = "error"
         },
         {
           name  = "TEMPO_HOST"
