@@ -75,7 +75,7 @@ resource "aws_ecs_task_definition" "hub" {
         },
         {
           name  = "SERVER_URL",
-          value = "http://gateway.klp.local"
+          value = local.alb_server_url
         },
         {
           name  = "SCHEDULER_ROUTE_INFOS_FIXED_RATE",

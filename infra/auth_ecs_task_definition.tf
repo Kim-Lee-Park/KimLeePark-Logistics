@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "auth" {
         },
         {
           name  = "SERVER_URL",
-          value = "http://gateway.klp.local"
+          value = local.alb_server_url
         },
         {
           name  = "JWT_ACCESS_EXPIRATION",

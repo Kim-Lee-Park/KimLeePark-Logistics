@@ -15,10 +15,14 @@ locals {
     "delivery",
     "notification",
     "promotion",
+    "payment",
     "otel-collector",
     "loki",
     "tempo",
     "prometheus",
-    "grafana"
+    "grafana",
+    "kafka",
+    "kafka-exporter",
+    "kafka-zookeeper"
   ]
 }

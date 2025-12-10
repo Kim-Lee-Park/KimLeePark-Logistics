@@ -1,16 +1,16 @@
-resource "aws_ecs_task_definition" "promotion" {
-  family             = "${local.project}-promotion"
-  network_mode       = "awsvpc"
+resource "aws_ecs_task_definition" "payment" {
+  family                   = "${local.project}-payment"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                = local.ecs_services.promotion.cpu
-  memory             = local.ecs_services.promotion.memory
-  execution_role_arn = aws_iam_role.ecs_task_execution.arn
-  task_role_arn      = aws_iam_role.ecs_task_role.arn
+  cpu                      = local.ecs_services.payment.cpu
+  memory                   = local.ecs_services.payment.memory
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
-      name      = "promotion"
-      image     = "${data.aws_ecr_repository.service["promotion"].repository_url}:latest"
+      name      = "payment"
+      image     = "${data.aws_ecr_repository.service["payment"].repository_url}:latest"
       essential = true
 
       portMappings = [
@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "promotion" {
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
           "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "promotion"
+          "awslogs-stream-prefix" = "payment"
         }
       }
 
@@ -58,28 +58,20 @@ resource "aws_ecs_task_definition" "promotion" {
           value = "http://config.klp.local:8888"
         },
         {
-          name  = "PROMOTION_DOMAIN_NAME",
-          value = "promotion.klp.local"
+          name  = "PAYMENT_DOMAIN_NAME",
+          value = "payment.klp.local"
         },
         {
-          name  = "PROMOTION_SERVICE_PORT",
+          name  = "PAYMENT_SERVICE_PORT",
           value = "8080"
         },
         {
-          name  = "PROMOTION_DB_DRIVER",
+          name  = "PAYMENT_DB_DRIVER",
           value = "org.postgresql.Driver"
         },
         {
-          name  = "PROMOTION_DB_URL",
-          value = local.db_urls.promotion
-        },
-        {
-          name  = "REDIS_HOST",
-          value = aws_elasticache_cluster.redis.cache_nodes[0].address
-        },
-        {
-          name = "REDIS_PORT",
-          value = tostring(aws_elasticache_cluster.redis.port)
+          name  = "PAYMENT_DB_URL",
+          value = local.db_urls.payment
         },
         {
           name  = "SERVER_URL",
@@ -119,7 +111,7 @@ resource "aws_ecs_task_definition" "promotion" {
         },
         {
           name  = "OTEL_SERVICE_NAME",
-          value = "klp-logistics-promotion"
+          value = "klp-logistics-payment"
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES",
@@ -129,11 +121,11 @@ resource "aws_ecs_task_definition" "promotion" {
 
       secrets = [
         {
-          name      = "PROMOTION_DB_USERNAME"
+          name      = "PAYMENT_DB_USERNAME"
           valueFrom = data.aws_secretsmanager_secret.db_username.arn
         },
         {
-          name      = "PROMOTION_DB_PASSWORD"
+          name      = "PAYMENT_DB_PASSWORD"
           valueFrom = data.aws_secretsmanager_secret.db_password.arn
         }
       ]
@@ -173,7 +165,7 @@ resource "aws_ecs_task_definition" "promotion" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-promotion"
+          value = "service.namespace=klp,service.name=klp-logistics-payment"
         }
       ]
 
@@ -182,7 +174,7 @@ resource "aws_ecs_task_definition" "promotion" {
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
           "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "otel-promotion"
+          "awslogs-stream-prefix" = "otel-payment"
         }
       }
     }

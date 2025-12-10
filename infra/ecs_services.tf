@@ -76,6 +76,13 @@ locals {
       desired_count = 1
       attach_to_alb = false
     }
+    payment = {
+      port          = 8080
+      cpu           = 1024
+      memory        = 2048
+      desired_count = 1
+      attach_to_alb = false
+    }
     auth = {
       port          = 8080
       cpu           = 1024
@@ -92,6 +99,7 @@ locals {
     notification = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=notification_schema"
     order        = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=order_schema"
     promotion    = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=promotion_schema"
+    payment      = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=payment_schema"
     user         = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=user_schema"
   }
 
@@ -101,6 +109,8 @@ locals {
   )
 
   otel_image = "${data.aws_ecr_repository.service["otel-collector"].repository_url}:latest"
+
+  alb_server_url = "http://${aws_lb.public_alb.dns_name}"
 }
 
 resource "aws_service_discovery_service" "ecs" {
