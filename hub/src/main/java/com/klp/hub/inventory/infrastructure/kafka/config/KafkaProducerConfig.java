@@ -42,10 +42,23 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
         configProps.put(ProducerConfig.LINGER_MS_CONFIG, 10);
 
+        // ⭐ 추가된 부분 - 타입 정보 헤더 활성화
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
+        configProps.put(JsonSerializer.TYPE_MAPPINGS, buildTypeMappings());
+
         return new DefaultKafkaProducerFactory<>(
             configProps,
             new StringSerializer(),
             new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    // ⭐ 추가된 메서드 - 타입 매핑 설정
+    private String buildTypeMappings() {
+        return String.join(",",
+            "InventoryDeductedEvent:" +
+                com.klp.hub.inventory.domain.event.InventoryDeductedEvent.class.getName()
+
         );
     }
 

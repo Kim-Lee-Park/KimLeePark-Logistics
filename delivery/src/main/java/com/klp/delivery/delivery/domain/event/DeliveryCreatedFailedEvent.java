@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryCreatedEvent(
+public record DeliveryCreatedFailedEvent(
     UUID orderId,
     Long userId,
     UUID supplierId,
@@ -43,12 +43,11 @@ public record DeliveryCreatedEvent(
         UUID hubId,
         Integer quantity,
         int unitPrice,
-        int totalPrice,
-        UUID deliveryId
+        int totalPrice
     ) {
 
-        // OrderItemCommand에서 deliveryId를 추가하여 생성
-        public static OrderItem withDeliveryId(OrderItemCommand item, UUID deliveryId) {
+        // OrderItemCommand에서 OrderItem 생성
+        public static OrderItem from(OrderItemCommand item) {
             return new OrderItem(
                 item.orderItemId(),
                 item.productId(),
@@ -56,16 +55,18 @@ public record DeliveryCreatedEvent(
                 item.hubId(),
                 item.quantity(),
                 item.unitPrice(),
-                item.totalPrice(),
-                deliveryId
+                item.totalPrice()
             );
         }
     }
 
-    // OrderToDeliveryCommand에서 DeliveryCreatedEvent 생성
-    public static DeliveryCreatedEvent from(OrderToDeliveryCommand command,
-        List<OrderItem> orderItems) {
-        return new DeliveryCreatedEvent(
+    // OrderToDeliveryCommand에서 DeliveryCreatedFailedEvent 생성
+    public static DeliveryCreatedFailedEvent from(OrderToDeliveryCommand command) {
+        List<OrderItem> failedItems = command.products().stream()
+            .map(OrderItem::from)
+            .toList();
+
+        return new DeliveryCreatedFailedEvent(
             command.orderId(),
             command.userId(),
             command.supplierId(),
@@ -82,7 +83,7 @@ public record DeliveryCreatedEvent(
             command.address(),
             command.deliveryLatitude(),
             command.deliveryLongitude(),
-            orderItems,
+            failedItems,
             command.inventoryIdempotencyKey(),
             command.deliveryIdempotencyKey(),
             command.createdAt(),
