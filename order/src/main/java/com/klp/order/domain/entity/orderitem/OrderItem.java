@@ -1,10 +1,10 @@
 package com.klp.order.domain.entity.orderitem;
 
+import com.klp.common.BaseEntity;
+import com.klp.global.exception.BusinessException;
+import com.klp.global.exception.OrderItemErrorCode;
 import com.klp.order.application.command.OrderItemCommand;
-import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.global.exception.BusinessException;
-import com.klp.order.global.exception.OrderItemErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

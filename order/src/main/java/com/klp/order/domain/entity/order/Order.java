@@ -1,13 +1,13 @@
 package com.klp.order.domain.entity.order;
 
+import com.klp.common.BaseEntity;
+import com.klp.global.exception.BusinessException;
+import com.klp.global.exception.OrderErrorCode;
 import com.klp.order.application.command.OrderItemCommand;
-import com.klp.order.common.BaseEntity;
 import com.klp.order.domain.entity.cancel.CancelType;
 import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.idempotencykey.OrderOutboundRequest;
 import com.klp.order.domain.entity.orderitem.OrderItem;
-import com.klp.order.global.exception.BusinessException;
-import com.klp.order.global.exception.OrderErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
