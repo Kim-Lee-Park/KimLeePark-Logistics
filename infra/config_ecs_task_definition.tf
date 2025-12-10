@@ -34,6 +34,7 @@ resource "aws_ecs_task_definition" "config" {
         { name = "SPRING_CLOUD_CONFIG_ENABLED", value = "false" },
         { name = "SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL", value = "main" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
+        { name = "LOG_LEVEL", value = "ERROR" }
       ]
 
       secrets = [
