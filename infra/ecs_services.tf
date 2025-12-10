@@ -93,14 +93,8 @@ locals {
   }
 
   db_urls = {
-    auth         = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=auth_schema"
-    delivery     = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=delivery_schema"
-    hub          = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=hub_schema"
-    notification = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=notification_schema"
-    order        = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=order_schema"
-    promotion    = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=promotion_schema"
-    payment      = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=payment_schema"
-    user         = "jdbc:postgresql://${aws_db_instance.postgres.address}:5432/logistics?currentSchema=user_schema"
+    for name, target in local.db_targets :
+    name => "jdbc:postgresql://${aws_db_instance.postgres[name].address}:5432/logistics?currentSchema=${target.schema}"
   }
 
   kafka_bootstrap = join(

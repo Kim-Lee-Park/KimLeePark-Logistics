@@ -1,6 +1,7 @@
 resource "null_resource" "init_schemas" {
+  for_each = local.db_targets
+
   depends_on = [
-    aws_db_instance.postgres,
     aws_instance.bastion
   ]
 
@@ -27,7 +28,7 @@ resource "null_resource" "init_schemas" {
 
       # 실제 스키마 적용
       "export PGPASSWORD='${local.db_password}'",
-      "psql -h ${aws_db_instance.postgres.address} -p 5432 -U ${local.db_username} -d logistics -f /tmp/schemas.sql"
+      "psql -h ${aws_db_instance.postgres[each.key].address} -p 5432 -U ${local.db_username} -d logistics -f /tmp/schemas.sql"
     ]
   }
 }

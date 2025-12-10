@@ -16,8 +16,14 @@ resource "aws_ecs_service" "config" {
   }
 
   depends_on = [
-    null_resource.init_schemas,
-    aws_instance.kafka_broker,
-    aws_db_instance.postgres
+    null_resource.init_schemas["auth"],
+    null_resource.init_schemas["delivery"],
+    null_resource.init_schemas["hub"],
+    null_resource.init_schemas["notification"],
+    null_resource.init_schemas["order"],
+    null_resource.init_schemas["promotion"],
+    null_resource.init_schemas["payment"],
+    null_resource.init_schemas["user"],
+    aws_instance.kafka_broker
   ]
 }
