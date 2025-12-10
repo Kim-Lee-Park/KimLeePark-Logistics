@@ -5,7 +5,7 @@ import com.klp.promotion.coupon.application.service.CouponOutboxEventService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
-import com.klp.promotion.coupon.domain.event.CouponUseFailedEvent;
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.List;
@@ -140,7 +140,7 @@ public class PaymentApprovedEventListener {
         } catch (Exception e) {
             log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
-            couponOutboxEventService.failEvent(event.orderId(), CouponUseFailedEvent.from(event));
+            couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
             throw e;
         }
     }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.entity.outbox.CouponOutboxEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
-import com.klp.promotion.coupon.domain.event.CouponUseFailedEvent;
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.repository.CouponOutboxEventRepository;
 import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.global.exception.BusinessException;
@@ -29,8 +29,8 @@ public class CouponOutboxEventService {
     }
 
     @Transactional
-    public void failEvent(UUID orderId, CouponUseFailedEvent event) {
-        saveOutboxEvent(event, orderId, "CouponUseFailedEvent");
+    public void failEvent(UUID orderId, CouponUsedFailedEvent event) {
+        saveOutboxEvent(event, orderId, "CouponUsedFailedEvent");
     }
 
     // 이벤트  db 저장

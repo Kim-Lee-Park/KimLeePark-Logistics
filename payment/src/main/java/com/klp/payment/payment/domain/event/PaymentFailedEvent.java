@@ -54,7 +54,7 @@ public record PaymentFailedEvent(
         UUID orderId,
         Long userId,
         String reason,
-        CouponUseFailedEvent couponEvent
+        CouponUsedFailedEvent couponEvent
     ) {
         List<ProductInfo> products = couponEvent.products().stream()
             .map(p -> new ProductInfo(

@@ -2,7 +2,7 @@ package com.klp.promotion.coupon.infrastructure.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.entity.outbox.CouponOutboxEvent;
-import com.klp.promotion.coupon.domain.event.CouponUseFailedEvent;
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.repository.CouponOutboxEventRepository;
 import com.klp.promotion.coupon.infrastructure.kafka.producer.CouponEventProducer;
@@ -48,8 +48,8 @@ public class OutboxScheduler {
                 CouponUsedEvent event = objectMapper.readValue(payload, CouponUsedEvent.class);
                 eventProducer.publishCouponUsedEvent(event);
             }
-            case "CouponUseFailedEvent" -> {
-                CouponUseFailedEvent event = objectMapper.readValue(payload, CouponUseFailedEvent.class);
+            case "CouponUsedFailedEvent" -> {
+                CouponUsedFailedEvent event = objectMapper.readValue(payload, CouponUsedFailedEvent.class);
                 eventProducer.publishCouponUseFailedEvent(event);
             }
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);

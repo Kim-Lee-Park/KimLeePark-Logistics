@@ -1,6 +1,6 @@
 package com.klp.promotion.coupon.infrastructure.kafka.producer;
 
-import com.klp.promotion.coupon.domain.event.CouponUseFailedEvent;
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.concurrent.CompletableFuture;
@@ -40,7 +40,7 @@ public class CouponEventProducer {
         });
     }
 
-    public void publishCouponUseFailedEvent(CouponUseFailedEvent event) {
+    public void publishCouponUseFailedEvent(CouponUsedFailedEvent event) {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =

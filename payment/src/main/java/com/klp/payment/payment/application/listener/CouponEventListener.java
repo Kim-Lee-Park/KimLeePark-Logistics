@@ -3,7 +3,7 @@ package com.klp.payment.payment.application.listener;
 import com.klp.payment.payment.application.PaymentOutboxService;
 import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
-import com.klp.payment.payment.domain.event.CouponUseFailedEvent;
+import com.klp.payment.payment.domain.event.CouponUsedFailedEvent;
 import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class CouponEventListener {
 
     @KafkaHandler
     @Transactional
-    public void handleOrderCreated(CouponUseFailedEvent event) {
+    public void handleOrderCreated(CouponUsedFailedEvent event) {
         log.info("쿠폰 사용 실패 이벤트 수신: orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
 
         Payment payment = paymentService.failPayment(event.orderId(), "결제취소");
@@ -42,7 +42,7 @@ public class CouponEventListener {
         );
 
         outboxService.savePaymentFailedEvent(failedEvent);
-        log.warn("결제 실패 완료 : orderId={}, paymentId={}, reason={}", event.orderId(), event.paymentId(), payment.getReason());
+        log.warn("결제 실패 완료 : orderId={}, paymentId={}, reason={}", event.orderId(), payment.getPaymentId(), payment.getReason());
     }
 
 
