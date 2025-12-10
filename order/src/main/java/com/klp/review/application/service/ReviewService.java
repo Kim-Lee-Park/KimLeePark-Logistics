@@ -110,9 +110,6 @@ public class ReviewService {
 
     /**
      * 리뷰 단건 조회
-     *
-     * @param reviewId 리뷰 ID
-     * @return 리뷰
      */
     @Transactional(readOnly = true)
     public Review getReview(UUID reviewId) {

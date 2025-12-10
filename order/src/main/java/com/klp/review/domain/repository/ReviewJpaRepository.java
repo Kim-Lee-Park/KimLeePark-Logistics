@@ -12,39 +12,26 @@ import org.springframework.data.repository.query.Param;
 public interface ReviewJpaRepository extends JpaRepository<Review, UUID> {
 
     /**
-     * 주문 ID로 리뷰 조회 (삭제되지 않은 것만)
-     *
-     * @param orderId 주문 ID
-     * @return 리뷰 Optional
+     * 주문 ID로 리뷰 조회
      */
     @Query("SELECT r FROM Review r WHERE r.orderId = :orderId AND r.deletedAt IS NULL")
     Optional<Review> findByOrderIdAndDeletedAtIsNull(@Param("orderId") UUID orderId);
 
     /**
-     * 주문 ID로 리뷰 존재 여부 확인 (삭제되지 않은 것만)
-     *
-     * @param orderId 주문 ID
-     * @return 존재 여부
+     * 주문 ID로 리뷰 존재 여부 확인
      */
     @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END " +
         "FROM Review r WHERE r.orderId = :orderId AND r.deletedAt IS NULL")
     boolean existsByOrderIdAndDeletedAtIsNull(@Param("orderId") UUID orderId);
 
     /**
-     * 리뷰 ID로 조회 (삭제되지 않은 것만)
-     *
-     * @param reviewId 리뷰 ID
-     * @return 리뷰 Optional
+     * 리뷰 ID로 조회
      */
     @Query("SELECT r FROM Review r WHERE r.reviewId = :reviewId AND r.deletedAt IS NULL")
     Optional<Review> findByIdAndDeletedAtIsNull(@Param("reviewId") UUID reviewId);
 
     /**
-     * 상품 ID로 리뷰 목록 조회 (삭제되지 않은 것만)
-     *
-     * @param productId 상품 ID
-     * @param pageable 페이징 정보
-     * @return 리뷰 페이지
+     * 상품 ID로 리뷰 목록 조회
      */
     @Query("SELECT r FROM Review r WHERE r.productId = :productId AND r.deletedAt IS NULL")
     Page<Review> findByProductIdAndDeletedAtIsNull(
@@ -53,11 +40,7 @@ public interface ReviewJpaRepository extends JpaRepository<Review, UUID> {
     );
 
     /**
-     * 사용자 ID로 리뷰 목록 조회 (삭제되지 않은 것만)
-     *
-     * @param userId 사용자 ID
-     * @param pageable 페이징 정보
-     * @return 리뷰 페이지
+     * 사용자 ID로 리뷰 목록 조회
      */
     @Query("SELECT r FROM Review r WHERE r.userId = :userId AND r.deletedAt IS NULL")
     Page<Review> findByUserIdAndDeletedAtIsNull(
@@ -66,10 +49,7 @@ public interface ReviewJpaRepository extends JpaRepository<Review, UUID> {
     );
 
     /**
-     * 전체 리뷰 목록 조회 (삭제되지 않은 것만)
-     *
-     * @param pageable 페이징 정보
-     * @return 리뷰 페이지
+     * 전체 리뷰 목록 조회
      */
     @Query("SELECT r FROM Review r WHERE r.deletedAt IS NULL")
     Page<Review> findAllAndDeletedAtIsNull(Pageable pageable);
