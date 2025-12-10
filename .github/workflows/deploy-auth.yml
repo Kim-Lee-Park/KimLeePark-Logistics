@@ -2,7 +2,7 @@ name: Deploy auth
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "auth-service/**"
       - ".github/workflows/deploy-auth.yml"

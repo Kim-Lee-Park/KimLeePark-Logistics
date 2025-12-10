@@ -2,7 +2,7 @@ name: Deploy hub
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "hub/**"
       - ".github/workflows/deploy-hub.yml"

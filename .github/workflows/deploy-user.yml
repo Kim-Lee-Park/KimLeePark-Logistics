@@ -2,7 +2,7 @@ name: Deploy user
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "user/**"
       - ".github/workflows/deploy-user.yml"

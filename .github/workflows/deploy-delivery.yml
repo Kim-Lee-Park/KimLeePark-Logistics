@@ -2,7 +2,7 @@ name: Deploy delivery
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "delivery/**"
       - ".github/workflows/deploy-delivery.yml"

@@ -2,7 +2,7 @@ name: Deploy notification
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "notification/**"
       - ".github/workflows/deploy-notification.yml"
