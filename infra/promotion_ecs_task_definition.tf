@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "promotion" {
           value = local.db_urls.promotion
         },
         {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
+        },
+        {
           name  = "REDIS_HOST",
           value = aws_elasticache_cluster.redis.cache_nodes[0].address
         },

@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "user" {
           value = local.db_urls.user
         },
         {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
+        },
+        {
           name  = "SERVER_URL",
           value = local.alb_server_url
         },

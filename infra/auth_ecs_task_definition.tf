@@ -74,6 +74,10 @@ resource "aws_ecs_task_definition" "auth" {
           value = local.db_urls.auth
         },
         {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
+        },
+        {
           name  = "KAFKA_BOOTSTRAP_SERVERS",
           value = local.kafka_bootstrap
         },
