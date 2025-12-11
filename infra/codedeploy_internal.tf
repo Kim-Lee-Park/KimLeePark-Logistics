@@ -1,13 +1,13 @@
 locals {
   internal_services_codedeploy = {
-    auth         = { port = 8000 }
-    user         = { port = 8010 }
-    order        = { port = 8020 }
-    hub          = { port = 8030 }
-    delivery     = { port = 8040 }
+    auth = { port = 8000 }
+    user = { port = 8010 }
+    order = { port = 8020 }
+    hub = { port = 8030 }
+    delivery = { port = 8040 }
     notification = { port = 8050 }
-    promotion    = { port = 9000 }
-    payment      = { port = 9020 }
+    promotion = { port = 9000 }
+    payment = { port = 9020 }
   }
 
   internal_service_names = {
@@ -22,7 +22,6 @@ locals {
   }
 }
 
-# CodeDeploy application & deployment groups for internal services
 resource "aws_codedeploy_app" "internal" {
   for_each = local.internal_services_codedeploy
 
