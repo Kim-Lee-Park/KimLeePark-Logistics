@@ -1,6 +1,7 @@
 package com.klp.promotion.coupon.infrastructure.repository;
 
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
+import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.domain.repository.UserCouponRepository;
 import java.util.List;
 import java.util.UUID;
@@ -30,5 +31,10 @@ public class UserCouponRepositoryImpl implements UserCouponRepository {
     @Override
     public List<UserCoupon> findAllByUserId(Long userId) {
         return userCouponJpaRepotiory.findAllByUserId(userId);
+    }
+
+    @Override
+    public int reserve(UUID userCouponId, Integer version) {
+        return userCouponJpaRepotiory.reserve(userCouponId, version);
     }
 }

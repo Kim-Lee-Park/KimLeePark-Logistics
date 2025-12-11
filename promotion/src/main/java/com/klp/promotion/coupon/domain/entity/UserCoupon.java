@@ -2,6 +2,8 @@ package com.klp.promotion.coupon.domain.entity;
 
 
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_ALREADY_USED;
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_USABLE;
 
 import com.klp.promotion.common.model.BaseEntity;
 import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
@@ -14,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -26,6 +29,9 @@ import org.hibernate.annotations.Comment;
 @Table(name = "p_user_coupons", schema = "promotion_schema")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserCoupon extends BaseEntity {
+
+    @Version
+    private Integer version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -74,5 +80,18 @@ public class UserCoupon extends BaseEntity {
         if (status == UserCouponStatus.USED) {
             throw new BusinessException(COUPON_ALREADY_USED);
         }
+    }
+
+    public void validateStatus() {
+        if (status == UserCouponStatus.USED || isDeleted() || status == UserCouponStatus.EXPIRED) {
+            throw new BusinessException(COUPON_NOT_USABLE);
+        }
+    }
+
+    public static void validateUsable(UserCoupon userCoupon) {
+        if (userCoupon == null) {
+            throw new BusinessException(COUPON_NOT_FOUND);
+        }
+        userCoupon.validateStatus();
     }
 }

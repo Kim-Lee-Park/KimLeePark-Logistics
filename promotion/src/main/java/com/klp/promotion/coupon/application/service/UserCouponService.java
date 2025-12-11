@@ -36,4 +36,8 @@ public class UserCouponService {
     }
 
 
+    // 쿠폰 선점
+    public int reserve(UUID userCouponId,  Integer version) {
+        return userCouponRepository.reserve(userCouponId, version);
+    }
 }

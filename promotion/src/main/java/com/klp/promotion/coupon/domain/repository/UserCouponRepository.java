@@ -13,4 +13,6 @@ public interface UserCouponRepository {
     UserCoupon findByUserCouponId(UUID userCouponId);
 
     List<UserCoupon> findAllByUserId(Long userId);
+
+    int reserve(UUID userCouponId, Integer version);
 }
