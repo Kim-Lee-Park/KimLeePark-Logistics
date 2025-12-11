@@ -20,13 +20,6 @@ locals {
       desired_count = 1
       attach_to_alb = false
     }
-    discovery = {
-      port          = 8761
-      cpu           = 1024
-      memory        = 2048
-      desired_count = 1
-      attach_to_alb = false
-    }
     gateway = {
       port          = 8080
       cpu           = 1024

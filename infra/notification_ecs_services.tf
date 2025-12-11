@@ -26,7 +26,6 @@ resource "aws_ecs_service" "notification" {
   }
 
   depends_on = [
-    aws_ecs_service.discovery,
     aws_lb_target_group.internal_blue["notification"],
     aws_lb_target_group.internal_green["notification"]
   ]

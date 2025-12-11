@@ -2,24 +2,23 @@ resource "aws_lb" "internal_alb" {
   name               = "${local.project}-internal-alb"
   internal           = true
   load_balancer_type = "application"
-  subnets            = [aws_subnet.private_app_az1.id, aws_subnet.private_app_az2.id]
-  security_groups    = [aws_security_group.internal_alb.id]
+  subnets = [aws_subnet.private_app_az1.id, aws_subnet.private_app_az2.id]
+  security_groups = [aws_security_group.internal_alb.id]
 }
 
 locals {
   internal_services = {
-    auth         = { port = 8000 }
-    user         = { port = 8010 }
-    order        = { port = 8020 }
-    hub          = { port = 8030 }
-    delivery     = { port = 8040 }
+    auth = { port = 8000 }
+    user = { port = 8010 }
+    order = { port = 8020 }
+    hub = { port = 8030 }
+    delivery = { port = 8040 }
     notification = { port = 8050 }
-    promotion    = { port = 9000 }
-    payment      = { port = 9020 }
+    promotion = { port = 9000 }
+    payment = { port = 9020 }
   }
 }
 
-# Target groups (blue/green) for each service
 resource "aws_lb_target_group" "internal_blue" {
   for_each = local.internal_services
 
@@ -58,7 +57,6 @@ resource "aws_lb_target_group" "internal_green" {
   }
 }
 
-# Service-specific listeners forwarding to blue TG by default
 resource "aws_lb_listener" "internal" {
   for_each = local.internal_services
 

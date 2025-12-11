@@ -26,7 +26,6 @@ resource "aws_ecs_service" "delivery" {
   }
 
   depends_on = [
-    aws_ecs_service.discovery,
     aws_lb_target_group.internal_blue["delivery"],
     aws_lb_target_group.internal_green["delivery"]
   ]
