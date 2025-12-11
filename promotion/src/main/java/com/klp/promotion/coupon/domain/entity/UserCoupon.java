@@ -1,6 +1,7 @@
 package com.klp.promotion.coupon.domain.entity;
 
 
+import static com.klp.promotion.coupon.common.exception.CouponErrorCode.CANNOT_USE_UNRESERVED_COUPON;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_ALREADY_USED;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_USABLE;
@@ -70,7 +71,10 @@ public class UserCoupon extends BaseEntity {
     }
 
 
-    public void useCoupon() {
+    public void confirmUse() {
+        if(this.status != UserCouponStatus.RESERVE){
+            throw new BusinessException(CANNOT_USE_UNRESERVED_COUPON);
+        }
         this.status = UserCouponStatus.USED;
         this.usedAt = LocalDateTime.now();
     }

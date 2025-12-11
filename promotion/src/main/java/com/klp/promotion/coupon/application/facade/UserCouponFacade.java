@@ -55,23 +55,11 @@ public class UserCouponFacade {
 
     @Transactional
     public void useUserCoupon(UUID couponId, Long userId) {
-
         UserCoupon userCoupon = userCouponService.findByUserIdAndCouponId(userId, couponId);
         if (userCoupon == null) {
             throw new BusinessException(COUPON_NOT_FOUND);
         }
-
-        if (userCoupon.getStatus() == UserCouponStatus.USED) {
-            throw new BusinessException(CouponErrorCode.COUPON_ALREADY_USED);
-        }
-
-        Coupon coupon = couponService.findByCouponId(couponId);
-        if (coupon == null) {
-            throw new BusinessException(COUPON_NOT_FOUND);
-        }
-
-        Coupon.validateExpiredAt(coupon.getExpired_at());
-        userCoupon.useCoupon();
+        userCoupon.confirmUse();
     }
 
 
@@ -109,9 +97,10 @@ public class UserCouponFacade {
             throw new BusinessException(COUPON_VERSION_MISMATCH);
         }
 
-        try {
-            Coupon coupon = couponService.findByCouponId(userCoupon.getCouponId());
+        Coupon coupon = couponService.findByCouponId(userCoupon.getCouponId());
+        Coupon.validateExpiredAt(coupon.getExpired_at());
 
+        try {
             Grade grade = gradeService.getGradeByName(gradeName);
 
             return CouponApplyResponse.from(PriceCalculator.calculator(grade, coupon, originalPrice));
