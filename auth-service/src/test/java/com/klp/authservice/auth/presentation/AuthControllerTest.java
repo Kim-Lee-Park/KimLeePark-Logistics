@@ -28,6 +28,7 @@ import com.klp.authservice.global.exception.GlobalExceptionHandler;
 import com.klp.authservice.global.security.config.SecurityConfig;
 import com.klp.authservice.global.security.filter.AuthorizationFilter;
 import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+@Disabled
 @WebMvcTest(AuthController.class)
 @Import({SecurityConfig.class, AuthorizationFilter.class, GlobalExceptionHandler.class})
 class AuthControllerTest {

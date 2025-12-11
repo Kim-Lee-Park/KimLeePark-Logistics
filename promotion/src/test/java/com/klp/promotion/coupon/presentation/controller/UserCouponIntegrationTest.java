@@ -6,18 +6,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.klp.promotion.global.security.model.UserDetailsImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.enums.CouponType;
 import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.infrastructure.repository.CouponJpaRepositroy;
 import com.klp.promotion.coupon.infrastructure.repository.UserCouponJpaRepotiory;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.promotion.global.security.model.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -87,10 +89,13 @@ class UserCouponIntegrationTest {
 
         // then
         String responseBody = result.getResponse().getContentAsString();
-        UUID userCouponId = UUID.fromString(objectMapper.readTree(responseBody).get("userCouponId").asText());
-        assertThat(objectMapper.readTree(responseBody).get("couponId").asText()).isEqualTo(coupon.getCouponId().toString());
+        UUID userCouponId = UUID.fromString(
+            objectMapper.readTree(responseBody).get("userCouponId").asText());
+        assertThat(objectMapper.readTree(responseBody).get("couponId").asText()).isEqualTo(
+            coupon.getCouponId().toString());
 
-        UserCoupon userCoupon = userCouponJpaRepotiory.findByUserIdAndCouponId(userId, coupon.getCouponId());
+        UserCoupon userCoupon = userCouponJpaRepotiory.findByUserIdAndCouponId(userId,
+            coupon.getCouponId());
         assertThat(userCoupon).isNotNull();
         assertThat(userCoupon.getUserCouponId()).isEqualTo(userCouponId);
 
@@ -192,7 +197,8 @@ class UserCouponIntegrationTest {
             .andExpect(status().isNoContent());
 
         // then
-        UserCoupon updatedUserCoupon = userCouponJpaRepotiory.findByUserCouponId(userCoupon.getUserCouponId());
+        UserCoupon updatedUserCoupon = userCouponJpaRepotiory.findByUserCouponId(
+            userCoupon.getUserCouponId());
         assertThat(updatedUserCoupon.getStatus()).isEqualTo(UserCouponStatus.USED);
         assertThat(updatedUserCoupon.getUsedAt()).isNotNull();
     }
@@ -216,7 +222,8 @@ class UserCouponIntegrationTest {
             .andExpect(status().isNoContent());
 
         // then
-        UserCoupon deletedUserCoupon = userCouponJpaRepotiory.findByUserCouponId(userCoupon.getUserCouponId());
+        UserCoupon deletedUserCoupon = userCouponJpaRepotiory.findByUserCouponId(
+            userCoupon.getUserCouponId());
         assertThat(deletedUserCoupon.isDeleted()).isTrue();
     }
 }

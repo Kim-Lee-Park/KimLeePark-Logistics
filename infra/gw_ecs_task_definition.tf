@@ -42,18 +42,6 @@ resource "aws_ecs_task_definition" "gateway" {
           value = "prod"
         },
         {
-          name  = "EUREKA_URL",
-          value = "http://discovery.klp.local:8761/eureka/"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
-          value = "10"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
-          value = "30"
-        },
-        {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
         },
@@ -64,6 +52,42 @@ resource "aws_ecs_task_definition" "gateway" {
         {
           name  = "GATEWAY_SERVICE_PORT",
           value = "8080"
+        },
+        {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
+        },
+        {
+          name  = "AUTH_SERVICE_PORT",
+          value = "8000"
+        },
+        {
+          name  = "USER_SERVICE_PORT",
+          value = "8010"
+        },
+        {
+          name  = "ORDER_SERVICE_PORT",
+          value = "8020"
+        },
+        {
+          name  = "HUB_SERVICE_PORT",
+          value = "8030"
+        },
+        {
+          name  = "DELIVERY_SERVICE_PORT",
+          value = "8040"
+        },
+        {
+          name  = "NOTIFICATION_SERVICE_PORT",
+          value = "8050"
+        },
+        {
+          name  = "PROMOTION_SERVICE_PORT",
+          value = "9000"
+        },
+        {
+          name  = "PAYMENT_SERVICE_PORT",
+          value = "9020"
         },
         {
           name  = "KAFKA_BOOTSTRAP_SERVERS",
