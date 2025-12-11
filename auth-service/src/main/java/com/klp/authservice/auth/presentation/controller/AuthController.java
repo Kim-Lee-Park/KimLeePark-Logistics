@@ -90,4 +90,9 @@ public class AuthController implements AuthControllerDoc {
             .headers(headers)
             .body(response);
     }
+
+    @PostMapping
+    public String test() {
+        return "test v1";
+    }
 }
