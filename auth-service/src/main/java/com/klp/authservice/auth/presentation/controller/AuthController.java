@@ -93,6 +93,6 @@ public class AuthController implements AuthControllerDoc {
 
     @PostMapping
     public String test() {
-        return "test v1";
+        return "test v2";
     }
 }
