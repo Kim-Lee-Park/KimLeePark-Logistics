@@ -140,6 +140,8 @@ public class PaymentApprovedEventListener {
         } catch (Exception e) {
             log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
+            // 쿠폰 선점 해제
+            userCouponService.cancelReserve(event.userCouponId());
             couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
             throw e;
         }
