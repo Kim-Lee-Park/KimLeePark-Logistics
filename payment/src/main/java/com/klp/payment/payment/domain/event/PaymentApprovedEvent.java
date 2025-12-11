@@ -32,7 +32,7 @@ public record PaymentApprovedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<ProductInfo> products,
+    List<OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
@@ -41,7 +41,7 @@ public record PaymentApprovedEvent(
     LocalDateTime occurredAt
 ) {
 
-    public record ProductInfo(
+    public record OrderItem(
         UUID orderItemId,
         UUID productId,
         String productName,
@@ -60,8 +60,8 @@ public record PaymentApprovedEvent(
         LocalDateTime paidAt,
         OrderCreatedEvent orderEvent
     ) {
-        List<ProductInfo> products = orderEvent.products().stream()
-            .map(p -> new ProductInfo(
+        List<OrderItem> products = orderEvent.products().stream()
+            .map(p -> new OrderItem(
                 p.orderItemId(),
                 p.productId(),
                 p.productName(),

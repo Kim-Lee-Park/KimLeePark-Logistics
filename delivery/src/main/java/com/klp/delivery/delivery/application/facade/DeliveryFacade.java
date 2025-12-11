@@ -9,8 +9,8 @@ import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
+import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.application.util.DriverSelector;
@@ -84,10 +84,12 @@ public class DeliveryFacade {
             try {
                 // 실패 시 멱등키 삭제하여 재시도 가능하도록 처리
                 idempotencyKeyService.deleteIdempotencyKey(idempotencyCommand.idempotencyKey());
-                log.info("배송 생성 실패로 인한 멱등키 삭제 완료: idempotencyKey={}", idempotencyCommand.idempotencyKey());
+                log.info("배송 생성 실패로 인한 멱등키 삭제 완료: idempotencyKey={}",
+                    idempotencyCommand.idempotencyKey());
             } catch (Exception deleteException) {
                 log.error("배송 생성 실패로 인한  멱등키 삭제 실패: idempotencyKey={}, error={}",
-                    idempotencyCommand.idempotencyKey(), deleteException.getMessage(), deleteException);
+                    idempotencyCommand.idempotencyKey(), deleteException.getMessage(),
+                    deleteException);
             }
             throw new BusinessException(DELIVERY_CREATION_FAILED);
         }
@@ -98,7 +100,7 @@ public class DeliveryFacade {
         DriverCommand driverCommand) {
 
         // 1. 출발지 허브별로 주문 아이템 그룹화
-        Map<UUID, List<OrderItemCommand>> itemsByHub = orderCommand.items().stream()
+        Map<UUID, List<OrderItemCommand>> itemsByHub = orderCommand.products().stream()
             .collect(Collectors.groupingBy(OrderItemCommand::hubId));
 
         // 2. 각 출발지 허브마다 배송 생성 및 경로 생성 이벤트 발행
@@ -143,7 +145,7 @@ public class DeliveryFacade {
             departureHub.name(),
             arrivalHubId,
             departureHub.name(),
-            orderCommand.name(),
+            orderCommand.username(),
             orderCommand.address(),
             driverCommand.slackId(),
             driverCommand.userId()
@@ -179,7 +181,7 @@ public class DeliveryFacade {
     }
 
     private void publishDeliveryCreatedEvent(
-        UUID orderId,List<OrderDeliveryEvent.DeliveryItem> eventItems) {
+        UUID orderId, List<OrderDeliveryEvent.DeliveryItem> eventItems) {
 
         if (eventItems.isEmpty()) {
             return;
@@ -187,11 +189,10 @@ public class DeliveryFacade {
 
         OrderDeliveryEvent event = new OrderDeliveryEvent(
             orderId,
-            CustomerDeliveryStatus.CREATED.name(),
             eventItems
         );
 
-        deliveryEventPublisher.publishCreatedEvent(event);
+//        deliveryEventPublisher.publishCreatedEvent(event);
         log.info("배송 생성 이벤트 발행: orderId={}, status={}, totalItems={}",
             orderId, CustomerDeliveryStatus.CREATED, eventItems.size());
     }
@@ -210,10 +211,9 @@ public class DeliveryFacade {
                 delivery.getArrivalId(),
                 delivery.getArrivalName(),
                 delivery.getUserDrvierId(),
-                // Notification 이벤트에 필요한 정보
-                orderCommand.name(),
+                orderCommand.username(),
                 orderCommand.email(),
-                orderCommand.orderCreateAt(),
+                orderCommand.createdAt(),
                 orderCommand.comment() != null ? orderCommand.comment() : "",
                 orderItems,
                 driverCommand.username(),

@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -121,7 +120,8 @@ public class ReviewController implements ReviewControllerDoc {
         @PathVariable UUID reviewId,
         @Valid @RequestBody UpdateReviewRequest request
     ) {
-        Review review = reviewService.updateReview(reviewId, userDetails.getUserId(), request.toCommand());
+        Review review = reviewService.updateReview(reviewId, userDetails.getUserId(),
+            request.toCommand());
         UpdateReviewResponse response = UpdateReviewResponse.from(review);
 
         return ResponseEntity.ok(response);
@@ -134,7 +134,8 @@ public class ReviewController implements ReviewControllerDoc {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID reviewId
     ) {
-        Review review = reviewService.deleteReview(reviewId, userDetails.getUserId(), userDetails.getRole());
+        Review review = reviewService.deleteReview(reviewId, userDetails.getUserId(),
+            userDetails.getRole());
         DeleteReviewResponse response = DeleteReviewResponse.from(review);
 
         return ResponseEntity.ok(response);

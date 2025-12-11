@@ -79,7 +79,7 @@ public class DeliveryFacadeTest extends MockTest {
         DeliveryCreateRequest request = createDeliveryRequest(createOrderItemListWithDeliveryId());
 
         // 실제 요청의 OrderItem 수에 맞는 Delivery 생성 (1개)
-        List<OrderItemCommand> orderItemCommands = request.toOrderToDeliveryCommand().items();
+        List<OrderItemCommand> orderItemCommands = request.toOrderToDeliveryCommand().products();
         Delivery delivery = createDeliveryWithItems(DEFAULT_DELIVERY_ID_FIRST, orderItemCommands);
 
         doNothing().when(idempotencyKeyService)

@@ -75,7 +75,7 @@ public class Review extends BaseEntity {
     public boolean canDelete(Long requestUserId, String role) {
         return this.userId.equals(requestUserId) || "MASTER".equals(role);
     }
-    
+
     private static void validateOrderId(UUID orderId) {
         if (orderId == null) {
             throw new BusinessException(ReviewErrorCode.ORDER_ID_REQUIRED);
