@@ -5,7 +5,6 @@ data "aws_ecr_repository" "service" {
 }
 locals {
   ecr_services = [
-    "discovery",
     "config",
     "gateway",
     "order",

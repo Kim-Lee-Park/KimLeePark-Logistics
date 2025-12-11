@@ -1,15 +1,12 @@
 package com.klp.delivery.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,16 +31,10 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    /**
-     * ObjectMapper 설정 - LocalDateTime 등 Java 8 시간 타입 처리
-     */
-    @Bean
-    @Qualifier("kafkaObjectMapper")
-    public ObjectMapper kafkaObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper;
+    private final ObjectMapper objectMapper;
+
+    public KafkaConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     // producer 설정
@@ -63,12 +54,20 @@ public class KafkaConfig {
 
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
-            "OrderDeliveryEvent:com.klp.delivery.delivery.domain.event.OrderDeliveryEvent," +
-            "DeliveryNotificationEvent:com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent");
+            "DeliveryCreatedEvent:com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent," +
+                "DeliveryCreatedFailedEvent:com.klp.delivery.delivery.domain.event.DeliveryCreatedFailedEvent,"
+                +
+                "DeliveryShippingEvent:com.klp.delivery.delivery.domain.event.DeliveryShippingEvent,"
+                +
+                "DeliveryShippingFailedEvent:com.klp.delivery.delivery.domain.event.DeliveryShippingFailedEvent,"
+                +
+                "DeliveryArrivedEvent:com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent,"
+                +
+                "DeliveryArrivedFailedEvent:com.klp.delivery.delivery.domain.event.DeliveryArrivedFailedEvent");
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
-            new JsonSerializer<>(kafkaObjectMapper()));
+            new JsonSerializer<>(objectMapper));
     }
 
     @Bean
@@ -101,7 +100,7 @@ public class KafkaConfig {
 
         return new DefaultKafkaConsumerFactory<>(props,
             new StringDeserializer(),
-            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(kafkaObjectMapper())));
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(objectMapper)));
     }
 
     @Bean

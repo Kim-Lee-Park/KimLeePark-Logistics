@@ -1,19 +1,9 @@
 package com.klp.delivery.delivery.domain.event;
 
-import java.util.List;
 import java.util.UUID;
 
 public record DeliveryArrivedEvent(
-    UUID orderId,
-    String status,
-    List<DeliveryItem> items
+    UUID orderId
 ) {
-
-    public record DeliveryItem(
-        UUID orderItemId,
-        UUID deliveryId
-    ) {
-
-    }
 
 }

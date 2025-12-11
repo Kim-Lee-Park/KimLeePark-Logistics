@@ -5,7 +5,6 @@ import java.util.UUID;
 
 public record OrderDeliveryEvent(
     UUID orderId,
-    String status,
     List<DeliveryItem> items
 ) {
 

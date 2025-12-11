@@ -3,11 +3,9 @@ package com.klp.hub.inventory.application;
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
-import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.event.PaymentCancelledEvent;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
-import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
 import java.util.UUID;
@@ -24,16 +22,16 @@ public class InventoryFacade {
     private final InventoryReservationService inventoryReservationService;
     private final DistributedLockManager lockManager;
 
-    public InventoryDeductResponse deduct(OrderCreatedEvent event) {
-        String idempotencyKey = event.idempotencyKey();
-
-        lock(idempotencyKey);
-        try {
-            return inventoryService.deduct(event);
-        } finally {
-            unLock(idempotencyKey);
-        }
-    }
+//    public InventoryDeductResponse deduct(OrderCreatedEvent event) {
+//        String idempotencyKey = event.idempotencyKey();
+//
+//        lock(idempotencyKey);
+//        try {
+//            return inventoryService.deduct(event);
+//        } finally {
+//            unLock(idempotencyKey);
+//        }
+//    }
 
     public InventoryReplenishResponse replenish(InventoryReplenishCommand command) {
         String idempotencyKey = command.idempotencyKey();

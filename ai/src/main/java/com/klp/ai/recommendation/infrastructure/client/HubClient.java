@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "hub-service", configuration = HubFeignClientConfig.class)
+@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = HubFeignClientConfig.class)
 public interface HubClient {
 
     @GetMapping("/v1/products/{productId}")

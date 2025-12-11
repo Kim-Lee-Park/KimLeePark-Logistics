@@ -31,9 +31,9 @@ public class DeliveryEventProducer {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("배송 생성 이벤트 발행 성공: orderId={}, status={}", event.orderId(), event.status());
+                log.info("배송 생성 이벤트 발행 성공: orderId={}", event.orderId());
             } else {
-                log.error("배송 생성 이벤트 발행 실패: orderId={}, status={}, error={}", event.orderId(), event.status(),
+                log.error("배송 생성 이벤트 발행 실패: orderId={} error={}", event.orderId(),
                     ex.getMessage());
             }
         });
@@ -50,9 +50,9 @@ public class DeliveryEventProducer {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("배송 중 이벤트 발행 성공: orderId={}, status={}", event.orderId(), event.status());
+                log.info("배송 중 이벤트 발행 성공: orderId={}", event.orderId());
             } else {
-                log.error("배송 중 이벤트 발행 실패: orderId={}, status={}, error={}", event.orderId(), event.status(),
+                log.error("배송 중 이벤트 발행 실패: orderId={}, error={}", event.orderId(),
                     ex.getMessage());
             }
         });
@@ -69,9 +69,9 @@ public class DeliveryEventProducer {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("배송 완료 이벤트 발행 성공: orderId={}, status={}", event.orderId(), event.status());
+                log.info("배송 완료 이벤트 발행 성공: orderId={}", event.orderId());
             } else {
-                log.error("배송 완료 이벤트 발행 실패: orderId={}, status={}, error={}", event.orderId(), event.status(),
+                log.error("배송 완료 이벤트 발행 실패: orderId={}, error={}", event.orderId(),
                     ex.getMessage());
             }
         });

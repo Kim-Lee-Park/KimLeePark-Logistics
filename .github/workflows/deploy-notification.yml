@@ -2,7 +2,7 @@ name: Deploy notification
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "notification/**"
       - ".github/workflows/deploy-notification.yml"
@@ -17,9 +17,12 @@ env:
   ECS_CLUSTER: klp-logistics-ecs-cluster
   ECS_SERVICE: klp-logistics-notification-svc
   ECS_TASK_FAMILY: klp-logistics-notification
+  CODEDEPLOY_APP: klp-logistics-notification-app
+  CODEDEPLOY_GROUP: klp-logistics-notification-dg
   CONTAINER_NAME: notification
 
 jobs:
+
   build-and-deploy:
     runs-on: ubuntu-latest
 
@@ -85,16 +88,44 @@ jobs:
 
           echo "TASK_DEF_ARN=${TASK_DEF_ARN}" >> "$GITHUB_ENV"
 
-      - name: Update ECS Service
+      - name: Render AppSpec
         run: |
-          aws ecs update-service \
-            --cluster "${ECS_CLUSTER}" \
-            --service "${ECS_SERVICE}" \
-            --task-definition "${TASK_DEF_ARN}" \
-            --force-new-deployment \
-            --region "${AWS_REGION}"
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP TASK_DEF_ARN CONTAINER_NAME; do
+            if [ -z "${!var}" ]; then
+              echo "$var is required" >&2
+              exit 1
+            fi
+          done
 
-          aws ecs wait services-stable \
-            --cluster "${ECS_CLUSTER}" \
-            --services "${ECS_SERVICE}" \
-            --region "${AWS_REGION}"
+          cat > appspec-rendered.json <<EOF
+          {
+            "version": 0.0,
+            "Resources": [
+              {
+                "TargetService": {
+                  "Type": "AWS::ECS::Service",
+                  "Properties": {
+                    "TaskDefinition": "${TASK_DEF_ARN}",
+                    "LoadBalancerInfo": {
+                      "ContainerName": "${CONTAINER_NAME}",
+                      "ContainerPort": 8080
+                    }
+                  }
+                }
+              }
+            ]
+          }
+          EOF
+
+          jq . appspec-rendered.json >/dev/null
+
+      - name: Create deployment
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: taskdef-rendered.json
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          codedeploy-appspec: appspec-rendered.json
+          codedeploy-application: ${{ env.CODEDEPLOY_APP }}
+          codedeploy-deployment-group: ${{ env.CODEDEPLOY_GROUP }}

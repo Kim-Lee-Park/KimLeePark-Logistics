@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.promotion.coupon.MockTest;
 import com.klp.promotion.coupon.application.service.CouponService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
@@ -14,6 +13,7 @@ import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.enums.CouponType;
 import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
+import com.klp.promotion.global.exception.BusinessException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
