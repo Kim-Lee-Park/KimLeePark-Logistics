@@ -110,8 +110,7 @@ public class UserCouponFacade {
             log.error("쿠폰 할인 계산 실패: userCouponId={}, gradeName={}, originalPrice={}",
                 userCouponId, gradeName, originalPrice, e);
             // @Modifying 쿼리로 인해 영속성 컨텍스트가 클리어되었으므로 다시 조회
-            userCoupon = userCouponService.findByUserCouponId(userCouponId);
-            userCoupon.releaseReserve();
+            userCouponService.cancelReserve(userCouponId);
 
             throw new BusinessException(CouponErrorCode.COUPON_CALCULATION_FAILED);
         }
