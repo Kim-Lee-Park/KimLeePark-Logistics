@@ -94,4 +94,8 @@ public class UserCoupon extends BaseEntity {
         }
         userCoupon.validateStatus();
     }
+
+    public void releaseReserve(){
+        this.status = UserCouponStatus.READY;
+    }
 }

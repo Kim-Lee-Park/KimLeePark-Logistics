@@ -18,7 +18,9 @@ public enum CouponErrorCode implements ErrorCode {
     COUPON_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용된 쿠폰입니다"),
     EVENT_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 직렬화에 실패했습니다"),
     COUPON_NOT_USABLE(HttpStatus.BAD_REQUEST, "사용할 수 없는 쿠폰입니다"),
-    COUPON_VERSION_MISMATCH(HttpStatus.BAD_REQUEST, "쿠폰 사용 중 다른 요청이 먼저 처리되었습니다");
+    COUPON_VERSION_MISMATCH(HttpStatus.BAD_REQUEST, "쿠폰 사용 중 다른 요청이 먼저 처리되었습니다"),
+    COUPON_MIN_AMOUNT_NOT_MET(HttpStatus.BAD_REQUEST, "최소 결제 금액을 충족하지 않아 쿠폰을 사용할 수 없습니다"),
+    COUPON_CALCULATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "쿠폰 할인 계산 중 오류가 발생했습니다");
 
     private final HttpStatus status;
     private final String message;

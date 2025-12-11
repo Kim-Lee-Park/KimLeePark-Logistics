@@ -33,4 +33,9 @@ public class GradeRepositoryImpl implements GradeRepository {
     public boolean existsByGradeName(String gradeName) {
         return gradeJpaRepository.existsByGradeName(gradeName);
     }
+
+    @Override
+    public Optional<Grade> getGradeByName(String gradeName) {
+        return gradeJpaRepository.findByGradeName(gradeName);
+    }
 }
