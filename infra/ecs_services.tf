@@ -86,14 +86,14 @@ locals {
   }
 
   db_urls = {
-    auth         = "jdbc:postgresql://${aws_db_instance.postgres["auth"].address}:5432/logistics?currentSchema=${local.db_targets.auth.schema}"
-    delivery     = "jdbc:postgresql://${aws_db_instance.postgres["delivery"].address}:5432/logistics?currentSchema=${local.db_targets.delivery.schema}"
-    hub          = "jdbc:postgresql://${aws_db_instance.postgres["hub"].address}:5432/logistics?currentSchema=${local.db_targets.hub.schema}"
-    notification = "jdbc:postgresql://${aws_db_instance.postgres["notification"].address}:5432/logistics?currentSchema=${local.db_targets.notification.schema}"
-    order        = "jdbc:postgresql://${aws_db_instance.postgres["order"].address}:5432/logistics?currentSchema=${local.db_targets.order.schema}"
-    promotion    = "jdbc:postgresql://${aws_db_instance.postgres["promotion"].address}:5432/logistics?currentSchema=${local.db_targets.promotion.schema}"
-    payment      = "jdbc:postgresql://${aws_db_instance.postgres["payment"].address}:5432/logistics?currentSchema=${local.db_targets.payment.schema}"
-    user         = "jdbc:postgresql://${aws_db_instance.postgres["user"].address}:5432/logistics?currentSchema=${local.db_targets.user.schema}"
+    auth         = "jdbc:postgresql://${aws_db_instance.postgres["auth"].address}:5432/${local.db_targets.auth.db_name}"
+    delivery     = "jdbc:postgresql://${aws_db_instance.postgres["delivery"].address}:5432/${local.db_targets.delivery.db_name}"
+    hub          = "jdbc:postgresql://${aws_db_instance.postgres["hub"].address}:5432/${local.db_targets.hub.db_name}"
+    notification = "jdbc:postgresql://${aws_db_instance.postgres["notification"].address}:5432/${local.db_targets.notification.db_name}"
+    order        = "jdbc:postgresql://${aws_db_instance.postgres["order"].address}:5432/${local.db_targets.order.db_name}"
+    promotion    = "jdbc:postgresql://${aws_db_instance.postgres["promotion"].address}:5432/${local.db_targets.promotion.db_name}"
+    payment      = "jdbc:postgresql://${aws_db_instance.postgres["payment"].address}:5432/${local.db_targets.payment.db_name}"
+    user         = "jdbc:postgresql://${aws_db_instance.postgres["user"].address}:5432/${local.db_targets.user.db_name}"
   }
 
   kafka_bootstrap = join(

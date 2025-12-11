@@ -10,10 +10,7 @@ import org.hibernate.annotations.Comment;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "p_products",
-        schema = "hub_schema"
-)
+@Table(name = "p_products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Product extends BaseEntity {

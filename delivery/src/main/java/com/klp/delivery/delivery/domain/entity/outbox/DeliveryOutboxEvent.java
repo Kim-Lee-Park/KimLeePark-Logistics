@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_delivery_outbox_events", schema = "delivery_schema")
+@Table(name = "p_delivery_outbox_events")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DeliveryOutboxEvent extends BaseEntity {
@@ -124,4 +124,3 @@ public class DeliveryOutboxEvent extends BaseEntity {
     }
 
 }
-

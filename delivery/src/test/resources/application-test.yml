@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/logistics
+    url: jdbc:postgresql://localhost:5435/delivery
     username: kimleepark
     password: kimleepark
     driver-class-name: org.postgresql.Driver
@@ -16,8 +16,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-        default_schema: delivery_schema
   sql:
     init:
       mode: always
-      schema-locations: classpath:schema.sql

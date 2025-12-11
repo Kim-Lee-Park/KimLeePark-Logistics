@@ -18,7 +18,7 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
-@Table(name = "p_user_address", schema = "user_schema")
+@Table(name = "p_user_address")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserAddress extends BaseEntity {
 

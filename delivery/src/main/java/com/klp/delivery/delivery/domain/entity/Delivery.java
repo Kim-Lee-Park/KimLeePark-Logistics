@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 
 @Entity
 @Getter
-@Table(name = "p_deliveries", schema = "delivery_schema")
+@Table(name = "p_deliveries")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Delivery extends BaseEntity {
 

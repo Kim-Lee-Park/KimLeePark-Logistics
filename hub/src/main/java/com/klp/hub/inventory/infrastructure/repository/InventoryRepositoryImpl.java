@@ -26,7 +26,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final static String INVENTORY_TABLE = "hub_schema.p_inventory";
+    private final static String INVENTORY_TABLE = "p_inventory";
 
     @Override
     public Optional<Inventory> findByProductId(UUID productId) {
