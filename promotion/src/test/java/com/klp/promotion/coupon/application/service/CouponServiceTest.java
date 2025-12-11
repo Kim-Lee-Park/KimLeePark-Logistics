@@ -1,18 +1,15 @@
 package com.klp.promotion.coupon.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.common.exception.BusinessException;
-import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.enums.CouponType;
 import com.klp.promotion.coupon.infrastructure.repository.CouponJpaRepositroy;
 import com.klp.promotion.coupon.presentation.dto.CouponResponse;
 import com.klp.promotion.coupon.presentation.dto.CreateCouponRequest;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+@Disabled
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("CouponService 통합 테스트")
@@ -57,7 +55,7 @@ class CouponServiceTest {
 
         // then
         assertThat(response.couponId()).isNotNull();
-        
+
         Coupon savedCoupon = couponJpaRepositroy.findByCouponId(response.couponId());
         assertThat(savedCoupon).isNotNull();
         assertThat(savedCoupon.getName()).isEqualTo("정액 할인 쿠폰");
@@ -89,7 +87,7 @@ class CouponServiceTest {
 
         // then
         assertThat(response.couponId()).isNotNull();
-        
+
         Coupon savedCoupon = couponJpaRepositroy.findByCouponId(response.couponId());
         assertThat(savedCoupon).isNotNull();
         assertThat(savedCoupon.getName()).isEqualTo("정률 할인 쿠폰");

@@ -42,20 +42,8 @@ resource "aws_ecs_task_definition" "delivery" {
           value = "prod"
         },
         {
-          name  = "EUREKA_URL",
-          value = "http://discovery.klp.local:8761/eureka/"
-        },
-        {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
-          value = "10"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
-          value = "30"
         },
         {
           name  = "DELIVERY_DOMAIN_NAME",
@@ -72,6 +60,18 @@ resource "aws_ecs_task_definition" "delivery" {
         {
           name  = "DELIVERY_DB_URL",
           value = local.db_urls.delivery
+        },
+        {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
+        },
+        {
+          name  = "HUB_SERVICE_PORT",
+          value = "8030"
+        },
+        {
+          name  = "USER_SERVICE_PORT",
+          value = "8010"
         },
         {
           name  = "REDIS_HOST",

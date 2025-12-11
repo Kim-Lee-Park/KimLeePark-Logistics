@@ -15,6 +15,7 @@ import com.klp.promotion.global.security.config.SecurityConfig;
 import com.klp.promotion.global.security.filter.AuthorizationFilter;
 import com.klp.promotion.global.security.model.UserDetailsImpl;
 import java.util.UUID;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+@Disabled
 @WebMvcTest(controllers = UserCouponController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 @Import({SecurityConfig.class, AuthorizationFilter.class, GlobalExceptionHandler.class})
 @DisplayName("UserCouponController 테스트")

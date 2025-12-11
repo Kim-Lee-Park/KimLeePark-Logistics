@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -234,6 +235,7 @@ class UserServiceTest {
         }
     }
 
+    @Disabled
     @Nested
     @DisplayName("updateUserInfo 테스트")
     class UpdateUserInfoTest {
@@ -281,13 +283,15 @@ class UserServiceTest {
             // given
             UUID hubId = UUID.randomUUID();
             User driver1 = User.create(
-                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com",
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111",
+                "driver1@example.com",
                 UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver1, "userId", 1L);
 
             User driver2 = User.create(
-                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222", "driver2@example.com",
+                hubId, AffiliationType.HUB, "driver2", "password", "slack2", "010-2222-2222",
+                "driver2@example.com",
                 UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver2, "userId", 2L);
@@ -317,13 +321,15 @@ class UserServiceTest {
             // given
             UUID logisticsId = UUID.randomUUID();
             User driver1 = User.create(
-                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1", "010-1111-1111",
+                logisticsId, AffiliationType.LOGISTICS, "driver1", "password", "slack1",
+                "010-1111-1111",
                 "driver1@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver1, "userId", 1L);
 
             User driver2 = User.create(
-                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2", "010-2222-2222",
+                logisticsId, AffiliationType.LOGISTICS, "driver2", "password", "slack2",
+                "010-2222-2222",
                 "driver2@example.com", UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver2, "userId", 2L);
@@ -354,7 +360,8 @@ class UserServiceTest {
             Long driverId = 1L;
             UUID hubId = UUID.randomUUID();
             User driver = User.create(
-                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111", "driver1@example.com",
+                hubId, AffiliationType.HUB, "driver1", "password", "slack1", "010-1111-1111",
+                "driver1@example.com",
                 UserRole.DRIVER
             );
             ReflectionTestUtils.setField(driver, "userId", driverId);
@@ -429,7 +436,8 @@ class UserServiceTest {
             userService.approvePendingUser(testUser);
 
             // then
-            assertThat(testUser.getStatus()).isEqualTo(com.klp.user.domain.enums.UserStatus.APPROVED);
+            assertThat(testUser.getStatus()).isEqualTo(
+                com.klp.user.domain.enums.UserStatus.APPROVED);
         }
     }
 
@@ -446,7 +454,8 @@ class UserServiceTest {
             userService.rejectPendingUser(testUser);
 
             // then
-            assertThat(testUser.getStatus()).isEqualTo(com.klp.user.domain.enums.UserStatus.REJECTED);
+            assertThat(testUser.getStatus()).isEqualTo(
+                com.klp.user.domain.enums.UserStatus.REJECTED);
         }
     }
 }

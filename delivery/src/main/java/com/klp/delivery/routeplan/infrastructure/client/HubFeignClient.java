@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Component
-@FeignClient(name = "hub-service", configuration = HubFeignClientConfig.class)
+@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = HubFeignClientConfig.class)
 public interface HubFeignClient {
 
     @GetMapping("/v1/hubs/{hubId}")

@@ -1,11 +1,11 @@
 resource "aws_ecs_task_definition" "payment" {
-  family                   = "${local.project}-payment"
-  network_mode             = "awsvpc"
+  family             = "${local.project}-payment"
+  network_mode       = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = local.ecs_services.payment.cpu
-  memory                   = local.ecs_services.payment.memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  cpu                = local.ecs_services.payment.cpu
+  memory             = local.ecs_services.payment.memory
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -42,18 +42,6 @@ resource "aws_ecs_task_definition" "payment" {
           value = "prod"
         },
         {
-          name  = "EUREKA_URL",
-          value = "http://discovery.klp.local:8761/eureka/"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
-          value = "10"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
-          value = "30"
-        },
-        {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
         },
@@ -72,6 +60,14 @@ resource "aws_ecs_task_definition" "payment" {
         {
           name  = "PAYMENT_DB_URL",
           value = local.db_urls.payment
+        },
+        {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
+        },
+        {
+          name  = "USER_SERVICE_PORT",
+          value = "8010"
         },
         {
           name  = "SERVER_URL",

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "hub-service", configuration = InventoryFeignClientConfig.class)
+@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = InventoryFeignClientConfig.class)
 public interface InventoryClient {
 
     @PostMapping("/v1/inventories/deduct")
