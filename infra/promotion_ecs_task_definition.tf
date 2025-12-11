@@ -42,18 +42,6 @@ resource "aws_ecs_task_definition" "promotion" {
           value = "prod"
         },
         {
-          name  = "EUREKA_URL",
-          value = "http://discovery.klp.local:8761/eureka/"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS",
-          value = "10"
-        },
-        {
-          name  = "EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS",
-          value = "30"
-        },
-        {
           name  = "CONFIG_SERVER_URL",
           value = "http://config.klp.local:8888"
         },
@@ -72,6 +60,10 @@ resource "aws_ecs_task_definition" "promotion" {
         {
           name  = "PROMOTION_DB_URL",
           value = local.db_urls.promotion
+        },
+        {
+          name  = "INTERNAL_ALB_HOST",
+          value = aws_lb.internal_alb.dns_name
         },
         {
           name  = "REDIS_HOST",
@@ -162,6 +154,10 @@ resource "aws_ecs_task_definition" "promotion" {
         {
           name  = "AWS_REGION"
           value = var.aws_region
+        },
+        {
+          name  = "OTEL_LOG_LEVEL"
+          value = "error"
         },
         {
           name  = "TEMPO_HOST"

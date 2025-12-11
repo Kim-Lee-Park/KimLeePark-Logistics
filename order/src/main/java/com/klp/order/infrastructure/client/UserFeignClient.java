@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Component
-@FeignClient(name = "user-service", configuration = {UserFeignClientConfig.class,
+@FeignClient(name = "user-service", url = "${clients.user.url:}", configuration = {UserFeignClientConfig.class,
     FeignTracingConfig.class})
 public interface UserFeignClient {
 

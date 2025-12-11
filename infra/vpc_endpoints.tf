@@ -74,6 +74,34 @@ resource "aws_vpc_endpoint" "sts" {
   }
 }
 
+# Secrets Manager endpoint (secret fetch without NAT)
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.aws_region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.vpc_endpoint_subnet_ids
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${local.project}-vpce-secretsmanager"
+  }
+}
+
+# KMS endpoint (envelope decryption without NAT)
+resource "aws_vpc_endpoint" "kms" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.aws_region}.kms"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.vpc_endpoint_subnet_ids
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${local.project}-vpce-kms"
+  }
+}
+
 # CloudWatch Logs endpoint (ECS/EC2 to push logs without NAT)
 resource "aws_vpc_endpoint" "logs" {
   vpc_id              = aws_vpc.main.id

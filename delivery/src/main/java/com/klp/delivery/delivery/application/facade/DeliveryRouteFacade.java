@@ -1,9 +1,9 @@
 package com.klp.delivery.delivery.application.facade;
 
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
-import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
@@ -11,15 +11,14 @@ import com.klp.delivery.delivery.application.service.DeliveryOutboxEventService;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
 import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
-import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteResponse;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +43,7 @@ public class DeliveryRouteFacade {
 
     @Async("DeliveryRouteExecutor")
     @Transactional
-    public void CreateDeliveryRoute(DeliveryRouteCommand command, 
+    public void CreateDeliveryRoute(DeliveryRouteCommand command,
         DeliveryRouteCreateEvent routeCreateEvent) {
 
         // 허브 경로 계획 조회
@@ -78,12 +77,12 @@ public class DeliveryRouteFacade {
 
             OrderDeliveryEvent shippingEvent = new OrderDeliveryEvent(
                 delivery.getOrderId(),
-                statusCommand.status().name(), // 업데이트된 상태 사용
                 eventItems
             );
-            deliveryEventPublisher.publishShippingEvent(shippingEvent);
+//            deliveryEventPublisher.publishShippingEvent(shippingEvent);
             log.info("배송 중 이벤트 발행: deliveryId={}, orderId={}, status={}, items={}",
-                command.deliveryId(), delivery.getOrderId(), statusCommand.status().name(), eventItems.size());
+                command.deliveryId(), delivery.getOrderId(), statusCommand.status().name(),
+                eventItems.size());
         }
 
         // 배송 경로 생성 완료 후 Notification 이벤트 발행 (이미 가지고 있는 정보 활용)
@@ -104,7 +103,8 @@ public class DeliveryRouteFacade {
 
             // 2. 경유 허브 이름 목록 추출 (출발지와 도착지 제외)
             List<String> transitHubNames = routePlan.planItems().stream()
-                .filter(item -> item.sequence() > 1 && item.sequence() < routePlan.planItems().size())
+                .filter(
+                    item -> item.sequence() > 1 && item.sequence() < routePlan.planItems().size())
                 .map(GetRoutePlanDetailResponse.PlanItem::arrivalName)
                 .collect(Collectors.toList());
 
@@ -183,7 +183,8 @@ public class DeliveryRouteFacade {
 
         // 배송 완료(ARRIVED)일 때만 OrderDeliveryEvent 발행
         if (statusCommand.status() == CustomerDeliveryStatus.ARRIVED) {
-            List<OrderDeliveryEvent.DeliveryItem> eventItems = updatedDelivery.getDeliveryItems().stream()
+            List<OrderDeliveryEvent.DeliveryItem> eventItems = updatedDelivery.getDeliveryItems()
+                .stream()
                 .map(item -> new OrderDeliveryEvent.DeliveryItem(
                     item.getOrderItemId(),
                     updatedDelivery.getDeliveryId()
@@ -192,12 +193,12 @@ public class DeliveryRouteFacade {
 
             OrderDeliveryEvent completedEvent = new OrderDeliveryEvent(
                 updatedDelivery.getOrderId(),
-                statusCommand.status().name(), // 업데이트된 상태 사용
                 eventItems
             );
-            deliveryEventPublisher.publishArrivedEvent(completedEvent);
+//            deliveryEventPublisher.publishArrivedEvent(completedEvent);
             log.info("배송 완료 이벤트 발행: deliveryId={}, orderId={}, status={}, items={}",
-                deliveryId, updatedDelivery.getOrderId(), statusCommand.status().name(), eventItems.size());
+                deliveryId, updatedDelivery.getOrderId(), statusCommand.status().name(),
+                eventItems.size());
         }
 
         return new DeliveryRouteResponse(deliveryId, statusCommand.deliveryRouteId());

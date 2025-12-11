@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "delivery-service", configuration = {DeliveryFeignClientConfig.class,
+@FeignClient(name = "delivery-service",url = "${clients.delivery.url:}", configuration = {DeliveryFeignClientConfig.class,
     FeignTracingConfig.class})
 public interface DeliveryClient {
 

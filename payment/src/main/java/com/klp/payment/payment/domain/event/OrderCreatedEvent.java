@@ -28,7 +28,7 @@ public record OrderCreatedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<ProductDeduction> products,
+    List<OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
@@ -37,7 +37,7 @@ public record OrderCreatedEvent(
     LocalDateTime occurredAt
 ) {
 
-    public record ProductDeduction(
+    public record OrderItem(
         UUID orderItemId,
         UUID productId,
         String productName,

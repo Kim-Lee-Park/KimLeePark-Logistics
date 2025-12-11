@@ -11,20 +11,32 @@ public record InventoryDeductedEvent(
     UUID supplierId,
     UUID userCouponId,
     String email,
+    String username,
+    String comment,
+
     int originalPrice,
     int couponDiscountPrice,
     int gradeDiscountPrice,
     int finalOrderPrice,
+
     UUID addressId,
     UUID userAddressHubId,
     String address,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
+
     List<OrderItem> products,
+
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
+
     LocalDateTime createdAt,
-    LocalDateTime occurredAt
+    LocalDateTime occurredAt,
+
+    UUID paymentId,
+    int paidAmount,
+    String paymentMethod,
+    LocalDateTime paidAt
 ) {
 
     public record OrderItem(
@@ -39,4 +51,3 @@ public record InventoryDeductedEvent(
 
     }
 }
-

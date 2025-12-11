@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Component
-@FeignClient(name = "order-service", configuration = {OrderFeignClientConfig.class,
+@FeignClient(name = "order-service", url = "${clients.order.url:}", configuration = {OrderFeignClientConfig.class,
     FeignTracingConfig.class})
 public interface OrderFeignClient {
 

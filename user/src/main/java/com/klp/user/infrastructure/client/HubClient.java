@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "hub-service", configuration = {HubFeignClientConfig.class,
+@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = {HubFeignClientConfig.class,
     FeignTracingConfig.class})
 public interface HubClient {
 

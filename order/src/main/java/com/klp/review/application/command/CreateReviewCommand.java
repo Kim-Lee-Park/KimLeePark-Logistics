@@ -9,4 +9,5 @@ public record CreateReviewCommand(
     int rating,
     String content
 ) {
+
 }

@@ -2,7 +2,7 @@ name: Deploy gateway
 
 on:
   push:
-    branches: [ "deploy/142/cicd-pipeline" ]
+    branches: [ "deploy/200/internal-alb-deploy" ]
     paths:
       - "gateway-service/**"
       - ".github/workflows/deploy-gateway.yml"
@@ -20,9 +20,6 @@ env:
   ECS_TASK_FAMILY: klp-logistics-gateway
   CODEDEPLOY_APP: ${{ vars.CODEDEPLOY_APP_GATEWAY }}
   CODEDEPLOY_GROUP: ${{ vars.CODEDEPLOY_GROUP_GATEWAY }}
-  PROD_LISTENER_ARN: ${{ vars.GATEWAY_PROD_LISTENER_ARN }}
-  BLUE_TARGET_GROUP: ${{ vars.GATEWAY_BLUE_TARGET_GROUP }}
-  GREEN_TARGET_GROUP: ${{ vars.GATEWAY_GREEN_TARGET_GROUP }}
   CONTAINER_NAME: gateway
 
 jobs:
@@ -97,28 +94,11 @@ jobs:
           # Defaults from Terraform naming
           DEFAULT_CODEDEPLOY_APP="klp-logistics-gateway-app"
           DEFAULT_CODEDEPLOY_GROUP="klp-logistics-gateway-dg"
-          DEFAULT_BLUE_TG="klp-logistics-gateway-tg"
-          DEFAULT_GREEN_TG="klp-logistics-gateway-green-tg"
-          DEFAULT_ALB_NAME="klp-logistics-alb"
 
           CODEDEPLOY_APP="${CODEDEPLOY_APP:-$DEFAULT_CODEDEPLOY_APP}"
           CODEDEPLOY_GROUP="${CODEDEPLOY_GROUP:-$DEFAULT_CODEDEPLOY_GROUP}"
-          BLUE_TARGET_GROUP="${BLUE_TARGET_GROUP:-$DEFAULT_BLUE_TG}"
-          GREEN_TARGET_GROUP="${GREEN_TARGET_GROUP:-$DEFAULT_GREEN_TG}"
 
-          ALB_ARN=$(aws elbv2 describe-load-balancers \
-            --names "$DEFAULT_ALB_NAME" \
-            --query 'LoadBalancers[0].LoadBalancerArn' \
-            --output text)
-
-          PROD_LISTENER_ARN="${PROD_LISTENER_ARN:-$(
-            aws elbv2 describe-listeners \
-              --load-balancer-arn "$ALB_ARN" \
-              --query 'Listeners[?Port==`80`].ListenerArn' \
-              --output text | head -n1
-          )}"
-
-          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP PROD_LISTENER_ARN BLUE_TARGET_GROUP GREEN_TARGET_GROUP; do
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP CONTAINER_NAME; do
             if [ -z "${!var}" ] || [ "${!var}" = "None" ]; then
               echo "$var is required" >&2
               exit 1
@@ -128,14 +108,11 @@ jobs:
           cat <<EOF >> "$GITHUB_ENV"
           CODEDEPLOY_APP=$CODEDEPLOY_APP
           CODEDEPLOY_GROUP=$CODEDEPLOY_GROUP
-          PROD_LISTENER_ARN=$PROD_LISTENER_ARN
-          BLUE_TARGET_GROUP=$BLUE_TARGET_GROUP
-          GREEN_TARGET_GROUP=$GREEN_TARGET_GROUP
           EOF
 
       - name: Render AppSpec
         run: |
-          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP PROD_LISTENER_ARN BLUE_TARGET_GROUP GREEN_TARGET_GROUP TASK_DEF_ARN; do
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP TASK_DEF_ARN CONTAINER_NAME; do
             if [ -z "${!var}" ]; then
               echo "$var is required" >&2
               exit 1
@@ -144,7 +121,7 @@ jobs:
 
           cat > appspec-rendered.json <<EOF
           {
-            "version": 1,
+            "version": 0.0,
             "Resources": [
               {
                 "TargetService": {
@@ -152,19 +129,8 @@ jobs:
                   "Properties": {
                     "TaskDefinition": "${TASK_DEF_ARN}",
                     "LoadBalancerInfo": {
-                      "TargetGroupPairInfoList": [
-                        {
-                          "ProdTrafficRoute": {
-                            "ListenerArns": [
-                              "${PROD_LISTENER_ARN}"
-                            ]
-                          },
-                          "TargetGroups": [
-                            { "Name": "${BLUE_TARGET_GROUP}" },
-                            { "Name": "${GREEN_TARGET_GROUP}" }
-                          ]
-                        }
-                      ]
+                      "ContainerName": "${CONTAINER_NAME}",
+                      "ContainerPort": 8080
                     }
                   }
                 }
