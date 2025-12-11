@@ -1,9 +1,9 @@
-package com.klp.ai.recommendation.infrastructure.client;
+package com.klp.ai.recommendation.infrastructure.client.feign;
 
 import com.klp.ai.global.config.HubFeignClientConfig;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.HubResponse;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.InventoryResponse;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.ProductResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.HubResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.InventoryResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.ProductResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

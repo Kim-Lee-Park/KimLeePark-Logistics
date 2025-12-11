@@ -1,9 +1,9 @@
 package com.klp.ai.recommendation.application;
 
 import com.klp.ai.recommendation.application.dto.ProductRecommendation;
-import com.klp.ai.recommendation.infrastructure.client.OrderClient;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.OrderResponse;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.OrderResponse.OrderItemDto;
+import com.klp.ai.recommendation.infrastructure.client.feign.OrderClient;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.OrderResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.OrderResponse.OrderItemDto;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

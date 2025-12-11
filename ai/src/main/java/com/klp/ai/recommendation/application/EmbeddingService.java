@@ -1,7 +1,7 @@
 package com.klp.ai.recommendation.application;
 
-import com.klp.ai.recommendation.infrastructure.client.HubClient;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.ProductResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.HubClient;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.ProductResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

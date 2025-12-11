@@ -1,7 +1,7 @@
-package com.klp.ai.recommendation.infrastructure.client;
+package com.klp.ai.recommendation.infrastructure.client.feign;
 
 import com.klp.ai.global.config.OrderFeignClientConfig;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.OrderResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.OrderResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
