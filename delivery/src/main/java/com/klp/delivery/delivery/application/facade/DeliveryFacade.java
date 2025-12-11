@@ -237,4 +237,27 @@ public class DeliveryFacade {
     public boolean hasActiveDeliveries(UUID routePlanId) {
         return deliveryService.hasActiveDeliveriesByRoutePlanId(routePlanId);
     }
+
+    @Transactional
+    public void cancelDeliveriesByOrderId(UUID orderId, Long deletedBy) {
+
+        List<Delivery> deliveries = deliveryService.findDeliveriesByOrderIdForCancellation(orderId);
+
+        if (deliveries.isEmpty()) {
+            log.info("취소할 배송이 없습니다: orderId={}", orderId);
+            return;
+        }
+
+        for (Delivery delivery : deliveries) {
+            try {
+                deliveryService.deleteDelivery(delivery.getDeliveryId(), deletedBy);
+                log.info("배송 취소 완료: deliveryId={}, orderId={}", delivery.getDeliveryId(), orderId);
+            } catch (Exception e) {
+                log.error("배송 취소 실패: deliveryId={}, orderId={}, error={}",
+                    delivery.getDeliveryId(), orderId, e.getMessage(), e);
+            }
+        }
+
+        log.info("배송 취소 완료: orderId={}, cancelledCount={}", orderId, deliveries.size());
+    }
 }
