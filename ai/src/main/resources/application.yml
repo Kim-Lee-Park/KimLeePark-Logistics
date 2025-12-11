@@ -21,3 +21,8 @@ springdoc:
     path: /v1/api-docs
   swagger-ui:
     path: /swagger-ui
+
+weather:
+  api:
+    service-key: 66d62a37259f7704ccd2e716cfc2a8f82c5d32e52a896cb321737699ef729e11
+    base-url: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
