@@ -37,6 +37,7 @@ public record GetReviewResponse(
     @Schema(description = "수정자 ID", example = "123")
     Long updatedBy
 ) {
+
     public static GetReviewResponse from(Review review) {
         return new GetReviewResponse(
             review.getReviewId(),

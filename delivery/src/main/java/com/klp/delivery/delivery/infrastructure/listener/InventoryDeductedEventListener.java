@@ -3,22 +3,16 @@ package com.klp.delivery.delivery.infrastructure.listener;
 import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
-import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.facade.DeliveryFacade;
+import com.klp.delivery.delivery.application.facade.TMPDeliveryFacade;
 import com.klp.delivery.delivery.domain.event.InventoryDeductedEvent;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.RetryableTopic;
-import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,15 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class InventoryDeductedEventListener {
 
-    private final DeliveryFacade deliveryFacade;
+    private final TMPDeliveryFacade deliveryFacade;
 
-    @RetryableTopic(
-        attempts = "3",
-        backoff = @Backoff(delay = 1000L, multiplier = 2.0, maxDelay = 4000L),
-        autoCreateTopics = "true",
-        include = Exception.class,
-        topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
-    )
     @KafkaListener(
         topics = "inventory.topic",
         groupId = "delivery-service-group",
@@ -52,30 +39,8 @@ public class InventoryDeductedEventListener {
             event.orderId(), partition, offset, event.products().size());
 
         try {
-            // InventoryDeductedEvent에서 OrderItemCommand 생성
-            List<OrderItemCommand> orderItemCommands = event.products().stream()
-                .map(product -> new OrderItemCommand(
-                    product.orderItemId(),
-                    product.hubId(),
-                    product.productName(),
-                    product.quantity()
-                ))
-                .collect(Collectors.toList());
+            OrderToDeliveryCommand orderCommand = OrderToDeliveryCommand.from(event);
 
-            // OrderToDeliveryCommand 생성 (InventoryDeductedEvent의 모든 정보 사용)
-            // TODO: name과 comment 필드는 InventoryDeductedEvent에 추후 추가 예정
-            OrderToDeliveryCommand orderCommand = new OrderToDeliveryCommand(
-                event.orderId(),
-                "", // TODO: 추후 InventoryDeductedEvent.name() 사용 예정
-                event.email(),
-                event.address(),
-                event.userAddressHubId(),
-                event.createdAt(),
-                null, // TODO: 추후 InventoryDeductedEvent.comment() 사용 예정
-                orderItemCommands
-            );
-
-            // IdempotencyCommand 생성 (deliveryIdempotencyKey 사용)
             IdempotencyCommand idempotencyCommand = new IdempotencyCommand(
                 event.deliveryIdempotencyKey(),
                 event.orderId(),

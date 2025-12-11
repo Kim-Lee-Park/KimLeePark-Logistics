@@ -86,7 +86,8 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentApprovedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedEvent," +
+            "PaymentApprovedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedEvent,"
+                +
                 "PaymentApprovedFailedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent,"
                 +
                 "InventoryDeductedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedEvent,"

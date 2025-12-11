@@ -19,6 +19,7 @@ public record UpdateReviewRequest(
     @Schema(description = "리뷰 내용", example = "수정된 리뷰 내용입니다.")
     String content
 ) {
+
     public UpdateReviewCommand toCommand() {
         return new UpdateReviewCommand(rating, content);
     }

@@ -2,8 +2,9 @@ package com.klp.delivery.delivery.domain.event;
 
 import java.util.UUID;
 
-public record DeliveryArrivedEvent(
+public record DeliveryShippingFailedEvent(
     UUID orderId
 ) {
+
 
 }
