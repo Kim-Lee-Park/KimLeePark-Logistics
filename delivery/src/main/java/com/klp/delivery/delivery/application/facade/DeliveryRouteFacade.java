@@ -6,14 +6,14 @@ import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
 import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
 import com.klp.delivery.delivery.application.service.DeliveryOutboxEventService;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
-import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryShippingEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent;
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteResponse;
@@ -39,7 +39,6 @@ public class DeliveryRouteFacade {
     private final DeliveryService deliveryService;
     private final RoutePlanService routePlanService;
     private final DeliveryRouteRepository deliveryRouteRepository;
-    private final DeliveryEventPublisher deliveryEventPublisher;
     private final DeliveryOutboxEventService deliveryOutboxEventService;
 
     @Async("DeliveryRouteExecutor")
@@ -67,22 +66,26 @@ public class DeliveryRouteFacade {
         log.info("배송 경로 생성 완료: deliveryId={}, orderId={}, status={}",
             command.deliveryId(), delivery.getOrderId(), delivery.getStatus());
 
-        // 첫 경로 생성 시 CREATED -> SHIPPING으로 변경될 때만 OrderDeliveryEvent 발행
+        // 첫 경로 생성 시 CREATED -> SHIPPING으로 변경될 때만 DeliveryShippingEvent 아웃박스 저장
         if (statusCommand.status() == CustomerDeliveryStatus.SHIPPING) {
-            List<OrderDeliveryEvent.DeliveryItem> eventItems = delivery.getDeliveryItems().stream()
-                .map(item -> new OrderDeliveryEvent.DeliveryItem(
+            List<DeliveryShippingEvent.DeliveryItem> eventItems = delivery.getDeliveryItems().stream()
+                .map(item -> new DeliveryShippingEvent.DeliveryItem(
                     item.getOrderItemId(),
                     delivery.getDeliveryId()
                 ))
                 .toList();
 
-            OrderDeliveryEvent shippingEvent = new OrderDeliveryEvent(
+            DeliveryShippingEvent shippingEvent = new DeliveryShippingEvent(
                 delivery.getOrderId(),
-                statusCommand.status().name(), // 업데이트된 상태 사용
+                statusCommand.status().name(),
                 eventItems
             );
-            deliveryEventPublisher.publishShippingEvent(shippingEvent);
-            log.info("배송 중 이벤트 발행: deliveryId={}, orderId={}, status={}, items={}",
+            deliveryOutboxEventService.saveShippingEvent(
+                delivery.getDeliveryId(),
+                delivery.getOrderId(),
+                shippingEvent
+            );
+            log.info("배송 중 이벤트 아웃박스 저장: deliveryId={}, orderId={}, status={}, items={}",
                 command.deliveryId(), delivery.getOrderId(), statusCommand.status().name(), eventItems.size());
         }
 
@@ -128,10 +131,9 @@ public class DeliveryRouteFacade {
             );
 
             // 아웃박스 패턴으로 이벤트 저장
-            deliveryOutboxEventService.saveEvent(
+            deliveryOutboxEventService.saveNotificationEvent(
                 delivery.getDeliveryId(),
                 routeCreateEvent.orderId(),
-                "DELIVERY_NOTIFICATION",
                 notificationEvent
             );
             log.info("배송 알림 이벤트 아웃박스 저장 완료: deliveryId={}, orderId={}, departureHubName={}",
@@ -181,22 +183,26 @@ public class DeliveryRouteFacade {
         log.info("배송 경로 추가 완료: deliveryId={}, routeId={}, status={}",
             deliveryId, statusCommand.deliveryRouteId(), statusCommand.status());
 
-        // 배송 완료(ARRIVED)일 때만 OrderDeliveryEvent 발행
+        // 배송 완료(ARRIVED)일 때만 DeliveryArrivedEvent 아웃박스 저장
         if (statusCommand.status() == CustomerDeliveryStatus.ARRIVED) {
-            List<OrderDeliveryEvent.DeliveryItem> eventItems = updatedDelivery.getDeliveryItems().stream()
-                .map(item -> new OrderDeliveryEvent.DeliveryItem(
+            List<DeliveryArrivedEvent.DeliveryItem> eventItems = updatedDelivery.getDeliveryItems().stream()
+                .map(item -> new DeliveryArrivedEvent.DeliveryItem(
                     item.getOrderItemId(),
                     updatedDelivery.getDeliveryId()
                 ))
                 .toList();
 
-            OrderDeliveryEvent completedEvent = new OrderDeliveryEvent(
+            DeliveryArrivedEvent arrivedEvent = new DeliveryArrivedEvent(
                 updatedDelivery.getOrderId(),
-                statusCommand.status().name(), // 업데이트된 상태 사용
+                statusCommand.status().name(),
                 eventItems
             );
-            deliveryEventPublisher.publishArrivedEvent(completedEvent);
-            log.info("배송 완료 이벤트 발행: deliveryId={}, orderId={}, status={}, items={}",
+            deliveryOutboxEventService.saveArrivedEvent(
+                updatedDelivery.getDeliveryId(),
+                updatedDelivery.getOrderId(),
+                arrivedEvent
+            );
+            log.info("배송 완료 이벤트 아웃박스 저장: deliveryId={}, orderId={}, status={}, items={}",
                 deliveryId, updatedDelivery.getOrderId(), statusCommand.status().name(), eventItems.size());
         }
 

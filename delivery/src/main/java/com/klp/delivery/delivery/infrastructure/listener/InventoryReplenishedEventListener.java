@@ -2,6 +2,8 @@ package com.klp.delivery.delivery.infrastructure.listener;
 
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.domain.event.InventoryReplenishedEvent;
+import com.klp.delivery.delivery.domain.repository.DeliveryOutboxEventRepository;
+import com.klp.delivery.delivery.infrastructure.outbox.OutboxScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryReplenishedEventListener {
 
     private final DeliveryFacade deliveryFacade;
+    private final DeliveryOutboxEventRepository deliveryOutboxEventRepository;
 
     @RetryableTopic(
         attempts = "3",

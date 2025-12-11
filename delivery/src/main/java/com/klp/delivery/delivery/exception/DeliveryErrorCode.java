@@ -18,7 +18,8 @@ public enum DeliveryErrorCode implements ErrorCode {
     DRIVER_NOT_FOUND(HttpStatus.NOT_FOUND, "담당자 조회에 실패 했습니다."),
     DELIVERY_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배송 삭제에 실패했습니다."),
     ROUTE_APPLY_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배송 경로 정보 적용에 실패했습니다."),
-    DELIVERY_ROUTE_FETCH_FAILED(HttpStatus.NOT_FOUND, "배송경로 조회에 실패했습니다.");
+    DELIVERY_ROUTE_FETCH_FAILED(HttpStatus.NOT_FOUND, "배송경로 조회에 실패했습니다."),
+    EVENT_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 직렬화에 실패했습니다.");
 
     private final HttpStatus status;
     private final String message;
