@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "User API", description = "사용자 관리 API")
@@ -47,9 +46,7 @@ public interface UserControllerDoc {
 
     @Operation(summary = "사용자 인증 정보 검증", description = "사용자 인증 정보를 검증합니다. (내부 서비스용)")
     ResponseEntity<UserDataResponse> validateCredentials(
-        @RequestBody ValidateUserRequest request,
-        @RequestHeader(value = "traceparent", required = false) String traceparent
-    );
+        @RequestBody ValidateUserRequest request);
 
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
