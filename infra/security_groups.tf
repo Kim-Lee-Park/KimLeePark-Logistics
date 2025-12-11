@@ -22,6 +22,30 @@ resource "aws_security_group" "alb" {
   }
 }
 
+resource "aws_security_group" "internal_alb" {
+  name        = "${local.project}-internal-alb-sg"
+  description = "Internal ALB Security Group"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port = 8000
+    to_port   = 9020
+    protocol  = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.project}-internal-alb-sg"
+  }
+}
+
 resource "aws_security_group" "ecs_service" {
   name        = "${local.project}-ecs-sg"
   description = "ECS Security Group"
@@ -32,6 +56,13 @@ resource "aws_security_group" "ecs_service" {
     to_port   = 8080
     protocol  = "tcp"
     security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
+    from_port = 8080
+    to_port   = 8080
+    protocol  = "tcp"
+    security_groups = [aws_security_group.internal_alb.id]
   }
 
   ingress {

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "user-service",
+    url = "${clients.user.url:}",
     configuration = DeliveryFeignClientConfig.class)
 public interface DriverFeignClient {
 

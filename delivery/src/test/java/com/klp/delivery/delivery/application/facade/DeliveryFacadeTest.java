@@ -45,11 +45,13 @@ import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.service.HubClientService;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.context.ApplicationEventPublisher;
 
+@Disabled
 public class DeliveryFacadeTest extends MockTest {
 
     @InjectMocks

@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "promotion-service", configuration = PromotionFeignClientConfig.class)
+@FeignClient(name = "promotion-service", url = "${clients.promotion.url:}", configuration = PromotionFeignClientConfig.class)
 public interface PromotionClient {
 
     @PostMapping("/v1/internal/promotion/calculate")
