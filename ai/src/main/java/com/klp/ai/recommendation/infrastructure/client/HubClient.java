@@ -2,6 +2,7 @@ package com.klp.ai.recommendation.infrastructure.client;
 
 import com.klp.ai.global.config.HubFeignClientConfig;
 import com.klp.ai.recommendation.infrastructure.client.dto.response.HubResponse;
+import com.klp.ai.recommendation.infrastructure.client.dto.response.InventoryResponse;
 import com.klp.ai.recommendation.infrastructure.client.dto.response.ProductResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
