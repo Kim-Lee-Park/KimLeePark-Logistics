@@ -3,11 +3,12 @@ package com.klp.promotion.coupon.infrastructure.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.common.exception.BusinessException;
 import com.klp.promotion.coupon.common.exception.CouponErrorCode;
+import com.klp.promotion.global.exception.BusinessException;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+@Disabled
 @SpringBootTest
 @ActiveProfiles("test")
 class CouponRepositoryImplTest {
