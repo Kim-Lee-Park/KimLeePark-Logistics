@@ -1,5 +1,6 @@
 package com.klp.user.infrastructure.client;
 
+import com.klp.user.global.config.FeignTracingConfig;
 import com.klp.user.global.config.HubFeignClientConfig;
 import com.klp.user.infrastructure.client.dto.request.NearestHubRequest;
 import com.klp.user.infrastructure.client.dto.response.CompanyListResponse;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "hub-service", configuration = HubFeignClientConfig.class)
+@FeignClient(name = "hub-service", configuration = {HubFeignClientConfig.class,
+    FeignTracingConfig.class})
 public interface HubClient {
 
     /**
