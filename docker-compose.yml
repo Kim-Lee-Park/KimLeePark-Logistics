@@ -1,17 +1,145 @@
 services:
-  postgres:
+  postgres-auth:
     image: pgvector/pgvector:0.8.1-pg18-trixie
-    container_name: postgres-klp
+    container_name: postgres-auth-klp
     environment:
       POSTGRES_USER: kimleepark
       POSTGRES_PASSWORD: kimleepark
-      POSTGRES_DB: logistics
+      POSTGRES_DB: auth
       TZ: Asia/Seoul
     volumes:
-      - klp_postgres_data:/var/lib/postgresql
-      - ./init-sql:/docker-entrypoint-initdb.d
+      - klp_postgres_auth_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5432:5432"
+    networks:
+      - db-net
+
+  postgres-user:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-user-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: users
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_user_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5433:5432"
+    networks:
+      - db-net
+
+  postgres-hub:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-hub-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: hub
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_hub_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5434:5432"
+    networks:
+      - db-net
+
+  postgres-delivery:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-delivery-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: delivery
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_delivery_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5435:5432"
+    networks:
+      - db-net
+
+  postgres-order:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-order-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: orders
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_order_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5436:5432"
+    networks:
+      - db-net
+
+  postgres-notification:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-notification-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: notification
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_notification_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5437:5432"
+    networks:
+      - db-net
+
+  postgres-promotion:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-promotion-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: promotion
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_promotion_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5438:5432"
+    networks:
+      - db-net
+
+  postgres-payment:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-payment-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: payment
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_payment_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5439:5432"
+    networks:
+      - db-net
+
+  postgres-ai:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    container_name: postgres-ai-klp
+    environment:
+      POSTGRES_USER: kimleepark
+      POSTGRES_PASSWORD: kimleepark
+      POSTGRES_DB: ai
+      TZ: Asia/Seoul
+    volumes:
+      - klp_postgres_ai_data:/var/lib/postgresql
+      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    ports:
+      - "5440:5432"
     networks:
       - db-net
 
@@ -85,7 +213,15 @@ networks:
     name: db-net
 
 volumes:
-  klp_postgres_data:
+  klp_postgres_auth_data:
+  klp_postgres_user_data:
+  klp_postgres_hub_data:
+  klp_postgres_delivery_data:
+  klp_postgres_order_data:
+  klp_postgres_notification_data:
+  klp_postgres_promotion_data:
+  klp_postgres_payment_data:
+  klp_postgres_ai_data:
   klp_redis_data:
   klp-zookeeper-data:
   klp-zookeeper-logs:

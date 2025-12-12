@@ -9,6 +9,4 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        hbm2ddl:
-          create_namespaces: true   # 스키마 자동 생성 허용
       hibernate.format_sql: true

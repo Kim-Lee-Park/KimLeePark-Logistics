@@ -18,7 +18,6 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(
     name = "p_inventory_idempotency",
-    schema = "hub_schema",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_inventory_idempotency_key", columnNames = "idempotency_key"
