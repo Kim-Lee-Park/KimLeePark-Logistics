@@ -2,14 +2,15 @@ package com.klp.delivery.delivery.application.facade;
 
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
+import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
 import com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryArrivedFailedEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent;
-import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent.OrderItem;
 import com.klp.delivery.delivery.domain.event.DeliveryCreatedFailedEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryShippingEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryShippingFailedEvent;
+import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,10 +34,13 @@ public class TMPDeliveryFacade {
 
         try {
             // 1. deliveryId를 포함한 OrderItem 리스트 생성
-            List<OrderItem> orderItems = new ArrayList<>();
-            for (var item : orderCommand.products()) {
+            List<DeliveryCreatedEvent.OrderItem> orderItems = new ArrayList<>();
+            for (OrderItemCommand item : orderCommand.products()) {
                 UUID tempDeliveryId = UUID.randomUUID();
-                orderItems.add(OrderItem.withDeliveryId(item, tempDeliveryId));
+                orderItems.add(new DeliveryCreatedEvent.OrderItem(
+                    item.orderItemId(),
+                    tempDeliveryId
+                ));
 
                 log.debug("임시 배송 매핑: orderItemId={}, deliveryId={}",
                     item.orderItemId(), tempDeliveryId);

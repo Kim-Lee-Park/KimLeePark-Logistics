@@ -20,6 +20,7 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent;
+import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.command.HubInfo;
@@ -130,39 +131,24 @@ public class DeliveryFacade {
 
         // 4. DeliveryCreatedEvent 아웃박스 저장
         if (!createdDeliveries.isEmpty()) {
+            // OrderItemCommand를 orderItemId로 매핑
+            Map<UUID, OrderItemCommand> productMap = orderCommand.products().stream()
+                .collect(Collectors.toMap(OrderItemCommand::orderItemId, item -> item));
+
             // 모든 배송의 items를 합침
-            List<DeliveryCreatedEvent.DeliveryItem> allEventItems = new ArrayList<>();
+            List<DeliveryCreatedEvent.OrderItem> allEventItems = new ArrayList<>();
             for (Delivery delivery : createdDeliveries) {
                 for (DeliveryItem item : delivery.getDeliveryItems()) {
-                    allEventItems.add(new DeliveryCreatedEvent.DeliveryItem(
+                    allEventItems.add(new DeliveryCreatedEvent.OrderItem(
                         item.getOrderItemId(),
                         delivery.getDeliveryId()
                     ));
                 }
             }
-
             // 첫 번째 배송의 정보 사용
             Delivery firstDelivery = createdDeliveries.get(0);
-            DeliveryCreatedEvent createdEvent = new DeliveryCreatedEvent(
-                orderCommand.orderId(),
-                CustomerDeliveryStatus.CREATED.name(),
-                allEventItems,
-                firstDelivery.getDeliveryId(), // 첫 번째 deliveryId 사용
-                firstDelivery.getUserDriverSlackId(),
-                orderCommand.name(),
-                orderCommand.email(),
-                orderCommand.orderCreateAt(),
-                null, // productName - notification에서 사용
-                null, // quantity - notification에서 사용
-                orderCommand.comment(),
-                firstDelivery.getDepartureName(),
-                List.of(), // transitHubNames - notification에서 사용
-                firstDelivery.getUserAddress(),
-                null, // driverName - notification에서 사용
-                null, // driverEmail - notification에서 사용
-                "", // workingHours - notification에서 사용
-                orderCommand.orderCreateAt()
-            );
+            DeliveryCreatedEvent createdEvent = DeliveryCreatedEvent.from(orderCommand, allEventItems);
+
 
             deliveryOutboxEventService.saveCreatedEvent(
                 firstDelivery.getDeliveryId(),
@@ -209,35 +195,7 @@ public class DeliveryFacade {
         return responses;
     }
 
-    private List<OrderDeliveryEvent.DeliveryItem> buildEventItems(List<Delivery> deliveries) {
-        List<OrderDeliveryEvent.DeliveryItem> eventItems = new ArrayList<>();
-        for (Delivery delivery : deliveries) {
-            for (DeliveryItem item : delivery.getDeliveryItems()) {
-                eventItems.add(new OrderDeliveryEvent.DeliveryItem(
-                    item.getOrderItemId(),
-                    delivery.getDeliveryId()
-                ));
-            }
-        }
-        return eventItems;
-    }
 
-    private void publishDeliveryCreatedEvent(
-        UUID orderId, List<OrderDeliveryEvent.DeliveryItem> eventItems) {
-
-        if (eventItems.isEmpty()) {
-            return;
-        }
-
-        OrderDeliveryEvent event = new OrderDeliveryEvent(
-            orderId,
-            eventItems
-        );
-
-//        deliveryEventPublisher.publishCreatedEvent(event);
-        log.info("배송 생성 이벤트 발행: orderId={}, status={}, totalItems={}",
-            orderId, CustomerDeliveryStatus.CREATED, eventItems.size());
-    }
 
     private void publishDeliveryRouteCreateEvent(
         Delivery delivery,
@@ -253,6 +211,8 @@ public class DeliveryFacade {
                 delivery.getArrivalId(),
                 delivery.getArrivalName(),
                 delivery.getUserDrvierId(),
+                delivery.getUserDriverSlackId(),
+                delivery.getUserAddress(),
                 orderCommand.username(),
                 orderCommand.email(),
                 orderCommand.createdAt(),

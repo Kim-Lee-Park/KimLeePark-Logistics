@@ -13,6 +13,8 @@ public record DeliveryRouteCreateEvent(
     UUID arrivalId,
     String arrivalName,
     Long drvierId,
+    String userDriverSlackId,
+    String userAddress,
     // Notification 이벤트에 필요한 정보
     String ordererName,
     String ordererEmail,
