@@ -1,9 +1,12 @@
 package com.klp.ai.recommendation.application.listener;
 
-import com.klp.ai.recommendation.application.RecommendationService;
+import com.klp.ai.recommendation.application.RecommendationFacade;
+import com.klp.ai.recommendation.application.dto.OrderedProduct;
+import com.klp.ai.recommendation.application.dto.RecommendationResult;
 import com.klp.ai.recommendation.domain.event.OrderCancelledEvent;
 import com.klp.ai.recommendation.domain.event.OrderCreatedEvent;
 import com.klp.ai.recommendation.infrastructure.kafka.config.KafkaTopicConfig;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -20,14 +23,27 @@ import org.springframework.stereotype.Component;
 )
 public class OrderEventListener {
 
-    private final RecommendationService recommendationService;
+    private final RecommendationFacade recommendationFacade;
 
     @KafkaHandler
     public void handleOrderCreated(OrderCreatedEvent event) {
         log.info("Order 이벤트 수신: orderId={}", event.orderId());
 
         try {
-            recommendationService.generateRecommendations(event.orderId());
+            List<OrderedProduct> orderedProducts = event.products().stream()
+                .map(item -> new OrderedProduct(
+                    item.productId(),
+                    item.productName()
+                ))
+                .toList();
+
+            List<RecommendationResult> recommendations = recommendationFacade.generateRecommendations(
+                event.userId(),
+                event.userAddressHubId(),
+                orderedProducts
+            );
+
+            log.info("RAG 추천 생성 완료: orderId={}, count={}", event.orderId(), recommendations.size());
         } catch (Exception e) {
             log.error("추천 생성 실패: orderId={}", event.orderId(), e);
         }
