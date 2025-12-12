@@ -15,6 +15,6 @@ public interface OrderClient {
     @GetMapping("/v1/orders/{orderId}")
     OrderResponse getOrder(@PathVariable UUID orderId);
 
-    @GetMapping("/v1/reviews")
-    ReviewListResponse getReviews(@RequestParam UUID productId);
+    @GetMapping("/v1/reviews/products/{productId}")
+    ReviewListResponse getReviews(@PathVariable UUID productId);
 }
