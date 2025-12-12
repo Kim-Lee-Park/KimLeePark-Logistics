@@ -1,4 +1,4 @@
-package com.klp.order.domain.repository;
+package com.klp.order1.domain.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -23,35 +23,39 @@ public class KafkaTest {
 {
   "@type": "DeliveryCreatedEvent",
   "orderId": "11111111-1111-1111-1111-111111111111",
-  "status": "CREATED",
-  "items": [
+  "userId": 1001,
+  "supplierId": "22222222-2222-2222-2222-222222222222",
+  "userCouponId": "33333333-3333-3333-3333-333333333333",
+  "email": "user@test.com",
+  "username": "kim",
+  "username2": "kim",
+  "comment": "문 앞에 놔주세요",
+  "comment2": "문 앞에 놔주세요",
+  "originalPrice": 50000,
+  "couponDiscountPrice": 5000,
+  "gradeDiscountPrice": 2000,
+  "finalOrderPrice": 43000,
+  "addressId": "44444444-4444-4444-4444-444444444444",
+  "userAddressHubId": "55555555-5555-5555-5555-555555555555",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "deliveryLatitude": 37.4979,
+  "deliveryLongitude": 127.0276,
+  "products": [
     {
-      "orderItemId": "22222222-2222-2222-2222-222222222222",
-      "deliveryId": "33333333-3333-3333-3333-333333333333"
-    },
-    {
-      "orderItemId": "44444444-4444-4444-4444-444444444444",
-      "deliveryId": "33333333-3333-3333-3333-333333333333"
+      "orderItemId": "66666666-6666-6666-6666-666666666666",
+      "productId": "77777777-7777-7777-7777-777777777777",
+      "productName": "상품A",
+      "hubId": "88888888-8888-8888-8888-888888888888",
+      "quantity": 2,
+      "unitPrice": 20000,
+      "totalPrice": 40000,
+      "deliveryId": "99999999-9999-9999-9999-999999999999"
     }
   ],
-  "deliveryId": "33333333-3333-3333-3333-333333333333",
-  "driverSlackId": "SLACK-DRIVER-001",
-  "ordererName": "홍길동",
-  "ordererEmail": "hong@test.com",
-  "orderTime": "2025-01-01T12:30:00",
-  "productName": "상품A",
-  "quantity": 2,
-  "requirements": "문 앞에 놓아주세요",
-  "departureHubName": "서울중앙허브",
-  "transitHubNames": [
-    "성남허브",
-    "대전허브"
-  ],
-  "destinationAddress": "서울시 강남구 역삼동",
-  "driverName": "김기사",
-  "driverEmail": "driver@test.com",
-  "workingHours": "09:00-18:00",
-  "occurredAt": "2025-01-01T12:31:00"
+  "inventoryIdempotencyKey": "inventory-idem-001",
+  "deliveryIdempotencyKey": "delivery-idem-001",
+  "createdAt": "2025-01-01T12:00:00",
+  "occurredAt": "2025-01-01T12:00:01"
 }
     """;
 
@@ -82,7 +86,7 @@ public class KafkaTest {
 
         DeliveryCreatedEvent event = (DeliveryCreatedEvent) result;
         assertThat(event.orderId()).isEqualTo(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        assertThat(event.items().get(0).deliveryId()).isEqualTo(UUID.fromString("33333333-3333-3333-3333-333333333333"));
+        assertThat(event.products().get(0).deliveryId()).isEqualTo(UUID.fromString("33333333-3333-3333-3333-333333333333"));
 
         // JSON에는 있었지만 BEvent에는 없는 필드는 자동 무시됨 → 오류 없음
     }
