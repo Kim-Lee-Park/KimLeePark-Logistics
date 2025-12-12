@@ -21,7 +21,7 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
-@Table(name = "p_payments", schema = "payment_schema")
+@Table(name = "p_payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
 

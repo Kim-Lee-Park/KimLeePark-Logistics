@@ -17,7 +17,6 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(
     name = "p_inventory",
-    schema = "hub_schema",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_inventory_product_hub",
