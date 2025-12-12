@@ -22,7 +22,6 @@ import org.hibernate.annotations.Comment;
 @Getter
 @Table(
     name = "p_user_grades",
-    schema = "user_schema",
     indexes = {
         @Index(
             name = "idx_user_grade_user_evaluated",

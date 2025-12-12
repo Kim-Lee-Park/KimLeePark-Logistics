@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
-@Table(name = "p_coupon_outbox_events", schema = "promotion_schema")
+@Table(name = "p_coupon_outbox_events")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CouponOutboxEvent extends BaseEntity {
@@ -132,4 +132,3 @@ public class CouponOutboxEvent extends BaseEntity {
     }
 
 }
-

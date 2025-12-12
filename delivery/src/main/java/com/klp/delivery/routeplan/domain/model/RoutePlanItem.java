@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_route_plan_items", schema = "delivery_schema")
+@Table(name = "p_route_plan_items")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RoutePlanItem extends BaseEntity {
