@@ -33,15 +33,20 @@ public class WeatherClient {
         }
 
         try {
+            log.info("latitud: {}, longitude: {}", latitude, longitude);
+
             int[] grid = convertToGrid(latitude, longitude);
             String[] baseDateTime = getBaseDateTime();
+
+            log.info("기상청 API 요청 파라미터: serviceKey={}, nx={}, ny={}, base_date={}, base_time={}",
+                serviceKey, grid[0], grid[1], baseDateTime[0], baseDateTime[1]);
 
             Map<String, Object> response = weatherRestClient.get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/getUltraSrtNcst")
                     .queryParam("serviceKey", serviceKey)
-                    .queryParam("numOfRows", 10)
                     .queryParam("pageNo", 1)
+                    .queryParam("numOfRows", 10)
                     .queryParam("dataType", "JSON")
                     .queryParam("base_date", baseDateTime[0])
                     .queryParam("base_time", baseDateTime[1])
@@ -50,6 +55,9 @@ public class WeatherClient {
                     .build())
                 .retrieve()
                 .body(Map.class);
+
+            log.info("기상청 API 응답: {}", response);
+
             return parseResponse(response);
         } catch (RestClientException e) {
             log.error("기상청 API 호출 실패: lat={}, lon={}, error={}",
