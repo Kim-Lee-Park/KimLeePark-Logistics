@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
     groupId = "coupon-service-group",
     containerFactory = "couponKafkaListenerContainerFactory"
 )
-public class PaymentApprovedEventListener {
+public class PaymentEventListener {
 
     private final UserCouponFacade userCouponFacade;
     private final UserCouponService userCouponService;
