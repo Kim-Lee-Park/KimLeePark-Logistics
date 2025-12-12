@@ -12,12 +12,6 @@ processors:
       log_record:
         - body == "GET /actuator/health"    # 헬스체크 로그 제거
 
-  transform/shorten:
-    log_statements:
-      - context: log
-        statements:
-          - set(body, Substring(body, 0, 1024)) where Len(body) > 1024  # body 길이 1024자로 제한
-
   batch:
     timeout: 5s          # 5초 동안 모았다가
     send_batch_size: 512 # 512개 단위로 전송
@@ -38,10 +32,10 @@ service:
   pipelines:
     traces:
       receivers: [ otlp ]
-      processors: [ filter/drop_noise, transform/shorten, batch ]
+      processors: [ filter/drop_noise, batch ]
       exporters: [ otlphttp/tempo, debug ]
 
     logs:
       receivers: [ otlp ]
-      processors: [ filter/drop_noise, transform/shorten, batch ]
+      processors: [ filter/drop_noise, batch ]
       exporters: [ otlphttp/loki, debug ]
