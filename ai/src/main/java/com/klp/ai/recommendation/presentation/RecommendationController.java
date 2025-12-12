@@ -1,10 +1,9 @@
 package com.klp.ai.recommendation.presentation;
 
-import com.klp.ai.recommendation.application.RecommendationService;
-import com.klp.ai.recommendation.application.dto.ProductRecommendation;
+import com.klp.ai.recommendation.application.RecommendationFacade;
+import com.klp.ai.recommendation.application.dto.RecommendationResult;
 import com.klp.ai.recommendation.presentation.docs.RecommendationControllerDoc;
 import com.klp.ai.recommendation.presentation.dto.response.RecommendationResponse;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,20 +20,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class RecommendationController implements RecommendationControllerDoc {
 
-    private final RecommendationService recommendationService;
+    private final RecommendationFacade recommendationFacade;
 
     @GetMapping("/{orderId}")
     @PreAuthorize("permitAll()")
     public ResponseEntity<RecommendationResponse> getRecommendations(
         @PathVariable UUID orderId,
-        @RequestParam(defaultValue = "10") int limit) {
+        @RequestParam Long userId,
+        @RequestParam UUID userHubId,
+        @RequestParam(defaultValue = "5") int limit
+    ) {
+        List<RecommendationResult> recommendations = recommendationFacade.getRecommendations(
+            orderId, userId, userHubId, limit
+        );
 
-        List<ProductRecommendation> recommendations = recommendationService.getRecommendations(orderId);
-
-        return ResponseEntity.ok().body(new RecommendationResponse(
-            orderId,
-            recommendations.stream().limit(limit).toList(),
-            LocalDateTime.now()
-        ));
+        return ResponseEntity.ok(
+            RecommendationResponse.of(orderId, recommendations)
+        );
     }
 }

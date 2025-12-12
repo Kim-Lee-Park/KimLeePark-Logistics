@@ -5,7 +5,6 @@ import java.util.UUID;
 public record ProductCandidate(
     UUID productId,
     String productName,
-    String companyName,
     UUID hubId,
     String hubName,
     double distance,

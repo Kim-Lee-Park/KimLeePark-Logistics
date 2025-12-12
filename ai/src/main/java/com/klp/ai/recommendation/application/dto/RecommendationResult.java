@@ -5,7 +5,6 @@ import java.util.UUID;
 public record RecommendationResult(
     UUID productId,
     String productName,
-    String companyName,
     UUID hubId,
     String hubName,
     double distance,
@@ -20,7 +19,6 @@ public record RecommendationResult(
         return new RecommendationResult(
             candidate.productId(),
             candidate.productName(),
-            candidate.companyName(),
             candidate.hubId(),
             candidate.hubName(),
             candidate.distance(),
