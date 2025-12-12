@@ -112,7 +112,7 @@ public class DeliveryRouteFacade {
                 routeCreateEvent.userAddress(),
                 routeCreateEvent.driverName(),
                 routeCreateEvent.driverEmail(),
-                "", // TODO: workingHours 추후 추가 예정
+                "", // notification에서 기본값 세팅
                 routeCreateEvent.orderTime() // occurredAt은 orderCreateAt과 동일
             );
 

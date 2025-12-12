@@ -1,6 +1,6 @@
 package com.klp.notification.messaging.infrastructure.config;
 
-import com.klp.notification.messaging.domain.event.DeliveryCreatedEvent;
+import com.klp.notification.messaging.domain.event.DeliveryNotificationEvent;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +53,7 @@ public class KafkaConsumerConfig {
 
     private String buildTypeMappings() {
         return String.join(",",
-            "DeliveryCreatedEvent:" + DeliveryCreatedEvent.class.getName()
+            "DeliveryNotificationEvent:" + DeliveryNotificationEvent.class.getName()
         );
     }
 

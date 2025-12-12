@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Delivery 서비스에서 발행하는 배송 생성 이벤트 (구독용)
  */
-public record DeliveryCreatedEvent(
+public record DeliveryNotificationEvent(
     UUID deliveryId,
     UUID orderId,
     String driverSlackId,
