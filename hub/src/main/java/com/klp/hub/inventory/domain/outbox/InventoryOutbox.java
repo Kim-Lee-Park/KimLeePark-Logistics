@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
-@Table(name = "p_inventory_outbox", schema = "hub_schema")
+@Table(name = "p_inventory_outbox")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class InventoryOutbox {

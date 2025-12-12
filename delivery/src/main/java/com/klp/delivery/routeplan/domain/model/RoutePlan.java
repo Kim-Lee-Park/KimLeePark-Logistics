@@ -34,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Table(name = "p_route_plans",
-    schema = "delivery_schema",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_route_plan_departure_arrival",

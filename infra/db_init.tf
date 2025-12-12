@@ -13,8 +13,8 @@ resource "null_resource" "init_schemas" {
   }
 
   provisioner "file" {
-    source      = "${path.root}/../init-sql/schemas.sql"
-    destination = "/tmp/schemas.sql"
+    source      = "${path.root}/../init-sql/extensions.sql"
+    destination = "/tmp/extensions.sql"
   }
 
   provisioner "remote-exec" {
@@ -28,7 +28,7 @@ resource "null_resource" "init_schemas" {
 
       # 실제 스키마 적용
       "export PGPASSWORD='${local.db_password}'",
-      "psql -h ${aws_db_instance.postgres[each.key].address} -p 5432 -U ${local.db_username} -d logistics -f /tmp/schemas.sql"
+      "psql -h ${aws_db_instance.postgres[each.key].address} -p 5432 -U ${local.db_username} -d ${each.value.db_name} -f /tmp/extensions.sql"
     ]
   }
 }

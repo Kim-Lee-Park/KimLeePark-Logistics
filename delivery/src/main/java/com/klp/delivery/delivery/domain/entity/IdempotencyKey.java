@@ -16,7 +16,7 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
-@Table(name = "p_delivery_idempotency", schema = "delivery_schema")
+@Table(name = "p_delivery_idempotency")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IdempotencyKey extends BaseEntity {
 

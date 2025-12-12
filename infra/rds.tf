@@ -1,13 +1,13 @@
 locals {
   db_targets = {
-    auth         = { schema = "auth_schema" }
-    delivery     = { schema = "delivery_schema" }
-    hub          = { schema = "hub_schema" }
-    notification = { schema = "notification_schema" }
-    order        = { schema = "order_schema" }
-    promotion    = { schema = "promotion_schema" }
-    payment      = { schema = "payment_schema" }
-    user         = { schema = "user_schema" }
+    auth         = { db_name = "auth" }
+    delivery     = { db_name = "delivery" }
+    hub          = { db_name = "hub" }
+    notification = { db_name = "notification" }
+    order        = { db_name = "orders" }
+    promotion    = { db_name = "promotion" }
+    payment      = { db_name = "payment" }
+    user         = { db_name = "users" }
   }
 }
 
@@ -29,7 +29,7 @@ resource "aws_db_instance" "postgres" {
   instance_class    = "db.t4g.small"
   allocated_storage = 50
 
-  db_name  = "logistics"
+  db_name  = each.value.db_name
   username = local.db_username
   password = local.db_password
 

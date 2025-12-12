@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "p_slack_message", schema = "notification_schema")
+@Table(name = "p_slack_message")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SlackMessage extends BaseEntity {
 

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "p_ai", schema = "notification_schema")
+@Table(name = "p_ai")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AI extends BaseEntity {
 
