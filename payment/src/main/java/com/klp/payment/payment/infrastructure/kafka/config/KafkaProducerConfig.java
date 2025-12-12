@@ -3,8 +3,10 @@ package com.klp.payment.payment.infrastructure.kafka.config;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import com.klp.payment.payment.domain.event.PaymentFailedEvent;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -18,10 +20,13 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class KafkaProducerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    private final ObservationRegistry observationRegistry;
 
     @Bean
     public ProducerFactory<String, Object> paymentProducerFactory() {
@@ -52,6 +57,9 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, Object> paymentKafkaTemplate() {
-        return new KafkaTemplate<>(paymentProducerFactory());
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(paymentProducerFactory());
+        kafkaTemplate.setObservationEnabled(true);
+        kafkaTemplate.setObservationRegistry(observationRegistry);
+        return kafkaTemplate;
     }
 }

@@ -17,7 +17,7 @@ public class UserEventListener {
     @KafkaListener(
         topics = "user.profile.changed",
         groupId = "order-service-group",
-        containerFactory = "kafkaListenerContainerFactory")
+        containerFactory = "userProfileChangedKafkaListenerContainerFactory")
     public void handleUserProfileChanged(UserProfileChangedMessage msg) {
         log.info("[UserEventListener] user.profile.changed received. userId={}, eventType={}",
             msg.userId(), msg.eventType());
