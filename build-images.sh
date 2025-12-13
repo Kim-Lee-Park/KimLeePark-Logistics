@@ -3,7 +3,7 @@
 set -eo pipefail
 
 usage() {
-  echo "Usage: $0 <IMAGE_TAG> <AWS_ACCOUNT_ID> [AWS_REGION]"
+  echo "Usage: $0 <IMAGE_TAG> <AWS_ACCOUNT_ID> [AWS_REGION] [PROJECT_NAME]"
   exit 1
 }
 
@@ -14,10 +14,12 @@ fi
 IMAGE_TAG="$1"
 AWS_ACCOUNT_ID="$2"
 AWS_REGION="${3:-ap-northeast-2}"
+PROJECT_NAME="${4:-${PROJECT_NAME:-klp-logistics}}"
 
 echo ">>> IMAGE_TAG      = ${IMAGE_TAG}"
 echo ">>> AWS_ACCOUNT_ID = ${AWS_ACCOUNT_ID}"
 echo ">>> AWS_REGION     = ${AWS_REGION}"
+echo ">>> PROJECT_NAME   = ${PROJECT_NAME}"
 echo
 
 aws ecr get-login-password --region "${AWS_REGION}" \
@@ -56,7 +58,7 @@ for SERVICE_DIR in "${SERVICES_DIRS[@]}"; do
     *)                 SERVICE="${SERVICE_DIR}" ;;
   esac
 
-  IMAGE_NAME="klp-logistics-${SERVICE}"
+  IMAGE_NAME="${PROJECT_NAME}-${SERVICE}"
   ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}"
 
   echo "=================================================================="

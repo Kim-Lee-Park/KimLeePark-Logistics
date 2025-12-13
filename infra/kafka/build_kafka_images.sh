@@ -2,6 +2,7 @@
 set -eo pipefail
 
 # Usage: ./infra/kafka/build_kafka_images.sh <IMAGE_TAG> <AWS_ACCOUNT_ID> [AWS_REGION]
+# Script is cwd-agnostic; paths are resolved relative to this file.
 
 if [ $# -lt 2 ]; then
   echo "Usage: $0 <IMAGE_TAG> <AWS_ACCOUNT_ID> [AWS_REGION]"
@@ -11,16 +12,17 @@ fi
 IMAGE_TAG="$1"
 AWS_ACCOUNT_ID="$2"
 AWS_REGION="${3:-ap-northeast-2}"
-PROJECT_NAME="${PROJECT_NAME:-klp-logistics}"
+PROJECT_NAME="klp-logistics"
 
 ECR="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 aws ecr get-login-password --region "${AWS_REGION}" \
   | docker login --username AWS --password-stdin "${ECR}"
 
 echo ">>> ECR login OK"
 
-TARBALL="infra/kafka/kafka_2.13-3.7.0.tgz"
+TARBALL="${SCRIPT_DIR}/kafka_2.13-3.7.0.tgz"
 TARBALL_URL="https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz"
 
 fetch_tarball() {
@@ -60,7 +62,7 @@ push_image() {
   local dockerfile="$3"
   IMAGE_NAME="${ECR}/${PROJECT_NAME}-${name}"
   (
-    cd "$(dirname "$0")/${dir}"
+    cd "${SCRIPT_DIR}/${dir}"
     docker build --platform linux/amd64 -f "${dockerfile}" -t "${IMAGE_NAME}:${IMAGE_TAG}" .
     docker push "${IMAGE_NAME}:${IMAGE_TAG}"
   )

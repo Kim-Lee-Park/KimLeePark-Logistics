@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "auth" {
       environment = [
         {
           name  = "SPRING_PROFILES_ACTIVE",
-          value = "prod"
+          value = var.environment
         },
         {
           name  = "CONFIG_SERVER_URL",

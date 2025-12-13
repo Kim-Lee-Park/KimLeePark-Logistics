@@ -7,7 +7,7 @@ resource "aws_lb" "public_alb" {
 }
 
 resource "aws_lb_target_group" "gateway_tg" {
-  name     = "${local.project}-gateway-tg"
+  name     = "${local.project_short}-gw-tg"
   port     = 8080
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
@@ -25,7 +25,7 @@ resource "aws_lb_target_group" "gateway_tg" {
 }
 
 resource "aws_lb_target_group" "gateway_tg_green" {
-  name     = "${local.project}-gateway-green-tg"
+  name     = "${local.project_short}-gw-grn"
   port     = 8080
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
@@ -43,7 +43,7 @@ resource "aws_lb_target_group" "gateway_tg_green" {
 }
 
 resource "aws_lb_target_group" "grafana_tg" {
-  name     = "${local.project}-grafana-tg"
+  name     = "${local.project_short}-graf-tg"
   port     = 3000
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id

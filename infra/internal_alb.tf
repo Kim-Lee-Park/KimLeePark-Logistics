@@ -22,7 +22,7 @@ locals {
 resource "aws_lb_target_group" "internal_blue" {
   for_each = local.internal_services
 
-  name        = "${local.project}-int-${each.key}-b"
+  name        = "${local.project_short}-int-${each.key}-b"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -41,7 +41,7 @@ resource "aws_lb_target_group" "internal_blue" {
 resource "aws_lb_target_group" "internal_green" {
   for_each = local.internal_services
 
-  name        = "${local.project}-int-${each.key}-g"
+  name        = "${local.project_short}-int-${each.key}-g"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id

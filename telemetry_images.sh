@@ -9,6 +9,7 @@ fi
 IMAGE_TAG="$1"
 AWS_ACCOUNT_ID="$2"
 AWS_REGION="${3:-ap-northeast-2}"
+PROJECT_NAME="klp-logistics"
 
 ECR="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
@@ -20,7 +21,7 @@ echo ">>> ECR login OK"
 # 1) otel-collector
 (
   cd infra/telemetry-prod/otel-collector
-  IMAGE_NAME="${ECR}/${PROJECT_NAME:-klp-logistics}-otel-collector"
+  IMAGE_NAME="${ECR}/${PROJECT_NAME}-otel-collector"
   docker build \
       --platform linux/amd64 \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" .
@@ -30,7 +31,7 @@ echo ">>> ECR login OK"
 # 2) loki
 (
   cd infra/telemetry-prod/loki
-  IMAGE_NAME="${ECR}/${PROJECT_NAME:-klp-logistics}-loki"
+  IMAGE_NAME="${ECR}/${PROJECT_NAME}-loki"
   docker build \
       --platform linux/amd64 \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" .
@@ -40,7 +41,7 @@ echo ">>> ECR login OK"
 # 3) tempo
 (
   cd infra/telemetry-prod/tempo
-  IMAGE_NAME="${ECR}/${PROJECT_NAME:-klp-logistics}-tempo"
+  IMAGE_NAME="${ECR}/${PROJECT_NAME}-tempo"
   docker build \
       --platform linux/amd64 \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" .
@@ -50,7 +51,7 @@ echo ">>> ECR login OK"
 # 4) prometheus
 (
   cd infra/telemetry-prod/prometheus
-  IMAGE_NAME="${ECR}/${PROJECT_NAME:-klp-logistics}-prometheus"
+  IMAGE_NAME="${ECR}/${PROJECT_NAME}-prometheus"
   docker build \
       --platform linux/amd64 \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" .
@@ -60,7 +61,7 @@ echo ">>> ECR login OK"
 # 5) grafana
 (
   cd infra/telemetry-prod/grafana
-  IMAGE_NAME="${ECR}/${PROJECT_NAME:-klp-logistics}-grafana"
+  IMAGE_NAME="${ECR}/${PROJECT_NAME}-grafana"
   docker build \
       --platform linux/amd64 \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" .
