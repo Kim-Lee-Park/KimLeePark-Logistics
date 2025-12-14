@@ -46,8 +46,7 @@ public interface UserControllerDoc {
 
     @Operation(summary = "사용자 인증 정보 검증", description = "사용자 인증 정보를 검증합니다. (내부 서비스용)")
     ResponseEntity<UserDataResponse> validateCredentials(
-        @RequestBody ValidateUserRequest request
-    );
+        @RequestBody ValidateUserRequest request);
 
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 상세 정보를 조회합니다.")
     @ApiResponses(value = {

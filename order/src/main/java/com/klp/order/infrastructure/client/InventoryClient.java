@@ -1,6 +1,7 @@
 package com.klp.order.infrastructure.client;
 
 
+import com.klp.global.config.FeignTracingConfig;
 import com.klp.global.config.InventoryFeignClientConfig;
 import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = InventoryFeignClientConfig.class)
+@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = {InventoryFeignClientConfig.class,
+    FeignTracingConfig.class})
 public interface InventoryClient {
 
     @PostMapping("/v1/inventories/deduct")
