@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_blacklist_token", schema = "auth_schema")
+@Table(name = "p_blacklist_token")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BlackListToken extends BaseEntity {
 

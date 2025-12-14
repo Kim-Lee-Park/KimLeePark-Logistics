@@ -24,7 +24,7 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
-@Table(name = "p_coupons", schema = "promotion_schema")
+@Table(name = "p_coupons")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Coupon extends BaseEntity {
 

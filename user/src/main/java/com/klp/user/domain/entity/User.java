@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_users", schema = "user_schema")
+@Table(name = "p_users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
@@ -201,4 +201,3 @@ public class User extends BaseEntity {
         this.role = role;
     }
 }
-

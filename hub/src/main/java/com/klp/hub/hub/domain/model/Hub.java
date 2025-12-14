@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "p_hubs",
-    schema = "hub_schema",
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_hub_name",

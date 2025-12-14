@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Table(name = "p_grades", schema = "promotion_schema")
+@Table(name = "p_grades")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLRestriction("deleted_at IS NULL")
 public class Grade extends BaseEntity {

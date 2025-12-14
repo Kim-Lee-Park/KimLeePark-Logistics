@@ -17,7 +17,7 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
-@Table(name = "p_delivery_items", schema = "delivery_schema")
+@Table(name = "p_delivery_items")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DeliveryItem extends BaseEntity {
 

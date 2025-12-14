@@ -16,7 +16,6 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "p_hub_route_infos",
-    schema = "hub_schema",
     uniqueConstraints = @UniqueConstraint(
         name = "uk_hubrouteinfo_dep_arr",
         columnNames = {"departure_id", "arrival_id"}
