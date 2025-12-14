@@ -3,7 +3,7 @@ package com.klp.hub.inventory.application;
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
-import com.klp.hub.inventory.domain.event.PaymentCancelledEvent;
+import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
@@ -86,7 +86,7 @@ public class InventoryFacade {
     /**
      * 재고 복원 (결제 취소 시 호출)
      */
-    public void replenishFromCancellation(PaymentCancelledEvent event) {
+    public void replenishFromCancellation(CouponCancelledEvent event) {
         String lockKey = "inventory:replenish:" + event.orderId();
 
         lock(lockKey);

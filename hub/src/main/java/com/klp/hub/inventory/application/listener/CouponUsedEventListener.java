@@ -1,11 +1,14 @@
 package com.klp.hub.inventory.application.listener;
 
 import com.klp.hub.inventory.application.InventoryFacade;
+import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent.OrderItem;
+import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +43,7 @@ public class CouponUsedEventListener {
         Acknowledgment acknowledgment
     ) {
         log.info("쿠폰 사용 이벤트 수신: orderId={}", event.orderId());
-//        inventoryFacade.confirm(event.orderId());
+        inventoryFacade.confirm(event.orderId());
         try {
             List<OrderItem> orderItems = event.products().stream()
                 .map(product -> new InventoryDeductedEvent.OrderItem(
@@ -84,7 +87,7 @@ public class CouponUsedEventListener {
                 event.paidAt()
             );
 
-            inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
+//            inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
             log.info("재고 차감 이벤트 발행 완료: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
@@ -98,6 +101,57 @@ public class CouponUsedEventListener {
             throw e;
         }
     }
+
+    @KafkaHandler
+    @Transactional
+    public void handleCouponCancelled(
+        @Payload CouponCancelledEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        Acknowledgment acknowledgment
+    ) {
+        log.info("=== 쿠폰 사용 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
+            event.orderId(), event.userCouponId(), partition, offset);
+
+        try {
+            List<InventoryReplenishedEvent.ProductInfo> orderItems = event.products().stream()
+                .map(product -> new InventoryReplenishedEvent.ProductInfo(
+                    product.productId(),
+                    product.hubId(),
+                    product.quantity()
+                ))
+                .toList();
+
+            InventoryReplenishedEvent inventoryReplenishedEvent = new InventoryReplenishedEvent(
+                event.paymentId(),
+                event.orderId(),
+                event.userId(),
+                event.userCouponId(),
+                event.inventoryIdempotencyKey(),
+                event.deliveryIdempotencyKey(),
+                event.reason(),
+                orderItems,
+                event.cancelledAt(),
+                LocalDateTime.now()
+            );
+
+            // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
+            inventoryEventProducer.publishInventoryReplenishedEvent(inventoryReplenishedEvent);
+            log.info("재고 복구 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
+                event.userCouponId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+        } catch (Exception e) {
+            log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+                event.orderId(), partition, offset, e);
+            throw e;
+        }
+
+    }
+
 
     @KafkaHandler(isDefault = true)
     public void handleUnknown(Object event) {
