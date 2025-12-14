@@ -1,6 +1,7 @@
 package com.klp.delivery.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -32,9 +33,11 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     private final ObjectMapper objectMapper;
+    private final ObservationRegistry observationRegistry;
 
-    public KafkaConfig(ObjectMapper objectMapper) {
+    public KafkaConfig(ObjectMapper objectMapper, ObservationRegistry observationRegistry) {
         this.objectMapper = objectMapper;
+        this.observationRegistry = observationRegistry;
     }
 
     // producer 설정
@@ -72,6 +75,9 @@ public class KafkaConfig {
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate() {
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory());
+        kafkaTemplate.setObservationEnabled(true);
+        kafkaTemplate.setObservationRegistry(observationRegistry);
         return new KafkaTemplate<>(producerFactory());
     }
 
@@ -111,6 +117,8 @@ public class KafkaConfig {
         factory.setConcurrency(3);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(errorHandler());
+
+        factory.getContainerProperties().setObservationEnabled(true);
 
         return factory;
     }

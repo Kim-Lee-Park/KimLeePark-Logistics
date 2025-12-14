@@ -17,10 +17,6 @@ processors:
     send_batch_size: 512 # 512개 단위로 전송
 
 exporters:
-  # 디버깅용 – Collector 로그에 span 찍기
-  debug:
-    verbosity: detailed  # basic / normal / detailed
-
   otlphttp/tempo:
     endpoint: http://tempo:4318
 
@@ -33,9 +29,9 @@ service:
     traces:
       receivers: [ otlp ]
       processors: [ filter/drop_noise, batch ]
-      exporters: [ otlphttp/tempo, debug ]
+      exporters: [ otlphttp/tempo ]
 
     logs:
       receivers: [ otlp ]
       processors: [ filter/drop_noise, batch ]
-      exporters: [ otlphttp/loki, debug ]
+      exporters: [ otlphttp/loki ]

@@ -1,5 +1,6 @@
 package com.klp.user.infrastructure.client;
 
+import com.klp.user.global.config.FeignTracingConfig;
 import com.klp.user.global.config.PromotionFeignClientConfig;
 import com.klp.user.infrastructure.client.dto.request.CreateUserGradeRequest;
 import com.klp.user.infrastructure.client.dto.response.DefaultGradeResponse;
@@ -9,7 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "promotion-service", url = "${clients.promotion.url:}", configuration = PromotionFeignClientConfig.class)
+@FeignClient(name = "promotion-service", url = "${clients.promotion.url:}", configuration = {PromotionFeignClientConfig.class,
+    FeignTracingConfig.class})
 public interface PromotionClient {
 
     /**
