@@ -85,6 +85,9 @@ public class OrderEventListener {
                 payment.getPaymentId(),
                 event.orderId(),
                 event.userId(),
+                event.userCouponId(),
+                event.inventoryIdempotencyKey(),
+                event.deliveryIdempotencyKey(),
                 event.cancelReason(),
                 event.products().stream()
                     .map(p -> new PaymentCancelledEvent.ProductInfo(
