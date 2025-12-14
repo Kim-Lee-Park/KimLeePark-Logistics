@@ -2,6 +2,7 @@ package com.klp.promotion.coupon.infrastructure.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.entity.outbox.CouponOutboxEvent;
+import com.klp.promotion.coupon.domain.event.CouponCancelledEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.repository.CouponOutboxEventRepository;
 import com.klp.promotion.coupon.infrastructure.kafka.producer.CouponEventProducer;
@@ -24,7 +25,8 @@ public class OutboxScheduler {
 
     @Scheduled(fixedDelay = 1000)
     public void publishPendingEvents() {
-        List<CouponOutboxEvent> pendingEvents = couponOutboxEventRepository.findPendingEvents(BATCH_SIZE);
+        List<CouponOutboxEvent> pendingEvents = couponOutboxEventRepository.findPendingEvents(
+            BATCH_SIZE);
 
         for (CouponOutboxEvent outbox : pendingEvents) {
             try {
@@ -33,7 +35,8 @@ public class OutboxScheduler {
                 log.info("{} 이벤트 발행 성공: orderId={}", outbox.getEventType(), outbox.getOrderId());
             } catch (Exception e) {
                 couponOutboxEventRepository.markAsFailed(outbox.getId());
-                log.error("{} 이벤트 발행 실패: orderId={}, error={}", outbox.getEventType(), outbox.getOrderId(), e.getMessage());
+                log.error("{} 이벤트 발행 실패: orderId={}, error={}", outbox.getEventType(),
+                    outbox.getOrderId(), e.getMessage());
             }
         }
     }
@@ -46,6 +49,11 @@ public class OutboxScheduler {
             case "COUPON_USED" -> {
                 CouponUsedEvent event = objectMapper.readValue(payload, CouponUsedEvent.class);
                 eventProducer.publishCouponUsedEvent(event);
+            }
+            case "COUPON_CANCELLED" -> {
+                CouponCancelledEvent event = objectMapper.readValue(payload,
+                    CouponCancelledEvent.class);
+                eventProducer.publishCouponCancelledEvent(event);
             }
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         }

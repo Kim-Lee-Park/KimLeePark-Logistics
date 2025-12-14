@@ -4,9 +4,12 @@ import com.klp.promotion.coupon.application.facade.UserCouponFacade;
 import com.klp.promotion.coupon.application.service.CouponOutboxEventService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
+import com.klp.promotion.coupon.domain.event.CouponCancelledEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
+import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -144,9 +147,75 @@ public class PaymentApprovedEventListener {
         }
     }
 
+    @KafkaHandler
+    @Transactional
+    public void handlePaymentCancelled(
+        @Payload PaymentCancelledEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        Acknowledgment acknowledgment
+    ) {
+        log.info("=== 결제 승인 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
+            event.orderId(), event.userCouponId(), partition, offset);
+
+        try {
+            if (event.userCouponId() == null) {
+                log.info("쿠폰 미사용 주문: orderId={}", event.orderId());
+                makeCancelledEvent(event, acknowledgment, offset);
+                return;
+            }
+
+            makeCancelledEvent(event, acknowledgment, offset);
+
+        } catch (Exception e) {
+            log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+                event.orderId(), partition, offset, e);
+            throw e;
+        }
+
+    }
+
     @KafkaHandler(isDefault = true)
     public void handleUnknown(Object event) {
         log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    }
+
+    private void makeCancelledEvent(PaymentCancelledEvent event, Acknowledgment acknowledgment,
+        Long offset) {
+        List<CouponCancelledEvent.ProductInfo> orderItems = event.products().stream()
+            .map(product -> new CouponCancelledEvent.ProductInfo(
+                product.productId(),
+                product.hubId(),
+                product.quantity()
+            ))
+            .toList();
+
+        CouponCancelledEvent couponCancelledEvent = new CouponCancelledEvent(
+            event.paymentId(),
+            event.orderId(),
+            event.userId(),
+            event.userCouponId(),
+            event.inventoryIdempotencyKey(),
+            event.deliveryIdempotencyKey(),
+            event.reason(),
+            orderItems,
+            event.cancelledAt(),
+            LocalDateTime.now()
+        );
+
+        // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
+        couponOutboxEventService.saveEvent(
+            event.orderId(),
+            "COUPON_CANCELLED",
+            couponCancelledEvent
+        );
+        log.info("쿠폰 사용 취소 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
+            event.userCouponId());
+
+        if (acknowledgment != null) {
+            acknowledgment.acknowledge();
+            log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+        }
     }
 }
 
