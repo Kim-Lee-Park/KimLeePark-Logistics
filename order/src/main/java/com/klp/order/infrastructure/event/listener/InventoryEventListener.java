@@ -6,6 +6,8 @@ import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
 import com.klp.order.infrastructure.event.event.InventoryDeductedEvent;
 import com.klp.order.infrastructure.event.event.InventoryDeductedFailedEvent;
+import com.klp.order.infrastructure.event.event.InventoryReplenishedEvent;
+import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -107,6 +109,58 @@ public class InventoryEventListener {
         } catch (Exception e) {
             log.error("재고 확정 실패 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
+            throw e;
+        }
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handleInventoryReplenished(
+        @Payload InventoryReplenishedEvent event,
+        Acknowledgment acknowledgment) {
+
+        log.info("=== 재고 증감 이벤트 수신: orderId={} ===", event.orderId());
+
+        try {
+            Order order = orderService.findById(event.orderId());
+
+            if (order.getOrderStatus() != OrderStatus.CANCELLED) {
+                log.warn("주문 취소 상태가 아닌데 재고 증감 이벤트 수신: orderId={}, status={}",
+                    event.orderId(), order.getOrderStatus());
+            }
+
+            log.info("재고 증감 확인 완료: orderId={}", event.orderId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+
+        } catch (Exception e) {
+            log.error("재고 증감 이벤트 처리 실패: orderId={}", event.orderId(), e);
+            throw e;
+        }
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handleInventoryReplenishedFailed(
+        @Payload InventoryReplenishedFailedEvent event,
+        Acknowledgment acknowledgment) {
+
+        log.error("=== 재고 증감 실패 이벤트 수신: orderId={} ===", event.orderId());
+
+        try {
+            Order order = orderService.findById(event.orderId());
+
+            log.error("⚠️재고 증감 실패 - 수동 처리 필요: orderId={}",
+                event.orderId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+
+        } catch (Exception e) {
+            log.error("재고 증감 실패 이벤트 처리 중 오류: orderId={}", event.orderId(), e);
             throw e;
         }
     }

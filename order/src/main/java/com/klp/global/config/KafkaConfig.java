@@ -1,6 +1,29 @@
 package com.klp.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
+import com.klp.order.infrastructure.event.event.CouponCancelledEvent;
+import com.klp.order.infrastructure.event.event.CouponCancelledFailedEvent;
+import com.klp.order.infrastructure.event.event.CouponUsedEvent;
+import com.klp.order.infrastructure.event.event.CouponUsedFailedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryArrivedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryArrivedFailedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent;
+import com.klp.order.infrastructure.event.event.DeliveryShippingEvent;
+import com.klp.order.infrastructure.event.event.DeliveryShippingFailedEvent;
+import com.klp.order.infrastructure.event.event.InventoryDeductedEvent;
+import com.klp.order.infrastructure.event.event.InventoryDeductedFailedEvent;
+import com.klp.order.infrastructure.event.event.InventoryReplenishedEvent;
+import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
+import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
+import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderPaidEvent;
+import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
+import com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent;
+import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
+import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -53,10 +76,9 @@ public class KafkaConfig {
 
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
-            "OrderCreatedEvent:com.klp.order.infrastructure.event.event.OrderCreatedEvent," +
-                "OrderCancelledEvent:com.klp.order.infrastructure.event.event.OrderCancelledEvent,"
-                +
-                "OrderPaidEvent:com.klp.order.infrastructure.event.event.OrderPaidEvent");
+            "OrderCreatedEvent:" + OrderCreatedEvent.class.getName() + "," +
+                "OrderCancelledEvent:" + OrderCancelledEvent.class.getName() + "," +
+                "OrderPaidEvent:" + OrderPaidEvent.class.getName());
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -86,34 +108,28 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentApprovedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedEvent,"
+            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName() + "," +
+                "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName() + "," +
+                "PaymentApprovedFailedEvent:" + PaymentApprovedFailedEvent.class.getName() + "," +
+                "PaymentCancelledFailedEvent:" + PaymentCancelledFailedEvent.class.getName() + "," +
+                "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
+                "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + ","
                 +
-                "PaymentApprovedFailedEvent:com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent,"
-                +
-                "InventoryDeductedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedEvent,"
-                +
-                "InventoryDeductedFailedEvent:com.klp.order.infrastructure.event.event.InventoryDeductedFailedEvent,"
-                +
-                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent,"
-                +
-                "DeliveryCreatedFailedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent,"
-                +
-                "DeliveryShippingEvent:com.klp.order.infrastructure.event.event.DeliveryShippingEvent,"
-                +
-                "DeliveryShippingFailedEvent:com.klp.order.infrastructure.event.event.DeliveryShippingFailedEvent,"
-                +
-                "DeliveryArrivedEvent:com.klp.order.infrastructure.event.event.DeliveryArrivedEvent,"
-                +
-                "DeliveryArrivedFailedEvent:com.klp.order.infrastructure.event.event.DeliveryArrivedFailedEvent,"
-                +
-                "CouponUsedEvent:com.klp.order.infrastructure.event.event.CouponUsedEvent," +
-                "CouponUsedFailedEvent:com.klp.order.infrastructure.event.event.CouponUsedFailedEvent,"
-                +
-                "UserProfileChangedMessage:com.klp.order.infrastructure.event.dto.UserProfileChangedMessage,"
-                +
-                "ProductInfoChangedMessage:com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage,"
-                +
-                "DeliveryCreatedEvent:com.klp.order.infrastructure.event.event.DeliveryCreatedEvent");
+                "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName() + "," +
+                "InventoryReplenishedFailedEvent:" + InventoryReplenishedFailedEvent.class.getName()
+                + "," +
+                "DeliveryCreatedEvent:" + DeliveryCreatedEvent.class.getName() + "," +
+                "DeliveryCreatedFailedEvent:" + DeliveryCreatedFailedEvent.class.getName() + "," +
+                "DeliveryShippingEvent:" + DeliveryShippingEvent.class.getName() + "," +
+                "DeliveryShippingFailedEvent:" + DeliveryShippingFailedEvent.class.getName() + "," +
+                "DeliveryArrivedEvent:" + DeliveryArrivedEvent.class.getName() + "," +
+                "DeliveryArrivedFailedEvent:" + DeliveryArrivedFailedEvent.class.getName() + "," +
+                "CouponUsedEvent:" + CouponUsedEvent.class.getName() + "," +
+                "CouponUsedFailedEvent:" + CouponUsedFailedEvent.class.getName() + "," +
+                "CouponCancelledEvent:" + CouponCancelledEvent.class.getName() + "," +
+                "CouponCancelledFailedEvent:" + CouponCancelledFailedEvent.class.getName() + "," +
+                "UserProfileChangedMessage:" + UserProfileChangedMessage.class.getName() + "," +
+                "ProductInfoChangedMessage:" + ProductInfoChangedMessage.class.getName());
 
         // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);

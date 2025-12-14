@@ -6,6 +6,8 @@ import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent;
+import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
+import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -119,6 +121,63 @@ public class PaymentEventListener {
             throw e;
         }
     }
+
+    @KafkaHandler
+    @Transactional
+    public void handlePaymentCancelled(
+        @Payload PaymentCancelledEvent event,
+        Acknowledgment acknowledgment) {
+
+        log.info("=== 결제 취소 완료 이벤트 수신: orderId={} ===", event.orderId());
+
+        try {
+            Order order = orderService.findById(event.orderId());
+
+            // 주문은 이미 CANCELLED 상태여야 함
+            if (order.getOrderStatus() != OrderStatus.CANCELLED) {
+                log.warn("주문이 취소 상태가 아닌데 결제 취소 이벤트 수신: orderId={}, status={}",
+                    event.orderId(), order.getOrderStatus());
+            }
+
+            log.info("결제 취소 확인 완료: orderId={}", event.orderId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+
+        } catch (Exception e) {
+            log.error("결제 취소 이벤트 처리 실패: orderId={}", event.orderId(), e);
+            throw e;
+        }
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handlePaymentCancelledFailed(
+        @Payload PaymentCancelledFailedEvent event,
+        Acknowledgment acknowledgment) {
+
+        log.error("=== 결제 취소 실패 이벤트 수신: orderId={} ===", event.orderId());
+
+        try {
+            Order order = orderService.findById(event.orderId());
+
+            // 결제 취소도 실패했다면 수동 개입 필요
+            // OrderStatus.PAYMENT_CANCEL_FAILED 같은 상태 추가 고려
+
+            log.error("⚠️ 결제 취소 실패 - 수동 처리 필요: orderId={}",
+                event.orderId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+
+        } catch (Exception e) {
+            log.error("결제 취소 실패 이벤트 처리 중 오류: orderId={}", event.orderId(), e);
+            throw e;
+        }
+    }
+
 
     @KafkaHandler(isDefault = true)
     public void handleUnknown(Object event) {

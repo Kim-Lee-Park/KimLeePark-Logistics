@@ -16,7 +16,7 @@ public interface UserFeignClient {
     @GetMapping("/v1/internal/users/{userId}")
     UserProfileDto getUserProfileById(@PathVariable Long userId);
 
-    @GetMapping("/v1/internal/users/{addressId}")
+    @GetMapping("/v1/internal/users/address/{addressId}")
     UserAddressHubIdDto getUserAddressHubIdByAddressId(@PathVariable UUID addressId);
 
 }

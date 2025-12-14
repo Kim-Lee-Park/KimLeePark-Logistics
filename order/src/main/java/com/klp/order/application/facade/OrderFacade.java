@@ -14,10 +14,15 @@ import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.domain.vo.UserAddressHubId;
+import com.klp.order.domain.vo.UserProfile;
+import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
+import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
 import com.klp.order.infrastructure.client.service.InventoryIntegrationService;
 import com.klp.order.infrastructure.client.service.PromotionDiscountService;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -45,32 +50,60 @@ public class OrderFacade {
         try {
             // 1. 유저 조회_ 정보 얻기
             //grade , email, username 뽑아오기
-//            UserProfile userProfile = userQueryService.getUserProfile(command.userId());
+            UserProfile userProfile = userQueryService.getUserProfile(command.userId());
             //2. userAddressHubId, address  받아오기
-//            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
-//                command.addressId());
+            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
+                command.addressId());
 
             // 3. 주문 생성
             Order order = orderService.createOrder(command);
             log.info("주문 생성 완료 - orderId: {}", order.getOrderId());
 
+            String InventoryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
+                order.getOrderId(),
+                Target.INVENTORY,
+                OperationType.DECREASE
+            );
+
+            String DeliveryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
+                order.getOrderId(),
+                Target.DELIVERY,
+                OperationType.MAKING
+            );
+            log.info("멱등키 생성 완료 - orderId: {}", order.getOrderId());
+
             // 4. 상품 존재 확인
             List<OrderItemCommand> orderItems = command.items();
             int originalPriceTotal = 0;
+            List<InventoryReservationRequest.ReservationItemRequest> reservationItems = new ArrayList<>();
+
             for (OrderItemCommand orderItem : orderItems) {
                 // 돌아가며 상품이 진짜 존재하는지 확인 + 가격 계산
                 // 없으면 예외 발생
+                productQueryService.getProductById(orderItem.productId());
                 originalPriceTotal += orderItem.getTotalPrice();
-
-                // 재고 선점
-//                inventoryService.allocateProduct(
-//                    new AllocationsProductRequest(
-//                        orderItem.productId(),
-//                        orderItem.quantity()
-//                    )
-//                );
-//                productQueryService.getProductById(orderItem.productId());
+                reservationItems.add(
+                    new InventoryReservationRequest.ReservationItemRequest(
+                        orderItem.productId(),
+                        orderItem.hubId(),
+                        orderItem.quantity()
+                    )
+                );
             }
+            // 재고 선점
+            InventoryReservationRequest reservationRequest = new InventoryReservationRequest(
+                order.getOrderId(),
+                InventoryIdempotencyKey,
+                reservationItems
+            );
+            InventoryReservationResponse inventoryResponse = inventoryService.reserveProduct(
+                reservationRequest);
+
+            validateInventoryReservation(
+                inventoryResponse,
+                order.getOrderId(),
+                reservationItems.size()
+            );
 
             // 5. 할인 금액 조회 // 추후 사용 예정
 //            PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
@@ -86,22 +119,10 @@ public class OrderFacade {
             );
 
             //6. 이벤트 생성
-            String InventoryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
-                order.getOrderId(),
-                Target.INVENTORY,
-                OperationType.DECREASE
-            );
-
-            String DeliveryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
-                order.getOrderId(),
-                Target.DELIVERY,
-                OperationType.MAKING
-            );
-
-            UUID tmpAddressHubId = UUID.randomUUID();
-            OrderCreatedEvent event = OrderCreatedEvent.from(order, "email", "USERNAME", "address",
+            OrderCreatedEvent event = OrderCreatedEvent.from(order, userProfile.email(),
+                userProfile.username(), userAddressHubId.address(),
                 InventoryIdempotencyKey,
-                DeliveryIdempotencyKey, tmpAddressHubId);
+                DeliveryIdempotencyKey, userAddressHubId.userAddressHubId());
 
             // Outbox에 이벤트 저장 시도  실패 시 전체 롤백으로 데이터 일관성을 지키도록 구현
             orderOutboxEventService.saveEvent(order.getOrderId(),
@@ -113,6 +134,7 @@ public class OrderFacade {
 
         } catch (Exception e) {
             log.error("=== 주문 생성 실패 - 전체 롤백: {} ===", e.getMessage(), e);
+            // 여기에다가 재고 선점 취소 기능 추가해야 할거 같습니다.
             throw new BusinessException(
                 OrderErrorCode.ORDER_CREATION_FAILED,
                 "주문 생성 중 오류 발생: " + e.getMessage()
@@ -123,16 +145,16 @@ public class OrderFacade {
     // 주문 취소 후 재고 증가 이벤트 발행
     // 이 또한 장애 발생 시 트랜잭션 롤백으로 메시지 소실 방지
     @Transactional
-    public Order cancelOrder(UUID orderId, CancelOrderCommand command) {
-        log.info("=== 주문 취소 시작: orderId={} ===", orderId);
+    public Order cancelOrder(CancelOrderCommand command) {
+        log.info("=== 주문 취소 시작: orderId={} ===", command.orderId());
 
         try {
             // 1. 주문 취소 처리
             // 주문Id 확인 없으면 예외 처리
-            orderService.findById(orderId);
+            orderService.findById(command.orderId());
 
-            Order order = orderService.cancelOrder(orderId, command);
-            log.info("주문 취소 완료 - orderId: {}", orderId);
+            Order order = orderService.cancelOrder(command);
+            log.info("주문 취소 완료 - orderId: {}", command.orderId());
 
             String InventoryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
                 order.getOrderId(),
@@ -146,23 +168,55 @@ public class OrderFacade {
                 OperationType.CANCEL
             );
 
-            OrderCancelledEvent event = OrderCancelledEvent.from(order, InventoryIdempotencyKey,
-                DeliveryIdempotencyKey);
+            OrderCancelledEvent event = OrderCancelledEvent.from(
+                order,
+                order.getUserCouponId(),
+                InventoryIdempotencyKey,
+                DeliveryIdempotencyKey
+            );
 
             // Outbox 저장 실패 시 예외 발생 → 전체 롤백
             orderOutboxEventService.saveEvent(order.getOrderId(),
                 "ORDER_CANCELLED", event);
 
-            log.info("=== 주문 취소 완료: orderId={} ===", orderId);
+            log.info("=== 주문 취소 완료: orderId={} ===", command.orderId());
             return order;
 
         } catch (Exception e) {
             log.error("=== 주문 취소 실패 - 전체 롤백: orderId={}, error={} ===",
-                orderId, e.getMessage(), e);
+                command.orderId(), e.getMessage(), e);
             throw new BusinessException(
                 OrderErrorCode.ORDER_CREATION_FAILED,
                 "주문 취소 중 오류 발생: " + e.getMessage()
             );
+        }
+    }
+
+    private void validateInventoryReservation(
+        InventoryReservationResponse response,
+        UUID orderId,
+        int itemCount) {
+
+        if (response == null) {
+            throw new BusinessException(
+                OrderErrorCode.INVENTORY_SERVICE_UNAVAILABLE,
+                "재고 서비스에 접근할 수 없습니다."
+            );
+        }
+
+        if (!response.reserved()) {
+            log.warn("재고 선점 실패 - orderId: {}, reason: {}",
+                orderId, response.message());
+            throw new BusinessException(
+                OrderErrorCode.INVENTORY_RESERVATION_FAILED,
+                response.message()
+            );
+        }
+
+        if (response.orderId() == null) {
+            log.info("재고 선점 - 이미 처리된 요청 - orderId: {}", orderId);
+        } else {
+            log.info("재고 선점 성공 - orderId: {}, items: {}", orderId, itemCount);
         }
     }
 }

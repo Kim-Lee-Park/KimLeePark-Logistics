@@ -8,6 +8,7 @@ import java.util.UUID;
 public record OrderCancelledEvent(
     UUID orderId,
     Long userId,
+    UUID userCouponId,
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
     String cancelReason,
@@ -24,8 +25,12 @@ public record OrderCancelledEvent(
 
     }
 
-    public static OrderCancelledEvent from(Order order, String InventoryIdempotencyKey,
-        String DeliveryIdempotencyKey) {
+    public static OrderCancelledEvent from(
+        Order order,
+        UUID userCouponId,
+        String inventoryIdempotencyKey,
+        String deliveryIdempotencyKey
+    ) {
         List<ProductReplenishment> products = order.getOrderItems().stream()
             .map(item -> new ProductReplenishment(
                 item.getProductId(),
@@ -37,8 +42,9 @@ public record OrderCancelledEvent(
         return new OrderCancelledEvent(
             order.getOrderId(),
             order.getUserId(),
-            InventoryIdempotencyKey,
-            DeliveryIdempotencyKey,
+            userCouponId,
+            inventoryIdempotencyKey,
+            deliveryIdempotencyKey,
             order.getCancellation().getCancelReason(),
             products,
             order.getCancellation().getCancelledAt(),

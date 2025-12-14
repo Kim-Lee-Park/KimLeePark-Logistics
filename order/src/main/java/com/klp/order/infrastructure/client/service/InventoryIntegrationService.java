@@ -10,13 +10,13 @@ import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.infrastructure.client.InventoryClient;
-import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest.ProductDeduction;
+import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest.ProductReplenishment;
-import com.klp.order.infrastructure.client.dto.inventory.response.AllocationsProductResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.DeductInventoryResponse;
+import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.ReplenishInventoryResponse;
 import feign.FeignException;
 import java.util.List;
@@ -34,14 +34,14 @@ public class InventoryIntegrationService {
     private final InventoryClient inventoryClient;
     private final OrderOutboundRequestService orderOutboundRequestService;
 
-    public AllocationsProductResponse allocateProduct(AllocationsProductRequest request) {
+    public InventoryReservationResponse reserveProduct(InventoryReservationRequest request) {
         try {
-            return inventoryClient.allocateProduct(request);
+            return inventoryClient.reserveProduct(request);
         } catch (FeignException.NotFound e) {
             return null;
         } catch (FeignException e) {
-            log.error("[InventoryClient] 재고 선점 호출 중 오류 - productId: {}, status: {}, message: {}",
-                request.productId(), e.status(), e.getMessage());
+            log.error("[InventoryClient] 재고 선점 호출 중 오류 - orderId: {}, status: {}, message: {}",
+                request.orderId(), e.status(), e.getMessage());
             throw new ExternalApiException(ExternalApiErrorCode.INVENTORY_SERVICE_UNAVAILABLE);
         }
     }
