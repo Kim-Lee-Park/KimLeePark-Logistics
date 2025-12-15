@@ -1,7 +1,8 @@
-package com.klp.ai.recommendation.application;
+package com.klp.ai.recommendation.application.service;
 
-import com.klp.ai.recommendation.application.dto.ProductRecommendation;
+import com.klp.ai.recommendation.application.dto.ProductCandidate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
@@ -21,13 +22,12 @@ public class VectorSearchService {
 
     /**
      * 상품명을 기반으로 유사한 상품을 검색합니다.
-     *
-     * @param productName      검색 기준이 되는 상품명
-     * @param excludeProductId 검색 결과에서 제외할 상품 ID (자기 자신)
-     * @param topK             반환할 최대 결과 수
-     * @return 유사 상품 추천 목록
      */
-    public List<ProductRecommendation> findSimilarProducts(String productName, UUID excludeProductId, int topK) {
+    public List<ProductCandidate> findSimilarProductsWithContext(
+        String productName,
+        UUID excludeProductId,
+        int topK
+    ) {
         List<Document> results = vectorStore.similaritySearch(
             SearchRequest.builder()
                 .query(productName)
@@ -42,11 +42,23 @@ public class VectorSearchService {
                 return docProductId != null && !docProductId.equals(excludeProductId.toString());
             })
             .limit(topK)
-            .map(doc -> new ProductRecommendation(
-                UUID.fromString((String) doc.getMetadata().get("productId")),
-                (String) doc.getMetadata().get("productName"),
-                doc.getScore() != null ? doc.getScore() : 0.0
-            ))
+            .map(this::toProductCandidate)
             .toList();
+    }
+
+    private ProductCandidate toProductCandidate(Document doc) {
+        Map<String, Object> metadata = doc.getMetadata();
+
+        return new ProductCandidate(
+            UUID.fromString((String) metadata.get("productId")),
+            (String) metadata.get("productName"),
+            UUID.fromString((String) metadata.get("hubId")),
+            (String) metadata.get("hubName"),
+            0.0,
+            0,
+            doc.getScore() != null ? doc.getScore() : 0.0,
+            0.0,
+            0
+        );
     }
 }

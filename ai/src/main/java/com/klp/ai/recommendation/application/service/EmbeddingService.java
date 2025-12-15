@@ -1,7 +1,9 @@
-package com.klp.ai.recommendation.application;
+package com.klp.ai.recommendation.application.service;
 
-import com.klp.ai.recommendation.infrastructure.client.HubClient;
-import com.klp.ai.recommendation.infrastructure.client.dto.response.ProductResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.HubClient;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.HubResponse;
+import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.ProductResponse;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,9 +21,6 @@ public class EmbeddingService {
     private final HubClient hubClient;
     private final VectorStore vectorStore;
 
-    /**
-     * 단일 상품의 임베딩을 생성하고 벡터 스토어에 저장합니다.
-     */
     public void generateAndSaveEmbedding(UUID productId) {
         try {
             ProductResponse product = hubClient.getProduct(productId);
@@ -33,9 +32,6 @@ public class EmbeddingService {
         }
     }
 
-    /**
-     * 여러 상품의 임베딩을 배치로 생성합니다.
-     */
     public void generateAndSaveEmbeddings(List<UUID> productIds) {
         for (UUID productId : productIds) {
             try {
@@ -49,20 +45,23 @@ public class EmbeddingService {
     private void saveProductEmbedding(ProductResponse product) {
         String productIdStr = product.productId().toString();
 
-        // 기존 임베딩 삭제 (중복 방지)
         deleteExistingEmbedding(productIdStr);
 
-        String embeddingText = createEmbeddingText(product);
+        HubResponse hub = hubClient.getHub(product.hubId());
+        String embeddingText = createEmbeddingText(product, hub);
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("productId", productIdStr);
+        metadata.put("productName", product.productName());
+        metadata.put("hubId", product.hubId().toString());
+        metadata.put("hubName", hub.name());
+        metadata.put("latitude", hub.latitude());
+        metadata.put("longitude", hub.longitude());
 
         Document document = new Document(
             productIdStr,
             embeddingText,
-            Map.of(
-                "productId", productIdStr,
-                "productName", product.productName(),
-                "companyName", product.companyName(),
-                "hubId", product.hubId().toString()
-            )
+            metadata
         );
 
         vectorStore.add(List.of(document));
@@ -77,10 +76,11 @@ public class EmbeddingService {
         }
     }
 
-    private String createEmbeddingText(ProductResponse product) {
-        return String.format("상품: %s, 회사: %s",
+    private String createEmbeddingText(ProductResponse product, HubResponse hub) {
+        return String.format("상품: %s, 허브: %s, 지역: %s",
             product.productName(),
-            product.companyName()
+            hub.name(),
+            hub.address()
         );
     }
 }

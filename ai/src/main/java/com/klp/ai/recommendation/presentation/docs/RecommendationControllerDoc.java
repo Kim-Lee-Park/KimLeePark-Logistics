@@ -22,6 +22,10 @@ public interface RecommendationControllerDoc {
     ResponseEntity<RecommendationResponse> getRecommendations(
         @Parameter(description = "주문 ID", required = true)
         @PathVariable UUID orderId,
+        @Parameter(description = "유저 ID", required = true)
+        @RequestParam Long userId,
+        @Parameter(description = "유저 담당 허브 ID", required = true)
+        @RequestParam UUID userHubId,
         @Parameter(description = "추천 상품 개수 (기본값: 10)")
         @RequestParam(defaultValue = "10") int limit
     );
