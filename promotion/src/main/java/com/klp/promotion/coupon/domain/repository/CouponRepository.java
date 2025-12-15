@@ -13,5 +13,7 @@ public interface CouponRepository {
 
     Coupon save(Coupon coupon);
 
+    void saveStockToRedis(UUID couponId, Long stock);
+
     Page<Coupon> findAll(Pageable page);
 }

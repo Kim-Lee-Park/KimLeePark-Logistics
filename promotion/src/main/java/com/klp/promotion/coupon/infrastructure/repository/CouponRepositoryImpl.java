@@ -53,6 +53,12 @@ public class CouponRepositoryImpl implements CouponRepository {
     }
 
     @Override
+    public void saveStockToRedis(UUID couponId, Long stock) {
+        String key = COUPON_KEY + couponId;
+        redisTemplate.opsForValue().set(key, String.valueOf(stock));
+    }
+
+    @Override
     public Page<Coupon> findAll(Pageable pageable) {
         return couponJpaRepositroy.findAll(pageable);
     }
