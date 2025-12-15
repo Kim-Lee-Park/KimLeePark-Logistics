@@ -1,6 +1,7 @@
 package com.klp.promotion.coupon.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.promotion.coupon.domain.event.CouponRestoredEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import java.util.HashMap;
@@ -56,7 +57,8 @@ public class KafkaProducerConfig {
     private String buildTypeMappings() {
         return String.join(",",
             "CouponUsedEvent:" + CouponUsedEvent.class.getName(),
-            "CouponUseFailedEvent:" + CouponUsedFailedEvent.class.getName()
+            "CouponUseFailedEvent:" + CouponUsedFailedEvent.class.getName(),
+            "CouponRestoredEvent:" + CouponRestoredEvent.class.getName()
         );
     }
 

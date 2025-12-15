@@ -1,22 +1,23 @@
-package com.klp.payment.payment.domain.event;
+package com.klp.promotion.coupon.domain.event;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record OrderCancelledEvent(
+public record PaymentCancelledEvent(
+    UUID paymentId,
     UUID orderId,
     Long userId,
     UUID userCouponId,
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
-    String cancelReason,
-    List<ProductReplenishment> products,
+    String reason,
+    List<ProductInfo> products,
     LocalDateTime cancelledAt,
     LocalDateTime occurredAt
 ) {
 
-    public record ProductReplenishment(
+    public record ProductInfo(
         UUID productId,
         UUID hubId,
         Integer quantity

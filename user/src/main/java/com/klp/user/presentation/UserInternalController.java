@@ -24,7 +24,7 @@ public class UserInternalController {
 
     private final UserFacade userFacade;
 
-    @GetMapping("/{addressId}")
+    @GetMapping("/address/{addressId}")
     public ResponseEntity<UserAddressHubResponse> getUserAddressHub(
         @PathVariable UUID addressId
     ) {

@@ -4,9 +4,11 @@ import com.klp.promotion.coupon.application.facade.UserCouponFacade;
 import com.klp.promotion.coupon.application.service.CouponOutboxEventService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
+import com.klp.promotion.coupon.domain.event.CouponRestoredEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
+import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.List;
 import java.util.UUID;
@@ -143,6 +145,57 @@ public class PaymentEventListener {
             // 쿠폰 선점 해제
             userCouponService.cancelReserve(event.userCouponId());
             couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
+            throw e;
+        }
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handlePaymentCancelled(
+        @Payload PaymentCancelledEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        Acknowledgment acknowledgment) {
+        log.info("=== 결제 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
+            event.orderId(), event.userCouponId(), partition, offset);
+        try{
+            UUID userCouponId = event.userCouponId();
+            userCouponFacade.couponRestored(userCouponId);
+
+            List<CouponRestoredEvent.CancelledItemDto> orderItems = event.products().stream()
+                .map(product -> new CouponRestoredEvent.CancelledItemDto(
+                    product.productId(),
+                    product.hubId(),
+                    product.quantity()
+                ))
+                .toList();
+
+            CouponRestoredEvent restoredEvent = new CouponRestoredEvent(
+                event.paymentId(),
+                event.orderId(),
+                event.userId(),
+                event.userCouponId(),
+                event.inventoryIdempotencyKey(),
+                event.deliveryIdempotencyKey(),
+                event.reason(),
+                orderItems,
+                event.cancelledAt(),
+                event.occurredAt()
+            );
+
+            couponOutboxEventService.cancelEvent(
+                event.orderId(),
+                restoredEvent
+            );
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+
+        } catch (Exception e) {
+            log.error("결제 취소 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+                event.orderId(), partition, offset, e);
             throw e;
         }
     }

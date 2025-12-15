@@ -2,6 +2,8 @@ package com.klp.hub.inventory.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.ObservationRegistry;
+import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -59,8 +61,8 @@ public class KafkaProducerConfig {
     // ⭐ 추가된 메서드 - 타입 매핑 설정
     private String buildTypeMappings() {
         return String.join(",",
-            "InventoryDeductedEvent:" +
-                com.klp.hub.inventory.domain.event.InventoryDeductedEvent.class.getName()
+            "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName(),
+            "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName()
 
         );
     }

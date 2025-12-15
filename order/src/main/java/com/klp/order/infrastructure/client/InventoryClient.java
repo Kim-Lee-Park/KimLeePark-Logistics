@@ -3,12 +3,12 @@ package com.klp.order.infrastructure.client;
 
 import com.klp.global.config.FeignTracingConfig;
 import com.klp.global.config.InventoryFeignClientConfig;
-import com.klp.order.infrastructure.client.dto.inventory.request.AllocationsProductRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.DeductInventoryRequest;
+import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
 import com.klp.order.infrastructure.client.dto.inventory.request.ReplenishInventoryRequest;
-import com.klp.order.infrastructure.client.dto.inventory.response.AllocationsProductResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.DeductInventoryResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.GetProductResponse;
+import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
 import com.klp.order.infrastructure.client.dto.inventory.response.ReplenishInventoryResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -30,6 +30,6 @@ public interface InventoryClient {
     @PostMapping("/v1/inventories/replenish")
     ReplenishInventoryResponse replenishInventory(@RequestBody ReplenishInventoryRequest request);
 
-    @PostMapping("v1/inventories/allocations")
-    AllocationsProductResponse allocateProduct(@RequestBody AllocationsProductRequest request);
+    @PostMapping("/internal/v1/inventories/reserve")
+    InventoryReservationResponse reserveProduct(@RequestBody InventoryReservationRequest request);
 }
