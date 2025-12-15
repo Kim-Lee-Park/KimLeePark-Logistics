@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -34,6 +36,7 @@ public class RecommendationFacade {
     /**
      * 주문 ID 기반 추천 생성
      */
+    @Cacheable(value = "recommendation", key = "#orderId.toString() + ':' + #limit")
     public List<RecommendationResult> getRecommendations(
         UUID orderId,
         Long userId,
@@ -147,5 +150,21 @@ public class RecommendationFacade {
             .limit(5)
             .map(RecommendationResult::from)
             .toList();
+    }
+
+    /**
+     * 특정 주문의 추천 캐시 삭제
+     */
+    @CacheEvict(value = "recommendation", key = "#orderId.toString()")
+    public void evictRecommendationCache(UUID orderId) {
+        log.info("추천 캐시 삭제: orderId={}", orderId);
+    }
+
+    /**
+     * 모든 추천 캐시 삭제
+     */
+    @CacheEvict(value = "recommendation", allEntries = true)
+    public void evictAllRecommendationCache() {
+        log.info("전체 추천 캐시 삭제");
     }
 }
