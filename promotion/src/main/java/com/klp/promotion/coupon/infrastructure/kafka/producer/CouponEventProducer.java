@@ -1,5 +1,6 @@
 package com.klp.promotion.coupon.infrastructure.kafka.producer;
 
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.concurrent.CompletableFuture;
@@ -30,10 +31,28 @@ public class CouponEventProducer {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("쿠폰 사용 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
+                log.info("쿠폰 사용 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(),
+                    event.userCouponId());
             } else {
-                log.error("쿠폰 사용 이벤트 발행 실패: orderId={}, userCouponId={}, error={}", event.orderId(), event.userCouponId(),
-                    ex.getMessage());
+                log.error("쿠폰 사용 이벤트 발행 실패: orderId={}, userCouponId={}, error={}", event.orderId(),
+                    event.userCouponId(), ex.getMessage());
+            }
+        });
+    }
+
+    public void publishCouponUseFailedEvent(CouponUsedFailedEvent event) {
+        String key = event.orderId().toString();
+
+        CompletableFuture<SendResult<String, Object>> future =
+            kafkaTemplate.send(KafkaTopicConfig.COUPON_TOPIC, key, event);
+
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                log.info("쿠폰 사용 실패 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(),
+                    event.userCouponId());
+            } else {
+                log.error("쿠폰 사용 실패 이벤트 발행 실패: orderId={}, userCouponId={}, error={}",
+                    event.orderId(), event.userCouponId(), ex.getMessage());
             }
         });
     }

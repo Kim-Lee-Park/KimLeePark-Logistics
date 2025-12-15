@@ -1,6 +1,8 @@
 package com.klp.delivery.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.delivery.delivery.domain.event.InventoryDeductedEvent;
+import com.klp.delivery.delivery.domain.event.InventoryReplenishedEvent;
 import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +68,9 @@ public class KafkaConfig {
                 +
                 "DeliveryArrivedEvent:com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent,"
                 +
-                "DeliveryArrivedFailedEvent:com.klp.delivery.delivery.domain.event.DeliveryArrivedFailedEvent");
+                "DeliveryArrivedFailedEvent:com.klp.delivery.delivery.domain.event.DeliveryArrivedFailedEvent,"
+                +
+                "DeliveryNotificationEvent:com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent");
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -99,7 +103,8 @@ public class KafkaConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "InventoryDeductedEvent:com.klp.delivery.delivery.domain.event.InventoryDeductedEvent");
+            "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
+            "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName());
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 

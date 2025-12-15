@@ -68,6 +68,15 @@ public class DeliveryService {
         }
     }
 
+    public List<Delivery> findDeliveriesByOrderIdForCancellation(UUID orderId) {
+        try {
+            return deliveryRepository.findDeliveryByOrderId(orderId);
+        } catch (Exception e) {
+            log.error("주문 ID로 배송 조회 실패: {}", e.getMessage(), e);
+            throw new BusinessException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
+        }
+    }
+
     public Page<DeliveryDetailResponse> findDeliveryAll(Pageable pageable) {
         try {
             Page<Delivery> deliveryPage = deliveryRepository.findDeliveryAll(pageable);

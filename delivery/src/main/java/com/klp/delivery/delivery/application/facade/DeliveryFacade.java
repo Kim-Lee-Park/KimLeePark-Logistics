@@ -11,12 +11,15 @@ import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
 import com.klp.delivery.delivery.application.service.DeliveryService;
+import com.klp.delivery.delivery.application.service.DeliveryService;
+import com.klp.delivery.delivery.application.service.DeliveryOutboxEventService;
 import com.klp.delivery.delivery.application.service.DriverService;
 import com.klp.delivery.delivery.application.service.IdempotencyKeyService;
 import com.klp.delivery.delivery.application.util.DriverSelector;
 import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent;
 import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import com.klp.delivery.global.exception.BusinessException;
@@ -43,7 +46,7 @@ public class DeliveryFacade {
     private final ApplicationEventPublisher eventPublisher;
     private final DriverService driverService;
     private final HubClientService hubService;
-    private final DeliveryEventPublisher deliveryEventPublisher;
+    private final DeliveryOutboxEventService deliveryOutboxEventService;
 
 
     @Transactional
@@ -126,11 +129,36 @@ public class DeliveryFacade {
         List<DeliveryResponse.DeliveryItemResponse> deliveryItems = buildDeliveryItemResponses(
             createdDeliveries);
 
-        // 4. 이벤트 데이터 수집
-        List<OrderDeliveryEvent.DeliveryItem> eventItems = buildEventItems(createdDeliveries);
+        // 4. DeliveryCreatedEvent 아웃박스 저장
+        if (!createdDeliveries.isEmpty()) {
+            // OrderItemCommand를 orderItemId로 매핑
+            Map<UUID, OrderItemCommand> productMap = orderCommand.products().stream()
+                .collect(Collectors.toMap(OrderItemCommand::orderItemId, item -> item));
 
-        // 5. 배송 생성 이벤트 발행
-        publishDeliveryCreatedEvent(orderCommand.orderId(), eventItems);
+            // 모든 배송의 items를 합침
+            List<DeliveryCreatedEvent.OrderItem> allEventItems = new ArrayList<>();
+            for (Delivery delivery : createdDeliveries) {
+                for (DeliveryItem item : delivery.getDeliveryItems()) {
+                    allEventItems.add(new DeliveryCreatedEvent.OrderItem(
+                        item.getOrderItemId(),
+                        delivery.getDeliveryId()
+                    ));
+                }
+            }
+            // 첫 번째 배송의 정보 사용
+            Delivery firstDelivery = createdDeliveries.get(0);
+            DeliveryCreatedEvent createdEvent = DeliveryCreatedEvent.from(orderCommand, allEventItems);
+
+
+            deliveryOutboxEventService.saveCreatedEvent(
+                firstDelivery.getDeliveryId(),
+                orderCommand.orderId(),
+                createdEvent
+            );
+
+            log.info("배송 생성 이벤트 아웃박스 저장 완료: orderId={}, deliveryCount={}, totalItems={}",
+                orderCommand.orderId(), createdDeliveries.size(), allEventItems.size());
+        }
 
         return deliveryItems;
     }
@@ -167,35 +195,7 @@ public class DeliveryFacade {
         return responses;
     }
 
-    private List<OrderDeliveryEvent.DeliveryItem> buildEventItems(List<Delivery> deliveries) {
-        List<OrderDeliveryEvent.DeliveryItem> eventItems = new ArrayList<>();
-        for (Delivery delivery : deliveries) {
-            for (DeliveryItem item : delivery.getDeliveryItems()) {
-                eventItems.add(new OrderDeliveryEvent.DeliveryItem(
-                    item.getOrderItemId(),
-                    delivery.getDeliveryId()
-                ));
-            }
-        }
-        return eventItems;
-    }
 
-    private void publishDeliveryCreatedEvent(
-        UUID orderId, List<OrderDeliveryEvent.DeliveryItem> eventItems) {
-
-        if (eventItems.isEmpty()) {
-            return;
-        }
-
-        OrderDeliveryEvent event = new OrderDeliveryEvent(
-            orderId,
-            eventItems
-        );
-
-//        deliveryEventPublisher.publishCreatedEvent(event);
-        log.info("배송 생성 이벤트 발행: orderId={}, status={}, totalItems={}",
-            orderId, CustomerDeliveryStatus.CREATED, eventItems.size());
-    }
 
     private void publishDeliveryRouteCreateEvent(
         Delivery delivery,
@@ -211,6 +211,8 @@ public class DeliveryFacade {
                 delivery.getArrivalId(),
                 delivery.getArrivalName(),
                 delivery.getUserDrvierId(),
+                delivery.getUserDriverSlackId(),
+                delivery.getUserAddress(),
                 orderCommand.username(),
                 orderCommand.email(),
                 orderCommand.createdAt(),
@@ -236,5 +238,28 @@ public class DeliveryFacade {
 
     public boolean hasActiveDeliveries(UUID routePlanId) {
         return deliveryService.hasActiveDeliveriesByRoutePlanId(routePlanId);
+    }
+
+    @Transactional
+    public void cancelDeliveriesByOrderId(UUID orderId, Long deletedBy) {
+
+        List<Delivery> deliveries = deliveryService.findDeliveriesByOrderIdForCancellation(orderId);
+
+        if (deliveries.isEmpty()) {
+            log.info("취소할 배송이 없습니다: orderId={}", orderId);
+            return;
+        }
+
+        for (Delivery delivery : deliveries) {
+            try {
+                deliveryService.deleteDelivery(delivery.getDeliveryId(), deletedBy);
+                log.info("배송 취소 완료: deliveryId={}, orderId={}", delivery.getDeliveryId(), orderId);
+            } catch (Exception e) {
+                log.error("배송 취소 실패: deliveryId={}, orderId={}, error={}",
+                    delivery.getDeliveryId(), orderId, e.getMessage(), e);
+            }
+        }
+
+        log.info("배송 취소 완료: orderId={}, cancelledCount={}", orderId, deliveries.size());
     }
 }

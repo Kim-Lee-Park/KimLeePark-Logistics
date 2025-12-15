@@ -2,7 +2,7 @@ package com.klp.notification.messaging.application.listener;
 
 import com.klp.notification.ai.application.AIService;
 import com.klp.notification.ai.application.command.GenerateMessageCommand;
-import com.klp.notification.messaging.domain.event.DeliveryCreatedEvent;
+import com.klp.notification.messaging.domain.event.DeliveryNotificationEvent;
 import com.klp.notification.messaging.infrastructure.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class DeliveryEventListener {
     private final AIService aiService;
 
     @KafkaHandler
-    public void handleDeliveryCreated(DeliveryCreatedEvent event) {
+    public void handleDeliveryCreated(DeliveryNotificationEvent event) {
         log.info("배송 생성 이벤트 수신: deliveryId={}, orderId={}", event.deliveryId(), event.orderId());
 
         try {
