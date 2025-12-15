@@ -21,6 +21,10 @@ resource "aws_ecs_service" "gateway" {
     container_port   = 8080
   }
 
+  service_registries {
+    registry_arn = aws_service_discovery_service.ecs["gateway"].arn
+  }
+
   depends_on = [
     aws_ecs_service.config,
     aws_lb_target_group.gateway_tg,

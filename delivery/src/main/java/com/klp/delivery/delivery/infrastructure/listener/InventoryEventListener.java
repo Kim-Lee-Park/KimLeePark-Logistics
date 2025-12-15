@@ -3,11 +3,13 @@ package com.klp.delivery.delivery.infrastructure.listener;
 import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
-import com.klp.delivery.delivery.application.facade.TMPDeliveryFacade;
+import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.domain.event.InventoryDeductedEvent;
+import com.klp.delivery.delivery.domain.event.InventoryReplenishedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
+import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -19,15 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InventoryDeductedEventListener {
+@KafkaListener(
+    topics = "inventory.topic",
+    groupId = "delivery-service-group",
+    containerFactory = "kafkaListenerContainerFactory"
+)
+public class InventoryEventListener {
 
-    private final TMPDeliveryFacade deliveryFacade;
+    private final DeliveryFacade deliveryFacade;
 
-    @KafkaListener(
-        topics = "inventory.topic",
-        groupId = "delivery-service-group",
-        containerFactory = "kafkaListenerContainerFactory"
-    )
+    @KafkaHandler
     @Transactional
     public void handleInventoryDeducted(
         @Payload InventoryDeductedEvent event,
@@ -63,8 +66,36 @@ public class InventoryDeductedEventListener {
         }
     }
 
+    @KafkaHandler
+    @Transactional
+    public void handleInventoryReplenished(
+        @Payload InventoryReplenishedEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset,
+        Acknowledgment acknowledgment) {
+
+        log.info("=== 재고 복구 이벤트 수신: orderId={}, partition={}, offset={}, cancelReason={} ===",
+            event.orderId(), partition, offset, event.cancelReason());
+
+        try {
+            Long deletedBy = event.userId() != null ? event.userId() : 0L;
+            deliveryFacade.cancelDeliveriesByOrderId(event.orderId(), deletedBy);
+            log.info("=== 배송 취소 완료: orderId={} ===", event.orderId());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+
+        } catch (Exception e) {
+            log.error("재고 복구 이벤트 처리 실패: orderId={}, partition={}, offset={}",
+                event.orderId(), partition, offset, e);
+            throw e;
+        }
+    }
+
     @DltHandler
-    public void handleInventoryDeductedDlt(
+    public void handleInventorydDlt(
         @Payload InventoryDeductedEvent event,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {

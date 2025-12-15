@@ -104,4 +104,11 @@ public class GradeService {
     public DefaultGradeResponse getDefaultGradeName() {
         return DefaultGradeResponse.of(GradeType.NONE.getDisplayName());
     }
+
+    @Transactional(readOnly = true)
+    public Grade getGradeByName(String gradeName) {
+        return gradeRepository.getGradeByName(gradeName)
+            .orElseThrow(() -> new BusinessException(GradeErrorCode.GRADE_NOT_FOUND));
+    }
+
 }

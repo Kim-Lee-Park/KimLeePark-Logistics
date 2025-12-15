@@ -14,4 +14,6 @@ public interface GradeRepository {
     List<Grade> findAll();
 
     boolean existsByGradeName(String gradeName);
+
+    Optional<Grade> getGradeByName(String gradeName);
 }

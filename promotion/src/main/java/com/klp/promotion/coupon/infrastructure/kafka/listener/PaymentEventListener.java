@@ -6,6 +6,7 @@ import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.event.CouponCancelledEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
@@ -31,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
     groupId = "coupon-service-group",
     containerFactory = "couponKafkaListenerContainerFactory"
 )
-public class PaymentApprovedEventListener {
+public class PaymentEventListener {
 
     private final UserCouponFacade userCouponFacade;
     private final UserCouponService userCouponService;
@@ -129,7 +130,6 @@ public class PaymentApprovedEventListener {
             // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
             couponOutboxEventService.saveEvent(
                 event.orderId(),
-                "COUPON_USED",
                 couponUsedEvent
             );
             log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
@@ -143,6 +143,9 @@ public class PaymentApprovedEventListener {
         } catch (Exception e) {
             log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
+            // 쿠폰 선점 해제
+            userCouponService.cancelReserve(event.userCouponId());
+            couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
             throw e;
         }
     }

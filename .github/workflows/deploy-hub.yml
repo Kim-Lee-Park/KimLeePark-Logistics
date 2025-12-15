@@ -2,7 +2,7 @@ name: Deploy hub
 
 on:
   push:
-    branches: [ "deploy/200/internal-alb-deploy" ]
+    branches: [ "stage", "main" ]
     paths:
       - "hub/**"
       - ".github/workflows/deploy-hub.yml"
@@ -13,12 +13,8 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: klp-logistics-hub
-  ECS_CLUSTER: klp-logistics-ecs-cluster
-  ECS_SERVICE: klp-logistics-hub-svc
-  ECS_TASK_FAMILY: klp-logistics-hub
-  CODEDEPLOY_APP: klp-logistics-hub-app
-  CODEDEPLOY_GROUP: klp-logistics-hub-dg
+  SERVICE_NAME: hub
+  APP_PATH: hub
   CONTAINER_NAME: hub
 
 jobs:
@@ -29,18 +25,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set deployment context (stage/main)
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/stage" ]]; then
+            DEPLOY_ENV=stage
+            ROLE="${{ secrets.AWS_ROLE_TO_ASSUME_STAGE }}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            DEPLOY_ENV=prod
+            ROLE="${{ secrets.AWS_ROLE_TO_ASSUME_PROD }}"
+          else
+            echo "Unsupported branch: ${GITHUB_REF}" >&2
+            exit 1
+          fi
+
+          NAME_PREFIX="klp-logistics"
+          if [ "$DEPLOY_ENV" = "stage" ]; then
+            NAME_PREFIX="${NAME_PREFIX}-stage"
+          fi
+
+          cat <<EOF >> "$GITHUB_ENV"
+          DEPLOY_ENV=$DEPLOY_ENV
+          AWS_ROLE_TO_ASSUME=$ROLE
+          NAME_PREFIX=$NAME_PREFIX
+          ECR_REPOSITORY=${NAME_PREFIX}-${{ env.SERVICE_NAME }}
+          ECS_CLUSTER=${NAME_PREFIX}-ecs-cluster
+          ECS_SERVICE=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-svc
+          ECS_TASK_FAMILY=${NAME_PREFIX}-${{ env.SERVICE_NAME }}
+          CODEDEPLOY_APP=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-app
+          CODEDEPLOY_GROUP=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-dg
+          EOF
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Run tests
-        working-directory: hub
+        working-directory: ${{ env.APP_PATH }}
         run: ./gradlew test
 
       - name: Build application
-        working-directory: hub
+        working-directory: ${{ env.APP_PATH }}
         run: ./gradlew clean build -x test
 
       - name: Login to Amazon ECR
@@ -54,7 +80,7 @@ jobs:
           ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
           IMAGE_URI=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}
 
-          docker build -t "${IMAGE_URI}" ./hub
+          docker build -t "${IMAGE_URI}" "./${{ env.APP_PATH }}"
           docker push "${IMAGE_URI}"
 
           echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"

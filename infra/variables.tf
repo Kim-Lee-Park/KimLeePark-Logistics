@@ -3,6 +3,12 @@ variable "project_name" {
   default = "klp-logistics"
 }
 
+variable "environment" {
+  description = "배포 환경 구분 (prod|stage)"
+  type        = string
+  default     = "prod"
+}
+
 variable "aws_region" {
   type    = string
   default = "ap-northeast-2"
@@ -78,4 +84,10 @@ variable "ec2_key_name" {
 variable "ec2_private_key_path" {
   type        = string
   description = "SSH Key Path"
+}
+
+variable "github_repository" {
+  description = "GitHub repository slug (owner/repo) for OIDC 조건문 생성"
+  type        = string
+  default     = "Kim-Lee-Park/KimLeePark-Logistics"
 }

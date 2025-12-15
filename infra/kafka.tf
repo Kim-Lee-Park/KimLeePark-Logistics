@@ -5,7 +5,7 @@ resource "aws_instance" "kafka_zookeeper" {
   subnet_id     = aws_subnet.private_kafka_az1.id
 
   vpc_security_group_ids = [aws_security_group.kafka.id]
-  iam_instance_profile   = aws_iam_instance_profile.kafka.name
+  iam_instance_profile = aws_iam_instance_profile.kafka.name
 
   root_block_device {
     volume_type = "gp3"
@@ -27,7 +27,7 @@ resource "aws_instance" "kafka_zookeeper" {
 
     AWS_REGION="${var.aws_region}"
     ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-    REPO_BASE="$${ACCOUNT_ID}.dkr.ecr.$${AWS_REGION}.amazonaws.com/${local.project}"
+    REPO_BASE="$${ACCOUNT_ID}.dkr.ecr.$${AWS_REGION}.amazonaws.com/${var.project_name}"
 
     # ECR login (uses VPC endpoints + instance profile)
     aws ecr get-login-password --region "$${AWS_REGION}" \
@@ -59,7 +59,7 @@ resource "aws_instance" "kafka_broker" {
   subnet_id = count.index == 2 ? aws_subnet.private_kafka_az2.id : aws_subnet.private_kafka_az1.id
 
   vpc_security_group_ids = [aws_security_group.kafka.id]
-  iam_instance_profile   = aws_iam_instance_profile.kafka.name
+  iam_instance_profile = aws_iam_instance_profile.kafka.name
 
   root_block_device {
     volume_type = "gp3"
@@ -83,7 +83,7 @@ resource "aws_instance" "kafka_broker" {
 
     AWS_REGION="${var.aws_region}"
     ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-    REPO_BASE="$${ACCOUNT_ID}.dkr.ecr.$${AWS_REGION}.amazonaws.com/${local.project}"
+    REPO_BASE="$${ACCOUNT_ID}.dkr.ecr.$${AWS_REGION}.amazonaws.com/${var.project_name}"
 
     aws ecr get-login-password --region "$${AWS_REGION}" \
       | docker login --username AWS --password-stdin "$${ACCOUNT_ID}.dkr.ecr.$${AWS_REGION}.amazonaws.com"
@@ -151,7 +151,7 @@ resource "aws_service_discovery_service" "kafka_exporter" {
 }
 
 resource "aws_service_discovery_instance" "kafka_exporter" {
-  count      = length(aws_instance.kafka_broker)
+  count = length(aws_instance.kafka_broker)
   service_id = aws_service_discovery_service.kafka_exporter.id
 
   instance_id = aws_instance.kafka_broker[count.index].id

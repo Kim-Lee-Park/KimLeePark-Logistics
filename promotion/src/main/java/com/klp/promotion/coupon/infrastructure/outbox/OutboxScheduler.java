@@ -3,6 +3,7 @@ package com.klp.promotion.coupon.infrastructure.outbox;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.entity.outbox.CouponOutboxEvent;
 import com.klp.promotion.coupon.domain.event.CouponCancelledEvent;
+import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.repository.CouponOutboxEventRepository;
 import com.klp.promotion.coupon.infrastructure.kafka.producer.CouponEventProducer;
@@ -46,9 +47,13 @@ public class OutboxScheduler {
         String payload = outbox.getPayload();
 
         switch (eventType) {
-            case "COUPON_USED" -> {
+            case "CouponUsedEvent" -> {
                 CouponUsedEvent event = objectMapper.readValue(payload, CouponUsedEvent.class);
                 eventProducer.publishCouponUsedEvent(event);
+            }
+            case "CouponUsedFailedEvent" -> {
+                CouponUsedFailedEvent event = objectMapper.readValue(payload, CouponUsedFailedEvent.class);
+                eventProducer.publishCouponUseFailedEvent(event);
             }
             case "COUPON_CANCELLED" -> {
                 CouponCancelledEvent event = objectMapper.readValue(payload,

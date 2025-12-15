@@ -11,6 +11,9 @@ public class KafkaTopicConfig {
     // 구독용
     public static final String ORDER_TOPIC = "order.topic";
 
+    // 구독용
+    public static final String COUPON_TOPIC = "coupon.topic";
+
     // 발행용
     public static final String PAYMENT_TOPIC = "payment.topic";
 
@@ -38,4 +41,17 @@ public class KafkaTopicConfig {
             .replicas(1)
             .build();
     }
+
+    /**
+     * 쿠폰 이벤트 토픽
+     */
+    @Bean
+    public NewTopic couponDltTopic() {
+        return TopicBuilder.name(COUPON_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+
 }

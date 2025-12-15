@@ -81,7 +81,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(http_server_requests_seconds_count{application=\"$app_name\", uri!=\"/actuator/prometheus\"})",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[$__range]))",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -164,10 +164,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(uri) (http_server_requests_seconds_count{application=\"$app_name\", uri!=\"/actuator/prometheus\"})",
+          "expr": "sum by(http_route) (increase(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[$__range]))",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{method}} {{uri}}",
+          "legendFormat": "{{http_request_method}} {{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -269,9 +269,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(uri)(http_server_requests_seconds_sum{application=\"$app_name\"}) / sum by(uri)(http_server_requests_seconds_count{application=\"$app_name\"})",
+          "expr": "sum by(http_route)(rate(http_server_request_duration_seconds_sum{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m])) / sum by(http_route)(rate(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m]))",
           "interval": "",
-          "legendFormat": "{{method}} {{uri}}",
+          "legendFormat": "{{http_request_method}} {{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -339,7 +339,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(http_server_requests_seconds_count{application=\"$app_name\", outcome=\"SERVER_ERROR\"})",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_response_status_code=~\"5..\", http_route!=\"/actuator/prometheus\"}[$__range]))",
           "interval": "",
           "legendFormat": "",
           "range": true,
@@ -442,9 +442,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(uri) (http_server_requests_seconds_count{application=\"$app_name\", status=~\"2.*\", uri!=\"/actuator/prometheus\"}) / sum by(uri) (http_server_requests_seconds_count{application=\"$app_name\", uri!=\"/actuator/prometheus\"})",
+          "expr": "sum by(http_route) (rate(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_response_status_code=~\"2..\", http_route!=\"/actuator/prometheus\"}[5m])) / sum by(http_route) (rate(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m]))",
           "interval": "",
-          "legendFormat": "{{path}}",
+          "legendFormat": "{{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -544,9 +544,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(uri) (http_server_requests_seconds_count{application=\"$app_name\", status=~\"5.*\", uri!=\"/actuator/prometheus\"}) / sum by(uri) (http_server_requests_seconds_count{application=\"$app_name\", uri!=\"/actuator/prometheus\"})",
+          "expr": "sum by(http_route) (rate(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_response_status_code=~\"5..\", http_route!=\"/actuator/prometheus\"}[5m])) / sum by(http_route) (rate(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m]))",
           "interval": "",
-          "legendFormat": "{{uri}}",
+          "legendFormat": "{{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -645,9 +645,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(.99,sum(rate(http_server_requests_seconds_bucket{application=\"$app_name\", uri!=\"/actuator/prometheus\"}[5m])) by(uri, le))",
+          "expr": "histogram_quantile(.99,sum(rate(http_server_request_duration_seconds_bucket{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m])) by(http_route, le))",
           "interval": "",
-          "legendFormat": "{{uri}}",
+          "legendFormat": "{{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -771,9 +771,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(.95,sum(rate(http_server_requests_seconds_bucket{application=\"$app_name\", uri!=\"/actuator/prometheus\"}[5m])) by(uri, le))",
+          "expr": "histogram_quantile(.95,sum(rate(http_server_request_duration_seconds_bucket{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m])) by(http_route, le))",
           "interval": "",
-          "legendFormat": "{{uri}}",
+          "legendFormat": "{{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -872,9 +872,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(uri)(rate(http_server_requests_seconds_count{application=\"$app_name\"}[5m]))",
+          "expr": "sum by(http_route)(rate(http_server_request_duration_seconds_count{service_name=\"$app_name\", http_route!=\"/actuator/prometheus\"}[5m]))",
           "interval": "",
-          "legendFormat": "{{uri}}",
+          "legendFormat": "{{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -1085,15 +1085,12 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(application)",
+        "definition": "label_values(http_server_request_duration_seconds_count, service_name)",
         "includeAll": false,
         "label": "Application Name",
         "name": "app_name",
         "options": [],
-        "query": {
-          "query": "label_values(application)",
-          "refId": "StandardVariableQuery"
-        },
+        "query": "label_values(http_server_request_duration_seconds_count, service_name)",
         "refresh": 1,
         "regex": "",
         "type": "query"

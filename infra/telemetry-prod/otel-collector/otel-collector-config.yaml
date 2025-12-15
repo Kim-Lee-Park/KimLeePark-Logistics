@@ -24,9 +24,10 @@ exporters:
 
   prometheus:
     endpoint: 0.0.0.0:9464
-    namespace: klp_otel
     const_labels:
       component: otel-collector
+    resource_to_telemetry_conversion:
+      enabled: true
 
 service:
   pipelines:

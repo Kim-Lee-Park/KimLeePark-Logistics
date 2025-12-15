@@ -3,6 +3,7 @@ package com.klp.promotion.coupon.domain.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+
 import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.coupon.domain.enums.CouponType;
 import com.klp.promotion.global.exception.BusinessException;
