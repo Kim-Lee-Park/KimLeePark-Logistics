@@ -60,8 +60,8 @@ public class KafkaConsumerConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName() + "," +
-                "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName()
+            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName()+ "," +
+            "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName()
         );
 
         return new DefaultKafkaConsumerFactory<>(props,

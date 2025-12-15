@@ -1,6 +1,6 @@
 package com.klp.promotion.coupon.infrastructure.kafka.producer;
 
-import com.klp.promotion.coupon.domain.event.CouponCancelledEvent;
+import com.klp.promotion.coupon.domain.event.CouponRestoredEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
@@ -51,17 +51,14 @@ public class CouponEventProducer {
             if (ex == null) {
                 log.info("쿠폰 사용 실패 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(),
                     event.userCouponId());
-                log.info("쿠폰 사용 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(),
-                    event.userCouponId());
             } else {
-                log.error("쿠폰 사용 이벤트 발행 실패: orderId={}, userCouponId={}, error={}", event.orderId(),
-                    event.userCouponId(),
-                    ex.getMessage());
+                log.error("쿠폰 사용 실패 이벤트 발행 실패: orderId={}, userCouponId={}, error={}",
+                    event.orderId(), event.userCouponId(), ex.getMessage());
             }
         });
     }
 
-    public void publishCouponCancelledEvent(CouponCancelledEvent event) {
+    public void publishCouponRestoredEvent(CouponRestoredEvent event) {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
@@ -69,14 +66,11 @@ public class CouponEventProducer {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("쿠폰 취소 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(),
+                log.info("쿠폰 사용 취소 이벤트 발행 성공: orderId={}, userCouponId={}", event.orderId(),
                     event.userCouponId());
             } else {
-                log.error("쿠폰 사용 실패 이벤트 발행 실패: orderId={}, userCouponId={}, error={}",
+                log.error("쿠폰 사용 취소 이벤트 발행 실패: orderId={}, userCouponId={}, error={}",
                     event.orderId(), event.userCouponId(), ex.getMessage());
-                log.error("쿠폰 취소 이벤트 발행 실패: orderId={}, userCouponId={}, error={}", event.orderId(),
-                    event.userCouponId(),
-                    ex.getMessage());
             }
         });
     }

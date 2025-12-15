@@ -83,6 +83,9 @@ public class UserCouponFacade {
         userCoupon.delete(userId);
     }
 
+    /**
+     * 쿠폰 선점 및 주문금액 산정
+     * */
     @Transactional
     public CouponApplyResponse applyUserCoupon(UUID userCouponId, String gradeName,
         int originalPrice) {
@@ -114,5 +117,17 @@ public class UserCouponFacade {
 
             throw new BusinessException(CouponErrorCode.COUPON_CALCULATION_FAILED);
         }
+    }
+
+    /**
+     * 쿠폰 사용취소로 인한 쿠폰 복원
+     * */
+    @Transactional
+    public void couponRestored(UUID userCouponId) {
+        UserCoupon userCoupon = userCouponService.findByUserCouponId(userCouponId);
+        if (userCoupon == null) {
+            throw new BusinessException(COUPON_NOT_FOUND);
+        }
+        userCoupon.couponRestored();
     }
 }
