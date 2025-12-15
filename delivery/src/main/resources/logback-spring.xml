@@ -9,6 +9,11 @@
     </encoder>
   </appender>
 
+  <logger name="okhttp3" level="WARN"/>
+  <logger name="okhttp3.internal.concurrent.TaskRunner" level="WARN"/>
+  <logger name="org.apache.kafka" level="WARN"/>
+  <logger name="org.apache.kafka.clients.consumer.internals" level="WARN"/>
+
   <appender name="OpenTelemetryMdc"
     class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
     <appender-ref ref="CONSOLE"/>

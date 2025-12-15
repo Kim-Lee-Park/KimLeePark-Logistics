@@ -1,13 +1,16 @@
 package com.klp.hub.global.config;
 
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,10 +18,14 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 @Configuration
+@EnableKafka
+@RequiredArgsConstructor
 public class KafKaConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    private final ObservationRegistry observationRegistry;
 
     @Bean
     public ProducerFactory<String, Object> kafkaProducerFactoryAcks1() {
@@ -36,12 +43,20 @@ public class KafKaConfig {
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplateAcks1() {
-        return new KafkaTemplate<>(kafkaProducerFactoryAcks1());
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(
+            kafkaProducerFactoryAcks1());
+        kafkaTemplate.setObservationEnabled(true);
+        kafkaTemplate.setObservationRegistry(observationRegistry);
+        return kafkaTemplate;
     }
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplateAcksAll() {
-        return new KafkaTemplate<>(kafkaProducerFactoryAcksAll());
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(
+            kafkaProducerFactoryAcksAll());
+        kafkaTemplate.setObservationEnabled(true);
+        kafkaTemplate.setObservationRegistry(observationRegistry);
+        return kafkaTemplate;
     }
 
     @Bean

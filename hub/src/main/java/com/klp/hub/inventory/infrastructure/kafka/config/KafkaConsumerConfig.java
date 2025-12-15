@@ -129,6 +129,8 @@ public class KafkaConsumerConfig {
 
         factory.setCommonErrorHandler(errorHandler);
 
+        factory.getContainerProperties().setObservationEnabled(true);
+
         return factory;
     }
 }

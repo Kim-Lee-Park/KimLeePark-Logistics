@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.observation.ObservationRegistry;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import java.util.HashMap;
@@ -24,9 +25,11 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     private final ObjectMapper objectMapper;
+    private final ObservationRegistry observationRegistry;
 
-    public KafkaProducerConfig(ObjectMapper objectMapper) {
+    public KafkaProducerConfig(ObjectMapper objectMapper, ObservationRegistry observationRegistry) {
         this.objectMapper = objectMapper;
+        this.observationRegistry = observationRegistry;
     }
 
     @Bean
@@ -66,6 +69,10 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, Object> inventoryKafkaTemplate() {
-        return new KafkaTemplate<>(inventoryProducerFactory());
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(
+            inventoryProducerFactory());
+        kafkaTemplate.setObservationEnabled(true);
+        kafkaTemplate.setObservationRegistry(observationRegistry);
+        return kafkaTemplate;
     }
 }

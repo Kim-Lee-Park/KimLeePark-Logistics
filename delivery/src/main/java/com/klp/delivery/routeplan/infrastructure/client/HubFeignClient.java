@@ -1,5 +1,6 @@
 package com.klp.delivery.routeplan.infrastructure.client;
 
+import com.klp.delivery.global.config.FeignTracingConfig;
 import com.klp.delivery.global.config.HubFeignClientConfig;
 import com.klp.delivery.routeplan.infrastructure.dto.HubResponse;
 import com.klp.delivery.routeplan.infrastructure.dto.HubRouteInfoResponse;
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Component
-@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = HubFeignClientConfig.class)
+@FeignClient(name = "hub-service", url = "${clients.hub.url:}", configuration = {HubFeignClientConfig.class,
+    FeignTracingConfig.class})
 public interface HubFeignClient {
 
     @GetMapping("/v1/hubs/{hubId}")
