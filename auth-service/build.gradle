@@ -69,6 +69,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.7.0-alpha'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:2.7.0-alpha'
+
+    //circuit breaker
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+    implementation 'io.github.resilience4j:resilience4j-micrometer' // 메트릭
 }
 
 dependencyManagement {
