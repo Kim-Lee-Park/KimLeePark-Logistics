@@ -18,6 +18,8 @@ import com.klp.order.domain.vo.UserAddressHubId;
 import com.klp.order.domain.vo.UserProfile;
 import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
 import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
+import com.klp.order.infrastructure.client.dto.promotion.request.PromotionCalculateRequest;
+import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
 import com.klp.order.infrastructure.client.service.InventoryIntegrationService;
 import com.klp.order.infrastructure.client.service.PromotionDiscountService;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
@@ -73,7 +75,7 @@ public class OrderFacade {
             log.info("멱등키 생성 완료 - orderId: {}", order.getOrderId());
 
             // 4. 상품 존재 확인
-            List<OrderItemCommand> orderItems = command.items();
+            List<OrderItemCommand> orderItems = command.orderItems();
             int originalPriceTotal = 0;
             List<InventoryReservationRequest.ReservationItemRequest> reservationItems = new ArrayList<>();
 
@@ -106,16 +108,16 @@ public class OrderFacade {
             );
 
             // 5. 할인 금액 조회 // 추후 사용 예정
-//            PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
-//                userProfile.grade(), originalPriceTotal, command.userCouponId());
-//            PromotionResponse promotionResponse = promotionService.promotionInfo(calculateRequest);
+            PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
+                command.userCouponId(), userProfile.grade(), originalPriceTotal);
+            PromotionResponse promotionResponse = promotionService.promotionInfo(calculateRequest);
 
             // 추후에 PromotionResponse 값을 사용할 예정
             orderService.updateDiscountPrice(
                 order,
-                0,
-                1,
-                originalPriceTotal - 1
+                promotionResponse.couponDiscountPrice(),
+                promotionResponse.gradeDiscountPrice(),
+                promotionResponse.orderPrice()
             );
 
             //6. 이벤트 생성
@@ -134,7 +136,9 @@ public class OrderFacade {
 
         } catch (Exception e) {
             log.error("=== 주문 생성 실패 - 전체 롤백: {} ===", e.getMessage(), e);
-            // 여기에다가 재고 선점 취소 기능 추가해야 할거 같습니다.
+            // 재고 선점 취소
+            // 여기서 또 각 try catch로 잡아야하는가?
+            // 쿠폰 선점 취소
             throw new BusinessException(
                 OrderErrorCode.ORDER_CREATION_FAILED,
                 "주문 생성 중 오류 발생: " + e.getMessage()
