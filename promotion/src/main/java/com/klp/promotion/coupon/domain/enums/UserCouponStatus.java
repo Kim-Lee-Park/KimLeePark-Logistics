@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum UserCouponStatus {
     READY("사용전"),
+    RESERVE("쿠폰선점"),
     USED("사용"),
     EXPIRED("유효기간만료");
 

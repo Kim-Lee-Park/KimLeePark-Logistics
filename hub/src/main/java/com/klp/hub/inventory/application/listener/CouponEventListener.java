@@ -2,6 +2,7 @@ package com.klp.hub.inventory.application.listener;
 
 import com.klp.hub.inventory.application.InventoryFacade;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
+import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent.OrderItem;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
     groupId = "inventory-service-group",
     containerFactory = "inventoryKafkaListenerContainerFactory"
 )
-public class CouponUsedEventListener {
+public class CouponEventListener {
 
     private final InventoryFacade inventoryFacade;
     private final InventoryEventProducer inventoryEventProducer;
@@ -97,6 +98,13 @@ public class CouponUsedEventListener {
                 event.orderId(), e);
             throw e;
         }
+    }
+
+    @KafkaHandler
+    public void handleCouponUsedFailed(CouponUsedFailedEvent event) {
+        log.info("쿠폰 사용실패 이벤트 수신: orderId={}", event.orderId());
+        inventoryFacade.release(event.orderId());
+        log.info("재고 선점 해제 완료: orderId={}", event.orderId());
     }
 
     @KafkaHandler(isDefault = true)

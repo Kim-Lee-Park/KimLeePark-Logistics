@@ -2,6 +2,7 @@ package com.klp.delivery.delivery.infrastructure.producer;
 
 import com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent;
+import com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryShippingEvent;
 import com.klp.delivery.global.config.KafkaTopicConfig;
 import java.util.concurrent.CompletableFuture;
@@ -72,6 +73,23 @@ public class DeliveryEventProducer {
                 log.info("배송 완료 이벤트 발행 성공: orderId={}", event.orderId());
             } else {
                 log.error("배송 완료 이벤트 발행 실패: orderId={}, error={}", event.orderId(),
+                    ex.getMessage());
+            }
+        });
+    }
+
+
+    public void publishNotificationEvent(DeliveryNotificationEvent event) {
+        String key = event.orderId().toString();
+
+        CompletableFuture<SendResult<String, Object>> future =
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
+
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                log.info("배송 알림 완료 이벤트 발행 성공: orderId={}", event.orderId());
+            } else {
+                log.error("배송 알림  완료 이벤트 발행 실패: orderId={}, error={}", event.orderId(),
                     ex.getMessage());
             }
         });

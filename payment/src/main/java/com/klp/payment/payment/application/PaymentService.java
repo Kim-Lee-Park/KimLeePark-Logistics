@@ -183,4 +183,21 @@ public class PaymentService {
         payment.cancel(reason);
         return payment;
     }
+
+    /**
+     * 쿠폰 취소로 인한 결제 취소 처리
+     */
+    @Transactional
+    public Payment failPayment(UUID paymentId, String reason) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(() -> new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        if (payment == null) {
+            return null;
+        }
+
+        payment.fail(reason);
+        return payment;
+    }
+
 }
