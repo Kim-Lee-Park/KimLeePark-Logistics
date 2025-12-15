@@ -92,7 +92,6 @@ public class RecommendationFacade {
 
             List<RecommendationResult> results = llmService.generateRecommendations(context, availableCandidates);
 
-            // similarityScore 높은 순으로 정렬
             List<RecommendationResult> sortedResults = results.stream()
                 .sorted((a, b) -> Double.compare(b.similarityScore(), a.similarityScore()))
                 .toList();
