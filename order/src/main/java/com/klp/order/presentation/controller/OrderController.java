@@ -127,8 +127,8 @@ public class OrderController implements OrderControllerDoc {
         @RequestHeader("X-User-Id") Long cancelledBy,
         @Valid @RequestBody CancelOrderRequest request
     ) {
-        CancelOrderCommand command = request.toCommand(cancelledBy);
-        Order order = orderFacade.cancelOrder(orderId, command);
+        CancelOrderCommand command = request.toCommand(orderId, cancelledBy);
+        Order order = orderFacade.cancelOrder(command);
         CancelOrderResponse response = CancelOrderResponse.from(order);
 
         return ResponseEntity.ok(response);

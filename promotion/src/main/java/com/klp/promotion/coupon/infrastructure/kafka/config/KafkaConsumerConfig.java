@@ -1,6 +1,8 @@
 package com.klp.promotion.coupon.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
+import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +60,9 @@ public class KafkaConsumerConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentApprovedEvent:com.klp.promotion.coupon.domain.event.PaymentApprovedEvent");
+            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName()+ "," +
+            "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName()
+        );
 
         return new DefaultKafkaConsumerFactory<>(props,
             new StringDeserializer(),

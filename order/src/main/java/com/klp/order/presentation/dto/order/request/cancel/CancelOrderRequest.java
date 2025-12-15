@@ -5,6 +5,7 @@ import com.klp.order.domain.entity.cancel.CancelType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Schema(description = "주문 취소 요청")
 public record CancelOrderRequest(
@@ -26,11 +27,14 @@ public record CancelOrderRequest(
     CancelType cancelType
 ) {
 
-    public CancelOrderCommand toCommand(Long cancelledBy) {
+    public CancelOrderCommand toCommand(UUID orderId, Long cancelledBy) {
         return new CancelOrderCommand(
+            orderId,
+            null,
             cancelReason,
             cancelledBy,
-            cancelType
+            cancelType,
+            null
         );
     }
 }

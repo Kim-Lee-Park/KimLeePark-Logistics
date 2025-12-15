@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
@@ -77,6 +78,7 @@ public class KafkaConsumerConfig {
         return String.join(",",
             "OrderCreatedEvent:" + OrderCreatedEvent.class.getName(),
             "CouponUsedEvent:" + CouponUsedEvent.class.getName(),
+            "CouponCancelledEvent:" + CouponCancelledEvent.class.getName(),
             "PaymentFailedEvent:" + PaymentFailedEvent.class.getName(),
             "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName(),
             "CouponUsedFailedEvent:" + CouponUsedFailedEvent.class.getName()

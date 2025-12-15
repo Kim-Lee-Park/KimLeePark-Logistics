@@ -2,6 +2,7 @@ package com.klp.promotion.coupon.infrastructure.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.entity.outbox.CouponOutboxEvent;
+import com.klp.promotion.coupon.domain.event.CouponRestoredEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.repository.CouponOutboxEventRepository;
@@ -51,6 +52,10 @@ public class OutboxScheduler {
             case "CouponUsedFailedEvent" -> {
                 CouponUsedFailedEvent event = objectMapper.readValue(payload, CouponUsedFailedEvent.class);
                 eventProducer.publishCouponUseFailedEvent(event);
+            }
+            case "CouponRestoredEvent" -> {
+                CouponRestoredEvent event = objectMapper.readValue(payload, CouponRestoredEvent.class);
+                eventProducer.publishCouponRestoredEvent(event);
             }
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         }

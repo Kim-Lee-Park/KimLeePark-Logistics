@@ -59,8 +59,8 @@ public class OrderService {
     }
 
     @Transactional
-    public Order cancelOrder(UUID orderId, CancelOrderCommand command) {
-        Order order = findById(orderId);
+    public Order cancelOrder(CancelOrderCommand command) {
+        Order order = findById(command.orderId());
         order.cancel(
             command.cancelReason(),
             command.cancelledBy(),
