@@ -42,6 +42,14 @@ public class EmbeddingService {
         }
     }
 
+    public void generateAllEmbeddings() {
+        log.info("모든 상품 임베딩 생성 시작");
+        List<UUID> allProductIds = hubClient.getAllProductIds();
+        log.info("총 {} 개 상품의 임베딩 생성 시작", allProductIds.size());
+        generateAndSaveEmbeddings(allProductIds);
+        log.info("모든 상품 임베딩 생성 완료");
+    }
+
     private void saveProductEmbedding(ProductResponse product) {
         String productIdStr = product.productId().toString();
 
@@ -53,6 +61,7 @@ public class EmbeddingService {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("productId", productIdStr);
         metadata.put("productName", product.productName());
+        metadata.put("category", product.category() != null ? product.category() : "기타");
         metadata.put("hubId", product.hubId().toString());
         metadata.put("hubName", hub.name());
         metadata.put("latitude", hub.latitude());
@@ -77,8 +86,10 @@ public class EmbeddingService {
     }
 
     private String createEmbeddingText(ProductResponse product, HubResponse hub) {
-        return String.format("상품: %s, 허브: %s, 지역: %s",
+        String category = product.category() != null ? product.category() : "기타";
+        return String.format("상품: %s, 카테고리: %s, 허브: %s, 지역: %s",
             product.productName(),
+            category,
             hub.name(),
             hub.address()
         );
