@@ -27,7 +27,16 @@ public class Product extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Comment("카테고리")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private ProductCategory category;
+
     public Product(UUID companyId, String name) {
+        this(companyId, name, null);
+    }
+
+    public Product(UUID companyId, String name, ProductCategory category) {
         validateName(name);
 
         if (companyId == null) {
@@ -35,12 +44,21 @@ public class Product extends BaseEntity {
         }
         this.name = name;
         this.companyId = companyId;
+        this.category = category;
     }
 
     public void updateName(String name) {
         validateName(name);
 
         this.name = name;
+    }
+
+    public void updateCategory(ProductCategory category) {
+        this.category = category;
+    }
+
+    public String getCategoryDisplayName() {
+        return category != null ? category.getDisplayName() : "기타";
     }
 
     private void validateName(String name) {

@@ -58,7 +58,7 @@ class ProductControllerTest {
         void getProductById() throws Exception {
             UUID productId = UUID.randomUUID();
             when(productService.getProductById(productId))
-                .thenReturn(new ProductResponse(productId, UUID.randomUUID(), "업체명", "상품명"));
+                .thenReturn(new ProductResponse(productId, UUID.randomUUID(), "업체명", "상품명", "전자제품/이어폰"));
 
             mockMvc.perform(get("/v1/products/{productId}", productId))
                 .andExpect(status().isOk())

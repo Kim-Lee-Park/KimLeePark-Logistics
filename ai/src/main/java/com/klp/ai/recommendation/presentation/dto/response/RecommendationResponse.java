@@ -19,15 +19,14 @@ public record RecommendationResponse(
         int inventory,
         double averageRating,
         int reviewCount,
-        double score,
-        String reason
+        double similarityScore
     ) {
 
         public static RecommendationItem from(RecommendationResult r) {
             return new RecommendationItem(
                 r.productId(), r.productName(),
                 r.hubName(), r.distance(), r.inventory(),
-                r.averageRating(), r.reviewCount(), r.score(), r.reason()
+                r.averageRating(), r.reviewCount(), r.similarityScore()
             );
         }
     }

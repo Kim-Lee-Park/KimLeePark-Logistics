@@ -4,6 +4,7 @@ import com.klp.ai.global.config.HubFeignClientConfig;
 import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.HubResponse;
 import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.InventoryResponse;
 import com.klp.ai.recommendation.infrastructure.client.feign.dto.response.ProductResponse;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,4 +21,7 @@ public interface HubClient {
 
     @GetMapping("/v1/inventories/{productId}")
     InventoryResponse getInventory(@PathVariable UUID productId);
+
+    @GetMapping("/v1/internal/products/ids")
+    List<UUID> getAllProductIds();
 }

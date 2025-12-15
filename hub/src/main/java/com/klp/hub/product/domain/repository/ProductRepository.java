@@ -5,6 +5,7 @@ import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +15,6 @@ public interface ProductRepository {
     Page<ProductsPageRowResponse> findAllByPageable(Pageable pageable);
 
     Product save(Product product);
+
+    List<UUID> findAllProductIds();
 }
