@@ -16,6 +16,7 @@ import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
 import com.klp.promotion.global.exception.BusinessException;
 import com.klp.promotion.grade.application.GradeService;
 import com.klp.promotion.grade.domain.entity.Grade;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -114,5 +115,10 @@ public class UserCouponFacade {
 
             throw new BusinessException(CouponErrorCode.COUPON_CALCULATION_FAILED);
         }
+    }
+
+    @Transactional
+    public void markExpiredCoupons(LocalDateTime todayStart){
+        couponService.markExpiredCoupons(todayStart);
     }
 }

@@ -3,8 +3,14 @@ package com.klp.promotion.coupon.infrastructure.repository;
 import static com.klp.promotion.coupon.common.exception.CouponErrorCode.COUPON_NOT_FOUND;
 
 import com.klp.promotion.coupon.domain.entity.Coupon;
+import com.klp.promotion.coupon.domain.entity.QCoupon;
+import com.klp.promotion.coupon.domain.entity.QUserCoupon;
+import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.domain.repository.CouponRepository;
 import com.klp.promotion.global.exception.BusinessException;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +25,7 @@ public class CouponRepositoryImpl implements CouponRepository {
     private final StringRedisTemplate redisTemplate;
     private final CouponJpaRepositroy couponJpaRepositroy;
     private final String COUPON_KEY = "coupon:stock:";
+    private final JPAQueryFactory queryFactory;
 
     @Override
     public boolean decreaseStock(UUID couponId) {
@@ -61,5 +68,26 @@ public class CouponRepositoryImpl implements CouponRepository {
     @Override
     public Page<Coupon> findAll(Pageable pageable) {
         return couponJpaRepositroy.findAll(pageable);
+    }
+
+    @Override
+    public void markExpiredCoupons(LocalDateTime todayStart) {
+        QUserCoupon userCoupon = QUserCoupon.userCoupon;
+        QCoupon coupon = QCoupon.coupon;
+
+        queryFactory
+            .update(userCoupon)
+            .set(userCoupon.status, UserCouponStatus.EXPIRED)
+            .where(
+                userCoupon.status.eq(UserCouponStatus.READY),
+                userCoupon.couponId.in(
+                    JPAExpressions
+                        .select(coupon.couponId)
+                        .from(coupon)
+                        .where(coupon.expired_at.lt(todayStart))
+                )
+            )
+            .execute();
+
     }
 }

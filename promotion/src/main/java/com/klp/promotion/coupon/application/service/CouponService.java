@@ -95,4 +95,9 @@ public class CouponService {
         Page<Coupon> couponPage = couponRepository.findAll(pageable);
         return couponPage.map(CouponDetailResponse::from);
     }
+
+    @Transactional(readOnly = true)
+    public void markExpiredCoupons(LocalDateTime todayStart) {
+        couponRepository.markExpiredCoupons(todayStart);
+    }
 }
