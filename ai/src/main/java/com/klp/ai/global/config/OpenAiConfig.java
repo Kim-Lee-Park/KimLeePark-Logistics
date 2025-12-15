@@ -34,14 +34,14 @@ public class OpenAiConfig {
 
     @Bean
     @Primary
-    public ChatModel ollamaChatModel(
+    public ChatModel openAiChatModel(
         @Value("${spring.ai.openai.api-key}") String apiKey,
-        @Value("${spring.ai.openai.embedding.options.model:text-embedding-3-small}") String model
+        @Value("${spring.ai.openai.chat.options.model:gpt-4o-mini}") String chatModel
     ) {
         OpenAiApi openAiApi = OpenAiApi.builder().apiKey(apiKey).build();
         return OpenAiChatModel.builder()
             .openAiApi(openAiApi)
-            .defaultOptions(OpenAiChatOptions.builder().model(model).build())
+            .defaultOptions(OpenAiChatOptions.builder().model(chatModel).build())
             .build();
     }
 }
