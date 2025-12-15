@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "promotion" {
       environment = [
         {
           name  = "SPRING_PROFILES_ACTIVE",
-          value = "prod"
+          value = var.environment
         },
         {
           name  = "CONFIG_SERVER_URL",
@@ -169,7 +169,7 @@ resource "aws_ecs_task_definition" "promotion" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-promotion"
+          value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
 

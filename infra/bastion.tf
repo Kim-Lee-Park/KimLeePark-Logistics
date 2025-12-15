@@ -10,10 +10,8 @@ resource "aws_instance" "bastion" {
     #!/bin/bash
     set -xe
 
-    # 패키지 메타데이터 업데이트
     dnf update -y
 
-    # PostgreSQL 15 클라이언트 설치 (psql 포함)
     dnf install -y postgresql15
   EOF
 
