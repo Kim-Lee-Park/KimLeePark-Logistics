@@ -1,13 +1,13 @@
 locals {
   db_targets = {
-    auth         = { db_name = "auth" }
-    delivery     = { db_name = "delivery" }
-    hub          = { db_name = "hub" }
+    auth = { db_name = "auth" }
+    delivery = { db_name = "delivery" }
+    hub = { db_name = "hub" }
     notification = { db_name = "notification" }
-    order        = { db_name = "orders" }
-    promotion    = { db_name = "promotion" }
-    payment      = { db_name = "payment" }
-    user         = { db_name = "users" }
+    order = { db_name = "orders" }
+    promotion = { db_name = "promotion" }
+    payment = { db_name = "payment" }
+    user = { db_name = "users" }
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_db_instance" "postgres" {
   availability_zone    = local.az1
   vpc_security_group_ids = [aws_security_group.db.id]
 
-  backup_retention_period = 7
+  backup_retention_period = 0
   skip_final_snapshot     = true
   deletion_protection     = false
 

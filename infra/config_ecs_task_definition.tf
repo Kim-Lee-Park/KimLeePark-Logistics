@@ -30,7 +30,7 @@ resource "aws_ecs_task_definition" "config" {
       }
 
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
+        { name = "SPRING_PROFILES_ACTIVE", value = var.environment },
         { name = "SPRING_CLOUD_CONFIG_ENABLED", value = "false" },
         { name = "SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL", value = "main" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
