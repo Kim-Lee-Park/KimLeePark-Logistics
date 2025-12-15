@@ -1,0 +1,37 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  filter/drop_noise:
+    logs:
+      log_record:
+        - body == "GET /actuator/health"    # 헬스체크 로그 제거
+
+  batch:
+    timeout: 5s          # 5초 동안 모았다가
+    send_batch_size: 512 # 512개 단위로 전송
+
+exporters:
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    compression: gzip
+
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ filter/drop_noise, batch ]
+      exporters: [ otlphttp/tempo ]
+
+    logs:
+      receivers: [ otlp ]
+      processors: [ filter/drop_noise, batch ]
+      exporters: [ otlphttp/loki ]

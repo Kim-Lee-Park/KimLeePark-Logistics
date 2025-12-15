@@ -7,9 +7,14 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
+  filter/drop_noise:
+    logs:
+      log_record:
+        - body == "GET /actuator/health"    # 헬스체크 로그 제거
+
   batch:
-    timeout: 5s
-    send_batch_size: 512
+    timeout: 5s          # 5초 동안 모았다가
+    send_batch_size: 512 # 512개 단위로 전송
 
 exporters:
   # 디버깅용 – Collector 로그에 span 찍기
@@ -21,15 +26,16 @@ exporters:
 
   otlphttp/loki:
     endpoint: http://loki:3100/otlp
+    compression: gzip
 
 service:
   pipelines:
     traces:
       receivers: [ otlp ]
-      processors: [ batch ]
+      processors: [ filter/drop_noise, batch ]
       exporters: [ otlphttp/tempo, debug ]
 
     logs:
       receivers: [ otlp ]
-      processors: [ batch ]
+      processors: [ filter/drop_noise, batch ]
       exporters: [ otlphttp/loki, debug ]

@@ -2,10 +2,9 @@ package com.klp.ai.recommendation.application.dto;
 
 import java.util.UUID;
 
-public record ProductRecommendation(
+public record OrderedProduct(
     UUID productId,
-    String productName,
-    Double score
+    String productName
 ) {
 
 }

@@ -1,6 +1,9 @@
 package com.klp.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -32,9 +35,11 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     private final ObjectMapper objectMapper;
+    private final ObservationRegistry observationRegistry;
 
-    public KafkaConfig(ObjectMapper objectMapper) {
+    public KafkaConfig(ObjectMapper objectMapper, ObservationRegistry observationRegistry) {
         this.objectMapper = objectMapper;
+        this.observationRegistry = observationRegistry;
     }
 
     @Bean
@@ -65,6 +70,9 @@ public class KafkaConfig {
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate() {
+        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory());
+        kafkaTemplate.setObservationEnabled(true);
+        kafkaTemplate.setObservationRegistry(observationRegistry);
         return new KafkaTemplate<>(producerFactory());
     }
 
@@ -133,6 +141,8 @@ public class KafkaConfig {
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(errorHandler());
 
+        factory.getContainerProperties().setObservationEnabled(true);
+
         return factory;
     }
 
@@ -141,5 +151,63 @@ public class KafkaConfig {
         // 최대 3번 재시도, 초기 1초 간격
         FixedBackOff fixedBackOff = new FixedBackOff(1000L, 3L);
         return new DefaultErrorHandler(fixedBackOff);
+    }
+
+    @Bean
+    public Map<String, Object> commonConsumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "order-service-group");
+
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+            org.apache.kafka.common.serialization.StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            org.springframework.kafka.support.serializer.JsonDeserializer.class);
+
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.klp.order.infrastructure.event.dto.*");
+//        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return props;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserProfileChangedMessage> userProfileChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new org.apache.kafka.common.serialization.StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserProfileChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserProfileChangedMessage>
+    userProfileChangedKafkaListenerContainerFactory() {
+
+        ConcurrentKafkaListenerContainerFactory<String, UserProfileChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userProfileChangedConsumerFactory());
+
+        factory.getContainerProperties().setObservationEnabled(true);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, ProductInfoChangedMessage> productInfoChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new org.apache.kafka.common.serialization.StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(ProductInfoChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> productInfoChangedKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(productInfoChangedConsumerFactory());
+
+        factory.getContainerProperties().setObservationEnabled(true);
+        return factory;
     }
 }

@@ -63,7 +63,7 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}", 
+                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}",
                     record.topic(), exception.getMessage());
                 return new TopicPartition(KafkaTopicConfig.NOTIFICATION_DLT, record.partition());
             });
@@ -75,14 +75,14 @@ public class KafkaConsumerConfig {
     ) {
         FixedBackOff backOff = new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRY_ATTEMPTS);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
-        
+
         errorHandler.addNotRetryableExceptions(
             DeserializationException.class,
             MessageConversionException.class
         );
 
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
-            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}", 
+            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
                 record.topic(), deliveryAttempt, ex.getMessage());
         });
 
@@ -99,6 +99,8 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(notificationConsumerFactory());
         factory.setConcurrency(3);
         factory.setCommonErrorHandler(errorHandler);
+
+        factory.getContainerProperties().setObservationEnabled(true);
 
         return factory;
     }

@@ -17,7 +17,7 @@ public class ProductEventListener {
     @KafkaListener(
         topics = "product.info.changed",
         groupId = "order-service-group",
-        containerFactory = "kafkaListenerContainerFactory"
+        containerFactory = "productInfoChangedKafkaListenerContainerFactory"
     )
     public void handleProductInfoChanged(ProductInfoChangedMessage msg) {
         log.info("[ProductEventListener] user.profile.changed received. productId={}, eventType={}",
