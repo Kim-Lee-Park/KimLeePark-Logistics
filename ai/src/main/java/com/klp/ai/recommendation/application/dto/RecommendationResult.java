@@ -1,5 +1,6 @@
 package com.klp.ai.recommendation.application.dto;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 public record RecommendationResult(
@@ -12,7 +13,7 @@ public record RecommendationResult(
     double averageRating,
     int reviewCount,
     double similarityScore
-) {
+) implements Serializable {
 
     public static RecommendationResult from(ProductCandidate candidate) {
         return new RecommendationResult(
