@@ -29,6 +29,7 @@ public enum OrderErrorCode implements ErrorCode {
 
     ORDER_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 생성 중 오류가 발생했습니다."),
     INVENTORY_DEDUCTION_FAILED(HttpStatus.BAD_REQUEST, "재고 차감에 실패 하였습니다."),
+    ORDER_CANCELLATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "주문 취소 중 오류가 발생했습니다."),
     USER_ID_REQUIRED(HttpStatus.BAD_REQUEST, "사용자 ID는 필수입니다."),
     DELIVERY_ADDRESS_REQUIRED(HttpStatus.BAD_REQUEST, "배송지 주소는 필수입니다."),
     DELIVERY_LATITUDE_REQUIRED(HttpStatus.BAD_REQUEST, "배송지 위도는 필수입니다."),
@@ -41,8 +42,8 @@ public enum OrderErrorCode implements ErrorCode {
     INVALID_COUPON_DISCOUNT(HttpStatus.BAD_REQUEST, "유효하지 않은 쿠폰 할인 금액 입니다."),
     INVALID_GRADE_DISCOUNT(HttpStatus.BAD_REQUEST, "유효하지 않은 등급 할인 금액 입니다."),
     COUPON_DISCOUNT_WITHOUT_COUPON(HttpStatus.BAD_REQUEST, "쿠폰없이 쿠폰 할인 금액이 존재할 수 없습니다."),
-
-    ;
+    INVENTORY_SERVICE_UNAVAILABLE(HttpStatus.BAD_REQUEST, "재고 서비스에 접근할 수 없습니다. 잠시 후 다시 시도해주세요."),
+    INVENTORY_RESERVATION_FAILED(HttpStatus.BAD_REQUEST, "재고 선점에 실패 하였습니다.");
 
     private final HttpStatus status;
     private final String message;

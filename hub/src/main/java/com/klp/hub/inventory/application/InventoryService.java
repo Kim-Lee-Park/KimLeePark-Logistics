@@ -4,8 +4,8 @@ import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
+import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
-import com.klp.hub.inventory.domain.event.PaymentCancelledEvent;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
@@ -128,8 +128,8 @@ public class InventoryService {
      * 결제 취소 시 재고 복원
      */
     @Transactional
-    public void replenishFromCancellation(PaymentCancelledEvent event) {
-        String idempotencyKey = event.idempotencyKey();
+    public void replenishFromCancellation(CouponCancelledEvent event) {
+        String idempotencyKey = event.inventoryIdempotencyKey();
         InventoryIdempotencyStatus status = inventoryRepository.acquireIdempotencyKey(
             idempotencyKey);
 
@@ -138,7 +138,7 @@ public class InventoryService {
             return;
         }
 
-        List<InventoryReplenish> plans = event.items().stream()
+        List<InventoryReplenish> plans = event.products().stream()  // items() -> products()
             .map(item -> new InventoryReplenish(item.productId(), item.hubId(), item.quantity()))
             .toList();
 
@@ -150,14 +150,21 @@ public class InventoryService {
         inventoryRepository.idempotencySuccess(idempotencyKey);
 
         InventoryReplenishedEvent replenishedEvent = InventoryReplenishedEvent.of(
+            event.paymentId(),
             event.orderId(),
-            event.items().stream()
-                .map(item -> new InventoryReplenishedEvent.ReplenishedItem(
+            event.userId(),
+            event.userCouponId(),
+            event.inventoryIdempotencyKey(),
+            event.deliveryIdempotencyKey(),
+            event.reason(),
+            event.products().stream()  // items() -> products()
+                .map(item -> new InventoryReplenishedEvent.ProductInfo(
                     item.productId(),
                     item.hubId(),
                     item.quantity()
                 ))
-                .toList()
+                .toList(),
+            event.cancelledAt()
         );
         outboxService.saveInventoryReplenishedEvent(replenishedEvent);
 

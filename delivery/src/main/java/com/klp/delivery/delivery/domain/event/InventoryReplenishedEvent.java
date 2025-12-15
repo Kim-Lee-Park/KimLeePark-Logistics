@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.UUID;
 
 public record InventoryReplenishedEvent(
+    UUID paymentId,
     UUID orderId,
     Long userId,
-    String inventoryIdempotencyKey,
-    String deliveryIdempotencyKey,
-    String cancelReason,
-    List<ProductReplenishment> products,
+    UUID userCouponId,
+    String reason,
+    List<ProductInfo> products,
     LocalDateTime cancelledAt,
     LocalDateTime occurredAt
 ) {
 
-    public record ProductReplenishment(
+    public record ProductInfo(
         UUID productId,
         UUID hubId,
         Integer quantity
@@ -23,5 +23,24 @@ public record InventoryReplenishedEvent(
 
     }
 
-
+    public static InventoryReplenishedEvent of(
+        UUID paymentId,
+        UUID orderId,
+        Long userId,
+        UUID userCouponId,
+        String reason,
+        List<ProductInfo> products,
+        LocalDateTime cancelledAt
+    ) {
+        return new InventoryReplenishedEvent(
+            paymentId,
+            orderId,
+            userId,
+            userCouponId,
+            reason,
+            products,
+            cancelledAt,
+            LocalDateTime.now()  // occurredAt은 현재 시각
+        );
+    }
 }

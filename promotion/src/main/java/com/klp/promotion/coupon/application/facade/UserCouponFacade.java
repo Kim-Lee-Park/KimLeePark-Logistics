@@ -10,13 +10,11 @@ import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.coupon.domain.entity.Coupon;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
-import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.presentation.dto.CouponApplyResponse;
 import com.klp.promotion.coupon.presentation.dto.IssueUserCouponResponse;
 import com.klp.promotion.global.exception.BusinessException;
 import com.klp.promotion.grade.application.GradeService;
 import com.klp.promotion.grade.domain.entity.Grade;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +82,9 @@ public class UserCouponFacade {
         userCoupon.delete(userId);
     }
 
+    /**
+     * 쿠폰 선점 및 주문금액 산정
+     * */
     @Transactional
     public CouponApplyResponse applyUserCoupon(UUID userCouponId, String gradeName,
         int originalPrice) {
@@ -117,8 +118,15 @@ public class UserCouponFacade {
         }
     }
 
+    /**
+     * 쿠폰 사용취소로 인한 쿠폰 복원
+     * */
     @Transactional
-    public void markExpiredCoupons(LocalDateTime todayStart){
-        couponService.markExpiredCoupons(todayStart);
+    public void couponRestored(UUID userCouponId) {
+        UserCoupon userCoupon = userCouponService.findByUserCouponId(userCouponId);
+        if (userCoupon == null) {
+            throw new BusinessException(COUPON_NOT_FOUND);
+        }
+        userCoupon.couponRestored();
     }
 }
