@@ -1,6 +1,8 @@
 package com.klp.delivery.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.delivery.delivery.domain.event.InventoryDeductedEvent;
+import com.klp.delivery.delivery.domain.event.InventoryReplenishedEvent;
 import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
