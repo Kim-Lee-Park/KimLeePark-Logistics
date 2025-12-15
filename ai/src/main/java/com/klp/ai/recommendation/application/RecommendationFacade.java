@@ -41,7 +41,7 @@ public class RecommendationFacade {
         int limit
     ) {
         log.info("추천 요청: orderId={}, userId={}", orderId, userId);
-        
+
         List<OrderedProduct> orderedProducts = orderDataService.getOrderedProducts(orderId);
 
         List<RecommendationResult> recommendations = generateRecommendations(
@@ -68,7 +68,7 @@ public class RecommendationFacade {
 
         try {
             List<ProductCandidate> candidates = searchCandidates(orderedProducts);
-            
+
             if (candidates.isEmpty()) {
                 log.warn("유사 상품 없음: userId={}", userId);
                 return Collections.emptyList();
@@ -81,15 +81,21 @@ public class RecommendationFacade {
             List<ProductCandidate> enrichedCandidates = enrichCandidates(candidates, context.userHub());
 
             availableCandidates = filterByInventory(enrichedCandidates);
-            
+
             if (availableCandidates.isEmpty()) {
                 log.warn("재고 있는 상품 없음: userId={}", userId);
                 return Collections.emptyList();
             }
 
             List<RecommendationResult> results = llmService.generateRecommendations(context, availableCandidates);
-            log.info("추천 완료: userId={}, 결과={} 개", userId, results.size());
-            return results;
+
+            // similarityScore 높은 순으로 정렬
+            List<RecommendationResult> sortedResults = results.stream()
+                .sorted((a, b) -> Double.compare(b.similarityScore(), a.similarityScore()))
+                .toList();
+
+            log.info("추천 완료: userId={}, 결과={} 개", userId, sortedResults.size());
+            return sortedResults;
 
         } catch (Exception e) {
             log.error("추천 생성 실패: userId={}", userId, e);
@@ -137,12 +143,9 @@ public class RecommendationFacade {
         }
 
         return candidates.stream()
+            .sorted((a, b) -> Double.compare(b.similarityScore(), a.similarityScore()))
             .limit(5)
-            .map(c -> RecommendationResult.from(
-                c,
-                c.similarityScore(),
-                "고객님께 추천하는 상품입니다."
-            ))
+            .map(RecommendationResult::from)
             .toList();
     }
 }

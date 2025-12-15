@@ -84,8 +84,7 @@ public class LlmService {
 
                 seenIndices.add(r.index());
                 ProductCandidate candidate = candidates.get(idx);
-                String cleanedReason = cleanReason(r.reason());
-                results.add(RecommendationResult.from(candidate, candidate.similarityScore(), cleanedReason));
+                results.add(RecommendationResult.from(candidate));
             }
 
             return results;
@@ -122,15 +121,4 @@ public class LlmService {
         return content.trim();
     }
 
-    /**
-     * LLM 응답에서 비한국어/비영어 문자 제거
-     */
-    private String cleanReason(String reason) {
-        if (reason == null) {
-            return "고객님께 추천드리는 상품입니다.";
-        }
-        // 한글, 영문, 숫자, 기본 문장부호만 허용
-        String cleaned = reason.replaceAll("[^가-힣a-zA-Z0-9\\s.,!?%°~\\-()]", "").trim();
-        return cleaned.isEmpty() ? "고객님께 추천드리는 상품입니다." : cleaned;
-    }
 }

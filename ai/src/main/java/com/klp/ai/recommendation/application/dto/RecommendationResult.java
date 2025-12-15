@@ -11,11 +11,10 @@ public record RecommendationResult(
     int inventory,
     double averageRating,
     int reviewCount,
-    double score,
-    String reason
+    double similarityScore
 ) {
 
-    public static RecommendationResult from(ProductCandidate candidate, double score, String reason) {
+    public static RecommendationResult from(ProductCandidate candidate) {
         return new RecommendationResult(
             candidate.productId(),
             candidate.productName(),
@@ -25,8 +24,7 @@ public record RecommendationResult(
             candidate.inventory(),
             candidate.averageRating(),
             candidate.reviewCount(),
-            score,
-            reason
+            candidate.similarityScore()
         );
     }
 }
