@@ -33,4 +33,11 @@ public class EmbeddingController implements EmbeddingControllerDoc {
         embeddingService.generateAndSaveEmbeddings(productIds);
         return ResponseEntity.ok("배치 임베딩 생성 완료: " + productIds.size() + "개");
     }
+
+    @PostMapping("/products/all")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB')")
+    public ResponseEntity<String> generateAllEmbeddings() {
+        embeddingService.generateAllEmbeddings();
+        return ResponseEntity.ok("모든 상품 임베딩 생성 완료");
+    }
 }

@@ -40,6 +40,8 @@ public class RecommendationFacade {
         UUID userHubId,
         int limit
     ) {
+        log.info("추천 요청: orderId={}, userId={}", orderId, userId);
+        
         List<OrderedProduct> orderedProducts = orderDataService.getOrderedProducts(orderId);
 
         List<RecommendationResult> recommendations = generateRecommendations(
@@ -58,7 +60,7 @@ public class RecommendationFacade {
         List<OrderedProduct> orderedProducts
     ) {
         if (orderedProducts.isEmpty()) {
-            log.warn("주문 상품이 없어 추천을 생성할 수 없습니다: userId={}", userId);
+            log.warn("주문 상품이 없어 추천 불가: userId={}", userId);
             return Collections.emptyList();
         }
 
@@ -66,8 +68,9 @@ public class RecommendationFacade {
 
         try {
             List<ProductCandidate> candidates = searchCandidates(orderedProducts);
+            
             if (candidates.isEmpty()) {
-                log.info("유사 상품을 찾을 수 없습니다: userId={}", userId);
+                log.warn("유사 상품 없음: userId={}", userId);
                 return Collections.emptyList();
             }
 
@@ -78,15 +81,18 @@ public class RecommendationFacade {
             List<ProductCandidate> enrichedCandidates = enrichCandidates(candidates, context.userHub());
 
             availableCandidates = filterByInventory(enrichedCandidates);
+            
             if (availableCandidates.isEmpty()) {
-                log.info("재고가 있는 상품이 없습니다: userId={}", userId);
+                log.warn("재고 있는 상품 없음: userId={}", userId);
                 return Collections.emptyList();
             }
 
-            return llmService.generateRecommendations(context, availableCandidates);
+            List<RecommendationResult> results = llmService.generateRecommendations(context, availableCandidates);
+            log.info("추천 완료: userId={}, 결과={} 개", userId, results.size());
+            return results;
 
         } catch (Exception e) {
-            log.error("추천 생성 실패: userId={}, error={}", userId, e.getMessage(), e);
+            log.error("추천 생성 실패: userId={}", userId, e);
             return fallbackToVectorResults(availableCandidates);
         }
     }

@@ -1,13 +1,11 @@
 package com.klp.ai.recommendation.application.dto;
 
-import java.util.UUID;
-
 public record LlmRecommendationResponse(
-    String productId,
+    Integer index,
     String reason
 ) {
 
-    public UUID getProductIdAsUUID() {
-        return UUID.fromString(productId);
+    public boolean hasValidIndex() {
+        return index != null && index > 0;
     }
 }
