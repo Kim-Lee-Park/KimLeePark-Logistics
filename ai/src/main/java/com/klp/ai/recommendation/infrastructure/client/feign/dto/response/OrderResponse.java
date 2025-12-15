@@ -1,4 +1,4 @@
-package com.klp.ai.recommendation.infrastructure.client.dto.response;
+package com.klp.ai.recommendation.infrastructure.client.feign.dto.response;
 
 import java.util.List;
 import java.util.UUID;
