@@ -1,0 +1,91 @@
+{
+  "__requires": [
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus" },
+    { "type": "panel", "id": "timeseries", "name": "Time series" }
+  ],
+  "title": "DB Pool Wait & TPS",
+  "templating": {
+    "list": [
+      {
+        "name": "job",
+        "type": "query",
+        "datasource": { "uid": "prometheus", "type": "prometheus" },
+        "query": "label_values(db_client_connections_wait_time_milliseconds_sum, exported_job)",
+        "refresh": 2,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "klp/klp-logistics-order",
+          "value": "klp/klp-logistics-order",
+          "selected": true
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "DB Connection Wait (avg, 1m)",
+      "datasource": { "uid": "prometheus", "type": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(db_client_connections_wait_time_milliseconds_sum{exported_job=\"$job\"}[1m])) / sum(rate(db_client_connections_wait_time_milliseconds_count{exported_job=\"$job\"}[1m]))",
+          "legendFormat": "wait ms",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true }
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "DB Connection Use (avg, 1m, max over 1h)",
+      "datasource": { "uid": "prometheus", "type": "prometheus" },
+      "targets": [
+        {
+          "expr": "max_over_time((rate(db_client_connections_use_time_milliseconds_sum{exported_job=\"$job\"}[1m]) / rate(db_client_connections_use_time_milliseconds_count{exported_job=\"$job\"}[1m]))[1h:])",
+          "legendFormat": "use ms",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "App TPS (http count, 1m rate)",
+      "datasource": { "uid": "prometheus", "type": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_request_duration_seconds_count{exported_job=\"$job\"}[1m]))",
+          "legendFormat": "req/s",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "req/s" },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true }
+      }
+    }
+  ],
+  "schemaVersion": 37,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["db", "pool", "order"]
+}

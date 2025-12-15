@@ -178,6 +178,15 @@ resource "aws_ecs_task_definition" "order" {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
           value = "service.namespace=klp,service.name=otel-collector"
         }
+        ,
+        {
+          name  = "OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDE_PATTERNS"
+          value = "/actuator/.*,/swagger-ui/.*,/v3/api-docs/.*,/v1/api-docs/.*"
+        },
+        {
+          name  = "OTEL_EXPORTER_OTLP_COMPRESSION"
+          value = "gzip"
+        }
       ]
     }
   ])

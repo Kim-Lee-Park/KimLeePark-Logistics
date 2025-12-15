@@ -1,0 +1,57 @@
+{
+  "__requires": [
+    { "type": "datasource", "id": "tempo", "name": "Tempo" },
+    { "type": "panel", "id": "table", "name": "Table" }
+  ],
+  "title": "Gateway Trace Overview",
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": { "type": "tempo", "uid": "tempo" },
+        "query": { "queryType": "labelValues", "label": "service.name" },
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "current": {
+          "text": "gateway-service",
+          "value": "gateway-service",
+          "selected": true
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Recent slow/error traces",
+      "datasource": { "type": "tempo", "uid": "tempo" },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "query": "{service.name=\"$service\"} | sort by duration desc | limit 50"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": { "show": false },
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "inspect": false
+          }
+        },
+        "overrides": []
+      }
+    }
+  ],
+  "schemaVersion": 37,
+  "version": 1,
+  "refresh": "10s",
+  "tags": [ "tempo", "trace", "gateway" ]
+}

@@ -26,6 +26,10 @@ resource "aws_ecs_task_definition" "config" {
         { name = "SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL", value = "main" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
         { name = "LOG_LEVEL", value = "ERROR" }
+        ,
+        { name = "OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDE_PATTERNS", value = "/actuator/.*,/swagger-ui/.*,/v3/api-docs/.*,/v1/api-docs/.*" }
+        ,
+        { name = "OTEL_EXPORTER_OTLP_COMPRESSION", value = "gzip" }
       ]
 
       secrets = [
