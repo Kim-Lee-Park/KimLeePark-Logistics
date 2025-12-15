@@ -1,6 +1,6 @@
 package com.klp.ai.recommendation.presentation;
 
-import com.klp.ai.recommendation.application.EmbeddingService;
+import com.klp.ai.recommendation.application.service.EmbeddingService;
 import com.klp.ai.recommendation.presentation.docs.EmbeddingControllerDoc;
 import java.util.List;
 import java.util.UUID;
@@ -20,21 +20,15 @@ public class EmbeddingController implements EmbeddingControllerDoc {
 
     private final EmbeddingService embeddingService;
 
-    /**
-     * 단일 상품 임베딩 생성 (관리자용)
-     */
     @PostMapping("/products/{productId}")
-    @PreAuthorize("hasRole('MASTER')")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB')")
     public ResponseEntity<String> generateEmbedding(@PathVariable UUID productId) {
         embeddingService.generateAndSaveEmbedding(productId);
         return ResponseEntity.ok("임베딩 생성 완료: " + productId);
     }
 
-    /**
-     * 여러 상품 임베딩 배치 생성 (관리자용)
-     */
     @PostMapping("/products/batch")
-    @PreAuthorize("hasRole('MASTER')")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB')")
     public ResponseEntity<String> generateEmbeddings(@RequestBody List<UUID> productIds) {
         embeddingService.generateAndSaveEmbeddings(productIds);
         return ResponseEntity.ok("배치 임베딩 생성 완료: " + productIds.size() + "개");
