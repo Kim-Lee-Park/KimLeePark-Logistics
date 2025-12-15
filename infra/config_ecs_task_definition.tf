@@ -20,15 +20,6 @@ resource "aws_ecs_task_definition" "config" {
         }
       ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "config"
-        }
-      }
-
       environment = [
         { name = "SPRING_PROFILES_ACTIVE", value = var.environment },
         { name = "SPRING_CLOUD_CONFIG_ENABLED", value = "false" },

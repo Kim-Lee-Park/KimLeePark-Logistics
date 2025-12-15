@@ -27,15 +27,6 @@ resource "aws_ecs_task_definition" "auth" {
         }
       ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "auth"
-        }
-      }
-
       environment = [
         {
           name  = "SPRING_PROFILES_ACTIVE",
@@ -184,15 +175,6 @@ resource "aws_ecs_task_definition" "auth" {
           value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "otel-auth"
-        }
-      }
     }
   ])
 }

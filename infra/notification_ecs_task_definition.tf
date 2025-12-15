@@ -27,15 +27,6 @@ resource "aws_ecs_task_definition" "notification" {
         }
       ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "notification"
-        }
-      }
-
       environment = [
         {
           name  = "SPRING_PROFILES_ACTIVE",
@@ -172,15 +163,6 @@ resource "aws_ecs_task_definition" "notification" {
           value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "otel-notification"
-        }
-      }
     }
   ])
 }
