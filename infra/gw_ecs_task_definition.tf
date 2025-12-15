@@ -177,7 +177,7 @@ resource "aws_ecs_task_definition" "gateway" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-gateway"
+          value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
 

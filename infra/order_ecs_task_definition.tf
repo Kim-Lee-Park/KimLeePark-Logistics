@@ -185,7 +185,7 @@ resource "aws_ecs_task_definition" "order" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-order"
+          value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
 

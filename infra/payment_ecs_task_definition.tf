@@ -165,7 +165,7 @@ resource "aws_ecs_task_definition" "payment" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-payment"
+          value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
 

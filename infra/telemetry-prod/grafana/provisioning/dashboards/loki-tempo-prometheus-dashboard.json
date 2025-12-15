@@ -712,7 +712,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "histogram_quantile(.95,sum(rate(http_server_requests_seconds_bucket{application=\"$app_name\", uri!=\"/actuator/prometheus\"}[5m])) by(uri, le))",
+          "expr": "histogram_quantile(.95,sum(rate(http_server_request_duration_seconds_bucket{service_name=\"$app_name\", uri!=\"/actuator/prometheus\"}[5m])) by(uri, le))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -962,17 +962,13 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count,job)",
+        "definition": "label_values(http_server_request_duration_seconds_count, service_namespace)",
         "includeAll": false,
         "name": "service_namespace",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(http_server_request_duration_seconds_count,job)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(http_server_request_duration_seconds_count, service_namespace)",
         "refresh": 1,
-        "regex": "(.*)/.*",
+        "regex": "",
         "type": "query"
       },
       {
@@ -984,17 +980,13 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count{job=~\"${service_namespace}.*\"},job)",
+        "definition": "label_values(http_server_request_duration_seconds_count{service_namespace=~\"${service_namespace}\"}, service_name)",
         "includeAll": false,
         "name": "service_name",
         "options": [],
-        "query": {
-          "qryType": 5,
-          "query": "label_values(http_server_request_duration_seconds_count{job=~\"${service_namespace}.*\"},job)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(http_server_request_duration_seconds_count{service_namespace=~\"${service_namespace}\"}, service_name)",
         "refresh": 1,
-        "regex": ".*/(.*)",
+        "regex": "",
         "type": "query"
       },
       {
@@ -1006,16 +998,12 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count{job=\"${service_namespace}/${service_name}\"},job)",
+        "definition": "label_values(http_server_request_duration_seconds_count{service_name=\"$service_name\"}, job)",
         "hide": 2,
         "includeAll": false,
         "name": "job",
         "options": [],
-        "query": {
-          "qryType": 5,
-          "query": "label_values(http_server_request_duration_seconds_count{job=\"${service_namespace}/${service_name}\"},job)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(http_server_request_duration_seconds_count{service_name=\"$service_name\"}, job)",
         "refresh": 1,
         "regex": "",
         "type": "query"
@@ -1029,16 +1017,12 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count{job=\"$job\"},http_route)",
+        "definition": "label_values(http_server_request_duration_seconds_count{service_name=\"$service_name\"}, http_route)",
         "includeAll": true,
         "multi": true,
         "name": "http_route",
         "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(http_server_request_duration_seconds_count{job=\"$job\"},http_route)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
+        "query": "label_values(http_server_request_duration_seconds_count{service_name=\"$service_name\"}, http_route)",
         "refresh": 1,
         "regex": "",
         "type": "query"
@@ -1227,13 +1211,13 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(application)",
+        "definition": "label_values(http_server_request_duration_seconds_count, service_name)",
         "label": "app_name",
         "name": "app_name",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(application)",
+          "query": "label_values(http_server_request_duration_seconds_count, service_name)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,

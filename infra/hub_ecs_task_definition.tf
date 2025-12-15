@@ -201,7 +201,7 @@ resource "aws_ecs_task_definition" "hub" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-hub"
+          value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
 

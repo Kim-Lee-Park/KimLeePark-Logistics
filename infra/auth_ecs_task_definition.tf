@@ -181,7 +181,7 @@ resource "aws_ecs_task_definition" "auth" {
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
-          value = "service.namespace=klp,service.name=klp-logistics-auth"
+          value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
 
