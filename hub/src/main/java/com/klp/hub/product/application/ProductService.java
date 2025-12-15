@@ -14,6 +14,7 @@ import com.klp.hub.product.exception.ProductErrorCode;
 import com.klp.hub.product.presentation.dto.ProductResponse;
 import com.klp.hub.product.presentation.dto.ProductUpdateResponse;
 import com.klp.hub.product.presentation.dto.ProductsPageRowResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,13 +47,19 @@ public class ProductService {
             product.getId(),
             inventory.hubId(),
             company.name(),
-            product.getName()
+            product.getName(),
+            product.getCategoryDisplayName()
         );
     }
 
     @Transactional(readOnly = true)
     public Page<ProductsPageRowResponse> getProductsByPageable(Pageable pageable) {
         return productRepository.findAllByPageable(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UUID> getAllProductIds() {
+        return productRepository.findAllProductIds();
     }
 
     @Transactional

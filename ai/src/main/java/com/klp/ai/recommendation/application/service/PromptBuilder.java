@@ -78,13 +78,12 @@ public class PromptBuilder {
 
         for (int i = 0; i < candidates.size(); i++) {
             ProductCandidate c = candidates.get(i);
-            sb.append(String.format("%d. %s\n", i + 1, c.productName()));
+            sb.append(String.format("%d. %s (index: %d)\n", i + 1, c.productName(), i + 1));
             sb.append(String.format("   - 허브: %s (거리: %.1fkm)\n", c.hubName(), c.distance()));
             sb.append(String.format("   - 재고: %d개%s\n", c.inventory(), c.isLowStock() ? " ⚠️ 재고 부족" : ""));
             sb.append(String.format("   - 평점: %.1f (%d개 리뷰)%s\n",
                 c.averageRating(), c.reviewCount(),
                 c.isHighlyRated() ? " ⭐ 인기상품" : ""));
-            sb.append(String.format("   - productId: %s\n", c.productId()));
         }
 
         return sb.toString();
@@ -97,11 +96,15 @@ public class PromptBuilder {
             ```json
             [
               {
-                "productId": "uuid-string",
+                "index": 1,
                 "reason": "추천 이유를 자연스러운 한국어로 작성"
               }
             ]
             ```
+            
+            중요:
+            - index는 위 후보 상품 목록의 번호(1부터 시작)를 사용하세요
+            - JSON만 출력하고 다른 설명은 하지 마세요
             
             추천 이유 작성 시:
             - 반드시 한국어로만 작성 (영어, 태국어 등 다른 언어 사용 금지)
