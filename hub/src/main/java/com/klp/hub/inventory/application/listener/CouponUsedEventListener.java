@@ -87,7 +87,7 @@ public class CouponUsedEventListener {
                 event.paidAt()
             );
 
-//            inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
+            inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
             log.info("재고 차감 이벤트 발행 완료: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
