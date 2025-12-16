@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record HubRouteInfoResponse(
     List<RouteInfoItem> routeInfos,
-    PageableDto pageableDto
+    PageableDto pageable
 ) {
     public record RouteInfoItem(
         UUID routeInfoId,
