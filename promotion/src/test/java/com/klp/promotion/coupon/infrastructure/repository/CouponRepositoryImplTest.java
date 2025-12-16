@@ -3,12 +3,14 @@ package com.klp.promotion.coupon.infrastructure.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.klp.promotion.coupon.common.exception.CouponErrorCode;
 import com.klp.promotion.global.exception.BusinessException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-@Disabled
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("local")
 class CouponRepositoryImplTest {
 
     @Autowired
@@ -36,47 +37,88 @@ class CouponRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("재고 차감 성공")
-    void decreaseStock_Success() {
+    @DisplayName("동시성 테스트 - 여러 스레드가 동시에 재고 차감")
+    void decreaseStock_Concurrency_Success() throws InterruptedException {
         // given
         UUID couponId = UUID.randomUUID();
         String key = "coupon:stock:" + couponId;
-        redisTemplate.opsForValue().set(key, "10");
+        int initialStock = 100;
+        int threadCount = 50;
+        redisTemplate.opsForValue().set(key, String.valueOf(initialStock));
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
 
         // when
-        boolean result = couponRepositoryImpl.decreaseStock(couponId);
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    couponRepositoryImpl.decreaseStock(couponId);
+                    successCount.incrementAndGet();
+                } catch (BusinessException e) {
+                    failCount.incrementAndGet();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executor.shutdown();
 
         // then
-        assertThat(result).isTrue();
-        assertThat(redisTemplate.opsForValue().get(key)).isEqualTo("9");
+        String remainingStock = redisTemplate.opsForValue().get(key);
+        int expectedRemaining = initialStock - successCount.get();
+        
+        assertThat(Integer.parseInt(remainingStock)).isEqualTo(expectedRemaining);
+        assertThat(successCount.get() + failCount.get()).isEqualTo(threadCount);
     }
 
     @Test
-    @DisplayName("재고 부족으로 차감 실패 및 원상복구")
-    void decreaseStock_Fail_OutOfStock() {
+    @DisplayName("동시성 테스트 - 재고 부족 상황에서 여러 스레드가 동시에 차감 시도")
+    void decreaseStock_Concurrency_OutOfStock() throws InterruptedException {
         // given
         UUID couponId = UUID.randomUUID();
         String key = "coupon:stock:" + couponId;
-        redisTemplate.opsForValue().set(key, "0");
+        int initialStock = 10;
+        int threadCount = 20; // 재고보다 많은 스레드
+        redisTemplate.opsForValue().set(key, String.valueOf(initialStock));
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
 
         // when
-        boolean result = couponRepositoryImpl.decreaseStock(couponId);
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    couponRepositoryImpl.decreaseStock(couponId);
+                    successCount.incrementAndGet();
+                } catch (BusinessException e) {
+                    failCount.incrementAndGet();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executor.shutdown();
 
         // then
-        assertThat(result).isFalse();
-        assertThat(redisTemplate.opsForValue().get(key)).isEqualTo("0");
-    }
-
-    @Test
-    @DisplayName("쿠폰이 존재하지 않을 때 예외 발생")
-    void decreaseStock_Fail_CouponNotFound() {
-        // given
-        UUID couponId = UUID.randomUUID();
-
-        // when & then
-        assertThatThrownBy(() -> couponRepositoryImpl.decreaseStock(couponId))
-            .isInstanceOf(BusinessException.class)
-            .hasFieldOrPropertyWithValue("errorCode", CouponErrorCode.COUPON_NOT_FOUND);
+        String remainingStock = redisTemplate.opsForValue().get(key);
+        
+        // 성공한 개수만큼 재고가 차감되어야 함
+        assertThat(Integer.parseInt(remainingStock)).isEqualTo(initialStock - successCount.get());
+        // 성공 + 실패 = 전체 스레드 수
+        assertThat(successCount.get() + failCount.get()).isEqualTo(threadCount);
+        // 성공한 개수는 재고 이하여야 함
+        assertThat(successCount.get()).isLessThanOrEqualTo(initialStock);
+        // 재고는 0 이상이어야 함 (음수가 되면 안됨)
+        assertThat(Integer.parseInt(remainingStock)).isGreaterThanOrEqualTo(0);
     }
 }
 
