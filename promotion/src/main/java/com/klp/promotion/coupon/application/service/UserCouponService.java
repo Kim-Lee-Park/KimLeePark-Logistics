@@ -6,6 +6,7 @@ import com.klp.promotion.coupon.domain.entity.UserCoupon;
 import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.domain.repository.UserCouponRepository;
 import com.klp.promotion.global.exception.BusinessException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -54,5 +55,10 @@ public class UserCouponService {
             throw new BusinessException(CANNOT_USE_UNRESERVED_COUPON);
         }
         userCoupon.releaseReserve();
+    }
+
+    @Transactional
+    public void markExpiredCoupons(LocalDateTime todayStart) {
+        userCouponRepository.markExpiredCoupons(todayStart);
     }
 }
