@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @KafkaListener(
     topics = KafkaTopicConfig.PAYMENT_TOPIC,
-    groupId = "coupon-service-group",
+    groupId = "payment-service-group",
     containerFactory = "couponKafkaListenerContainerFactory"
 )
 public class PaymentEventListener {
