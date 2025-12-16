@@ -1,5 +1,9 @@
 package com.klp.hub.inventory.infrastructure.outbox;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
+import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.domain.outbox.InventoryOutbox;
 import com.klp.hub.inventory.domain.outbox.InventoryOutboxRepository;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
@@ -18,17 +22,24 @@ public class OutboxScheduler {
 
     private final InventoryOutboxRepository outboxRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-
-    public OutboxScheduler(
-        InventoryOutboxRepository outboxRepository,
-        @Qualifier("inventoryKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate
-    ) {
-        this.outboxRepository = outboxRepository;
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    private final ObjectMapper objectMapper;
 
     private static final int BATCH_SIZE = 100;
     private static final int MAX_RETRY = 3;
+
+    private static final String DEDUCT_EVENT_TYPE = "InventoryDeductedEvent";
+    private static final String DEDUCT_FAILED_EVENT_TYPE = "InventoryDeductedFailedEvent";
+    private static final String REPLENISH_EVENT_TYPE = "InventoryReplenishedEvent";
+
+    public OutboxScheduler(
+        InventoryOutboxRepository outboxRepository,
+        @Qualifier("inventoryKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate,
+        ObjectMapper objectMapper
+    ) {
+        this.outboxRepository = outboxRepository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     @Scheduled(fixedDelay = 1000)
     @SchedulerLock(name = "outbox_scheduler", lockAtMostFor = "PT30S", lockAtLeastFor = "PT5S")
@@ -38,10 +49,12 @@ public class OutboxScheduler {
 
         for (InventoryOutbox outbox : pendingEvents) {
             try {
+                Object event = deserializeEvent(outbox.getEventType(), outbox.getPayload());
+
                 kafkaTemplate.send(
                     KafkaTopicConfig.INVENTORY_EVENTS,
                     outbox.getOrderId().toString(),
-                    outbox.getPayload()
+                    event
                 ).get();
 
                 outboxRepository.markAsPublished(outbox.getId());
@@ -66,5 +79,16 @@ public class OutboxScheduler {
     public void cleanupPublishedEvents() {
         outboxRepository.deletePublishedEvents();
         log.info("발행 완료된 Outbox 이벤트 정리 완료");
+    }
+
+    private Object deserializeEvent(String eventType, String payload) throws Exception {
+        return switch (eventType) {
+            case DEDUCT_EVENT_TYPE -> objectMapper.readValue(payload, InventoryDeductedEvent.class);
+            case DEDUCT_FAILED_EVENT_TYPE ->
+                objectMapper.readValue(payload, InventoryDeductedFailedEvent.class);
+            case REPLENISH_EVENT_TYPE ->
+                objectMapper.readValue(payload, InventoryReplenishedEvent.class);
+            default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
+        };
     }
 }
