@@ -1,6 +1,7 @@
 package com.klp.promotion.coupon.infrastructure.kafka.listener;
 
 import com.klp.promotion.coupon.application.service.UserCouponService;
+import com.klp.promotion.coupon.domain.event.InventoryDeductedEvent;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedFailedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,12 @@ public class InventoryEventListener {
 
         userCouponService.cancelReserve(event.orderId());
         // 선점 해제는 해서 여기다가 쿠폰 복구 기능 넣으면 될거 같습니다.
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handleInventoryDeducted(@Payload InventoryDeductedEvent event) {
+        log.info("재고 차감 완료");
     }
 
 

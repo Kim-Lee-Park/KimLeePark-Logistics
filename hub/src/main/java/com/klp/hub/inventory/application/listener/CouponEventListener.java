@@ -5,7 +5,6 @@ import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
-import com.klp.hub.inventory.domain.event.InventoryDeductedEvent.OrderItem;
 import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
@@ -47,48 +46,7 @@ public class CouponEventListener {
         log.info("쿠폰 사용 이벤트 수신: orderId={}", event.orderId());
         inventoryFacade.confirm(event.orderId());
         try {
-            List<OrderItem> orderItems = event.products().stream()
-                .map(product -> new InventoryDeductedEvent.OrderItem(
-                    product.orderItemId(),
-                    product.productId(),
-                    product.productName(),
-                    product.hubId(),
-                    product.quantity(),
-                    product.unitPrice(),
-                    product.totalPrice()
-                )).toList();
-
-            InventoryDeductedEvent inventoryDeductedEvent = new InventoryDeductedEvent(
-                event.orderId(),
-                event.userId(),
-                event.supplierId(),
-                event.userCouponId(),
-                event.email(),
-                event.username(),
-                event.comment(),
-                event.originalPrice(),
-                event.couponDiscountPrice(),
-                event.gradeDiscountPrice(),
-                event.finalOrderPrice(),
-
-                event.addressId(),
-                event.userAddressHubId(),
-                event.address(),
-                event.deliveryLatitude(),
-                event.deliveryLongitude(),
-
-                orderItems,
-                event.inventoryIdempotencyKey(),
-                event.deliveryIdempotencyKey(),
-                event.createdAt(),
-                event.occurredAt(),
-                // PaymentApprovedEvent 추가 필드
-                event.paymentId(),
-                event.paidAmount(),
-                event.paymentMethod(),
-                event.paidAt()
-            );
-
+            InventoryDeductedEvent inventoryDeductedEvent = InventoryDeductedEvent.of(event);
             inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
             log.info("재고 차감 이벤트 발행 완료: orderId={}", event.orderId());
 
