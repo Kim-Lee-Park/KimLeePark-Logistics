@@ -7,9 +7,11 @@ import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.query.ProductQueryService;
 import com.klp.order.application.query.UserQueryService;
+import com.klp.order.application.service.InventoryClient;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
+import com.klp.order.application.service.PromotionClient;
 import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
@@ -20,8 +22,6 @@ import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReserv
 import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
 import com.klp.order.infrastructure.client.dto.promotion.request.PromotionCalculateRequest;
 import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
-import com.klp.order.infrastructure.client.service.InventoryIntegrationService;
-import com.klp.order.infrastructure.client.service.PromotionDiscountService;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
 import java.util.ArrayList;
@@ -42,8 +42,8 @@ public class OrderFacade {
     private final OrderOutboxEventService orderOutboxEventService;
     private final UserQueryService userQueryService;
     private final ProductQueryService productQueryService;
-    private final PromotionDiscountService promotionService;
-    private final InventoryIntegrationService inventoryService;
+    private final PromotionClient promotionClient;
+    private final InventoryClient inventoryClient;
     private final UserClient userClient;
 
     @Transactional
@@ -98,7 +98,7 @@ public class OrderFacade {
                 InventoryIdempotencyKey,
                 reservationItems
             );
-            InventoryReservationResponse inventoryResponse = inventoryService.reserveProduct(
+            InventoryReservationResponse inventoryResponse = inventoryClient.reserveProduct(
                 reservationRequest);
 
             validateInventoryReservation(
@@ -110,7 +110,8 @@ public class OrderFacade {
             // 5. 할인 금액 조회 // 추후 사용 예정
             PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
                 command.userCouponId(), userProfile.grade(), originalPriceTotal);
-            PromotionResponse promotionResponse = promotionService.promotionInfo(calculateRequest);
+            PromotionResponse promotionResponse = promotionClient.getPromotionInfo(
+                calculateRequest);
 
             // 추후에 PromotionResponse 값을 사용할 예정
             orderService.updateDiscountPrice(
