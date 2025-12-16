@@ -1,20 +1,26 @@
 const https = require("https");
-const AWS = require("aws-sdk");
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const {URL} = require("url");
+
+const {DynamoDBClient} = require("@aws-sdk/client-dynamodb");
+const {DynamoDBDocumentClient, PutCommand} = require("@aws-sdk/lib-dynamodb");
+
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 const SERVICE_NAME = process.env.SERVICE_NAME || "";
 const CODEDEPLOY_APP = process.env.CODEDEPLOY_APP || "";
-const CODEDEPLOY_DEPLOYMENT_GROUP = process.env.CODEDEPLOY_DEPLOYMENT_GROUP || "";
+const CODEDEPLOY_DEPLOYMENT_GROUP = process.env.CODEDEPLOY_DEPLOYMENT_GROUP
+    || "";
 const TABLE_NAME = process.env.TABLE_NAME;
 
 exports.handler = async (event) => {
   const deploymentId = event?.deploymentId || event?.DeploymentId;
-  const hookId = event?.lifecycleEventHookExecutionId || event?.LifecycleEventHookExecutionId;
+  const hookId = event?.lifecycleEventHookExecutionId
+      || event?.LifecycleEventHookExecutionId;
 
   if (!deploymentId || !hookId) {
-    console.error("Missing DeploymentId or LifecycleEventHookExecutionId", event);
-    return { statusCode: 400, body: "Invalid CodeDeploy event" };
+    console.error("Missing deploymentId/hookId", JSON.stringify(event));
+    return {statusCode: 400, body: "Invalid CodeDeploy event"};
   }
 
   const payload = {
@@ -22,42 +28,39 @@ exports.handler = async (event) => {
     hookId,
     appName: CODEDEPLOY_APP,
     deploymentGroup: CODEDEPLOY_DEPLOYMENT_GROUP,
-    serviceName: SERVICE_NAME,
-    action: "pending",
+    serviceName: SERVICE_NAME
   };
 
-  const text = `🚀 *${SERVICE_NAME || CODEDEPLOY_DEPLOYMENT_GROUP} 배포 승인 요청*\n` +
-    `DeploymentId: \`${deploymentId}\`\n` +
-    `App: \`${CODEDEPLOY_APP}\` / Group: \`${CODEDEPLOY_DEPLOYMENT_GROUP}\``;
+  const text =
+      `🚀 *${SERVICE_NAME || CODEDEPLOY_DEPLOYMENT_GROUP} 배포 승인 요청*\n` +
+      `DeploymentId: \`${deploymentId}\`\n` +
+      `App: \`${CODEDEPLOY_APP}\` / Group: \`${CODEDEPLOY_DEPLOYMENT_GROUP}\``;
 
   const blocks = [
-    {
-      type: "section",
-      text: { type: "mrkdwn", text },
-    },
+    {type: "section", text: {type: "mrkdwn", text}},
     {
       type: "actions",
       elements: [
         {
           type: "button",
-          text: { type: "plain_text", text: "✅ 승인" },
+          text: {type: "plain_text", text: "✅ 승인"},
           style: "primary",
-          value: JSON.stringify({ ...payload, action: "approve" }),
-          action_id: "approve_deploy",
+          value: JSON.stringify({...payload, action: "approve"}),
+          action_id: "approve_deploy"
         },
         {
           type: "button",
-          text: { type: "plain_text", text: "❌ 거절" },
+          text: {type: "plain_text", text: "❌ 거절"},
           style: "danger",
-          value: JSON.stringify({ ...payload, action: "reject" }),
-          action_id: "reject_deploy",
+          value: JSON.stringify({...payload, action: "reject"}),
+          action_id: "reject_deploy"
         },
       ],
     },
   ];
 
   if (TABLE_NAME) {
-    await dynamodb.put({
+    await dynamo.send(new PutCommand({
       TableName: TABLE_NAME,
       Item: {
         deploymentId,
@@ -68,38 +71,41 @@ exports.handler = async (event) => {
         status: "PENDING",
         createdAt: new Date().toISOString(),
       },
-    }).promise();
+    }));
   }
 
-  await postToSlack({ text, blocks });
-
-  // CodeDeploy waits for the lifecycle hook result from the callback Lambda.
-  return { statusCode: 200, body: "Slack approval requested" };
+  await postToSlack({text, blocks});
+  return {statusCode: 200, body: "Slack approval requested"};
 };
 
 async function postToSlack(body) {
   if (!SLACK_WEBHOOK_URL) {
     throw new Error("SLACK_WEBHOOK_URL is not set");
   }
+
   const data = JSON.stringify(body);
   const url = new URL(SLACK_WEBHOOK_URL);
+
   const options = {
     method: "POST",
     hostname: url.hostname,
     path: url.pathname + url.search,
     headers: {
       "Content-Type": "application/json",
-      "Content-Length": Buffer.byteLength(data),
+      "Content-Length": Buffer.byteLength(data)
     },
   };
+
   await new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
-      res.on("data", () => {});
+      let buf = "";
+      res.on("data", (d) => (buf += d));
       res.on("end", () => {
         if (res.statusCode < 200 || res.statusCode >= 300) {
-          return reject(new Error(`Slack webhook failed: ${res.statusCode}`));
+          return reject(
+              new Error(`Slack webhook failed: ${res.statusCode} body=${buf}`));
         }
-        return resolve();
+        resolve();
       });
     });
     req.on("error", reject);

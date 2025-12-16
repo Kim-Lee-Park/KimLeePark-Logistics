@@ -52,7 +52,7 @@ resource "aws_iam_role_policy" "codedeploy_approval_codedeploy" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["codedeploy:PutLifecycleEventHookExecutionStatus"]
+        Action = ["codedeploy:PutLifecycleEventHookExecutionStatus"]
         Resource = "*"
       }
     ]
@@ -67,7 +67,7 @@ resource "aws_iam_role_policy" "codedeploy_approval_dynamodb" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem"]
+        Action = ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem"]
         Resource = aws_dynamodb_table.codedeploy_approval.arn
       }
     ]
@@ -83,11 +83,11 @@ resource "aws_lambda_function" "codedeploy_approval_request" {
 
   environment {
     variables = {
-      SLACK_WEBHOOK_URL             = data.aws_secretsmanager_secret_version.codedeploy_slack_webhook.secret_string
-      SERVICE_NAME                  = local.project
-      CODEDEPLOY_APP                = local.project
-      CODEDEPLOY_DEPLOYMENT_GROUP   = "${local.project}-ecs"
-      TABLE_NAME                    = aws_dynamodb_table.codedeploy_approval.name
+      SLACK_WEBHOOK_URL           = data.aws_secretsmanager_secret_version.codedeploy_slack_webhook.secret_string
+      SERVICE_NAME                = local.project
+      CODEDEPLOY_APP              = local.project
+      CODEDEPLOY_DEPLOYMENT_GROUP = "${local.project}-ecs"
+      TABLE_NAME                  = aws_dynamodb_table.codedeploy_approval.name
     }
   }
 }
@@ -107,7 +107,7 @@ resource "aws_lambda_function" "codedeploy_approval_callback" {
 }
 
 data "aws_secretsmanager_secret_version" "codedeploy_slack_webhook" {
-  secret_id = "${local.project}-codedeploy-approval-slack-webhook"
+  secret_id = "${var.project_name}-codedeploy-approval-slack-webhook"
 }
 
 resource "aws_apigatewayv2_api" "codedeploy_approval" {
