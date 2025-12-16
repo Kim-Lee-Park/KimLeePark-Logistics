@@ -49,36 +49,17 @@ public class PaymentEventListener {
             event.orderId(), event.userCouponId(), partition, offset);
 
         try {
-            // userCouponId가 null이면 쿠폰을 사용하지 않은 주문
-            if (event.userCouponId() == null) {
-                log.info("쿠폰 미사용 주문: orderId={}", event.orderId());
-                if (acknowledgment != null) {
-                    acknowledgment.acknowledge();
-                }
-                return;
-            }
 
             // 쿠폰 사용 확정
-            UUID userCouponId = event.userCouponId();
-            Long userId = event.userId();
+            if (event.userCouponId() != null) {
+                UUID userCouponId = event.userCouponId();
+                Long userId = event.userId();
+                UserCoupon userCoupon = userCouponService.findByUserCouponId(userCouponId);
 
-            // UserCoupon 조회하여 couponId 가져오기
-            UserCoupon userCoupon =
-                userCouponService.findByUserCouponId(userCouponId);
-
-            if (userCoupon == null) {
-                log.warn("UserCoupon을 찾을 수 없음: userCouponId={}, orderId={}", userCouponId,
-                    event.orderId());
-                if (acknowledgment != null) {
-                    acknowledgment.acknowledge();
-                }
-                return;
+                // 쿠폰 사용 확정
+                userCouponFacade.useUserCoupon(userCoupon.getCouponId(), userId);
             }
 
-            // 쿠폰 사용 확정
-            userCouponFacade.useUserCoupon(userCoupon.getCouponId(), userId);
-
-            // CouponUsedEvent 생성 (InventoryDeductedFailedEvent 기본 구조 + PaymentApprovedEvent 추가 필드)
             List<CouponUsedEvent.OrderItem> orderItems = event.products().stream()
                 .map(product -> new CouponUsedEvent.OrderItem(
                     product.orderItemId(),
@@ -91,11 +72,7 @@ public class PaymentEventListener {
                 ))
                 .toList();
 
-            // PaymentApprovedEvent에서 InventoryDeductedFailedEvent 기본 필드들 추출
-            // TODO: PaymentApprovedEvent에 다음 필드들이 추가되어야 함: email, addressId, userAddressHubId, address, finalOrderPrice, inventoryIdempotencyKey, createdAt
-            // 현재는 PaymentApprovedEvent에 없는 필드들은 null 또는 기본값으로 처리
             CouponUsedEvent couponUsedEvent = new CouponUsedEvent(
-                // InventoryDeductedFailedEvent 기본 구조
                 event.orderId(),
                 event.userId(),
                 event.supplierId(),
@@ -107,32 +84,27 @@ public class PaymentEventListener {
                 event.couponDiscountPrice(),
                 event.gradeDiscountPrice(),
                 event.finalOrderPrice(),
-
                 event.addressId(),
                 event.userAddressHubId(),
                 event.address(),
                 event.deliveryLatitude(),
                 event.deliveryLongitude(),
-
                 orderItems,
                 event.inventoryIdempotencyKey(),
                 event.deliveryIdempotencyKey(),
                 event.createdAt(),
                 event.occurredAt(),
-                // PaymentApprovedEvent 추가 필드
                 event.paymentId(),
                 event.paidAmount(),
                 event.paymentMethod(),
                 event.paidAt()
             );
 
-            // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
             couponOutboxEventService.saveEvent(
                 event.orderId(),
                 couponUsedEvent
             );
-            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
-                userCouponId);
+            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
@@ -142,8 +114,12 @@ public class PaymentEventListener {
         } catch (Exception e) {
             log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
+
             // 쿠폰 선점 해제
-            userCouponService.cancelReserve(event.userCouponId());
+            if(event.userCouponId() != null){
+                userCouponService.cancelReserve(event.userCouponId());
+            }
+
             couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
             throw e;
         }
@@ -159,8 +135,13 @@ public class PaymentEventListener {
         log.info("=== 결제 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
             event.orderId(), event.userCouponId(), partition, offset);
         try{
-            UUID userCouponId = event.userCouponId();
-            userCouponFacade.couponRestored(userCouponId);
+
+            // 쿠폰 미사용이지 않을때
+            if(event.userCouponId() != null) {
+                UUID userCouponId = event.userCouponId();
+                userCouponFacade.couponRestored(userCouponId);
+            }
+
 
             List<CouponRestoredEvent.CancelledItemDto> orderItems = event.products().stream()
                 .map(product -> new CouponRestoredEvent.CancelledItemDto(
