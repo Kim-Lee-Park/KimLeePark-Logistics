@@ -1,10 +1,10 @@
-package com.klp.order.infrastructure.event.event;
+package com.klp.promotion.coupon.domain.event;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record PaymentApprovedFailedEvent(
+public record PaymentFailedEvent(
     UUID paymentId,
     UUID orderId,
     Long userId,

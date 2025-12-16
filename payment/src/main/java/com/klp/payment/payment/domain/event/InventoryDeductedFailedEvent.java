@@ -1,4 +1,4 @@
-package com.klp.order.infrastructure.event.event;
+package com.klp.payment.payment.domain.event;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

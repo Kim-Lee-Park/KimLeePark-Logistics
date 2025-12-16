@@ -6,6 +6,7 @@ import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent.OrderItem;
+import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
@@ -99,7 +100,13 @@ public class CouponEventListener {
         } catch (Exception e) {
             log.error("재고 차감 이벤트 처리 실패:  orderId={}",
                 event.orderId(), e);
-            throw e;
+            InventoryDeductedFailedEvent failedEvent = InventoryDeductedFailedEvent.of(event);
+            inventoryEventProducer.publishInventoryDeductedFailedEvent(failedEvent);
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
         }
     }
 

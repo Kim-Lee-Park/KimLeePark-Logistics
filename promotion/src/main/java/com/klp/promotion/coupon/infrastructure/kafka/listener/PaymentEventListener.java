@@ -9,6 +9,7 @@ import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
+import com.klp.promotion.coupon.domain.event.PaymentFailedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.List;
 import java.util.UUID;
@@ -158,7 +159,7 @@ public class PaymentEventListener {
         Acknowledgment acknowledgment) {
         log.info("=== 결제 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
             event.orderId(), event.userCouponId(), partition, offset);
-        try{
+        try {
             UUID userCouponId = event.userCouponId();
             userCouponFacade.couponRestored(userCouponId);
 
@@ -198,6 +199,17 @@ public class PaymentEventListener {
                 event.orderId(), partition, offset, e);
             throw e;
         }
+    }
+
+    @KafkaHandler
+    public void handlePaymentFailed(@Payload PaymentFailedEvent event) {
+        log.info("결제 실패 이벤트 수신: orderId={}, reason={}", event.orderId(), event.reason());
+        if (event.userCouponId() == null) {
+            log.info("쿠폰 미사용 결제 실패 이벤트");
+            return;
+        }
+        userCouponService.cancelReserve(event.orderId());
+        log.info("쿠폰 선정 취소 완료");
     }
 
     @KafkaHandler(isDefault = true)

@@ -1,6 +1,7 @@
 package com.klp.payment.payment.infrastructure.kafka.config;
 
 import com.klp.payment.payment.domain.event.CouponUsedFailedEvent;
+import com.klp.payment.payment.domain.event.InventoryDeductedFailedEvent;
 import com.klp.payment.payment.domain.event.OrderCancelledEvent;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
@@ -61,7 +62,8 @@ public class KafkaConsumerConfig {
             "OrderCancelledEvent:" + OrderCancelledEvent.class.getName(),
             "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName(),
             "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName(),
-            "CouponUseFailedEvent:" + CouponUsedFailedEvent.class.getName()
+            "CouponUseFailedEvent:" + CouponUsedFailedEvent.class.getName(),
+            "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName()
         );
     }
 

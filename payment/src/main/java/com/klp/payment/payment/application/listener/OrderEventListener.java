@@ -64,6 +64,7 @@ public class OrderEventListener {
                 payment.getPaymentId(),
                 event.orderId(),
                 event.userId(),
+                event.userCouponId(),
                 payment.getReason(),
                 event
             );
