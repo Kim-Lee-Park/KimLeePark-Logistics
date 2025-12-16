@@ -1,6 +1,6 @@
 package com.klp.delivery.delivery.infrastructure.client.dto;
 
-public record DriverResponse(
+public record DriverInfo(
     Long userId,
     String username,
     String slackId,

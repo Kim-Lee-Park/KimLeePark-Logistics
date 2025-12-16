@@ -75,7 +75,7 @@ public class InventoryEventListener {
         Acknowledgment acknowledgment) {
 
         log.info("=== 재고 복구 이벤트 수신: orderId={}, partition={}, offset={}, cancelReason={} ===",
-            event.orderId(), partition, offset, event.cancelReason());
+            event.orderId(), partition, offset, event.reason());
 
         try {
             Long deletedBy = event.userId() != null ? event.userId() : 0L;
