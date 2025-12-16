@@ -88,31 +88,40 @@ public class UserCouponFacade {
     @Transactional
     public CouponApplyResponse applyUserCoupon(UUID userCouponId, String gradeName,
         int originalPrice) {
-        // 쿠폰 조회
-        UserCoupon userCoupon = userCouponService.findByUserCouponId(userCouponId);
-        UserCoupon.validateUsable(userCoupon);
 
-        // 쿠폰선점
-        int lock = userCouponService.reserve(userCouponId, userCoupon.getVersion());
-
-        if (lock == 0) {
-            throw new BusinessException(COUPON_VERSION_MISMATCH);
-        }
-
-        Coupon coupon = couponService.findByCouponId(userCoupon.getCouponId());
-        Coupon.validateExpiredAt(coupon.getExpired_at());
+        Coupon coupon = null;
 
         try {
+
+            if(userCouponId != null) {
+                // 쿠폰 조회
+                UserCoupon userCoupon = userCouponService.findByUserCouponId(userCouponId);
+                UserCoupon.validateUsable(userCoupon);
+
+                // 쿠폰선점
+                int lock = userCouponService.reserve(userCouponId, userCoupon.getVersion());
+
+                if (lock == 0) {
+                    throw new BusinessException(COUPON_VERSION_MISMATCH);
+                }
+
+                coupon = couponService.findByCouponId(userCoupon.getCouponId());
+                Coupon.validateExpiredAt(coupon.getExpired_at());
+            }
+
             Grade grade = gradeService.getGradeByName(gradeName);
 
             return CouponApplyResponse.from(PriceCalculator.calculator(grade, coupon, originalPrice));
 
         } catch (Exception e) {
-            // 시스템 예외 발생 시 쿠폰 선점 원복
+            // 시스템 예외 발생 시 쿠폰 선점 원복 (쿠폰이 있는 경우에만)
             log.error("쿠폰 할인 계산 실패: userCouponId={}, gradeName={}, originalPrice={}",
                 userCouponId, gradeName, originalPrice, e);
-            // @Modifying 쿼리로 인해 영속성 컨텍스트가 클리어되었으므로 다시 조회
-            userCouponService.cancelReserve(userCouponId);
+            
+            if (userCouponId != null) {
+                // @Modifying 쿼리로 인해 영속성 컨텍스트가 클리어되었으므로 다시 조회
+                userCouponService.cancelReserve(userCouponId);
+            }
 
             throw new BusinessException(CouponErrorCode.COUPON_CALCULATION_FAILED);
         }
