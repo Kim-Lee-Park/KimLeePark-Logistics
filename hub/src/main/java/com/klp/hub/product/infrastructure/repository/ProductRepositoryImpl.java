@@ -58,6 +58,15 @@ public class ProductRepositoryImpl implements ProductRepository {
         return productJpaRepository.save(product);
     }
 
+    @Override
+    public List<UUID> findAllProductIds() {
+        return queryFactory
+                .select(qProduct.id)
+                .from(qProduct)
+                .where(qProduct.deletedAt.isNull())
+                .fetch();
+    }
+
     private ConstructorExpression<ProductsPageRowResponse> getProductListRowProjection() {
         return Projections.constructor(
                 ProductsPageRowResponse.class,

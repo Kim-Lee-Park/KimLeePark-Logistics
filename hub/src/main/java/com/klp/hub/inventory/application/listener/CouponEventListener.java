@@ -157,9 +157,7 @@ public class CouponEventListener {
                 event.orderId(), partition, offset, e);
             throw e;
         }
-
     }
-
 
     @KafkaHandler
     public void handleCouponUsedFailed(CouponUsedFailedEvent event) {

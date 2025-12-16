@@ -1,14 +1,16 @@
 package com.klp.delivery.delivery.application.service;
 
-import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
+import com.klp.delivery.delivery.infrastructure.client.dto.DriverInfo;
+import com.klp.delivery.delivery.infrastructure.client.dto.HubDriverListResponse;
+import com.klp.delivery.delivery.infrastructure.client.dto.LogisticsDriverListResponse;
 import java.util.List;
 import java.util.UUID;
 
 public interface DriverClientService {
 
-    List<DriverResponse> findArrivalHubDrivers(UUID receiverId);
+    HubDriverListResponse findArrivalHubDrivers(UUID receiverId);
 
-    DriverResponse findDriverAtArrivalHub(Long receiverId);
+    DriverInfo findDriverAtArrivalHub(Long receiverId);
 
-    List<DriverResponse> findLogisticsDrivers();
+    LogisticsDriverListResponse findLogisticsDrivers();
 }

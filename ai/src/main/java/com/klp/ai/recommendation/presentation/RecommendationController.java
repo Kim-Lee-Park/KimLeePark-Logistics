@@ -34,8 +34,6 @@ public class RecommendationController implements RecommendationControllerDoc {
             orderId, userId, userHubId, limit
         );
 
-        return ResponseEntity.ok(
-            RecommendationResponse.of(orderId, recommendations)
-        );
+        return ResponseEntity.ok().body(RecommendationResponse.of(orderId, recommendations));
     }
 }

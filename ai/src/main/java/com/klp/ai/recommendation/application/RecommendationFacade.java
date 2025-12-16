@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -34,12 +36,15 @@ public class RecommendationFacade {
     /**
      * 주문 ID 기반 추천 생성
      */
+    @Cacheable(value = "recommendation", key = "#orderId.toString() + ':' + #limit")
     public List<RecommendationResult> getRecommendations(
         UUID orderId,
         Long userId,
         UUID userHubId,
         int limit
     ) {
+        log.info("추천 요청: orderId={}, userId={}", orderId, userId);
+
         List<OrderedProduct> orderedProducts = orderDataService.getOrderedProducts(orderId);
 
         List<RecommendationResult> recommendations = generateRecommendations(
@@ -58,7 +63,7 @@ public class RecommendationFacade {
         List<OrderedProduct> orderedProducts
     ) {
         if (orderedProducts.isEmpty()) {
-            log.warn("주문 상품이 없어 추천을 생성할 수 없습니다: userId={}", userId);
+            log.warn("주문 상품이 없어 추천 불가: userId={}", userId);
             return Collections.emptyList();
         }
 
@@ -66,8 +71,9 @@ public class RecommendationFacade {
 
         try {
             List<ProductCandidate> candidates = searchCandidates(orderedProducts);
+
             if (candidates.isEmpty()) {
-                log.info("유사 상품을 찾을 수 없습니다: userId={}", userId);
+                log.warn("유사 상품 없음: userId={}", userId);
                 return Collections.emptyList();
             }
 
@@ -78,15 +84,23 @@ public class RecommendationFacade {
             List<ProductCandidate> enrichedCandidates = enrichCandidates(candidates, context.userHub());
 
             availableCandidates = filterByInventory(enrichedCandidates);
+
             if (availableCandidates.isEmpty()) {
-                log.info("재고가 있는 상품이 없습니다: userId={}", userId);
+                log.warn("재고 있는 상품 없음: userId={}", userId);
                 return Collections.emptyList();
             }
 
-            return llmService.generateRecommendations(context, availableCandidates);
+            List<RecommendationResult> results = llmService.generateRecommendations(context, availableCandidates);
+
+            List<RecommendationResult> sortedResults = results.stream()
+                .sorted((a, b) -> Double.compare(b.similarityScore(), a.similarityScore()))
+                .toList();
+
+            log.info("추천 완료: userId={}, 결과={} 개", userId, sortedResults.size());
+            return sortedResults;
 
         } catch (Exception e) {
-            log.error("추천 생성 실패: userId={}, error={}", userId, e.getMessage(), e);
+            log.error("추천 생성 실패: userId={}", userId, e);
             return fallbackToVectorResults(availableCandidates);
         }
     }
@@ -131,12 +145,25 @@ public class RecommendationFacade {
         }
 
         return candidates.stream()
+            .sorted((a, b) -> Double.compare(b.similarityScore(), a.similarityScore()))
             .limit(5)
-            .map(c -> RecommendationResult.from(
-                c,
-                c.similarityScore(),
-                "고객님께 추천하는 상품입니다."
-            ))
+            .map(RecommendationResult::from)
             .toList();
+    }
+
+    /**
+     * 특정 주문의 추천 캐시 삭제
+     */
+    @CacheEvict(value = "recommendation", key = "#orderId.toString()")
+    public void evictRecommendationCache(UUID orderId) {
+        log.info("추천 캐시 삭제: orderId={}", orderId);
+    }
+
+    /**
+     * 모든 추천 캐시 삭제
+     */
+    @CacheEvict(value = "recommendation", allEntries = true)
+    public void evictAllRecommendationCache() {
+        log.info("전체 추천 캐시 삭제");
     }
 }

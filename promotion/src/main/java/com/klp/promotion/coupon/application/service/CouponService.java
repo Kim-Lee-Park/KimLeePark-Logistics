@@ -59,6 +59,9 @@ public class CouponService {
         );
 
         Coupon result = couponRepository.save(coupon);
+        
+        // Redis에 재고 저장
+        couponRepository.saveStockToRedis(result.getCouponId(), result.getRemain_quantity());
 
         return new CouponResponse(result.getCouponId());
     }
@@ -92,4 +95,6 @@ public class CouponService {
         Page<Coupon> couponPage = couponRepository.findAll(pageable);
         return couponPage.map(CouponDetailResponse::from);
     }
+
+
 }
