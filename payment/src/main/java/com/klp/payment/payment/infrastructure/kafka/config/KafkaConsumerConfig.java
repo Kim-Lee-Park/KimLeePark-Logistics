@@ -50,7 +50,7 @@ public class KafkaConsumerConfig {
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
-        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "com.klp.*");
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         configProps.put(JsonDeserializer.TYPE_MAPPINGS, buildTypeMappings());
 
         return new DefaultKafkaConsumerFactory<>(configProps);
