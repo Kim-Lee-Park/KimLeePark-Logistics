@@ -25,7 +25,7 @@ public class CouponRepositoryImpl implements CouponRepository {
     private final StringRedisTemplate redisTemplate;
     private final CouponJpaRepositroy couponJpaRepositroy;
     private final String COUPON_KEY = "coupon:stock:";
-    private final JPAQueryFactory queryFactory;
+
 
     @Override
     public boolean decreaseStock(UUID couponId) {
@@ -70,24 +70,5 @@ public class CouponRepositoryImpl implements CouponRepository {
         return couponJpaRepositroy.findAll(pageable);
     }
 
-    @Override
-    public void markExpiredCoupons(LocalDateTime todayStart) {
-        QUserCoupon userCoupon = QUserCoupon.userCoupon;
-        QCoupon coupon = QCoupon.coupon;
 
-        queryFactory
-            .update(userCoupon)
-            .set(userCoupon.status, UserCouponStatus.EXPIRED)
-            .where(
-                userCoupon.status.eq(UserCouponStatus.READY),
-                userCoupon.couponId.in(
-                    JPAExpressions
-                        .select(coupon.couponId)
-                        .from(coupon)
-                        .where(coupon.expired_at.lt(todayStart))
-                )
-            )
-            .execute();
-
-    }
 }

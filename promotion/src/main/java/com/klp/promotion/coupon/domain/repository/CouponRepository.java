@@ -17,6 +17,4 @@ public interface CouponRepository {
     void saveStockToRedis(UUID couponId, Long stock);
 
     Page<Coupon> findAll(Pageable page);
-
-    void markExpiredCoupons(LocalDateTime todayStart);
 }

@@ -1,7 +1,7 @@
 package com.klp.promotion.coupon.application.scheduler;
 
 
-import com.klp.promotion.coupon.application.facade.UserCouponFacade;
+import com.klp.promotion.coupon.application.service.UserCouponService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserCouponScheduler {
 
-    private final UserCouponFacade userCouponFacade;
+    private final UserCouponService userCouponService;
 
     @Scheduled(cron = "0 0 0 * * ?")
     public void updateExpiredUserCoupons() {
@@ -23,7 +23,7 @@ public class UserCouponScheduler {
 
         try {
             LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-            userCouponFacade.markExpiredCoupons(todayStart);
+            userCouponService.markExpiredCoupons(todayStart);
 
             log.info("만료된 유저 쿠폰 업데이트 스케줄러 완료");
         } catch (Exception e) {
