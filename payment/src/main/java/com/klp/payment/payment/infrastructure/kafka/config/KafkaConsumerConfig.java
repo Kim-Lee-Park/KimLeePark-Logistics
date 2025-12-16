@@ -1,6 +1,9 @@
 package com.klp.payment.payment.infrastructure.kafka.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.payment.payment.domain.event.CouponUsedEvent;
 import com.klp.payment.payment.domain.event.CouponUsedFailedEvent;
+import com.klp.payment.payment.domain.event.InventoryDeductedEvent;
 import com.klp.payment.payment.domain.event.InventoryDeductedFailedEvent;
 import com.klp.payment.payment.domain.event.OrderCancelledEvent;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
@@ -8,6 +11,7 @@ import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
@@ -24,6 +28,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.DeserializationException;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.util.backoff.FixedBackOff;
@@ -31,6 +36,7 @@ import org.springframework.util.backoff.FixedBackOff;
 @Slf4j
 @EnableKafka
 @Configuration
+@RequiredArgsConstructor
 public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
@@ -39,6 +45,9 @@ public class KafkaConsumerConfig {
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final long RETRY_INTERVAL_MS = 1000L;
 
+    private final ObjectMapper objectMapper;
+
+
     @Bean
     public ConsumerFactory<String, Object> paymentConsumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -46,14 +55,25 @@ public class KafkaConsumerConfig {
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "payment-service-group");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            ErrorHandlingDeserializer.class);
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         configProps.put(JsonDeserializer.TYPE_MAPPINGS, buildTypeMappings());
 
-        return new DefaultKafkaConsumerFactory<>(configProps);
+        return new DefaultKafkaConsumerFactory<>(
+            configProps,
+            new StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(objectMapper))
+        );
     }
 
     private String buildTypeMappings() {
@@ -62,8 +82,10 @@ public class KafkaConsumerConfig {
             "OrderCancelledEvent:" + OrderCancelledEvent.class.getName(),
             "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName(),
             "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName(),
-            "CouponUseFailedEvent:" + CouponUsedFailedEvent.class.getName(),
-            "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName()
+            "CouponUsedFailedEvent:" + CouponUsedFailedEvent.class.getName(),
+            "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName(),
+            "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName(),
+            "CouponUsedEvent:" + CouponUsedEvent.class.getName()
         );
     }
 
@@ -85,6 +107,8 @@ public class KafkaConsumerConfig {
     ) {
         FixedBackOff backOff = new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRY_ATTEMPTS);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        // ErrorHandlingDeserializer가 실패하면 DeserializationException이 발생할 수 있음
         errorHandler.addNotRetryableExceptions(
             DeserializationException.class,
             MessageConversionException.class

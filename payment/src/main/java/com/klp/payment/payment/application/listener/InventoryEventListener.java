@@ -2,6 +2,7 @@ package com.klp.payment.payment.application.listener;
 
 import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
+import com.klp.payment.payment.domain.event.InventoryDeductedEvent;
 import com.klp.payment.payment.domain.event.InventoryDeductedFailedEvent;
 import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,12 @@ public class InventoryEventListener {
 
         log.warn("재고 완료 : orderId={}, paymentId={}, reason={}", event.orderId(),
             payment.getPaymentId(), payment.getReason());
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handleInventoryDeducted(@Payload InventoryDeductedEvent event) {
+        log.info("재고 차감  이벤트 수신: orderId={}", event.orderId());
     }
 
 
