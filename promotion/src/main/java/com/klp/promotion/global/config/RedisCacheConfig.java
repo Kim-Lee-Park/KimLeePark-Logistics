@@ -6,9 +6,11 @@ import java.util.Map;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
@@ -40,5 +42,13 @@ public class RedisCacheConfig {
             .withInitialCacheConfigurations(cacheConfigurations)
             .transactionAware() // 트랜잭션 커밋 이후에 캐시 작업
             .build();
+    }
+
+    @Bean
+    public DefaultRedisScript<String> updateRedisScript() {
+        DefaultRedisScript<String> script = new DefaultRedisScript<>();
+        script.setLocation(new ClassPathResource("coupon_cache.lua"));
+        script.setResultType(String.class);
+        return script;
     }
 }
