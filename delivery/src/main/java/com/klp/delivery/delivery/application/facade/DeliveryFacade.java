@@ -65,6 +65,7 @@ public class DeliveryFacade {
             List<DriverCommand> driverList = driverService.findArrivalHubDrivers(
                 UUID.fromString(arrivalHubInfo.hubId().toString()));
 
+            log.info("업체 배송 담당자 조회 ={}", driverList);
             // 업체 배송 담당자 지정
             DriverCommand driverCommand = DriverSelector.pickRandomDriver(driverList);
 
