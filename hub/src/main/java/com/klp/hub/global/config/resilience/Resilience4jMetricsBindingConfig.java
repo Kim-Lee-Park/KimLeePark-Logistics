@@ -1,4 +1,4 @@
-package com.klp.authservice.global.config;
+package com.klp.hub.global.config.resilience;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;

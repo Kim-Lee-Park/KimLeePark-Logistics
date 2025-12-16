@@ -5,6 +5,8 @@ import com.klp.common.exception.ExternalApiException;
 import com.klp.order.application.service.ProductClient;
 import com.klp.order.domain.vo.Product;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,8 @@ public class ProductClientImpl implements ProductClient {
     private final InventoryClient inventoryClient;
 
     @Override
+    @CircuitBreaker(name = "productService")
+    @Retry(name = "productService")
     public Product getProductById(UUID productId) {
         try {
             return inventoryClient.getProductInfo(productId).toVo();

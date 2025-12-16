@@ -6,6 +6,8 @@ import com.klp.delivery.routeplan.application.command.HubInfo;
 import com.klp.delivery.routeplan.application.service.HubClientService;
 import com.klp.delivery.routeplan.infrastructure.dto.HubResponse;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +17,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class HubClientServiceImpl implements HubClientService {
+
     private final HubFeignClient hubFeignClient;
 
     @Override
+    @CircuitBreaker(name = "hubService")
+    @Retry(name = "hubService")
     public HubInfo getHubById(UUID hubId) {
         try {
             HubResponse res = hubFeignClient.getHubById(hubId);

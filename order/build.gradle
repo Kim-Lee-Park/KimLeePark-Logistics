@@ -91,6 +91,10 @@ dependencies {
     //kafka DLT - @RetryableTopic 사용을 위한 의존성
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework:spring-aspects'
+
+    //circuit breaker
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+    implementation 'io.github.resilience4j:resilience4j-micrometer'
 }
 
 dependencyManagement {

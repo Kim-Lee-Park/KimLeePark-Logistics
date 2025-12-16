@@ -1,8 +1,7 @@
-package com.klp.authservice.auth.infrastructure.external.config.resilience;
+package com.klp.order.infrastructure.client.resilience;
 
-import com.klp.authservice.auth.exception.AuthErrorCode;
-import com.klp.authservice.global.exception.BusinessException;
-import feign.RetryableException;
+import com.klp.common.exception.ExternalApiErrorCode;
+import com.klp.common.exception.ExternalApiException;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import java.net.UnknownHostException;
@@ -11,26 +10,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class UserClientRetryConfig {
+public class ResilienceRetryRegistryConfig {
 
-    //재시도 대상 선별
     @Bean
     public RetryRegistry retryRegistry() {
-
         RetryConfig retryConfig = RetryConfig.custom()
             .maxAttempts(2)
             .waitDuration(Duration.ofMillis(300))
             .retryOnException(ex -> {
-                if (ex instanceof RetryableException) {
+                if (ex instanceof feign.RetryableException) {
                     return true;
                 }
                 if (ex instanceof UnknownHostException) {
                     return true;
                 }
-
-                if (ex instanceof BusinessException be) {
-                    return be.getErrorCode() == AuthErrorCode.USER_SERVICE_UNAVAILABLE
-                        || be.getErrorCode() == AuthErrorCode.USER_SERVICE_ERROR;
+                if (ex instanceof ExternalApiException be) {
+                    return be.getErrorCode() == ExternalApiErrorCode.USER_SERVICE_UNAVAILABLE
+                        || be.getErrorCode() == ExternalApiErrorCode.PRODUCT_SERVICE_UNAVAILABLE;
                 }
                 return false;
             })
@@ -38,6 +34,7 @@ public class UserClientRetryConfig {
 
         RetryRegistry registry = RetryRegistry.of(retryConfig);
 
+        registry.retry("productService", retryConfig);
         registry.retry("userService", retryConfig);
 
         return registry;

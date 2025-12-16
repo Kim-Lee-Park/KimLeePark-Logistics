@@ -6,6 +6,8 @@ import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.vo.UserAddressHubId;
 import com.klp.order.domain.vo.UserProfile;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,8 @@ public class UserClientImpl implements UserClient {
     private final UserFeignClient userFeignClient;
 
     @Override
+    @CircuitBreaker(name = "userService")
+    @Retry(name = "userService")
     public UserProfile getUserProfileById(Long userId) {
         try {
             return userFeignClient.getUserProfileById(userId).toVo();
@@ -32,6 +36,8 @@ public class UserClientImpl implements UserClient {
     }
 
     @Override
+    @CircuitBreaker(name = "userService")
+    @Retry(name = "userService")
     public UserAddressHubId getUserAddressHubIdByAddressId(UUID addressId) {
         try {
             return userFeignClient.getUserAddressHubIdByAddressId(addressId).toVo();

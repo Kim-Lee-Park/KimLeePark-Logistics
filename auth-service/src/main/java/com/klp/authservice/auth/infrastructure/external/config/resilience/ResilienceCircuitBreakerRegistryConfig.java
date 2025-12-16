@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class UserClientCircuitBreakerConfig {
+public class ResilienceCircuitBreakerRegistryConfig {
 
     //실패 누적(카운트) 대상 선별
     @Bean
