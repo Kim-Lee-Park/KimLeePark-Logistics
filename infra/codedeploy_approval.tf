@@ -51,8 +51,11 @@ resource "aws_iam_role_policy" "codedeploy_approval_codedeploy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action = ["codedeploy:PutLifecycleEventHookExecutionStatus"]
+        Effect = "Allow"
+        Action = [
+          "codedeploy:PutLifecycleEventHookExecutionStatus",
+          "codedeploy:GetDeployment",
+        ]
         Resource = "*"
       }
     ]

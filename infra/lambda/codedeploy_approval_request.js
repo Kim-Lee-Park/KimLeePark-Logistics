@@ -1,9 +1,11 @@
 const https = require("https");
-const {URL} = require("url");
 
+const {CodeDeployClient, GetDeploymentCommand} =
+    require("@aws-sdk/client-codedeploy");
 const {DynamoDBClient} = require("@aws-sdk/client-dynamodb");
 const {DynamoDBDocumentClient, PutCommand} = require("@aws-sdk/lib-dynamodb");
 
+const codedeploy = new CodeDeployClient({});
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
@@ -23,18 +25,26 @@ exports.handler = async (event) => {
     return {statusCode: 400, body: "Invalid CodeDeploy event"};
   }
 
+  const deploymentInfo = await fetchDeploymentInfo(deploymentId);
+  const deploymentGroupName =
+      deploymentInfo?.deploymentGroupName || CODEDEPLOY_DEPLOYMENT_GROUP;
+  const appName = deploymentInfo?.applicationName || CODEDEPLOY_APP;
+  const serviceName = deploymentInfo?.applicationName || deploymentGroupName
+      || SERVICE_NAME;
+
   const payload = {
     deploymentId,
     hookId,
-    appName: CODEDEPLOY_APP,
-    deploymentGroup: CODEDEPLOY_DEPLOYMENT_GROUP,
-    serviceName: SERVICE_NAME
+    appName,
+    deploymentGroup: deploymentGroupName,
+    serviceName
   };
 
   const text =
-      `🚀 *${SERVICE_NAME || CODEDEPLOY_DEPLOYMENT_GROUP} 배포 승인 요청*\n` +
+      `🚀 *${serviceName || deploymentGroupName} 배포 승인 요청*\n` +
+      (serviceName ? `도메인: \`${serviceName}\`\n` : "") +
       `DeploymentId: \`${deploymentId}\`\n` +
-      `App: \`${CODEDEPLOY_APP}\` / Group: \`${CODEDEPLOY_DEPLOYMENT_GROUP}\``;
+      `App: \`${appName}\` / Group: \`${deploymentGroupName}\``;
 
   const blocks = [
     {type: "section", text: {type: "mrkdwn", text}},
@@ -65,9 +75,9 @@ exports.handler = async (event) => {
       Item: {
         deploymentId,
         hookId,
-        appName: CODEDEPLOY_APP,
-        deploymentGroup: CODEDEPLOY_DEPLOYMENT_GROUP,
-        serviceName: SERVICE_NAME,
+        appName,
+        deploymentGroup: deploymentGroupName,
+        serviceName,
         status: "PENDING",
         createdAt: new Date().toISOString(),
       },
@@ -77,6 +87,21 @@ exports.handler = async (event) => {
   await postToSlack({text, blocks});
   return {statusCode: 200, body: "Slack approval requested"};
 };
+
+async function fetchDeploymentInfo(deploymentId) {
+  if (!deploymentId) {
+    return null;
+  }
+
+  try {
+    const res = await codedeploy.send(
+        new GetDeploymentCommand({deploymentId}));
+    return res?.deploymentInfo || null;
+  } catch (err) {
+    console.error("Failed to fetch deployment info", err);
+    return null;
+  }
+}
 
 async function postToSlack(body) {
   if (!SLACK_WEBHOOK_URL) {
