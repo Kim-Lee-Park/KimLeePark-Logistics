@@ -3,13 +3,14 @@ package com.klp.payment.payment.application.listener;
 import com.klp.payment.payment.application.PaymentOutboxService;
 import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
+import com.klp.payment.payment.domain.event.CouponUsedEvent;
 import com.klp.payment.payment.domain.event.CouponUsedFailedEvent;
-import com.klp.payment.payment.domain.event.PaymentFailedEvent;
 import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,23 +29,32 @@ public class CouponEventListener {
 
     @KafkaHandler
     @Transactional
-    public void handleOrderCreated(CouponUsedFailedEvent event) {
-        log.info("쿠폰 사용 실패 이벤트 수신: orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
+    public void handleCouponFailed(@Payload CouponUsedFailedEvent event) {
+        log.info("쿠폰 사용 실패 이벤트 수신: orderId={}, userCouponId={}", event.orderId(),
+            event.userCouponId());
 
         Payment payment = paymentService.failPayment(event.orderId(), "결제취소");
 
-        PaymentFailedEvent failedEvent = PaymentFailedEvent.from(
-            payment.getPaymentId(),
-            event.orderId(),
-            event.userId(),
-            payment.getReason(),
-            event
-        );
+//        PaymentFailedEvent failedEvent = PaymentFailedEvent.from(
+//            payment.getPaymentId(),
+//            event.orderId(),
+//            event.userId(),
+//            event.userCouponId(),
+//            payment.getReason(),
+//            event
+//        );
 
-        outboxService.savePaymentFailedEvent(failedEvent);
-        log.warn("결제 실패 완료 : orderId={}, paymentId={}, reason={}", event.orderId(), payment.getPaymentId(), payment.getReason());
+//        outboxService.savePaymentFailedEvent(failedEvent);
+        log.warn("결제 실패 완료 : orderId={}, paymentId={}, reason={}", event.orderId(),
+            payment.getPaymentId(), payment.getReason());
     }
 
+    @KafkaHandler
+    @Transactional
+    public void handleCouponUsed(@Payload CouponUsedEvent event) {
+        log.info("쿠폰 사용 이벤트 수신: orderId={}, userCouponId={}", event.orderId(),
+            event.userCouponId());
+    }
 
 
     @KafkaHandler(isDefault = true)

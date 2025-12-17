@@ -50,7 +50,44 @@ public record InventoryDeductedEvent(
     ) {
 
     }
-//    public static InventoryDeductedEvent of(UUID orderId, List<OrderItem> items) {
-//        return new InventoryDeductedEvent(orderId, items, LocalDateTime.now());
-//    }
+
+    public static InventoryDeductedEvent of(CouponUsedEvent event) {
+        return new InventoryDeductedEvent(
+            event.orderId(),
+            event.userId(),
+            event.supplierId(),
+            event.userCouponId(),
+            event.email(),
+            event.username(),
+            event.comment(),
+            event.originalPrice(),
+            event.couponDiscountPrice(),
+            event.gradeDiscountPrice(),
+            event.finalOrderPrice(),
+            event.addressId(),
+            event.userAddressHubId(),
+            event.address(),
+            event.deliveryLatitude(),
+            event.deliveryLongitude(),
+            event.products().stream()
+                .map(product -> new OrderItem(
+                    product.orderItemId(),
+                    product.productId(),
+                    product.productName(),
+                    product.hubId(),
+                    product.quantity(),
+                    product.unitPrice(),
+                    product.totalPrice()
+                ))
+                .toList(),
+            event.inventoryIdempotencyKey(),
+            event.deliveryIdempotencyKey(),
+            event.createdAt(),
+            LocalDateTime.now(),
+            event.paymentId(),
+            event.paidAmount(),
+            event.paymentMethod(),
+            event.paidAt()
+        );
+    }
 }

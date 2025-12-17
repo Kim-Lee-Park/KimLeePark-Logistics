@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ProductClientImpl implements ProductClient {
 
-    private final InventoryClient inventoryClient;
+    private final InventoryFeignClient inventoryClient;
 
     @Override
     public Product getProductById(UUID productId) {

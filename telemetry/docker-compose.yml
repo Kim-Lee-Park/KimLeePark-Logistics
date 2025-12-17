@@ -72,6 +72,7 @@ services:
       - "9090:9090"
     networks:
       - telemetry
+      - db-net
 
   kafka-exporter:
     image: danielqsj/kafka-exporter:latest

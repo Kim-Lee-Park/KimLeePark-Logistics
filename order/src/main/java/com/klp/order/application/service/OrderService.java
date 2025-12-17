@@ -38,7 +38,7 @@ public class OrderService {
             command.addressId(),
             command.deliveryLatitude(),
             command.deliveryLongitude(),
-            command.items()
+            command.orderItems()
         );
 
         return orderRepository.save(order);

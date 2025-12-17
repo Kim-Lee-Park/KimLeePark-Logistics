@@ -1,11 +1,12 @@
 package com.klp.hub.inventory.application.listener;
 
 import com.klp.hub.inventory.application.InventoryFacade;
+import com.klp.hub.inventory.application.OutboxService;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
-import com.klp.hub.inventory.domain.event.InventoryDeductedEvent.OrderItem;
+import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
@@ -34,6 +35,7 @@ public class CouponEventListener {
 
     private final InventoryFacade inventoryFacade;
     private final InventoryEventProducer inventoryEventProducer;
+    private final OutboxService outboxService;
 
     @KafkaHandler
     @Transactional
@@ -46,49 +48,9 @@ public class CouponEventListener {
         log.info("쿠폰 사용 이벤트 수신: orderId={}", event.orderId());
         inventoryFacade.confirm(event.orderId());
         try {
-            List<OrderItem> orderItems = event.products().stream()
-                .map(product -> new InventoryDeductedEvent.OrderItem(
-                    product.orderItemId(),
-                    product.productId(),
-                    product.productName(),
-                    product.hubId(),
-                    product.quantity(),
-                    product.unitPrice(),
-                    product.totalPrice()
-                )).toList();
-
-            InventoryDeductedEvent inventoryDeductedEvent = new InventoryDeductedEvent(
-                event.orderId(),
-                event.userId(),
-                event.supplierId(),
-                event.userCouponId(),
-                event.email(),
-                event.username(),
-                event.comment(),
-                event.originalPrice(),
-                event.couponDiscountPrice(),
-                event.gradeDiscountPrice(),
-                event.finalOrderPrice(),
-
-                event.addressId(),
-                event.userAddressHubId(),
-                event.address(),
-                event.deliveryLatitude(),
-                event.deliveryLongitude(),
-
-                orderItems,
-                event.inventoryIdempotencyKey(),
-                event.deliveryIdempotencyKey(),
-                event.createdAt(),
-                event.occurredAt(),
-                // PaymentApprovedEvent 추가 필드
-                event.paymentId(),
-                event.paidAmount(),
-                event.paymentMethod(),
-                event.paidAt()
-            );
-
-            inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
+            InventoryDeductedEvent inventoryDeductedEvent = InventoryDeductedEvent.of(event);
+//            inventoryEventProducer.publishInventoryDeductedEvent(inventoryDeductedEvent);
+            outboxService.saveInventoryDeductedEvent(inventoryDeductedEvent);
             log.info("재고 차감 이벤트 발행 완료: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
@@ -99,7 +61,13 @@ public class CouponEventListener {
         } catch (Exception e) {
             log.error("재고 차감 이벤트 처리 실패:  orderId={}",
                 event.orderId(), e);
-            throw e;
+            InventoryDeductedFailedEvent failedEvent = InventoryDeductedFailedEvent.of(event);
+//            inventoryEventProducer.publishInventoryDeductedFailedEvent(failedEvent);
+            outboxService.saveInventoryDedictedFailedEvent(failedEvent);
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
         }
     }
 
@@ -137,7 +105,8 @@ public class CouponEventListener {
             );
 
             // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
-            inventoryEventProducer.publishInventoryReplenishedEvent(inventoryReplenishedEvent);
+//            inventoryEventProducer.publishInventoryReplenishedEvent(inventoryReplenishedEvent);
+            outboxService.saveInventoryReplenishedEvent(inventoryReplenishedEvent);
             log.info("재고 복구 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
                 event.userCouponId());
 
@@ -150,9 +119,7 @@ public class CouponEventListener {
                 event.orderId(), partition, offset, e);
             throw e;
         }
-
     }
-
 
     @KafkaHandler
     public void handleCouponUsedFailed(CouponUsedFailedEvent event) {

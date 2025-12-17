@@ -16,7 +16,9 @@ public record HubRouteInfo(
         return new RouteInfoVo(
             routeInfoId,
             departureId,
+            departureName,
             arrivalId,
+            arrivalName,
             durationMin,
             distanceKm
         );

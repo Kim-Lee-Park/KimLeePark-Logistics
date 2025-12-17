@@ -25,13 +25,18 @@ public record InventoryDeductedFailedEvent(
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
 
-    List<OrderCreatedEvent.OrderItem> products,
+    List<OrderItem> products,
 
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
 
     LocalDateTime createdAt,
-    LocalDateTime occurredAt
+    LocalDateTime occurredAt,
+
+    UUID paymentId,
+    int paidAmount,
+    String paymentMethod,
+    LocalDateTime paidAt
 ) {
 
     public record OrderItem(
