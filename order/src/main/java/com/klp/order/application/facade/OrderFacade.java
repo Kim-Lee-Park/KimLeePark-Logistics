@@ -24,6 +24,8 @@ import com.klp.order.infrastructure.client.dto.promotion.request.PromotionCalcul
 import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
+import com.klp.order.infrastructure.event.event.WhichRollback;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +50,9 @@ public class OrderFacade {
 
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
+        Order order = null;
+        boolean inventoryReserved = false;
+        boolean promotionApplied = false;
 
         try {
             // 1. 유저 조회_ 정보 얻기
@@ -57,7 +62,7 @@ public class OrderFacade {
             UserAddress userAddress = userQueryService.getUserAddress(command.addressId());
 
             // 3. 주문 생성
-            Order order = orderService.createOrder(command);
+            order = orderService.createOrder(command);
             log.info("주문 생성 완료 - orderId: {}", order.getOrderId());
 
             String InventoryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
@@ -105,12 +110,17 @@ public class OrderFacade {
                 order.getOrderId(),
                 reservationItems.size()
             );
+            if (inventoryResponse.reserved()) {
+                inventoryReserved = true;
+            }
 
             // 5. 할인 금액 조회 // 추후 사용 예정
             PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
                 command.userCouponId(), userProfile.grade(), originalPriceTotal);
             PromotionResponse promotionResponse = promotionClient.getPromotionInfo(
                 calculateRequest);
+
+            promotionApplied = true;
 
             // 추후에 PromotionResponse 값을 사용할 예정
             orderService.updateDiscountPrice(
@@ -136,13 +146,57 @@ public class OrderFacade {
 
         } catch (Exception e) {
             log.error("=== 주문 생성 실패 - 전체 롤백: {} ===", e.getMessage(), e);
-            // 재고 선점 취소
-            // 여기서 또 각 try catch로 잡아야하는가?
-            // 쿠폰 선점 취소
+
+            if (order != null && order.getOrderId() != null) {
+                WhichRollback rollbackType = determineRollbackType(
+                    inventoryReserved,
+                    promotionApplied
+                );
+
+                log.info("보상 트랜잭션 타입 결정: {}", rollbackType);
+
+                if (rollbackType != WhichRollback.NONE) {
+                    try {
+                        OrderFailedEvent failedEvent = new OrderFailedEvent(
+                            order.getOrderId(),
+                            command.userCouponId(),
+                            rollbackType
+                        );
+
+                        orderOutboxEventService.saveFailedEvent(
+                            order.getOrderId(),
+                            "ORDER_FAILED",
+                            failedEvent
+                        );
+                        log.info("주문 실패 이벤트 발행 완료 - orderId: {}, type: {}",
+                            order.getOrderId(), rollbackType);
+                    } catch (Exception eventException) {
+                        log.error("주문 실패 이벤트 발행 실패 (무시): {}", eventException.getMessage());
+                    }
+                } else {
+                    log.info("선점된 리소스 없음 - 보상 트랜잭션 불필요");
+                }
+            }
+
             throw new BusinessException(
                 OrderErrorCode.ORDER_CREATION_FAILED,
                 "주문 생성 중 오류 발생: " + e.getMessage()
             );
+        }
+    }
+
+    private WhichRollback determineRollbackType(
+        boolean inventoryReserved,
+        boolean promotionApplied
+    ) {
+        if (inventoryReserved && promotionApplied) {
+            return WhichRollback.ALL;
+        } else if (inventoryReserved) {
+            return WhichRollback.INVENTORY;
+        } else if (promotionApplied) {
+            return WhichRollback.PROMOTION;
+        } else {
+            return WhichRollback.NONE;
         }
     }
 

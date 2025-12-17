@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -69,6 +70,18 @@ public class OrderOutboxEventService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveFailedEvent(UUID orderId, String eventType, Object eventData) {
+        try {
+            String payload = serializeEventData(eventData, eventType);
+            OrderOutboxEvent outboxEvent = OrderOutboxEvent.create(orderId, eventType, payload);
+            saveOutboxEvent(outboxEvent, orderId, eventType);
+            log.info("실패 이벤트 저장 성공: eventType={}, orderId={}", eventType, orderId);
+        } catch (Exception e) {
+            log.error("실패 이벤트 저장 실패: eventType={}, orderId={}", eventType, orderId, e);
+        }
+    }
+
     // JSON 직렬화
     private String serializeEventData(Object eventData, String eventType)
         throws JsonProcessingException {
@@ -81,7 +94,6 @@ public class OrderOutboxEventService {
         }
     }
 
-    // 이벤트  db 저장
     private void saveOutboxEvent(OrderOutboxEvent outboxEvent,
         UUID orderId, String eventType) {
 

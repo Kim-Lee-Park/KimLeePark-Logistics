@@ -13,17 +13,18 @@ import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.application.service.PromotionClient;
-import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.vo.UserAddressHubId;
+import com.klp.order.domain.vo.UserAddress;
 import com.klp.order.domain.vo.UserProfile;
 import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
 import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
 import com.klp.order.infrastructure.client.dto.promotion.request.PromotionCalculateRequest;
 import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
+import com.klp.order.infrastructure.event.event.WhichRollback;
 import com.klp.order.presentation.dto.result.OrderCreateWithKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,27 +47,32 @@ public class TMPOrderFacade {
     private final ProductQueryService productQueryService;
     private final PromotionClient promotionClient;
     private final InventoryClient inventoryClient;
-    private final UserClient userClient;
 
     public Order createOrder(CreateOrderCommand command) {
         log.info("=== 주문 생성 프로세스 시작: userId={} ===", command.userId());
 
         OrderCreateWithKey orderAndIdempotencyKey = null;
+        boolean inventoryReserved = false;
+        boolean promotionApplied = false;
 
         try {
             UserProfile userProfile = userQueryService.getUserProfile(command.userId());
-            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
-                command.addressId());
+            UserAddress userAddress = userQueryService.getUserAddress(command.addressId());
+
             int originalPriceTotal = validateAndCalculatePrice(command.orderItems());
 
             log.info("Order 생성 트랜잭션 시작");
             orderAndIdempotencyKey = orderFacadeService.createOrder(command);
+
             log.info("Order 생성 완료 - orderId={}",
                 orderAndIdempotencyKey.order().getOrderId());
 
             log.info("재고 선점 시작");
             InventoryReservationResponse inventoryResponse = reserveInventory(
                 orderAndIdempotencyKey, command.orderItems());
+            if (inventoryResponse.reserved()) {
+                inventoryReserved = true;
+            }
             log.info("재고 선점 성공");
 
             log.info("프로모션 계산 시작");
@@ -77,13 +83,15 @@ public class TMPOrderFacade {
             );
             PromotionResponse promotionResponse = promotionClient.getPromotionInfo(
                 calculateRequest);
+            promotionApplied = true;
+
             log.info("할인가 계산 완료 - 최종금액={}", promotionResponse.orderPrice());
 
             Order finalOrder = orderFacadeService.updateOrderAndPublishEvent(
                 orderAndIdempotencyKey.order().getOrderId(),
                 promotionResponse,
                 userProfile,
-                userAddressHubId,
+                userAddress,
                 orderAndIdempotencyKey.inventoryIdempotencyKey(),
                 orderAndIdempotencyKey.deliveryIdempotencyKey()
             );
@@ -94,16 +102,34 @@ public class TMPOrderFacade {
         } catch (Exception e) {
             log.error("=== 주문 생성 프로세스 실패: {} ===", e.getMessage(), e);
 
-            if (orderAndIdempotencyKey != null) {
-                try {
-                    orderFacadeService.markOrderAsFailed(
-                        orderAndIdempotencyKey.order().getOrderId(),
-                        e.getMessage()
-                    );
-                    log.info("보상 트랜잭션 완료: Order FAILED 처리");
-                } catch (Exception compensationError) {
-                    log.error("보상 트랜잭션 실패: {}", compensationError.getMessage(),
-                        compensationError);
+            if (orderAndIdempotencyKey != null && orderAndIdempotencyKey.order() != null) {
+                WhichRollback rollbackType = determineRollbackType(
+                    inventoryReserved,
+                    promotionApplied
+                );
+
+                log.info("보상 트랜잭션 타입 결정: {}", rollbackType);
+
+                if (rollbackType != WhichRollback.NONE) {
+                    try {
+                        OrderFailedEvent failedEvent = new OrderFailedEvent(
+                            orderAndIdempotencyKey.order().getOrderId(),
+                            command.userCouponId(),
+                            rollbackType
+                        );
+
+                        orderFacadeService.markOrderAsFailed(
+                            orderAndIdempotencyKey.order().getOrderId(),
+                            failedEvent,
+                            e.getMessage()
+                        );
+                        log.info("보상 트랜잭션 완료: Order FAILED 처리 및 실패 이벤트 발행 (type: {})",
+                            rollbackType);
+                    } catch (Exception compensationError) {
+                        log.error("보상 트랜잭션 실패: {}", compensationError.getMessage());
+                    }
+                } else {
+                    log.info("선점된 리소스 없음 - 보상 트랜잭션 불필요");
                 }
             }
 
@@ -111,6 +137,21 @@ public class TMPOrderFacade {
                 OrderErrorCode.ORDER_CREATION_FAILED,
                 "주문 생성 중 오류 발생: " + e.getMessage()
             );
+        }
+    }
+
+    private WhichRollback determineRollbackType(
+        boolean inventoryReserved,
+        boolean promotionApplied
+    ) {
+        if (inventoryReserved && promotionApplied) {
+            return WhichRollback.ALL;
+        } else if (inventoryReserved) {
+            return WhichRollback.INVENTORY;
+        } else if (promotionApplied) {
+            return WhichRollback.PROMOTION;
+        } else {
+            return WhichRollback.NONE;
         }
     }
 
@@ -124,7 +165,6 @@ public class TMPOrderFacade {
 
         return originalPriceTotal;
     }
-
 
     private InventoryReservationResponse reserveInventory(
         OrderCreateWithKey orderAndIdempotencyKey,
@@ -160,7 +200,6 @@ public class TMPOrderFacade {
 
         return inventoryResponse;
     }
-
 
     private void validateInventoryReservation(
         InventoryReservationResponse response,

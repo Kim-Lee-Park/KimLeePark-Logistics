@@ -9,8 +9,7 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
 
     // 구독용 토픽
-    public static final String ORDER_CREATED_EVENTS = "order.created";
-    public static final String ORDER_CANCELLED_EVENTS = "order.cancelled";
+    public static final String ORDER_EVENTS = "order.topic";
     public static final String COUPON_EVENTS = "coupon.topic";
     public static final String PAYMENT_EVENTS = "payment.topic";
 
@@ -24,23 +23,23 @@ public class KafkaTopicConfig {
      * 주문 성공 이벤트 토픽 (구독용)
      */
     @Bean
-    public NewTopic orderCreatedEventsTopic() {
-        return TopicBuilder.name(ORDER_CREATED_EVENTS)
+    public NewTopic orderEventsTopic() {
+        return TopicBuilder.name(ORDER_EVENTS)
             .partitions(3)
             .replicas(1)
             .build();
     }
 
-    /**
-     * 주문 취소 이벤트 토픽 (구독용)
-     */
-    @Bean
-    public NewTopic orderCancelledEventsTopic() {
-        return TopicBuilder.name(ORDER_CANCELLED_EVENTS)
-            .partitions(3)
-            .replicas(1)
-            .build();
-    }
+//    /**
+//     * 주문 취소 이벤트 토픽 (구독용)
+//     */
+//    @Bean
+//    public NewTopic orderCancelledEventsTopic() {
+//        return TopicBuilder.name(ORDER_CANCELLED_EVENTS)
+//            .partitions(3)
+//            .replicas(1)
+//            .build();
+//    }
 
 
     /**
