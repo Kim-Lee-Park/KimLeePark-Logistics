@@ -8,7 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -16,7 +18,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_inventory_reservation")
+@Table(
+    name = "p_inventory_reservation",
+    indexes = {
+        @Index(name = "idx_inv_reservation_product_hub", columnList = "product_id, hub_id"),
+        @Index(name = "idx_inv_reservation_product_hub_status", columnList = "product_id, hub_id, status")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_inv_reservation_idempotency",
+            columnNames = "idempotency_key"
+        )
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class InventoryReservation extends BaseEntity {
@@ -28,13 +42,13 @@ public class InventoryReservation extends BaseEntity {
     @Column(nullable = false)
     private UUID orderId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "product_id")
     private UUID productId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "hub_id")
     private UUID hubId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "idempotency_key")
     private String idempotencyKey;
 
     @Column(nullable = false)
