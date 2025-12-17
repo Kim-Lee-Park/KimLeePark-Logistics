@@ -5,12 +5,15 @@ import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
 import com.klp.hub.inventory.domain.InventoryReservation;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.InventoryReservationRepository;
+import com.klp.hub.inventory.domain.repository.dto.InventoryAvailability;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +36,33 @@ public class InventoryReservationService {
             return InventoryReservationResponse.already();
         }
 
+        List<UUID> productIds = command.items().stream()
+            .map(InventoryReservationCommand.ReservationItem::productId)
+            .distinct()
+            .toList();
+
+        List<UUID> hubIds = command.items().stream()
+            .map(InventoryReservationCommand.ReservationItem::hubId)
+            .distinct()
+            .toList();
+
+        List<InventoryAvailability> availabilityList =
+            reservationRepository.getAvailableQuantities(productIds, hubIds);
+
+        Map<String, Integer> availabilityMap = new HashMap<>();
+        for (InventoryAvailability availability : availabilityList) {
+            String key = availability.productId() + ":" + availability.hubId();
+            Integer available = availability.availableQuantity() == null
+                ? 0
+                : availability.availableQuantity().intValue();
+            availabilityMap.put(key, available);
+        }
+
         List<InventoryReservation> reservations = new ArrayList<>();
 
         for (InventoryReservationCommand.ReservationItem item : command.items()) {
-            int available = reservationRepository.getAvailableQuantity(
-                item.productId(),
-                item.hubId()
-            );
+            String key = item.productId() + ":" + item.hubId();
+            int available = availabilityMap.getOrDefault(key, 0);
 
             if (available < item.quantity()) {
                 log.error("재고 부족: productId={}, hubId={}, available={}, requested={}",
@@ -58,7 +81,7 @@ public class InventoryReservationService {
             reservations.add(reservation);
         }
 
-        reservationRepository.saveAll(reservations);
+        reservationRepository.saveAllInBatch(reservations);
 
         return InventoryReservationResponse.success(command.orderId());
     }
