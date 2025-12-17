@@ -14,6 +14,9 @@ public class KafkaTopicConfig {
     // 구독용
     public static final String COUPON_TOPIC = "coupon.topic";
 
+    // 구독용
+    public static final String INVENTORY_TOPIC = "inventory.topic";
+
     // 발행용
     public static final String PAYMENT_TOPIC = "payment.topic";
 
@@ -53,5 +56,11 @@ public class KafkaTopicConfig {
             .build();
     }
 
-
+    @Bean
+    public NewTopic inventoryTopic() {
+        return TopicBuilder.name(INVENTORY_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
 }

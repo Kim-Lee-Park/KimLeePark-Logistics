@@ -5,9 +5,9 @@ import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
-import com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
+import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -84,8 +84,8 @@ public class PaymentEventListener {
 
     @KafkaHandler
     @Transactional
-    public void handlePaymentApprovedFailed(
-        @Payload PaymentApprovedFailedEvent event,
+    public void handlePaymentFailed(
+        @Payload PaymentFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {

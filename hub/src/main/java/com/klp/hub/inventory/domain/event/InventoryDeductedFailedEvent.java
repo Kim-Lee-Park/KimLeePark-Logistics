@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record InventoryDeductedEvent(
+public record InventoryDeductedFailedEvent(
     UUID orderId,
     Long userId,
     UUID supplierId,
@@ -51,8 +51,8 @@ public record InventoryDeductedEvent(
 
     }
 
-    public static InventoryDeductedEvent of(CouponUsedEvent event) {
-        return new InventoryDeductedEvent(
+    public static InventoryDeductedFailedEvent of(CouponUsedEvent event) {
+        return new InventoryDeductedFailedEvent(
             event.orderId(),
             event.userId(),
             event.supplierId(),

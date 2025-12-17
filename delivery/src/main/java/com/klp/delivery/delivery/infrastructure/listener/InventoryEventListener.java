@@ -54,15 +54,17 @@ public class InventoryEventListener {
             deliveryFacade.createDelivery(orderCommand, idempotencyCommand);
             log.info("=== 배송 생성 완료: orderId={} ===", event.orderId());
 
-            if (acknowledgment != null) {
-                acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
-            }
 
         } catch (Exception e) {
             log.error("재고 차감 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
             throw e;
+        }finally {
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
         }
     }
 
@@ -82,15 +84,17 @@ public class InventoryEventListener {
             deliveryFacade.cancelDeliveriesByOrderId(event.orderId(), deletedBy);
             log.info("=== 배송 취소 완료: orderId={} ===", event.orderId());
 
-            if (acknowledgment != null) {
-                acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
-            }
+
 
         } catch (Exception e) {
             log.error("재고 복구 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
             throw e;
+        } finally {
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-package com.klp.hub.inventory.domain.event;
+package com.klp.order.infrastructure.event.event;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,6 +8,7 @@ public record PaymentFailedEvent(
     UUID paymentId,
     UUID orderId,
     Long userId,
+    UUID userCouponId,
     String reason,
     List<ProductInfo> products,
     LocalDateTime occurredAt

@@ -3,9 +3,6 @@ package com.klp.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
 import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
-import io.micrometer.observation.ObservationRegistry;
-import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
-import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
 import com.klp.order.infrastructure.event.event.CouponCancelledEvent;
 import com.klp.order.infrastructure.event.event.CouponCancelledFailedEvent;
 import com.klp.order.infrastructure.event.event.CouponUsedEvent;
@@ -24,9 +21,10 @@ import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
 import com.klp.order.infrastructure.event.event.OrderPaidEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
-import com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
+import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -118,7 +116,7 @@ public class KafkaConfig {
         props.put(JsonDeserializer.TYPE_MAPPINGS,
             "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName() + "," +
                 "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName() + "," +
-                "PaymentApprovedFailedEvent:" + PaymentApprovedFailedEvent.class.getName() + "," +
+                "PaymentFailedEvent:" + PaymentFailedEvent.class.getName() + "," +
                 "PaymentCancelledFailedEvent:" + PaymentCancelledFailedEvent.class.getName() + "," +
                 "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
                 "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + ","
