@@ -21,7 +21,8 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "p_inventory_reservation",
     indexes = {
-        @Index(name = "idx_inv_reservation_product_hub", columnList = "product_id, hub_id")
+        @Index(name = "idx_inv_reservation_product_hub", columnList = "product_id, hub_id"),
+        @Index(name = "idx_inv_reservation_product_hub_status", columnList = "product_id, hub_id, status")
     },
     uniqueConstraints = {
         @UniqueConstraint(

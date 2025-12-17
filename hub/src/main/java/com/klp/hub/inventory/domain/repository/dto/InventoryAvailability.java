@@ -5,7 +5,7 @@ import java.util.UUID;
 public record InventoryAvailability(
     UUID productId,
     UUID hubId,
-    Integer availableQuantity
+    Long availableQuantity
 ) {
 
 }

@@ -52,7 +52,10 @@ public class InventoryReservationService {
         Map<String, Integer> availabilityMap = new HashMap<>();
         for (InventoryAvailability availability : availabilityList) {
             String key = availability.productId() + ":" + availability.hubId();
-            availabilityMap.put(key, availability.availableQuantity());
+            Integer available = availability.availableQuantity() == null
+                ? 0
+                : availability.availableQuantity().intValue();
+            availabilityMap.put(key, available);
         }
 
         List<InventoryReservation> reservations = new ArrayList<>();

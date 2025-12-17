@@ -32,14 +32,15 @@ public class InventoryReservationRepositoryImpl implements InventoryReservationR
 
         String sql = String.format("""
             INSERT INTO %s
-                (order_id, product_id, hub_id, idempotency_key, quantity, status, expires_at, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, order_id, product_id, hub_id, idempotency_key, quantity, status, expires_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, RESERVATION_TABLE);
 
         LocalDateTime now = LocalDateTime.now();
 
         List<Object[]> batchArgs = reservations.stream()
             .map(reservation -> new Object[]{
+                reservation.getId() != null ? reservation.getId() : UUID.randomUUID(),
                 reservation.getOrderId(),
                 reservation.getProductId(),
                 reservation.getHubId(),
