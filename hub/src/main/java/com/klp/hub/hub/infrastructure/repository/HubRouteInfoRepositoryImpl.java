@@ -81,9 +81,7 @@ public class HubRouteInfoRepositoryImpl implements HubRouteInfoRepository {
             .where(
                 qRouteInfo.deletedAt.isNull(),
                 qRouteInfo.departureId.in(hubIds),
-                qRouteInfo.arrivalId.in(hubIds),
-                qRouteInfo.departureId.ne(qRouteInfo.arrivalId)
-            )
+                qRouteInfo.arrivalId.in(hubIds))
             .fetch();
     }
 
