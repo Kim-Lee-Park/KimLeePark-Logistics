@@ -14,7 +14,7 @@ import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.vo.UserAddressHubId;
+import com.klp.order.domain.vo.UserAddress;
 import com.klp.order.domain.vo.UserProfile;
 import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
 import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
@@ -52,8 +52,7 @@ public class OrderFacade {
             //grade , email, username 뽑아오기
             UserProfile userProfile = userQueryService.getUserProfile(command.userId());
             //2. userAddressHubId, address  받아오기
-            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
-                command.addressId());
+            UserAddress userAddress = userQueryService.getUserAddress(command.addressId());
 
             // 3. 주문 생성
             Order order = orderService.createOrder(command);
@@ -120,9 +119,9 @@ public class OrderFacade {
 
             //6. 이벤트 생성
             OrderCreatedEvent event = OrderCreatedEvent.from(order, userProfile.email(),
-                userProfile.username(), userAddressHubId.address(),
+                userProfile.username(), userAddress.address(),
                 InventoryIdempotencyKey,
-                DeliveryIdempotencyKey, userAddressHubId.userAddressHubId());
+                DeliveryIdempotencyKey, userAddress.userAddressHubId());
 
             // Outbox에 이벤트 저장 시도  실패 시 전체 롤백으로 데이터 일관성을 지키도록 구현
             orderOutboxEventService.saveEvent(order.getOrderId(),
