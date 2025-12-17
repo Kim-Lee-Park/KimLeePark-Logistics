@@ -1,6 +1,6 @@
 services:
   postgres-auth:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-auth-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -16,7 +16,7 @@ services:
       - db-net
 
   postgres-user:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-user-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -32,7 +32,7 @@ services:
       - db-net
 
   postgres-hub:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-hub-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -48,7 +48,7 @@ services:
       - db-net
 
   postgres-delivery:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-delivery-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -64,7 +64,7 @@ services:
       - db-net
 
   postgres-order:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-order-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -80,7 +80,7 @@ services:
       - db-net
 
   postgres-notification:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-notification-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -96,7 +96,7 @@ services:
       - db-net
 
   postgres-promotion:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-promotion-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -112,7 +112,7 @@ services:
       - db-net
 
   postgres-payment:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-payment-klp
     environment:
       POSTGRES_USER: kimleepark
