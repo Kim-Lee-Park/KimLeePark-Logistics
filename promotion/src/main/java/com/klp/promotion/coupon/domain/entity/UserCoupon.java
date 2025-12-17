@@ -112,4 +112,8 @@ public class UserCoupon extends BaseEntity {
         this.usedAt = null;
     }
 
+    public void reserve(){
+        this.status = UserCouponStatus.RESERVE;
+    }
+
 }
