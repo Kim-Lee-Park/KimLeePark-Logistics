@@ -5,7 +5,6 @@ import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
 import com.klp.payment.payment.domain.event.OrderCancelledEvent;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
-import com.klp.payment.payment.domain.event.OrderFailedEvent;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import com.klp.payment.payment.domain.event.PaymentFailedEvent;
@@ -13,7 +12,6 @@ import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = KafkaTopicConfig.ORDER_TOPIC,
-    groupId = "payment-service-group",
-    containerFactory = "paymentKafkaListenerContainerFactory"
-)
 public class OrderEventListener {
 
     private final PaymentService paymentService;
     private final PaymentOutboxService outboxService;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_CREATED_TOPIC,
+        groupId = "payment-service-group",
+        containerFactory = "paymentKafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleOrderCreated(OrderCreatedEvent event) {
         log.info("주문 생성 이벤트 수신: orderId={}, amount={}", event.orderId(), event.finalOrderPrice());
@@ -75,7 +72,11 @@ public class OrderEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_CANCELLED_TOPIC,
+        groupId = "payment-service-group",
+        containerFactory = "paymentKafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleOrderCancelled(OrderCancelledEvent event) {
         log.info("주문 취소 이벤트 수신: orderId={}", event.orderId());
@@ -107,15 +108,33 @@ public class OrderEventListener {
             log.info("취소할 결제가 없습니다: orderId={}", event.orderId());
         }
     }
-
-    @KafkaHandler
-    @Transactional
-    public void handleOrderFailed(OrderFailedEvent event) {
-        log.info("주문 실패 이벤트 수신: orderId={}", event.orderId());
+    
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_CREATED_DLT,
+        groupId = "payment-service-group-dlt",
+        containerFactory = "paymentKafkaListenerContainerFactory"
+    )
+    public void handleOrderCreatedDlt(OrderCreatedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: OrderCreated");
+        log.error("⚠️ 3회 재시도 후에도 실패했습니다!");
+        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("========================================");
+        log.error("orderId={}, userId={}, amount={}",
+            event.orderId(), event.userId(), event.finalOrderPrice());
     }
 
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_CANCELLED_DLT,
+        groupId = "payment-service-group-dlt",
+        containerFactory = "paymentKafkaListenerContainerFactory"
+    )
+    public void handleOrderCancelledDlt(OrderCancelledEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: OrderCancelled");
+        log.error("⚠️ 보상 트랜잭션이 실패했습니다!");
+        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
     }
 }
