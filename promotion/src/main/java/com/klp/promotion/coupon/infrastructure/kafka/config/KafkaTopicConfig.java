@@ -16,6 +16,9 @@ public class KafkaTopicConfig {
     // 발행용 토픽
     public static final String COUPON_TOPIC = "coupon.topic";
 
+    // 주문 토픽
+    public static final String ORDER_TOPIC = "order.topic";
+
     /**
      * 결제 이벤트 토픽 (구독용)
      */
@@ -41,6 +44,14 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic inventoryTopic() {
         return TopicBuilder.name(INVENTORY_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic orderTopic() {
+        return TopicBuilder.name(ORDER_TOPIC)
             .partitions(3)
             .replicas(1)
             .build();
