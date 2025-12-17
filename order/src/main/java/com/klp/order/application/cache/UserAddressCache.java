@@ -179,7 +179,7 @@ public class UserAddressCache {
         log.debug("[UserAddressCache] Cached NEGATIVE userAddress for key={}", key);
     }
 
-    public void evictProduct(UUID addressId) {
+    public void evictUserAddress(UUID addressId) {
         String key = buildKey(addressId);
         userAddressLocalCache.invalidate(key);
         redisTemplate.delete(key);
