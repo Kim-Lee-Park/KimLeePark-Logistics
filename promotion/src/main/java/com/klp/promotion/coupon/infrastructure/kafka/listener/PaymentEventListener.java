@@ -4,6 +4,7 @@ import com.klp.promotion.coupon.application.facade.UserCouponFacade;
 import com.klp.promotion.coupon.application.service.CouponOutboxEventService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
+import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.domain.event.CouponRestoredEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
@@ -125,9 +126,18 @@ public class PaymentEventListener {
             log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
 
-            // 쿠폰 선점 해제
+            // 쿠폰 사용 확정 후 아웃박스 저장 실패 시 쿠폰 상태 원복
             if (event.userCouponId() != null) {
-                userCouponService.cancelReserve(event.userCouponId());
+                try {
+                    UserCoupon userCoupon = userCouponService.findByUserCouponId(event.userCouponId());
+                    // USED 상태면 READY로 원복 (아웃박스 저장 실패로 이벤트 발행 실패)
+                    if (userCoupon.getStatus() == UserCouponStatus.USED) {
+                        userCouponFacade.couponRestored(event.userCouponId());
+                        log.info("쿠폰 상태 원복 완료: userCouponId={}, USED -> READY", event.userCouponId());
+                    }
+                } catch (Exception restoreException) {
+                    log.error("쿠폰 상태 원복 실패: userCouponId={}", event.userCouponId(), restoreException);
+                }
             }
 
             couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
@@ -145,8 +155,11 @@ public class PaymentEventListener {
         log.info("=== 결제 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
             event.orderId(), event.userCouponId(), partition, offset);
         try {
-            UUID userCouponId = event.userCouponId();
-            userCouponFacade.couponRestored(userCouponId);
+
+            if (event.userCouponId() != null) {
+                UUID userCouponId = event.userCouponId();
+                userCouponFacade.couponRestored(userCouponId);
+            }
 
             List<CouponRestoredEvent.CancelledItemDto> orderItems = event.products().stream()
                 .map(product -> new CouponRestoredEvent.CancelledItemDto(
@@ -182,6 +195,16 @@ public class PaymentEventListener {
         } catch (Exception e) {
             log.error("결제 취소 이벤트 처리 실패: orderId={}, partition={}, offset={}",
                 event.orderId(), partition, offset, e);
+
+            if (event.userCouponId() != null) {
+                UserCoupon userCoupon = userCouponService.findByUserCouponId(event.userCouponId());
+
+                // 선점 해제먼 되고 아웃박스에서 오류났을경우
+                if (userCoupon.getStatus() == UserCouponStatus.READY) {
+                    userCoupon.reserve();
+                }
+            }
+
             throw e;
         }
     }

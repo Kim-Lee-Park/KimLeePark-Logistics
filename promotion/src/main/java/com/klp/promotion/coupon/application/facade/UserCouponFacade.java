@@ -128,7 +128,7 @@ public class UserCouponFacade {
     }
 
     /**
-     * 쿠폰 사용취소로 인한 쿠폰 복원
+     * 쿠폰 사용취소, 주문생성 실패로 인한 쿠폰 선점 복원
      * */
     @Transactional
     public void couponRestored(UUID userCouponId) {
