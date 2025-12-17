@@ -177,7 +177,7 @@ services:
       KAFKA_JMX_HOSTNAME: kafka
     volumes:
       - klp-kafka-data:/var/lib/kafka/data
-      - ../telemetry/jmx:/opt/jmx-exporter:ro
+      - ./telemetry/jmx:/opt/jmx-exporter:ro
     networks:
       - db-net
 
