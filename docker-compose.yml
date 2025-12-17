@@ -175,6 +175,8 @@ services:
     ports:
       - "9092:9092"
       - "29092:29092"
+      - "9404:9404"
+      - "9999:9999"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -187,8 +189,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_MIN_INSYNC_REPLICAS: 1
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_OPTS: >-
+        -javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent-0.20.0.jar=9404:/opt/jmx-exporter/kafka-jmx.yml
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: kafka
     volumes:
       - klp-kafka-data:/var/lib/kafka/data
+      - ../telemetry/jmx:/opt/jmx-exporter:ro
     networks:
       - db-net
 
