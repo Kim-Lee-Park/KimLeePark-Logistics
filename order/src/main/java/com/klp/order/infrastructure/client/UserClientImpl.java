@@ -3,7 +3,7 @@ package com.klp.order.infrastructure.client;
 import com.klp.common.exception.ExternalApiErrorCode;
 import com.klp.common.exception.ExternalApiException;
 import com.klp.order.application.service.UserClient;
-import com.klp.order.domain.vo.UserAddressHubId;
+import com.klp.order.domain.vo.UserAddress;
 import com.klp.order.domain.vo.UserProfile;
 import feign.FeignException;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class UserClientImpl implements UserClient {
     }
 
     @Override
-    public UserAddressHubId getUserAddressHubIdByAddressId(UUID addressId) {
+    public UserAddress getUserAddressHubIdByAddressId(UUID addressId) {
         try {
             return userFeignClient.getUserAddressHubIdByAddressId(addressId).toVo();
         } catch (FeignException.NotFound e) {
