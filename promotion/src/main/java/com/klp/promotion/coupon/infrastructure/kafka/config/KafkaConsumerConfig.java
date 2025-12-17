@@ -3,6 +3,8 @@ package com.klp.promotion.coupon.infrastructure.kafka.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedEvent;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedFailedEvent;
+import com.klp.promotion.coupon.domain.event.OrderCancelledEvent;
+import com.klp.promotion.coupon.domain.event.OrderCreatedEvent;
 import com.klp.promotion.coupon.domain.event.OrderFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
@@ -67,9 +69,12 @@ public class KafkaConsumerConfig {
             "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName() + "," +
                 "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName() + "," +
                 "PaymentFailedEvent:" + PaymentFailedEvent.class.getName() + "," +
-                "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + "," +
+                "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + ","
+                +
                 "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
-            "OrderFailedEvent:" + OrderFailedEvent.class.getName()
+                "OrderCreatedEvent:" + OrderCreatedEvent.class.getName() + "," +
+                "OrderCancelledEvent:" + OrderCancelledEvent.class.getName() + "," +
+                "OrderFailedEvent:" + OrderFailedEvent.class.getName()
         );
 
         return new DefaultKafkaConsumerFactory<>(props,
