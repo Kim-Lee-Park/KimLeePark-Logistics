@@ -8,10 +8,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "promotion-service", url = "${clients.promotion.url:}", configuration = {PromotionFeignClientConfig.class,
+@FeignClient(name = "promotion-service", url = "${clients.promotion.url:}", configuration = {
+    PromotionFeignClientConfig.class,
     FeignTracingConfig.class})
-public interface PromotionClient {
+public interface PromotionFeignClient {
 
-    @PostMapping("/v1/internal/promotion/calculate")
+    @PostMapping("/v1/internal/promotions/user/coupon/apply")
     PromotionResponse getPromotionInfo(@RequestBody PromotionCalculateRequest request);
 }

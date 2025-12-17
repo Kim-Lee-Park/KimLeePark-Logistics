@@ -1,11 +1,18 @@
-package com.klp.order.infrastructure.event.event;
+package com.klp.hub.inventory.domain.event;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record InventoryDeductedFailedEvent(
+public record PaymentApprovedEvent(
+    // Payment 고유 데이터
+    UUID paymentId,
+    int paidAmount,
+    String paymentMethod,
+    LocalDateTime paidAt,
+
+    // Order에서 받은 데이터
     UUID orderId,
     Long userId,
     UUID supplierId,
@@ -31,12 +38,7 @@ public record InventoryDeductedFailedEvent(
     String deliveryIdempotencyKey,
 
     LocalDateTime createdAt,
-    LocalDateTime occurredAt,
-
-    UUID paymentId,
-    int paidAmount,
-    String paymentMethod,
-    LocalDateTime paidAt
+    LocalDateTime occurredAt
 ) {
 
     public record OrderItem(

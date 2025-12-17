@@ -1,11 +1,12 @@
-package com.klp.order.infrastructure.event.event;
+package com.klp.promotion.coupon.domain.event;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record InventoryDeductedFailedEvent(
+public record InventoryDeductedEvent(
+
     UUID orderId,
     Long userId,
     UUID supplierId,
@@ -50,4 +51,5 @@ public record InventoryDeductedFailedEvent(
     ) {
 
     }
+
 }

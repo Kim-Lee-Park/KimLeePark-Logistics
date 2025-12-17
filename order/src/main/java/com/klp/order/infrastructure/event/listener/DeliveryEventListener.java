@@ -11,7 +11,6 @@ import com.klp.order.infrastructure.event.event.DeliveryCreatedEvent;
 import com.klp.order.infrastructure.event.event.DeliveryCreatedFailedEvent;
 import com.klp.order.infrastructure.event.event.DeliveryShippingEvent;
 import com.klp.order.infrastructure.event.event.DeliveryShippingFailedEvent;
-import com.klp.order.infrastructure.event.event.OrderDeliveryEvent.DeliveryItem;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +64,7 @@ public class DeliveryEventListener {
             }
 
             // deliveryId 할당
-//            assignDeliveryIdsToOrderItems(event.items();
+            assignDeliveryIdsToOrderItems(event.products());
 
             // 주문 상태 변경
             order.changeStatus(OrderStatus.DELIVERY_CREATED);
@@ -309,10 +308,10 @@ public class DeliveryEventListener {
         }
     }
 
-    private void assignDeliveryIdsToOrderItems(List<DeliveryItem> deliveryItems) {
+    private void assignDeliveryIdsToOrderItems(List<DeliveryCreatedEvent.OrderItem> deliveryItems) {
         log.info("deliveryId 할당 시작 - 총 {}개 아이템", deliveryItems.size());
 
-        for (DeliveryItem item : deliveryItems) {
+        for (DeliveryCreatedEvent.OrderItem item : deliveryItems) {
             try {
                 orderItemService.assignDeliveryId(item.orderItemId(), item.deliveryId());
                 log.info("deliveryId 할당 완료 - orderItemId: {}, deliveryId: {}",

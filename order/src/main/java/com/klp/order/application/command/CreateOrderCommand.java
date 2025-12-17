@@ -12,7 +12,7 @@ public record CreateOrderCommand(
     UUID addressId,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
-    List<OrderItemCommand> items
+    List<OrderItemCommand> orderItems
 ) {
 
 }

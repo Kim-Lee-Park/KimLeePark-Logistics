@@ -1,9 +1,10 @@
 package com.klp.hub.inventory.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.observation.ObservationRegistry;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,7 @@ public class KafkaProducerConfig {
     private String buildTypeMappings() {
         return String.join(",",
             "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName(),
+            "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName(),
             "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName()
 
         );

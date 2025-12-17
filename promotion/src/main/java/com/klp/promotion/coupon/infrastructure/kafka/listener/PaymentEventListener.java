@@ -9,6 +9,7 @@ import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
+import com.klp.promotion.coupon.domain.event.PaymentFailedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @KafkaListener(
     topics = KafkaTopicConfig.PAYMENT_TOPIC,
-    groupId = "coupon-service-group",
+    groupId = "payment-service-group",
     containerFactory = "couponKafkaListenerContainerFactory"
 )
 public class PaymentEventListener {
@@ -49,7 +50,6 @@ public class PaymentEventListener {
             event.orderId(), event.userCouponId(), partition, offset);
 
         try {
-
             // 쿠폰 사용 확정
             if (event.userCouponId() != null) {
                 UUID userCouponId = event.userCouponId();
@@ -60,6 +60,7 @@ public class PaymentEventListener {
                 userCouponFacade.useUserCoupon(userCoupon.getCouponId(), userId);
             }
 
+            // CouponUsedEvent 생성 (InventoryDeductedFailedEvent 기본 구조 + PaymentApprovedEvent 추가 필드)
             List<CouponUsedEvent.OrderItem> orderItems = event.products().stream()
                 .map(product -> new CouponUsedEvent.OrderItem(
                     product.orderItemId(),
@@ -72,7 +73,11 @@ public class PaymentEventListener {
                 ))
                 .toList();
 
+            // PaymentApprovedEvent에서 InventoryDeductedFailedEvent 기본 필드들 추출
+            // TODO: PaymentApprovedEvent에 다음 필드들이 추가되어야 함: email, addressId, userAddressHubId, address, finalOrderPrice, inventoryIdempotencyKey, createdAt
+            // 현재는 PaymentApprovedEvent에 없는 필드들은 null 또는 기본값으로 처리
             CouponUsedEvent couponUsedEvent = new CouponUsedEvent(
+                // InventoryDeductedFailedEvent 기본 구조
                 event.orderId(),
                 event.userId(),
                 event.supplierId(),
@@ -84,27 +89,32 @@ public class PaymentEventListener {
                 event.couponDiscountPrice(),
                 event.gradeDiscountPrice(),
                 event.finalOrderPrice(),
+
                 event.addressId(),
                 event.userAddressHubId(),
                 event.address(),
                 event.deliveryLatitude(),
                 event.deliveryLongitude(),
+
                 orderItems,
                 event.inventoryIdempotencyKey(),
                 event.deliveryIdempotencyKey(),
                 event.createdAt(),
                 event.occurredAt(),
+                // PaymentApprovedEvent 추가 필드
                 event.paymentId(),
                 event.paidAmount(),
                 event.paymentMethod(),
                 event.paidAt()
             );
 
+            // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
             couponOutboxEventService.saveEvent(
                 event.orderId(),
                 couponUsedEvent
             );
-            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
+            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
+                event.userCouponId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
@@ -116,7 +126,7 @@ public class PaymentEventListener {
                 event.orderId(), partition, offset, e);
 
             // 쿠폰 선점 해제
-            if(event.userCouponId() != null){
+            if (event.userCouponId() != null) {
                 userCouponService.cancelReserve(event.userCouponId());
             }
 
@@ -134,14 +144,9 @@ public class PaymentEventListener {
         Acknowledgment acknowledgment) {
         log.info("=== 결제 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
             event.orderId(), event.userCouponId(), partition, offset);
-        try{
-
-            // 쿠폰 미사용이지 않을때
-            if(event.userCouponId() != null) {
-                UUID userCouponId = event.userCouponId();
-                userCouponFacade.couponRestored(userCouponId);
-            }
-
+        try {
+            UUID userCouponId = event.userCouponId();
+            userCouponFacade.couponRestored(userCouponId);
 
             List<CouponRestoredEvent.CancelledItemDto> orderItems = event.products().stream()
                 .map(product -> new CouponRestoredEvent.CancelledItemDto(
@@ -179,6 +184,17 @@ public class PaymentEventListener {
                 event.orderId(), partition, offset, e);
             throw e;
         }
+    }
+
+    @KafkaHandler
+    public void handlePaymentFailed(@Payload PaymentFailedEvent event) {
+        log.info("결제 실패 이벤트 수신: orderId={}, reason={}", event.orderId(), event.reason());
+        if (event.userCouponId() == null) {
+            log.info("쿠폰 미사용 결제 실패 이벤트");
+            return;
+        }
+        userCouponService.cancelReserve(event.orderId());
+        log.info("쿠폰 선정 취소 완료");
     }
 
     @KafkaHandler(isDefault = true)
