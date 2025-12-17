@@ -39,6 +39,15 @@ public interface OrderRepository {
         Pageable pageable
     );
 
+    Page<Order> searchOrdersWithItems(
+        UUID supplierId,
+        Long userId,
+        Long createdBy,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        Pageable pageable
+    );
+
     boolean existsByHubIdAndOrderStatusNotComplete(UUID hubId);
 
     Optional<Order> findByIdWithDetails(UUID orderId);
