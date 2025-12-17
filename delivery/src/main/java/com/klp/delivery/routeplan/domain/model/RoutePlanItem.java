@@ -63,10 +63,12 @@ public class RoutePlanItem extends BaseEntity {
         return routePlanItem;
     }
 
-    public static RoutePlanItem from(RouteInfoVo info, int i, RoutePlan routePlan) {
+    public static RoutePlanItem from(RouteInfoVo info, int i, RoutePlan routePlan, String departureName, String arrivalName) {
         RoutePlanItem routePlanItem = new RoutePlanItem();
-        routePlanItem.departureId=info.departureId();
-        routePlanItem.arrivalId=info.arrivalId();
+        routePlanItem.departureId = info.departureId();
+        routePlanItem.departureName = departureName;
+        routePlanItem.arrivalId = info.arrivalId();
+        routePlanItem.arrivalName = arrivalName;
         routePlanItem.durationMin = info.durationMin();
         routePlanItem.distanceKm = info.distanceKm();
         routePlanItem.sequence = i;
