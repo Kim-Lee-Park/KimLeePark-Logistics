@@ -16,6 +16,10 @@
 - `create-order-ramp.js`: 2→10 rps(1m), 10→30 rps(2m) → 낮은 TPS 램프업
 - `create-order-soak.js`: 10 rps, 3m → 가벼운 장기 실행
 - `create-order-step.js`: 10→30 rps(2m) 후 30→0(30s) → 급상승 구간 체크
+- `create-order-ramp-100.js`: 10→30 rps(45s), 30→100 rps(90s) → 최대 100 rps 램프업 후 종료
+- `create-order-once.js`: 단일 주문 1건 전송 후 종료 (기본 동작 확인)
+- `create-order-ramp-150.js`: 15→50 rps(1m), 50→100 rps(1m), 100→150 rps(2m) → 최대 150 rps 램프업 후 종료
+- `create-order-ramp-200.js`: 20→80 rps(1m), 80→150 rps(1m), 150→200 rps(2m) → 최대 200 rps 램프업 후 종료
 
 ## 실행 예시 (Smoke)
 ```bash

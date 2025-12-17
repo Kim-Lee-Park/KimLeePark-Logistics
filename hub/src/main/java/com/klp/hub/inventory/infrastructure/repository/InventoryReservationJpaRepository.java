@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.infrastructure.repository;
 
 import com.klp.hub.inventory.domain.InventoryReservation;
+import com.klp.hub.inventory.domain.repository.dto.InventoryAvailability;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,25 @@ public interface InventoryReservationJpaRepository extends JpaRepository<Invento
             WHERE i.productId = :productId AND i.hubId = :hubId
         """)
     int getAvailableQuantity(@Param("productId") UUID productId, @Param("hubId") UUID hubId);
+
+    @Query(value = """
+            SELECT new com.klp.hub.inventory.domain.repository.dto.InventoryAvailability(
+                i.productId,
+                i.hubId,
+                COALESCE(i.quantity, 0) - COALESCE(
+                    (SELECT SUM(r.quantity) FROM InventoryReservation r
+                     WHERE r.productId = i.productId AND r.hubId = i.hubId AND r.status = 'RESERVED'),
+                    0
+                )
+            )
+            FROM Inventory i
+            WHERE i.productId IN :productIds
+              AND i.hubId IN :hubIds
+        """)
+    List<InventoryAvailability> getAvailableQuantities(
+        @Param("productIds") List<UUID> productIds,
+        @Param("hubIds") List<UUID> hubIds
+    );
 
     @Modifying
     @Query("""

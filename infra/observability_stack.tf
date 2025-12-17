@@ -59,6 +59,15 @@ resource "aws_instance" "observability_stack" {
     systemctl enable docker
     systemctl start docker
 
+    # 1-1) Swap 8G 생성 (t3.medium 메모리 4G의 2배)
+    if [ ! -f /swapfile ]; then
+      fallocate -l 8G /swapfile || dd if=/dev/zero bs=1M count=8192 of=/swapfile
+      chmod 600 /swapfile
+      mkswap /swapfile
+      swapon /swapfile
+      echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
+
     # 2) docker-compose (v2) 설치
     curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose

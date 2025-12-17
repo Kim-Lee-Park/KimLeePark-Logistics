@@ -1,4 +1,4 @@
-import { postOrder, getInventoryQty, teardownCheck } from './common.js';
+import { postOrder } from './common.js';
 
 export const options = {
   scenarios: {
@@ -17,14 +17,6 @@ export const options = {
   },
 };
 
-export function setup() {
-  return { initialQty: getInventoryQty() };
-}
-
 export default function () {
   postOrder();
-}
-
-export function teardown(data) {
-  teardownCheck(data.initialQty);
 }

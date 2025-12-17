@@ -99,6 +99,10 @@ resource "aws_ecs_task_definition" "notification" {
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES",
           value = "service.namespace=klp"
+        },
+        {
+          name  = "OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDE_PATTERNS",
+          value = "/actuator/.*,/swagger-ui/.*,/v3/api-docs/.*,/v1/api-docs/.*"
         }
       ]
 

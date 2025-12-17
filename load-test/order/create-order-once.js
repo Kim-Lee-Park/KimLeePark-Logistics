@@ -2,14 +2,14 @@ import { postOrder } from './common.js';
 
 export const options = {
   scenarios: {
-    smoke: {
-      executor: 'shared-iterations',
-      iterations: 10,
-      vus: 5,
+    once: {
+      executor: 'per-vu-iterations',
+      vus: 1,
+      iterations: 1,
     },
   },
   thresholds: {
-    http_req_failed: ['rate<0.05'],
+    http_req_failed: ['rate==0'],
     http_req_duration: ['p(95)<800'],
   },
 };

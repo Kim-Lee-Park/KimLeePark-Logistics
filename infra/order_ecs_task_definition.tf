@@ -117,6 +117,10 @@ resource "aws_ecs_task_definition" "order" {
           value = "service.namespace=klp"
         },
         {
+          name  = "OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDE_PATTERNS",
+          value = "/actuator/.*,/swagger-ui/.*,/v3/api-docs/.*,/v1/api-docs/.*"
+        },
+        {
           name  = "REDIS_HOST",
           value = aws_elasticache_cluster.redis.cache_nodes[0].address
         },

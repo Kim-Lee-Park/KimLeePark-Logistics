@@ -1,20 +1,3 @@
-locals {
-  seed_scripts = {
-    user = {
-      db_name = local.db_targets.user.db_name
-      file    = "${path.root}/../load-test/seed_master_user.sql"
-    }
-    order = {
-      db_name = local.db_targets.order.db_name
-      file    = "${path.root}/../load-test/seed_bulk_orders.sql"
-    }
-    hub = {
-      db_name = local.db_targets.hub.db_name
-      file    = "${path.root}/../load-test/order/seed_inventory_for_order_test.sql"
-    }
-  }
-}
-
 resource "null_resource" "init_schemas" {
   for_each = local.db_targets
 
@@ -50,11 +33,10 @@ resource "null_resource" "init_schemas" {
   }
 }
 
-resource "null_resource" "seed_sql" {
-  for_each = local.seed_scripts
-
+# Copy seed SQL files and SSH key to bastion (no execution)
+resource "null_resource" "copy_seed_files" {
   depends_on = [
-    null_resource.init_schemas
+    aws_instance.bastion
   ]
 
   connection {
@@ -65,14 +47,22 @@ resource "null_resource" "seed_sql" {
   }
 
   provisioner "file" {
-    source      = each.value.file
-    destination = "/tmp/${each.key}-seed.sql"
+    source      = "${path.root}/../load-test/seed_master_user.sql"
+    destination = "/home/ec2-user/seed_master_user.sql"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "export PGPASSWORD='${local.db_password}'",
-      "psql -h ${aws_db_instance.postgres[each.key].address} -p 5432 -U ${local.db_username} -d ${each.value.db_name} -f /tmp/${each.key}-seed.sql"
-    ]
+  provisioner "file" {
+    source      = "${path.root}/../load-test/seed_bulk_orders.sql"
+    destination = "/home/ec2-user/seed_bulk_orders.sql"
+  }
+
+  provisioner "file" {
+    source      = "${path.root}/../load-test/order/seed_inventory_for_order_test.sql"
+    destination = "/home/ec2-user/seed_inventory_for_order_test.sql"
+  }
+
+  provisioner "file" {
+    source      = var.ec2_private_key_path
+    destination = "/home/ec2-user/klp-keypair.pem"
   }
 }

@@ -2,15 +2,16 @@ import { postOrder } from './common.js';
 
 export const options = {
   scenarios: {
-    ramp: {
+    ramp_150: {
       executor: 'ramping-arrival-rate',
-      startRate: 2,
+      startRate: 15,
       timeUnit: '1s',
-      preAllocatedVUs: 20,
-      maxVUs: 50,
+      preAllocatedVUs: 200,
+      maxVUs: 300,
       stages: [
-        { target: 10, duration: '1m' },
-        { target: 30, duration: '2m' },
+        { target: 50, duration: '1m' },
+        { target: 100, duration: '1m' },
+        { target: 150, duration: '2m' },
         { target: 0, duration: '30s' },
       ],
     },
