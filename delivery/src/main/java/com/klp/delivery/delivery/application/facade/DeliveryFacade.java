@@ -136,8 +136,15 @@ public class DeliveryFacade {
             List<DeliveryCreatedEvent.OrderItem> allEventItems = new ArrayList<>();
             for (Delivery delivery : createdDeliveries) {
                 for (DeliveryItem item : delivery.getDeliveryItems()) {
+                    OrderItemCommand orderItemCommand = productMap.get(item.getOrderItemId());
                     allEventItems.add(new DeliveryCreatedEvent.OrderItem(
                         item.getOrderItemId(),
+                        orderItemCommand.productId(),
+                        orderItemCommand.productName(),
+                        orderItemCommand.hubId(),
+                        orderItemCommand.quantity(),
+                        orderItemCommand.unitPrice(),
+                        orderItemCommand.totalPrice(),
                         delivery.getDeliveryId()
                     ));
                 }

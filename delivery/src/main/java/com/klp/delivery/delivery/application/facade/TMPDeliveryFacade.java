@@ -37,10 +37,10 @@ public class TMPDeliveryFacade {
             List<DeliveryCreatedEvent.OrderItem> orderItems = new ArrayList<>();
             for (OrderItemCommand item : orderCommand.products()) {
                 UUID tempDeliveryId = UUID.randomUUID();
-                orderItems.add(new DeliveryCreatedEvent.OrderItem(
-                    item.orderItemId(),
-                    tempDeliveryId
-                ));
+//                orderItems.add(new DeliveryCreatedEvent.OrderItem(
+//                    item.orderItemId(),
+//                    tempDeliveryId
+//                ));
 
                 log.debug("임시 배송 매핑: orderItemId={}, deliveryId={}",
                     item.orderItemId(), tempDeliveryId);

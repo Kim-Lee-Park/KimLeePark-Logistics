@@ -58,15 +58,13 @@ public class HubRouteInfoScheduler {
 
         Set<RoutePairDto> existing = new HashSet<>(routeInfoRepository.findExistingPairsIn(hubIds));
 
-        // 전체 순서쌍(출발!=도착) 생성 → 차집합으로 미존재 목록 계산
+        // 전체 순서쌍 생성 → 차집합으로 미존재 목록 계산
         List<RoutePairDto> missing = new ArrayList<>();
         for (UUID dep : hubIds) {
             for (UUID arr : hubIds) {
-                if (!dep.equals(arr)) {
-                    RoutePairDto pair = new RoutePairDto(dep, arr);
-                    if (!existing.contains(pair)) {
-                        missing.add(pair);
-                    }
+                RoutePairDto pair = new RoutePairDto(dep, arr);
+                if (!existing.contains(pair)) {
+                    missing.add(pair);
                 }
             }
         }
