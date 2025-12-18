@@ -10,16 +10,18 @@ public class KafkaTopicConfig {
 
     // 구독용
     public static final String ORDER_CREATED_TOPIC = "order.created";
-    public static final String ORDER_CREATED_DLT = "order.created.dlt";
+    public static final String ORDER_CREATED_DLT = "order.created.payment.dlt";
 
     public static final String ORDER_CANCELLED_TOPIC = "order.cancelled";
-    public static final String ORDER_CANCELLED_DLT = "order.cancelled.dlt";
+    public static final String ORDER_CANCELLED_DLT = "order.cancelled.payment.dlt";
 
     // 구독용
-    public static final String COUPON_TOPIC = "coupon.topic";
+    public static final String COUPON_USED_FAILED_TOPIC = "coupon.used.failed";
+    public static final String COUPON_USED_FAILED_DLT = "coupon.used.failed.payment.dlt";
 
     // 구독용
-    public static final String INVENTORY_TOPIC = "inventory.topic";
+    public static final String INVENTORY_DEDUCTED_FAILED_TOPIC = "inventory.deducted.failed";
+    public static final String INVENTORY_DEDUCTED_FAILED_DLT = "inventory.deducted.failed.payment.dlt";
 
     // 발행용
     public static final String PAYMENT_APPROVED_TOPIC = "payment.approved";
@@ -87,16 +89,32 @@ public class KafkaTopicConfig {
      * 쿠폰 이벤트 토픽
      */
     @Bean
-    public NewTopic couponDltTopic() {
-        return TopicBuilder.name(COUPON_TOPIC)
+    public NewTopic couponUsedFailedTopic() {
+        return TopicBuilder.name(COUPON_USED_FAILED_TOPIC)
             .partitions(3)
             .replicas(1)
             .build();
     }
 
     @Bean
-    public NewTopic inventoryTopic() {
-        return TopicBuilder.name(INVENTORY_TOPIC)
+    public NewTopic couponUsedDltTopic() {
+        return TopicBuilder.name(COUPON_USED_FAILED_DLT)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic inventoryDeductedFailedTopic() {
+        return TopicBuilder.name(INVENTORY_DEDUCTED_FAILED_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic inventoryDeductedFailedDltTopic() {
+        return TopicBuilder.name(INVENTORY_DEDUCTED_FAILED_DLT)
             .partitions(3)
             .replicas(1)
             .build();

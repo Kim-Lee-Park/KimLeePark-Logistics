@@ -25,6 +25,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.DeserializationException;
@@ -95,7 +96,7 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                String dltTopic = record.topic() + ".dlt";
+                String dltTopic = record.topic() + ".payment.dlt";
                 log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
                     record.topic(), dltTopic, exception.getMessage());
                 return new TopicPartition(dltTopic, record.partition());
@@ -139,6 +140,7 @@ public class KafkaConsumerConfig {
         factory.setConcurrency(3);
         factory.setCommonErrorHandler(errorHandler);
 
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setObservationEnabled(true);
 
         return factory;
