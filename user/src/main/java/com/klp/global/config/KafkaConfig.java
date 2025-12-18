@@ -60,4 +60,12 @@ public class KafkaConfig {
             .replicas(1)
             .build();
     }
+
+    @Bean
+    NewTopic userAddressChangedTopic() {
+        return TopicBuilder.name("user.address.changed")
+            .partitions(2)
+            .replicas(1)
+            .build();
+    }
 }

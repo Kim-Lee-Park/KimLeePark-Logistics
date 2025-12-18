@@ -49,7 +49,6 @@ public class OrderController implements OrderControllerDoc {
     private final OrderFacade orderFacade;
     private final UserQueryService userQueryService;
 
-
     @PostMapping
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<CreateOrderResponse> createOrder(

@@ -3,6 +3,8 @@ package com.klp.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
 import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserAddressChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
 import com.klp.order.infrastructure.event.event.CouponCancelledEvent;
 import com.klp.order.infrastructure.event.event.CouponCancelledFailedEvent;
 import com.klp.order.infrastructure.event.event.CouponUsedEvent;
@@ -20,11 +22,13 @@ import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
 import com.klp.order.infrastructure.event.event.OrderFailedEvent;
+import com.klp.order.infrastructure.event.event.OrderPaidEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
-import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import io.micrometer.observation.ObservationRegistry;
+import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -73,10 +77,12 @@ public class KafkaConfig {
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
 
+        // 기본 설정
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
+        // 신뢰성 설정
         configProps.put(ProducerConfig.ACKS_CONFIG, "all");
         configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
         configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
@@ -251,6 +257,26 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(productInfoChangedConsumerFactory());
+
+        factory.getContainerProperties().setObservationEnabled(true);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserAddressChangedMessage> userAddressChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new org.apache.kafka.common.serialization.StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserAddressChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserAddressChangedMessage> userAddressChangedKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserAddressChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userAddressChangedConsumerFactory());
+
         factory.getContainerProperties().setObservationEnabled(true);
         return factory;
     }

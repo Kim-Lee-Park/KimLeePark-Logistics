@@ -70,7 +70,7 @@ public class OrderFacadeService {
         String inventoryIdempotencyKey,
         String deliveryIdempotencyKey
     ) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithDetails(orderId)
             .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
 
         order.updateDiscountPrice(
@@ -108,7 +108,7 @@ public class OrderFacadeService {
             orderId, failedEvent.type(), reason);
 
         try {
-            Order order = orderRepository.findById(orderId)
+            Order order = orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
 
             order.changeStatus(OrderStatus.FAILED);

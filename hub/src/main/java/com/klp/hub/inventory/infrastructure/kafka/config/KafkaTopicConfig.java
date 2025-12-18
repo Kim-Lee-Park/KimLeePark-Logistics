@@ -136,6 +136,10 @@ public class KafkaTopicConfig {
             .build();
     }
 
+
+    /**
+     * Inventory 이벤트 토픽 (발행용)
+     */
     @Bean
     public NewTopic paymentFailedTopic() {
         return TopicBuilder.name(PAYMENT_FAILED_TOPIC)
@@ -144,6 +148,9 @@ public class KafkaTopicConfig {
             .build();
     }
 
+    /**
+     * 쿠폰 이벤트 토픽 (구독용)
+     */
     @Bean
     public NewTopic paymentFailedDltTopic() {
         return TopicBuilder.name(PAYMENT_FAILED_DLT)
@@ -152,6 +159,9 @@ public class KafkaTopicConfig {
             .build();
     }
 
+    /**
+     * 결제 이벤트 토픽 (구독용)
+     */
     @Bean
     public NewTopic inventoryDeductedTopic() {
         return TopicBuilder.name(INVENTORY_DEDUCTED_TOPIC)

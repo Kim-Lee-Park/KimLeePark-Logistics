@@ -1,10 +1,12 @@
 package com.klp.promotion.coupon.infrastructure.kafka.listener;
 
 import com.klp.promotion.coupon.application.service.UserCouponService;
+import com.klp.promotion.coupon.domain.event.InventoryDeductedEvent;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedFailedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
