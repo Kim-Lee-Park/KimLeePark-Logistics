@@ -27,7 +27,7 @@ public class InventoryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_DEDUCTED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
@@ -42,7 +42,7 @@ public class InventoryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_REPLENISHED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
@@ -57,7 +57,7 @@ public class InventoryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {

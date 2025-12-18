@@ -27,9 +27,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.messaging.converter.MessageConversionException;
+import org.springframework.util.backoff.ExponentialBackOff;
 
 @Slf4j
 @EnableKafka
@@ -95,9 +97,10 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: originalTopic={}, error={}",
-                    record.topic(), exception.getMessage());
-                return new TopicPartition(KafkaTopicConfig.INVENTORY_DLT, record.partition());
+                String dltTopic = record.topic() + ".inventory.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
             });
     }
 
@@ -105,18 +108,24 @@ public class KafkaConsumerConfig {
     public DefaultErrorHandler inventoryErrorHandler(
         @Qualifier("inventoryDeadLetterPublishingRecoverer") DeadLetterPublishingRecoverer recoverer
     ) {
-        FixedBackOff backOff = new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRY_ATTEMPTS);
+        ExponentialBackOff backOff = new ExponentialBackOff(
+            1000L,
+            2.0
+        );
+        backOff.setMaxInterval(4000L);
+        backOff.setMaxElapsedTime(10000L);
+
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
 
         errorHandler.addNotRetryableExceptions(
-            org.springframework.kafka.support.serializer.DeserializationException.class,
-            org.springframework.messaging.converter.MessageConversionException.class
+            DeserializationException.class,
+            MessageConversionException.class
         );
 
-        errorHandler.setRetryListeners((record, ex, deliveryAttempt) ->
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
             log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
-                record.topic(), deliveryAttempt, ex.getMessage())
-        );
+                record.topic(), deliveryAttempt, ex.getMessage());
+        });
 
         return errorHandler;
     }

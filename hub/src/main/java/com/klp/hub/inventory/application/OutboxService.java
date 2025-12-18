@@ -62,7 +62,7 @@ public class OutboxService {
     }
 
     @Transactional
-    public void saveInventoryDedictedFailedEvent(InventoryDeductedFailedEvent event) {
+    public void saveInventoryDeductedFailedEvent(InventoryDeductedFailedEvent event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
             InventoryOutbox outbox = InventoryOutbox.create(
