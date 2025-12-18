@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 public record CouponRestoredEvent(
-
     UUID paymentId,
     UUID orderId,
     Long userId,
@@ -25,6 +24,27 @@ public record CouponRestoredEvent(
     ) {
 
     }
+
+    public static CouponRestoredEvent from(PaymentCancelledEvent event) {
+        List<CancelledItemDto> items = event.products().stream()
+            .map(product -> new CancelledItemDto(
+                product.productId(),
+                product.hubId(),
+                product.quantity()
+            ))
+            .toList();
+
+        return new CouponRestoredEvent(
+            event.paymentId(),
+            event.orderId(),
+            event.userId(),
+            event.userCouponId(),
+            event.inventoryIdempotencyKey(),
+            event.deliveryIdempotencyKey(),
+            event.reason(),
+            items,
+            event.cancelledAt(),
+            event.occurredAt()
+        );
+    }
 }
-
-

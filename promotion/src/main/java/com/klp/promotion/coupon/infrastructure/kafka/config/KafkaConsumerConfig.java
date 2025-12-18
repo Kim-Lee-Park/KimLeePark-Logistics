@@ -3,8 +3,6 @@ package com.klp.promotion.coupon.infrastructure.kafka.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedEvent;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedFailedEvent;
-import com.klp.promotion.coupon.domain.event.OrderCancelledEvent;
-import com.klp.promotion.coupon.domain.event.OrderCreatedEvent;
 import com.klp.promotion.coupon.domain.event.OrderFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
@@ -72,8 +70,6 @@ public class KafkaConsumerConfig {
                 "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + ","
                 +
                 "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
-                "OrderCreatedEvent:" + OrderCreatedEvent.class.getName() + "," +
-                "OrderCancelledEvent:" + OrderCancelledEvent.class.getName() + "," +
                 "OrderFailedEvent:" + OrderFailedEvent.class.getName()
         );
 
@@ -88,10 +84,10 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}", record.topic(),
-                    exception.getMessage());
-                return new TopicPartition(KafkaTopicConfig.COUPON_TOPIC + ".dlt",
-                    record.partition());
+                String dltTopic = record.topic() + ".coupon.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
             });
     }
 
