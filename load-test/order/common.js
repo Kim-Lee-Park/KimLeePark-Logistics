@@ -2,14 +2,14 @@ import http from 'k6/http';
 import {check, sleep} from 'k6';
 
 export const cfg = {
-  baseUrl: 'http://klp-logistics-stage-alb-304086239.ap-northeast-2.elb.amazonaws.com',
-  hubBaseUrl: 'http://klp-logistics-stage-alb-304086239.ap-northeast-2.elb.amazonaws.com',
-  supplierId: 'ea4b7edd-bad8-4406-b719-c1b7ebb60210',
-  productId: '54af4539-0e82-4d22-9ba3-231e50981091',
-  hubId: '57a2944f-7301-4b63-a3cc-96f2868058ba',
-  userId: '1',
-  addressId: '40a7fb15-8e6f-4c5e-9c7d-1149203c0532',
-  authToken: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJLTFAtQkUiLCJzdWIiOiIxIiwidG9rZW5UeXBlIjoiYWNjZXNzIiwidXNlcm5hbWUiOiJjdXN0b21lcjAxIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzY1OTU5Mjk0LCJleHAiOjE3NjU5NjI4OTR9.pqN4YyQgvMLwdjLFbRr3w0F57K5EVH2DGm36K_VJ3GA',
+  baseUrl: '',
+  hubBaseUrl: '',
+  supplierId: '',
+  productId: '',
+  hubId: '',
+  userId: '',
+  addressId: '',
+  authToken: '',
   expectedOrders: 10,
 };
 
