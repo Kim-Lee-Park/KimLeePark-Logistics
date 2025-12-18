@@ -6,16 +6,19 @@ import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
+import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
-import com.klp.order.domain.vo.UserAddressHubId;
+import com.klp.order.domain.vo.UserAddress;
 import com.klp.order.domain.vo.UserProfile;
 import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
 import com.klp.order.presentation.dto.result.OrderCreateWithKey;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -27,7 +30,6 @@ public class OrderFacadeService {
     private final OrderOutboundRequestService orderOutboundRequestService;
     private final OrderOutboxEventService orderOutboxEventService;
 
-    // 이 트랜잭션은 DB 접근 위주의 트랜잭션
     @Transactional
     public OrderCreateWithKey createOrder(CreateOrderCommand command) {
         log.info("트랜잭션 시작과 함께 주문 생성 시작");
@@ -64,11 +66,11 @@ public class OrderFacadeService {
         UUID orderId,
         PromotionResponse promotionResponse,
         UserProfile userProfile,
-        UserAddressHubId userAddressHubId,
+        UserAddress userAddress,
         String inventoryIdempotencyKey,
         String deliveryIdempotencyKey
     ) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithDetails(orderId)
             .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
 
         order.updateDiscountPrice(
@@ -84,10 +86,10 @@ public class OrderFacadeService {
             order,
             userProfile.email(),
             userProfile.username(),
-            userAddressHubId.address(),
+            userAddress.address(),
             inventoryIdempotencyKey,
             deliveryIdempotencyKey,
-            userAddressHubId.userAddressHubId()
+            userAddress.userAddressHubId()
         );
 
         orderOutboxEventService.saveEvent(
@@ -100,18 +102,39 @@ public class OrderFacadeService {
         return order;
     }
 
-    @Transactional
-    public void markOrderAsFailed(UUID orderId, String reason) {
-        log.warn("=== 보상 트랜잭션: Order FAILED 처리 - orderId={}, reason={} ===",
-            orderId, reason);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markOrderAsFailed(UUID orderId, OrderFailedEvent failedEvent, String reason) {
+        log.warn("=== 보상 트랜잭션 시작: Order FAILED 처리 - orderId={}, rollbackType={}, reason={} ===",
+            orderId, failedEvent.type(), reason);
 
-        Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
+        try {
+            Order order = orderRepository.findByIdWithDetails(orderId)
+                .orElseThrow(() -> new BusinessException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        order.changeStatus(com.klp.order.domain.entity.order.OrderStatus.FAILED);
-        orderRepository.save(order);
+            order.changeStatus(OrderStatus.FAILED);
+            orderRepository.save(order);
 
-        log.info("Order FAILED 상태 변경 완료 - orderId={}", orderId);
+            log.info("Order FAILED 상태 변경 완료 - orderId={}", orderId);
+
+            publishOrderFailedEvent(failedEvent);
+
+        } catch (Exception e) {
+            log.error("보상 트랜잭션 실패: orderId={}, error={}", orderId, e.getMessage(), e);
+        }
     }
 
+    private void publishOrderFailedEvent(OrderFailedEvent failedEvent) {
+        try {
+            orderOutboxEventService.saveFailedEvent(
+                failedEvent.orderId(),
+                "ORDER_FAILED",
+                failedEvent
+            );
+            log.info("주문 실패 이벤트 발행 완료 - orderId: {}, type: {}",
+                failedEvent.orderId(), failedEvent.type());
+        } catch (Exception e) {
+            log.error("주문 실패 이벤트 발행 실패: orderId={}, error={}",
+                failedEvent.orderId(), e.getMessage());
+        }
+    }
 }

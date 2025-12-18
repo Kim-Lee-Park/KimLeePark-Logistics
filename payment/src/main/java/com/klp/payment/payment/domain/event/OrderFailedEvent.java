@@ -1,4 +1,4 @@
-package com.klp.promotion.coupon.domain.event;
+package com.klp.payment.payment.domain.event;
 
 import java.util.UUID;
 

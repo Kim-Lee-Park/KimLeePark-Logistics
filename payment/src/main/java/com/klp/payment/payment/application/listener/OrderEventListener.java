@@ -5,6 +5,7 @@ import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
 import com.klp.payment.payment.domain.event.OrderCancelledEvent;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
+import com.klp.payment.payment.domain.event.OrderFailedEvent;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import com.klp.payment.payment.domain.event.PaymentFailedEvent;
@@ -105,6 +106,12 @@ public class OrderEventListener {
         } else {
             log.info("취소할 결제가 없습니다: orderId={}", event.orderId());
         }
+    }
+
+    @KafkaHandler
+    @Transactional
+    public void handleOrderFailed(OrderFailedEvent event) {
+        log.info("주문 실패 이벤트 수신: orderId={}", event.orderId());
     }
 
     @KafkaHandler(isDefault = true)

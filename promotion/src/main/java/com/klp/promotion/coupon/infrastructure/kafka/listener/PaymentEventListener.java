@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @KafkaListener(
     topics = KafkaTopicConfig.PAYMENT_TOPIC,
-    groupId = "payment-service-group",
+    groupId = "promotion-service-group",
     containerFactory = "couponKafkaListenerContainerFactory"
 )
 public class PaymentEventListener {
@@ -129,14 +129,17 @@ public class PaymentEventListener {
             // 쿠폰 사용 확정 후 아웃박스 저장 실패 시 쿠폰 상태 원복
             if (event.userCouponId() != null) {
                 try {
-                    UserCoupon userCoupon = userCouponService.findByUserCouponId(event.userCouponId());
+                    UserCoupon userCoupon = userCouponService.findByUserCouponId(
+                        event.userCouponId());
                     // USED 상태면 READY로 원복 (아웃박스 저장 실패로 이벤트 발행 실패)
                     if (userCoupon.getStatus() == UserCouponStatus.USED) {
                         userCouponFacade.couponRestored(event.userCouponId());
-                        log.info("쿠폰 상태 원복 완료: userCouponId={}, USED -> READY", event.userCouponId());
+                        log.info("쿠폰 상태 원복 완료: userCouponId={}, USED -> READY",
+                            event.userCouponId());
                     }
                 } catch (Exception restoreException) {
-                    log.error("쿠폰 상태 원복 실패: userCouponId={}", event.userCouponId(), restoreException);
+                    log.error("쿠폰 상태 원복 실패: userCouponId={}", event.userCouponId(),
+                        restoreException);
                 }
             }
 
