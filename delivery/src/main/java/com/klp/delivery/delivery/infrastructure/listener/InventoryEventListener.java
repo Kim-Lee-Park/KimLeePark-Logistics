@@ -6,10 +6,9 @@ import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.facade.DeliveryFacade;
 import com.klp.delivery.delivery.domain.event.InventoryDeductedEvent;
 import com.klp.delivery.delivery.domain.event.InventoryReplenishedEvent;
+import com.klp.delivery.global.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.DltHandler;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -21,16 +20,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = "inventory.topic",
-    groupId = "delivery-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
-)
+
 public class InventoryEventListener {
 
     private final DeliveryFacade deliveryFacade;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_DEDUCTED_TOPIC,
+        groupId = "delivery-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryDeducted(
         @Payload InventoryDeductedEvent event,
@@ -67,7 +66,11 @@ public class InventoryEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_REPLENISHED_TOPIC,
+        groupId = "delivery-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryReplenished(
         @Payload InventoryReplenishedEvent event,
@@ -83,7 +86,6 @@ public class InventoryEventListener {
             deliveryFacade.cancelDeliveriesByOrderId(event.orderId(), deletedBy);
             log.info("=== 배송 취소 완료: orderId={} ===", event.orderId());
 
-
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
                 log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
@@ -97,17 +99,30 @@ public class InventoryEventListener {
         }
     }
 
-    @DltHandler
-    public void handleInventorydDlt(
-        @Payload InventoryDeductedEvent event,
-        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_DEDUCTED_DLT,
+        groupId = "delivery-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleInventoryDeductedDlt(InventoryDeductedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: InventoryDeducted");
+        log.error("⚠️ 재고 차감 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
+    }
 
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_REPLENISHED_DLT,
+        groupId = "delivery-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleInventoryReplenishedDlt(InventoryReplenishedEvent event) {
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Inventory Deducted Event");
-        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("⚠️ DLT 도착: InventoryReplenished");
+        log.error("⚠️ 재고 복구 처리 실패 - 수동 처리 필요!");
         log.error("========================================");
-        log.error("orderId={}, error={}", event.orderId(), exceptionMessage);
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
     }
 }
 
