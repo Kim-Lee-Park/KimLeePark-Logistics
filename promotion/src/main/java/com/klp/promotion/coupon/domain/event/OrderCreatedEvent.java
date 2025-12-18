@@ -1,4 +1,4 @@
-package com.klp.hub.inventory.domain.event;
+package com.klp.promotion.coupon.domain.event;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

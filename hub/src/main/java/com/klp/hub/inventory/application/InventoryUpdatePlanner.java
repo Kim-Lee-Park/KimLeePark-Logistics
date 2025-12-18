@@ -1,7 +1,7 @@
 package com.klp.hub.inventory.application;
 
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
-import com.klp.hub.inventory.domain.event.OrderCreatedEvent.OrderItemDto;
+import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import java.util.Comparator;
@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -28,12 +27,12 @@ public final class InventoryUpdatePlanner {
         Comparator.comparing((OrderKey orderKey) -> orderKey.productId)
             .thenComparing(orderKey -> orderKey.hubId);
 
-    public static List<InventoryDeduct> planDeduct(List<OrderItemDto> items) {
+    public static List<InventoryDeduct> planDeduct(List<OrderCreatedEvent.OrderItem> items) {
         Map<OrderKey, Integer> aggregatedQty = aggregate(
             items,
-            OrderItemDto::productId,
-            OrderItemDto::hubId,
-            OrderItemDto::quantity
+            OrderCreatedEvent.OrderItem::productId,
+            OrderCreatedEvent.OrderItem::hubId,
+            OrderCreatedEvent.OrderItem::quantity
         );
 
         return aggregatedQty.entrySet().stream()
@@ -68,12 +67,12 @@ public final class InventoryUpdatePlanner {
         List<T> items,
         Function<T, UUID> productId,
         Function<T, UUID> hubId,
-        ToIntFunction<T> quantity
+        Function<T, Integer> quantity
     ) {
         return items.stream()
             .collect(Collectors.toMap(
                 t -> new OrderKey(productId.apply(t), hubId.apply(t)),
-                quantity::applyAsInt,
+                quantity::apply,
                 Integer::sum
             ));
     }

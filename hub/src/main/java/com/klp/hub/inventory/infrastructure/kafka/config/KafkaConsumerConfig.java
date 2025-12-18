@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
+import com.klp.hub.inventory.domain.event.OrderCancelledEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
+import com.klp.hub.inventory.domain.event.OrderFailedEvent;
 import com.klp.hub.inventory.domain.event.PaymentCancelledEvent;
 import com.klp.hub.inventory.domain.event.PaymentFailedEvent;
 import java.util.HashMap;
@@ -77,6 +79,8 @@ public class KafkaConsumerConfig {
     private String buildTypeMappings() {
         return String.join(",",
             "OrderCreatedEvent:" + OrderCreatedEvent.class.getName(),
+            "OrderFailedEvent:" + OrderFailedEvent.class.getName(),
+            "OrderCancelledEvent:" + OrderCancelledEvent.class.getName(),
             "CouponUsedEvent:" + CouponUsedEvent.class.getName(),
             "CouponCancelledEvent:" + CouponCancelledEvent.class.getName(),
             "PaymentFailedEvent:" + PaymentFailedEvent.class.getName(),

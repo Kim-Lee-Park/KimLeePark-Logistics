@@ -76,7 +76,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         LocalDateTime endDate,
         Pageable pageable
     ) {
-        return orderJpaRepository.searchOrders(
+        return orderJpaRepository.searchOrdersWithItems(
             supplierId,
             userId,
             createdBy,
@@ -94,5 +94,24 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findByIdWithDetails(UUID orderId) {
         return orderJpaRepository.findByIdWithDetails(orderId);
+    }
+
+    @Override
+    public Page<Order> searchOrdersWithItems(
+        UUID supplierId,
+        Long userId,
+        Long createdBy,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        Pageable pageable
+    ) {
+        return orderJpaRepository.searchOrdersWithItems(
+            supplierId,
+            userId,
+            createdBy,
+            startDate,
+            endDate,
+            pageable
+        );
     }
 }

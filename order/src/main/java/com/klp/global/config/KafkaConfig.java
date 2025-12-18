@@ -21,6 +21,7 @@ import com.klp.order.infrastructure.event.event.InventoryReplenishedEvent;
 import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
 import com.klp.order.infrastructure.event.event.OrderPaidEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
@@ -83,6 +84,7 @@ public class KafkaConfig {
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
             "OrderCreatedEvent:" + OrderCreatedEvent.class.getName() + "," +
                 "OrderCancelledEvent:" + OrderCancelledEvent.class.getName() + "," +
+                "OrderFailedEvent:" + OrderFailedEvent.class.getName() + "," +
                 "OrderPaidEvent:" + OrderPaidEvent.class.getName());
 
         return new DefaultKafkaProducerFactory<>(configProps,

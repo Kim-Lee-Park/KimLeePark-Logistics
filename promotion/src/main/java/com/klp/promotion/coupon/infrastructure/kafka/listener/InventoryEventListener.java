@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @KafkaListener(
     topics = KafkaTopicConfig.INVENTORY_TOPIC,
-    groupId = "inventory-service-group",
+    groupId = "promotion-service-group",
     containerFactory = "couponKafkaListenerContainerFactory"
 )
 public class InventoryEventListener {

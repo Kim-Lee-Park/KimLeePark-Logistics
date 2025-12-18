@@ -7,6 +7,7 @@ import com.klp.payment.payment.domain.event.InventoryDeductedEvent;
 import com.klp.payment.payment.domain.event.InventoryDeductedFailedEvent;
 import com.klp.payment.payment.domain.event.OrderCancelledEvent;
 import com.klp.payment.payment.domain.event.OrderCreatedEvent;
+import com.klp.payment.payment.domain.event.OrderFailedEvent;
 import com.klp.payment.payment.domain.event.PaymentApprovedEvent;
 import com.klp.payment.payment.domain.event.PaymentCancelledEvent;
 import java.util.HashMap;
@@ -79,6 +80,7 @@ public class KafkaConsumerConfig {
     private String buildTypeMappings() {
         return String.join(",",
             "OrderCreatedEvent:" + OrderCreatedEvent.class.getName(),
+            "OrderFailedEvent:" + OrderFailedEvent.class.getName(),
             "OrderCancelledEvent:" + OrderCancelledEvent.class.getName(),
             "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName(),
             "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName(),
