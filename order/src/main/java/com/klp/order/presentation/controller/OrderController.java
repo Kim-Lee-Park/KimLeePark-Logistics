@@ -4,8 +4,8 @@ import com.klp.common.PageResponse;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
+import com.klp.order.application.facade.OrderCreateOrchestrator;
 import com.klp.order.application.facade.OrderFacade;
-import com.klp.order.application.facade.TMPOrderFacade;
 import com.klp.order.application.query.UserQueryService;
 import com.klp.order.application.service.OrderService;
 import com.klp.order.domain.entity.order.Order;
@@ -48,7 +48,7 @@ public class OrderController implements OrderControllerDoc {
 
     private final OrderService orderService;
     private final OrderFacade orderFacade;
-    private final TMPOrderFacade orderFacadeV2;
+    private final OrderCreateOrchestrator orderCreateOrchestrator;
     private final UserQueryService userQueryService;
 
     @PostMapping
@@ -57,24 +57,10 @@ public class OrderController implements OrderControllerDoc {
         @Valid @RequestBody CreateOrderRequest request
     ) {
         CreateOrderCommand command = request.toCommand();
-        Order order = orderFacade.createOrder(command);
+        Order order = orderCreateOrchestrator.createOrder(command);
         CreateOrderResponse response = CreateOrderResponse.from(order);
 
         URI location = URI.create("/v1/orders");
-
-        return ResponseEntity.created(location).body(response);
-    }
-
-    @PostMapping("/v2")
-    @PreAuthorize("hasAnyRole('CUSTOMER')")
-    public ResponseEntity<CreateOrderResponse> createOrderV2(
-        @Valid @RequestBody CreateOrderRequest request
-    ) {
-        CreateOrderCommand command = request.toCommand();
-        Order order = orderFacadeV2.createOrder(command);
-        CreateOrderResponse response = CreateOrderResponse.from(order);
-
-        URI location = URI.create("/v1/orders-v2");
 
         return ResponseEntity.created(location).body(response);
     }
