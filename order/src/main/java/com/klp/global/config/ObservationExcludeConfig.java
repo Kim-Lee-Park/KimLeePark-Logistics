@@ -27,6 +27,13 @@ public class ObservationExcludeConfig {
                     if (path.contains("/eureka")) {
                         return false;
                     }
+
+                    if (path.contains("/actuator")) {
+                        return false;
+                    }
+                    if (path.contains("/health") || path.contains("/metrics")) {
+                        return false;
+                    }
                 }
             }
 
