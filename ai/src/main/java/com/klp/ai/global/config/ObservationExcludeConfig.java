@@ -1,4 +1,4 @@
-package com.klp.global.config;
+package com.klp.ai.global.config;
 
 import io.micrometer.observation.ObservationPredicate;
 import jakarta.servlet.http.HttpServletRequest;
