@@ -14,17 +14,17 @@ import org.springframework.data.repository.query.Param;
 public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     @Query("SELECT DISTINCT o FROM Order o " +
-        "LEFT JOIN FETCH o.orderItems " +
+        "JOIN FETCH o.orderItems " +
         "WHERE o.deletedAt IS NULL")
     List<Order> findByDeletedAtIsNull();
 
     @Query("SELECT DISTINCT o FROM Order o " +
-        "LEFT JOIN FETCH o.orderItems " +
+        "JOIN FETCH o.orderItems " +
         "WHERE o.supplierId = :supplierId")
     List<Order> findBySupplierId(UUID supplierId);
 
     @Query("SELECT DISTINCT o FROM Order o " +
-        "LEFT JOIN FETCH o.orderItems " +
+        "JOIN FETCH o.orderItems " +
         "WHERE o.userId = :userId")
     List<Order> findByUserId(Long userId);
 
@@ -54,13 +54,12 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
     boolean existsByHubIdAndOrderStatusNotComplete(@Param("hubId") UUID hubId);
 
     @Query("SELECT o FROM Order o " +
-        "LEFT JOIN FETCH o.orderItems " +
-        "LEFT JOIN FETCH o.cancellation " +
+        "JOIN FETCH o.orderItems " +
         "WHERE o.orderId = :orderId")
     Optional<Order> findByIdWithDetails(@Param("orderId") UUID orderId);
 
     @Query(value = "SELECT DISTINCT o FROM Order o " +
-        "LEFT JOIN FETCH o.orderItems " +
+        "JOIN FETCH o.orderItems " +
         "WHERE o.deletedAt IS NULL " +
         "AND (:supplierId IS NULL OR o.supplierId = :supplierId) " +
         "AND (:userId IS NULL OR o.userId = :userId) " +
