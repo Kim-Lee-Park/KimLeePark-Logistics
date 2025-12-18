@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +15,13 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.util.backoff.ExponentialBackOff;
 
 @Slf4j
 @EnableKafka
@@ -58,29 +58,34 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public DeadLetterPublishingRecoverer notificationDeadLetterPublishingRecoverer(
-        @Qualifier("notificationKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate
+    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(
+        KafkaTemplate<String, Object> kafkaTemplate
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}",
-                    record.topic(), exception.getMessage());
-                return new TopicPartition(KafkaTopicConfig.NOTIFICATION_DLT, record.partition());
+                String dltTopic = record.topic() + ".notification.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
             });
     }
 
     @Bean
-    public DefaultErrorHandler notificationErrorHandler(
-        @Qualifier("notificationDeadLetterPublishingRecoverer") DeadLetterPublishingRecoverer recoverer
-    ) {
-        FixedBackOff backOff = new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRY_ATTEMPTS);
+    public DefaultErrorHandler errorHandler(DeadLetterPublishingRecoverer recoverer) {
+        // ExponentialBackOff: 1초 -> 2초 -> 4초
+        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
+        backOff.setMaxInterval(4000L);
+        backOff.setMaxElapsedTime(10000L);
+
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
 
+        // 재시도하지 않을 예외들
         errorHandler.addNotRetryableExceptions(
             DeserializationException.class,
             MessageConversionException.class
         );
 
+        // 재시도 로그
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
             log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
                 record.topic(), deliveryAttempt, ex.getMessage());
@@ -91,13 +96,14 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> notificationKafkaListenerContainerFactory(
-        @Qualifier("notificationErrorHandler") DefaultErrorHandler errorHandler
+        DefaultErrorHandler errorHandler
     ) {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(notificationConsumerFactory());
         factory.setConcurrency(3);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(errorHandler);
 
         factory.getContainerProperties().setObservationEnabled(true);
