@@ -16,20 +16,69 @@ receivers:
                 - localhost:8080
 
 processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 400
+    spike_limit_mib: 150
+
+  filter/drop_noise:
+    traces:
+      span:
+        - attributes["http.target"] == "/actuator/health"
+        - attributes["http.target"] == "/actuator/prometheus"
+        - attributes["http.route"] == "/actuator/health"
+        - attributes["http.route"] == "/actuator/prometheus"
+    logs:
+      log_record:
+        - body == "GET /actuator/health"
+
   batch:
-    timeout: 5s
-    send_batch_size: 512
+    timeout: 3s
+    send_batch_size: 256
+
+  tail_sampling:
+    decision_wait: 2s
+    num_traces: 25000
+    expected_new_traces_per_sec: 500
+    policies:
+      - name: error-traces
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+
+      - name: slow-traces
+        type: latency
+        latency:
+          threshold_ms: 2000
+
+      - name: normal-traces
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+  attributes/drop_big_attrs:
+    actions:
+      - key: http.request.body
+        action: delete
+      - key: http.response.body
+        action: delete
+      - key: db.statement
+        action: delete
+
+  filter/drop_kafka_internal:
+    traces:
+      span:
+        - IsMatch(name, "kafka.*poll.*")
+        - IsMatch(name, "kafka.*commit.*")
 
 exporters:
-  # 디버깅용 – Collector 로그에 span 찍기
-  debug:
-    verbosity: normal  # basic / normal / detailed
-
   otlphttp/tempo:
     endpoint: http://${env:TEMPO_HOST}:4318
+    compression: gzip
 
   otlphttp/loki:
     endpoint: http://${env:LOKI_HOST}:3100/otlp
+    compression: gzip
 
   prometheus:
     endpoint: 0.0.0.0:9464
@@ -42,15 +91,15 @@ service:
   pipelines:
     traces:
       receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlphttp/tempo, debug ]
+      processors: [ memory_limiter, filter/drop_noise, filter/drop_kafka_internal, attributes/drop_big_attrs, tail_sampling, batch ]
+      exporters: [ otlphttp/tempo ]
 
     logs:
       receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlphttp/loki, debug ]
+      processors: [ memory_limiter, filter/drop_noise, batch ]
+      exporters: [ otlphttp/loki ]
 
     metrics:
       receivers: [ otlp, prometheus ]
-      processors: [ batch ]
+      processors: [ memory_limiter, batch ]
       exporters: [ prometheus ]

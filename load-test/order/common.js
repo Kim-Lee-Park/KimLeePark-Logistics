@@ -7,7 +7,7 @@ export const cfg = {
   supplierId: '',
   productId: '',
   hubId: '',
-  userId: '',
+  userId: '1',
   addressId: '',
   authToken: '',
   expectedOrders: 10,
@@ -64,7 +64,7 @@ export function buildOrderPayload() {
 
 export function postOrder() {
   const res = http.post(
-      `${cfg.baseUrl}/v1/orders/v2`,
+      `${cfg.baseUrl}/v1/orders`,
       JSON.stringify(buildOrderPayload()),
       {headers}
   );

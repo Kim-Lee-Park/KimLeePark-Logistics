@@ -1,5 +1,5 @@
-FROM public.ecr.aws/aws-observability/aws-otel-collector:latest
+FROM otel/opentelemetry-collector-contrib:0.142.0
 
 COPY otel-collector-config.yaml /etc/otel-config.yaml
 
-ENTRYPOINT ["/awscollector", "--config=/etc/otel-config.yaml"]
+ENTRYPOINT ["/otelcol-contrib", "--config=/etc/otel-config.yaml"]

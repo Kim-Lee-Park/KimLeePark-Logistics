@@ -164,11 +164,11 @@ resource "aws_ecs_task_definition" "gateway" {
         },
         {
           name  = "TEMPO_HOST"
-          value = aws_instance.observability_stack.private_ip
+          value = "tempo.klp.local"
         },
         {
           name  = "LOKI_HOST"
-          value = aws_instance.observability_stack.private_ip
+          value = "loki.klp.local"
         },
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES"
