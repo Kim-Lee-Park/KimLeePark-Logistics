@@ -3,6 +3,8 @@ package com.klp.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
 import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserAddressChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
 import com.klp.order.infrastructure.event.event.CouponCancelledEvent;
 import com.klp.order.infrastructure.event.event.CouponCancelledFailedEvent;
 import com.klp.order.infrastructure.event.event.CouponUsedEvent;
@@ -23,8 +25,8 @@ import com.klp.order.infrastructure.event.event.OrderPaidEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
-import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import io.micrometer.observation.ObservationRegistry;
+import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -220,6 +222,25 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(productInfoChangedConsumerFactory());
+
+        factory.getContainerProperties().setObservationEnabled(true);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserAddressChangedMessage> userAddressChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new org.apache.kafka.common.serialization.StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserAddressChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserAddressChangedMessage> userAddressChangedKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserAddressChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userAddressChangedConsumerFactory());
 
         factory.getContainerProperties().setObservationEnabled(true);
         return factory;
