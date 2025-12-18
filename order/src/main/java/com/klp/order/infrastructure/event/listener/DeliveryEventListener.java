@@ -14,8 +14,6 @@ import com.klp.order.infrastructure.event.event.DeliveryShippingFailedEvent;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.DltHandler;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -27,11 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = "delivery.topic",
-    groupId = "order-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
-)
 public class DeliveryEventListener {
 
     private final OrderService orderService;
@@ -39,7 +32,11 @@ public class DeliveryEventListener {
     private final OrderRepository orderRepository;
 
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "delivery.created",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleDeliveryCreated(
         @Payload DeliveryCreatedEvent event,
@@ -85,7 +82,11 @@ public class DeliveryEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "delivery.shipping",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleDeliveryShipping(
         @Payload DeliveryShippingEvent event,
@@ -127,7 +128,11 @@ public class DeliveryEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "delivery.arrived",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleDeliveryArrived(
         @Payload DeliveryArrivedEvent event,
@@ -173,7 +178,11 @@ public class DeliveryEventListener {
     /**
      * 배송 생성 실패 이벤트 처리 Spring Kafka가 DeliveryCreatedFailedEvent 타입을 보고 자동으로 이 메서드를 호출
      */
-    @KafkaHandler
+    @KafkaListener(
+        topics = "delivery.created.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleDeliveryCreatedFailed(
         @Payload DeliveryCreatedFailedEvent event,
@@ -219,7 +228,11 @@ public class DeliveryEventListener {
     /**
      * 배송 중 실패 이벤트 처리 Spring Kafka가 DeliveryShippingFailedEvent 타입을 보고 자동으로 이 메서드를 호출
      */
-    @KafkaHandler
+    @KafkaListener(
+        topics = "delivery.shipping.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleDeliveryShippingFailed(
         @Payload DeliveryShippingFailedEvent event,
@@ -265,7 +278,11 @@ public class DeliveryEventListener {
     /**
      * 배송 완료 실패 이벤트 처리 Spring Kafka가 DeliveryArrivedFailedEvent 타입을 보고 자동으로 이 메서드를 호출
      */
-    @KafkaHandler
+    @KafkaListener(
+        topics = "delivery.arrived.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleDeliveryArrivedFailed(
         @Payload DeliveryArrivedFailedEvent event,
@@ -326,24 +343,83 @@ public class DeliveryEventListener {
         log.info("모든 deliveryId 할당 완료 - 총 {}개", deliveryItems.size());
     }
 
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+
+    @KafkaListener(
+        topics = "delivery.created.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleDeliveryCreatedDlt(DeliveryCreatedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: DeliveryCreated");
+        log.error("⚠️ 배송 생성 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
     }
 
-    /**
-     * DLT(Dead Letter Topic) 핸들러 모든 배송 이벤트의 최종 실패를 처리
-     */
-    @DltHandler
-    public void handleDeliveryDlt(
-        @Payload Object event,
-        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
-
+    @KafkaListener(
+        topics = "delivery.created.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleDeliveryCreatedFailedDlt(DeliveryCreatedFailedEvent event) {
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Delivery Event");
-        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("⚠️ DLT 도착: DeliveryCreatedFailed");
+        log.error("⚠️ 배송 생성 실패 처리 실패 - 수동 처리 필요!");
         log.error("========================================");
-        log.error("eventType={}, error={}", event.getClass().getSimpleName(), exceptionMessage);
+        log.error("orderId={}", event.orderId());
     }
+
+    @KafkaListener(
+        topics = "delivery.shipping.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleDeliveryShippingDlt(DeliveryShippingEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: DeliveryShipping");
+        log.error("⚠️ 배송 중 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = "delivery.shipping.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleDeliveryShippingFailedDlt(DeliveryShippingFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: DeliveryShippingFailed");
+        log.error("⚠️ 배송 중 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = "delivery.arrived.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleDeliveryArrivedDlt(DeliveryArrivedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: DeliveryArrived");
+        log.error("⚠️ 배송 도착 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = "delivery.arrived.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleDeliveryArrivedFailedDlt(DeliveryArrivedFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: DeliveryArrivedFailed");
+        log.error("⚠️ 배송 도착 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
+    }
+
 }

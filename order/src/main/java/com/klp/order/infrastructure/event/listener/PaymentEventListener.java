@@ -179,7 +179,7 @@ public class PaymentEventListener {
 
 
     @KafkaListener(
-        topics = "payment.approved.dlt",
+        topics = "payment.approved.order.dlt",
         groupId = "order-service-group-dlt",
         containerFactory = "kafkaListenerContainerFactory"
     )
@@ -192,7 +192,7 @@ public class PaymentEventListener {
     }
 
     @KafkaListener(
-        topics = "payment.failed.dlt",
+        topics = "payment.failed.order.dlt",
         groupId = "order-service-group-dlt",
         containerFactory = "kafkaListenerContainerFactory"
     )
@@ -205,7 +205,7 @@ public class PaymentEventListener {
     }
 
     @KafkaListener(
-        topics = "payment.cancelled.dlt",
+        topics = "payment.cancelled.order.dlt",
         groupId = "order-service-group-dlt",
         containerFactory = "kafkaListenerContainerFactory"
     )
@@ -218,7 +218,7 @@ public class PaymentEventListener {
     }
 
     @KafkaListener(
-        topics = "payment.cancelled.failed.dlt",
+        topics = "payment.cancelled.failed.order.dlt",
         groupId = "order-service-group-dlt",
         containerFactory = "kafkaListenerContainerFactory"
     )

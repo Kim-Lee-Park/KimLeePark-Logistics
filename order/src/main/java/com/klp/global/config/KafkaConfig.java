@@ -20,7 +20,6 @@ import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
 import com.klp.order.infrastructure.event.event.OrderFailedEvent;
-import com.klp.order.infrastructure.event.event.OrderPaidEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
@@ -86,8 +85,7 @@ public class KafkaConfig {
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
             "OrderCreatedEvent:" + OrderCreatedEvent.class.getName() + "," +
                 "OrderCancelledEvent:" + OrderCancelledEvent.class.getName() + "," +
-                "OrderFailedEvent:" + OrderFailedEvent.class.getName() + "," +
-                "OrderPaidEvent:" + OrderPaidEvent.class.getName());
+                "OrderFailedEvent:" + OrderFailedEvent.class.getName());
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -154,7 +152,7 @@ public class KafkaConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                String dltTopic = record.topic() + ".dlt";
+                String dltTopic = record.topic() + ".order.dlt";
                 log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
                     record.topic(), dltTopic, exception.getMessage());
                 return new TopicPartition(dltTopic, record.partition());

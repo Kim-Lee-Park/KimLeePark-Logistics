@@ -10,8 +10,6 @@ import com.klp.order.infrastructure.event.event.CouponUsedEvent;
 import com.klp.order.infrastructure.event.event.CouponUsedFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.DltHandler;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -23,17 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = "coupon.topic",
-    groupId = "order-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
-)
 public class CouponEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "coupon.used",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleCouponUsed(
         @Payload CouponUsedEvent event,
@@ -46,7 +43,6 @@ public class CouponEventListener {
 
         try {
             Order order = orderService.findById(event.orderId());
-            log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
 
             if (order.getOrderStatus() == OrderStatus.COMPLETE
                 || order.getOrderStatus() == OrderStatus.COUPON_CONFIRMED) {
@@ -59,22 +55,23 @@ public class CouponEventListener {
 
             order.changeStatus(OrderStatus.COUPON_CONFIRMED);
             orderRepository.save(order);
-            log.info("=== 쿠폰 사용 완료 이벤트 처리 완료: orderId={}, couponId={} ===",
-                event.orderId(), event.userCouponId());
+            log.info("=== 쿠폰 사용 완료 이벤트 처리 완료: orderId={} ===", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
             }
 
         } catch (Exception e) {
-            log.error("쿠폰 사용 완료 이벤트 처리 실패: orderId={}, couponId={}, partition={}, offset={}",
-                event.orderId(), event.userCouponId(), partition, offset, e);
+            log.error("쿠폰 사용 완료 이벤트 처리 실패: orderId={}", event.orderId(), e);
             throw e;
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "coupon.used.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleCouponUsedFailed(
         @Payload CouponUsedFailedEvent event,
@@ -82,12 +79,10 @@ public class CouponEventListener {
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 쿠폰 사용 실패 이벤트 수신: orderId={}, couponId={}, partition={}, offset={} ===",
-            event.orderId(), event.userCouponId(), partition, offset);
+        log.info("=== 쿠폰 사용 실패 이벤트 수신: orderId={} ===", event.orderId());
 
         try {
             Order order = orderService.findById(event.orderId());
-            log.info("주문 조회 완료 - orderId: {}", order.getOrderId());
 
             if (order.getOrderStatus() == OrderStatus.FAILED
                 || order.getOrderStatus() == OrderStatus.COUPON_CONFIRMED_FAILED) {
@@ -100,91 +95,127 @@ public class CouponEventListener {
 
             order.changeStatus(OrderStatus.COUPON_CONFIRMED_FAILED);
             orderRepository.save(order);
-            log.info("=== 쿠폰 사용 실패 이벤트 처리 완료: orderId={}, couponId={} ===",
-                event.orderId(), event.userCouponId());
+            log.info("=== 쿠폰 사용 실패 이벤트 처리 완료: orderId={} ===", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
             }
 
         } catch (Exception e) {
-            log.error("쿠폰 사용 실패 이벤트 처리 실패: orderId={}, couponId={}, partition={}, offset={}",
-                event.orderId(), event.userCouponId(), partition, offset, e);
+            log.error("쿠폰 사용 실패 이벤트 처리 실패: orderId={}", event.orderId(), e);
             throw e;
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "coupon.restored",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleCouponCancelled(
         @Payload CouponCancelledEvent event,
         Acknowledgment acknowledgment) {
 
-        log.info("=== 쿠폰 취소 완료 이벤트 수신: orderId={} ===", event.orderId());
+        log.info("=== 쿠폰 복원 완료 이벤트 수신: orderId={} ===", event.orderId());
 
         try {
             Order order = orderService.findById(event.orderId());
 
             if (order.getOrderStatus() != OrderStatus.CANCELLED) {
-                log.warn("주문 취소 상태가 아닌데 쿠폰 취소 이벤트 수신: orderId={}, status={}",
+                log.warn("주문 취소 상태가 아닌데 쿠폰 복원 이벤트 수신: orderId={}, status={}",
                     event.orderId(), order.getOrderStatus());
             }
 
-            log.info("쿠폰 취소 확인 완료: orderId={}", event.orderId());
+            log.info("쿠폰 복원 확인 완료: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
             }
 
         } catch (Exception e) {
-            log.error("쿠폰 취소 이벤트 처리 실패: orderId={}", event.orderId(), e);
+            log.error("쿠폰 복원 이벤트 처리 실패: orderId={}", event.orderId(), e);
             throw e;
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "coupon.restored.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleCouponCancelledFailed(
         @Payload CouponCancelledFailedEvent event,
         Acknowledgment acknowledgment) {
 
-        log.error("=== 쿠폰 취소 실패 이벤트 수신: orderId={} ===", event.orderId());
+        log.error("=== 쿠폰 복원 실패 이벤트 수신: orderId={} ===", event.orderId());
 
         try {
             Order order = orderService.findById(event.orderId());
-
-            // 결제 취소도 실패했다면 수동 개입 필요
-            // OrderStatus.COUPON_CANCEL_FAILED 같은 상태 추가 고려
-
-            log.error("⚠️ 쿠폰 취소 실패 - 수동 처리 필요: orderId={}",
-                event.orderId());
+            log.error("⚠️ 쿠폰 복원 실패 - 수동 처리 필요: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
             }
 
         } catch (Exception e) {
-            log.error("쿠폰 취소 실패 이벤트 처리 중 오류: orderId={}", event.orderId(), e);
+            log.error("쿠폰 복원 실패 이벤트 처리 중 오류: orderId={}", event.orderId(), e);
             throw e;
         }
     }
 
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    // ========== DLT 처리 (별도 그룹) ==========
+
+    @KafkaListener(
+        topics = "coupon.used.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleCouponUsedDlt(CouponUsedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: CouponUsed");
+        log.error("⚠️ 쿠폰 사용 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
     }
 
-    @DltHandler
-    public void handleCouponDlt(
-        @Payload Object event,
-        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
+    @KafkaListener(
+        topics = "coupon.used.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleCouponUsedFailedDlt(CouponUsedFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: CouponUsedFailed");
+        log.error("⚠️ 쿠폰 사용 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
+    }
 
+    @KafkaListener(
+        topics = "coupon.restored.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleCouponCancelledDlt(CouponCancelledEvent event) {
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Coupon Event");
-        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("⚠️ DLT 도착: CouponRestored");
+        log.error("⚠️ 쿠폰 복원 확인 실패 - 수동 처리 필요!");
         log.error("========================================");
-        log.error("eventType={}, error={}", event.getClass().getSimpleName(), exceptionMessage);
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = "coupon.restored.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleCouponCancelledFailedDlt(CouponCancelledFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: CouponRestoredFailed");
+        log.error("⚠️ 쿠폰 복원 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
     }
 }

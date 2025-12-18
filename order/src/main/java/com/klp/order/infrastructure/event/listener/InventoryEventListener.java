@@ -10,8 +10,6 @@ import com.klp.order.infrastructure.event.event.InventoryReplenishedEvent;
 import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.DltHandler;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -24,17 +22,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 
-@KafkaListener(
-    topics = "inventory.topic",
-    groupId = "order-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
-)
 public class InventoryEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "inventory.deducted",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryDeducted(
         @Payload InventoryDeductedEvent event,
@@ -73,7 +70,11 @@ public class InventoryEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "inventory.deducted.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryDeductedFailed(
         @Payload InventoryDeductedFailedEvent event,
@@ -113,7 +114,11 @@ public class InventoryEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "inventory.replenished",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryReplenished(
         @Payload InventoryReplenishedEvent event,
@@ -141,7 +146,11 @@ public class InventoryEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "inventory.replenished.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryReplenishedFailed(
         @Payload InventoryReplenishedFailedEvent event,
@@ -165,21 +174,42 @@ public class InventoryEventListener {
         }
     }
 
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    @KafkaListener(
+        topics = "inventory.deducted.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleInventoryDeductedDlt(InventoryDeductedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: InventoryDeducted");
+        log.error("⚠️ 재고 차감 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
     }
 
-    @DltHandler
-    public void handleInventoryDlt(
-        @Payload Object event,
-        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
+    @KafkaListener(
+        topics = "inventory.deducted.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleInventoryDeductedFailedDlt(InventoryDeductedFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: InventoryDeductedFailed");
+        log.error("⚠️ 재고 차감 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
+    }
 
+    @KafkaListener(
+        topics = "inventory.replenished.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handleInventoryReplenishedDlt(InventoryReplenishedEvent event) {
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Inventory Event");
-        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("⚠️ DLT 도착: InventoryReplenished");
+        log.error("⚠️ 재고 복구 처리 실패 - 수동 처리 필요!");
         log.error("========================================");
-        log.error("eventType={}, error={}", event.getClass().getSimpleName(), exceptionMessage);
+        log.error("orderId={}, couponId={}", event.orderId(), event.userCouponId());
     }
 }
