@@ -9,22 +9,39 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
 
     // 구독용 토픽
-    public static final String PAYMENT_TOPIC = "payment.topic";
+    public static final String PAYMENT_APPROVED_TOPIC = "payment.approved";
+    public static final String PAYMENT_CANCELLED_TOPIC = "payment.cancelled";
+    public static final String PAYMENT_FAILED_TOPIC = "payment.failed";
 
-    public static final String INVENTORY_TOPIC = "inventory.topic";
+    public static final String INVENTORY_DEDUCTED_FAILED_TOPIC = "inventory.deducted.failed";
+    public static final String ORDER_FAILED_TOPIC = "order.failed";
 
     // 발행용 토픽
-    public static final String COUPON_TOPIC = "coupon.topic";
+    public static final String COUPON_USED_TOPIC = "coupon.used";
+    public static final String COUPON_USED_FAILED_TOPIC = "coupon.used.failed";
+    public static final String COUPON_RESTORED_TOPIC = "coupon.restored";
+    public static final String COUPON_RESTORED_FAILED_TOPIC = "coupon.restored.failed";
 
-    // 주문 토픽
-    public static final String ORDER_TOPIC = "order.topic";
 
-    /**
-     * 결제 이벤트 토픽 (구독용)
-     */
     @Bean
-    public NewTopic paymentTopic() {
-        return TopicBuilder.name(PAYMENT_TOPIC)
+    public NewTopic paymentApprovedTopic() {
+        return TopicBuilder.name(PAYMENT_APPROVED_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic paymentCancelledTopic() {
+        return TopicBuilder.name(PAYMENT_CANCELLED_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic paymentFailedTopic() {
+        return TopicBuilder.name(PAYMENT_FAILED_TOPIC)
             .partitions(3)
             .replicas(1)
             .build();
