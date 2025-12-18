@@ -60,7 +60,7 @@ SELECT gen_random_uuid(), (SELECT company_id FROM p_companies WHERE name = '인�
 WHERE NOT EXISTS (SELECT 1 FROM p_products WHERE name = '면세 화장품 키트');
 
 INSERT INTO p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
-SELECT gen_random_uuid(), 120,
+SELECT gen_random_uuid(), 100000,
        (SELECT product_id FROM p_products WHERE name = 'LED 모듈 세트' ORDER BY product_id LIMIT 1),
        (SELECT hub_id FROM p_hubs WHERE name = '서울특별시 센터' ORDER BY hub_id LIMIT 1),
        NOW()
@@ -71,7 +71,7 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
-SELECT gen_random_uuid(), 75,
+SELECT gen_random_uuid(), 100000,
        (SELECT product_id FROM p_products WHERE name = '스마트TV 패널' ORDER BY product_id LIMIT 1),
        (SELECT hub_id FROM p_hubs WHERE name = '경기 남부 센터' ORDER BY hub_id LIMIT 1),
        NOW()
@@ -82,7 +82,7 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
-SELECT gen_random_uuid(), 200,
+SELECT gen_random_uuid(), 100000,
        (SELECT product_id FROM p_products WHERE name = '선적용 포장 박스' ORDER BY product_id LIMIT 1),
        (SELECT hub_id FROM p_hubs WHERE name = '부산광역시 센터' ORDER BY hub_id LIMIT 1),
        NOW()
@@ -93,7 +93,7 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
-SELECT gen_random_uuid(), 90,
+SELECT gen_random_uuid(), 100000,
        (SELECT product_id FROM p_products WHERE name = '냉동 수산 세트' ORDER BY product_id LIMIT 1),
        (SELECT hub_id FROM p_hubs WHERE name = '대구광역시 센터' ORDER BY hub_id LIMIT 1),
        NOW()
@@ -104,7 +104,7 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO p_inventory (inventory_id, quantity, product_id, hub_id, created_at)
-SELECT gen_random_uuid(), 60,
+SELECT gen_random_uuid(), 100000,
        (SELECT product_id FROM p_products WHERE name = '면세 화장품 키트' ORDER BY product_id LIMIT 1),
        (SELECT hub_id FROM p_hubs WHERE name = '인천광역시 센터' ORDER BY hub_id LIMIT 1),
        NOW()

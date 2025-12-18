@@ -1,11 +1,11 @@
 resource "aws_ecs_task_definition" "gateway" {
-  family             = "${local.project}-gateway"
-  network_mode       = "awsvpc"
+  family                   = "${local.project}-gateway"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                = local.ecs_services.gateway.cpu
-  memory             = local.ecs_services.gateway.memory
-  execution_role_arn = aws_iam_role.ecs_task_execution.arn
-  task_role_arn      = aws_iam_role.ecs_task_role.arn
+  cpu                      = local.ecs_services.gateway.cpu
+  memory                   = local.ecs_services.gateway.memory
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -26,15 +26,6 @@ resource "aws_ecs_task_definition" "gateway" {
           condition     = "START"
         }
       ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "gateway"
-        }
-      }
 
       environment = [
         {
@@ -128,6 +119,10 @@ resource "aws_ecs_task_definition" "gateway" {
         {
           name  = "OTEL_RESOURCE_ATTRIBUTES",
           value = "service.namespace=klp"
+        },
+        {
+          name  = "OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDE_PATTERNS",
+          value = "/actuator/.*,/swagger-ui/.*,/v3/api-docs/.*,/v1/api-docs/.*"
         }
       ]
 
@@ -180,15 +175,6 @@ resource "aws_ecs_task_definition" "gateway" {
           value = "service.namespace=klp,service.name=otel-collector"
         }
       ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "otel-gateway"
-        }
-      }
     }
   ])
 }

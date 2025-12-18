@@ -10,7 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface InventoryReservationJpaRepository extends JpaRepository<InventoryReservation, UUID> {
+public interface InventoryReservationJpaRepository extends
+    JpaRepository<InventoryReservation, UUID> {
 
 
     List<InventoryReservation> findAllByOrderId(UUID orderId);

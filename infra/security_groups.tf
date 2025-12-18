@@ -4,16 +4,16 @@ resource "aws_security_group" "alb" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -28,16 +28,16 @@ resource "aws_security_group" "internal_alb" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 8000
-    to_port   = 9020
-    protocol  = "tcp"
+    from_port   = 8000
+    to_port     = 9020
+    protocol    = "tcp"
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -52,16 +52,16 @@ resource "aws_security_group" "ecs_service" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
 
   ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.internal_alb.id]
   }
 
@@ -73,9 +73,9 @@ resource "aws_security_group" "ecs_service" {
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -90,23 +90,23 @@ resource "aws_security_group" "db" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -121,16 +121,16 @@ resource "aws_security_group" "redis" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 6379
-    to_port   = 6379
-    protocol  = "tcp"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -145,16 +145,16 @@ resource "aws_security_group" "bastion" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = [var.allowed_ssh_cidr]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -169,9 +169,9 @@ resource "aws_security_group" "kafka" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 9092
-    to_port   = 9092
-    protocol  = "tcp"
+    from_port       = 9092
+    to_port         = 9092
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
@@ -183,23 +183,23 @@ resource "aws_security_group" "kafka" {
   }
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   ingress {
-    from_port = 2181
-    to_port   = 2181
+    from_port = 9093
+    to_port   = 9093
     protocol  = "tcp"
     self      = true
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -215,60 +215,60 @@ resource "aws_security_group" "observability_stack" {
 
   # Grafana
   ingress {
-    from_port = 3000
-    to_port   = 3000
-    protocol  = "tcp"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   # Grafana via ALB
   ingress {
-    from_port = 3000
-    to_port   = 3000
-    protocol  = "tcp"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
 
   # Allow OTLP (Tempo) and Loki from ECS tasks
   ingress {
-    from_port = 4317
-    to_port   = 4317
-    protocol  = "tcp"
+    from_port       = 4317
+    to_port         = 4317
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
-    from_port = 4318
-    to_port   = 4318
-    protocol  = "tcp"
+    from_port       = 4318
+    to_port         = 4318
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
-    from_port = 3100
-    to_port   = 3100
-    protocol  = "tcp"
+    from_port       = 3100
+    to_port         = 3100
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
-    from_port = 3200
-    to_port   = 3200
-    protocol  = "tcp"
+    from_port       = 3200
+    to_port         = 3200
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
