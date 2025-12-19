@@ -17,7 +17,8 @@ public enum InventoryErrorCode implements ErrorCode {
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "선점 정보를 찾을 수 없습니다."),
     RESERVATION_ALREADY_PROCESSED(HttpStatus.CONFLICT, "이미 처리된 선점입니다."),
     INVALID_EVENT_TYPE(HttpStatus.BAD_REQUEST, "유효하지 않은 이벤트 타입입니다."),
-    EVENT_DESERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 역직렬화에 실패했습니다.");
+    EVENT_DESERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 역직렬화에 실패했습니다."),
+    CACHE_SET_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "캐시 설정에 실패했습니다.");
 
     private final HttpStatus status;
     private final String message;
