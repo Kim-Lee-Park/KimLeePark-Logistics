@@ -32,10 +32,12 @@ public class OutboxScheduler {
             try {
                 publishEvent(outbox);
                 paymentOutboxRepository.markAsPublished(outbox.getPaymentOutboxId());
-                log.info("이벤트 발행 성공: orderId={}, eventType={}", outbox.getOrderId(), outbox.getEventType());
+                log.info("이벤트 발행 성공: orderId={}, eventType={}", outbox.getOrderId(),
+                    outbox.getEventType());
             } catch (Exception e) {
                 paymentOutboxRepository.markAsFailed(outbox.getPaymentOutboxId());
-                log.error("이벤트 발행 실패: orderId={}, error={}", outbox.getOrderId(), e.getMessage());
+                log.error("이벤트 발행 실패: orderId={}, error={}", outbox.getOrderId(), e.getMessage(),
+                    e);
             }
         }
     }
@@ -46,15 +48,18 @@ public class OutboxScheduler {
 
         switch (eventType) {
             case "PaymentApprovedEvent" -> {
-                PaymentApprovedEvent event = objectMapper.readValue(payload, PaymentApprovedEvent.class);
+                PaymentApprovedEvent event = objectMapper.readValue(payload,
+                    PaymentApprovedEvent.class);
                 eventProducer.publishPaymentApprovedEvent(event);
             }
             case "PaymentCancelledEvent" -> {
-                PaymentCancelledEvent event = objectMapper.readValue(payload, PaymentCancelledEvent.class);
+                PaymentCancelledEvent event = objectMapper.readValue(payload,
+                    PaymentCancelledEvent.class);
                 eventProducer.publishPaymentCancelledEvent(event);
             }
             case "PaymentFailedEvent" -> {
-                PaymentFailedEvent event = objectMapper.readValue(payload, PaymentFailedEvent.class);
+                PaymentFailedEvent event = objectMapper.readValue(payload,
+                    PaymentFailedEvent.class);
                 eventProducer.publishPaymentFailedEvent(event);
             }
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);

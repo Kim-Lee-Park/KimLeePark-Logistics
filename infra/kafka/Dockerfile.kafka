@@ -11,7 +11,7 @@ ADD kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz /opt/
 RUN set -eux \
     && rm -rf /opt/kafka \
     && mv /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} /opt/kafka \
-    && test -f /opt/kafka/config/server.properties
+    && test -f /opt/kafka/config/kraft/server.properties
 
 ENV KAFKA_HOME=/opt/kafka
 ENV PATH="${KAFKA_HOME}/bin:${PATH}"

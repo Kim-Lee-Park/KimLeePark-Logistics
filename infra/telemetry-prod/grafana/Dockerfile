@@ -1,4 +1,4 @@
-FROM grafana/grafana:11.0.0
+FROM grafana/grafana:12.3.1
 
 ENV TZ=Asia/Seoul
 
