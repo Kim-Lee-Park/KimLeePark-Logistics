@@ -1,8 +1,12 @@
 package com.klp.hub.inventory.application;
 
+import static com.klp.hub.inventory.infrastructure.cache.InventoryCacheServiceImpl.NEED_DB_FALLBACK;
+import static com.klp.hub.inventory.infrastructure.cache.InventoryCacheServiceImpl.RESULT_INSUFFICIENT_STOCK;
+
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
+import com.klp.hub.inventory.application.dto.InventoryReservationCommand.ReservationItem;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
@@ -11,8 +15,11 @@ import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
 import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponseForEvent;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,7 +31,89 @@ public class InventoryFacade {
 
     private final InventoryService inventoryService;
     private final InventoryReservationService inventoryReservationService;
+    private final InventoryCacheService cacheService;
     private final DistributedLockManager lockManager;
+
+    /**
+     * 재고 선점
+     */
+    public InventoryReservationResponse reserve(InventoryReservationCommand command) {
+
+        if (inventoryReservationService.existsByIdempotencyKey(command.idempotencyKey())) {
+            return InventoryReservationResponse.already();
+        }
+
+        Map<Boolean, List<ReservationItem>> partitioned = command.items().stream()
+            .collect(Collectors.partitioningBy(
+                item -> cacheService.existsCache(item.productId(), item.hubId())
+            ));
+
+        List<ReservationItem> hotItems = partitioned.get(true);
+        List<ReservationItem> normalItems = partitioned.get(false);
+        List<ReservationItem> reservedItems = new ArrayList<>();
+        List<ReservationItem> fallbackItems = new ArrayList<>();
+
+        try {
+            // Hot Product 처리 (락 없이)
+            // Redis에서 처리한 아이템과 처리하지 못한 아이템을 구분해서 반환
+            if (!hotItems.isEmpty()) {
+                Map<Boolean, List<ReservationItem>> cacheResult = reserveFromCache(hotItems);
+                reservedItems = cacheResult.get(true);
+                fallbackItems = cacheResult.get(false);
+            }
+
+            // 일반 상품 + 폴백 아이템 처리 (락 걸고)
+            List<ReservationItem> dbItems = new ArrayList<>(normalItems);
+            dbItems.addAll(fallbackItems);
+
+            if (!dbItems.isEmpty()) {
+                reserveFromDatabase(command.orderId(), command.idempotencyKey(), dbItems);
+            }
+
+            return InventoryReservationResponse.success(command.orderId());
+        } catch (Exception e) {
+            rollbackCacheReservations(reservedItems);
+            throw e;
+        }
+    }
+
+    private Map<Boolean, List<ReservationItem>> reserveFromCache(List<ReservationItem> items) {
+        List<ReservationItem> reserved = new ArrayList<>();
+        List<ReservationItem> fallback = new ArrayList<>();
+
+        for (ReservationItem item : items) {
+            long result = cacheService.reserveInventory(item.productId(), item.hubId(), item.quantity());
+
+            if (result == NEED_DB_FALLBACK) {
+                fallback.add(item);
+            } else if (result == RESULT_INSUFFICIENT_STOCK) {
+                rollbackCacheReservations(reserved);
+                throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
+            } else {
+                reserved.add(item);
+                // 선점 레코드 저장 + DB 동기화 이벤트 발행?
+            }
+        }
+
+        return Map.of(true, reserved, false, fallback);
+    }
+
+    private void reserveFromDatabase(UUID orderId, String idempotencyKey, List<ReservationItem> items) {
+        String lockKey = "inventory:reserve:" + orderId.toString();
+
+        lock(lockKey);
+        try {
+            inventoryReservationService.reserve(orderId, idempotencyKey, items);
+        } finally {
+            unLock(lockKey);
+        }
+    }
+
+    private void rollbackCacheReservations(List<ReservationItem> items) {
+        for (ReservationItem item : items) {
+            cacheService.restoreInventory(item.productId(), item.hubId(), item.quantity());
+        }
+    }
 
     public InventoryDeductResponseForEvent deduct(CouponUsedEvent event) {
         String idempotencyKey = event.inventoryIdempotencyKey();
@@ -47,17 +136,6 @@ public class InventoryFacade {
             return inventoryService.replenish(command);
         } finally {
             unLock(idempotencyKey);
-        }
-    }
-
-    public InventoryReservationResponse reserve(InventoryReservationCommand command) {
-        String lockKey = "inventory:reserve:" + command.orderId();
-
-        lock(lockKey);
-        try {
-            return inventoryReservationService.reserve(command);
-        } finally {
-            unLock(lockKey);
         }
     }
 

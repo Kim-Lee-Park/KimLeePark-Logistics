@@ -2,13 +2,13 @@ package com.klp.hub.inventory.application;
 
 import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
+import com.klp.hub.inventory.application.dto.InventoryReservationCommand.ReservationItem;
 import com.klp.hub.inventory.domain.InventoryReservation;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
 import com.klp.hub.inventory.domain.repository.InventoryReservationRepository;
 import com.klp.hub.inventory.domain.repository.dto.InventoryAvailability;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
-import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,19 +29,13 @@ public class InventoryReservationService {
     private final InventoryRepository inventoryRepository;
 
     @Transactional
-    public InventoryReservationResponse reserve(InventoryReservationCommand command) {
-        String idempotencyKey = command.idempotencyKey();
-
-        if (reservationRepository.existsByIdempotencyKey(idempotencyKey)) {
-            return InventoryReservationResponse.already();
-        }
-
-        List<UUID> productIds = command.items().stream()
+    public void reserve(UUID orderId, String idempotencyKey, List<ReservationItem> items) {
+        List<UUID> productIds = items.stream()
             .map(InventoryReservationCommand.ReservationItem::productId)
             .distinct()
             .toList();
 
-        List<UUID> hubIds = command.items().stream()
+        List<UUID> hubIds = items.stream()
             .map(InventoryReservationCommand.ReservationItem::hubId)
             .distinct()
             .toList();
@@ -60,7 +54,7 @@ public class InventoryReservationService {
 
         List<InventoryReservation> reservations = new ArrayList<>();
 
-        for (InventoryReservationCommand.ReservationItem item : command.items()) {
+        for (InventoryReservationCommand.ReservationItem item : items) {
             String key = item.productId() + ":" + item.hubId();
             int available = availabilityMap.getOrDefault(key, 0);
 
@@ -71,7 +65,7 @@ public class InventoryReservationService {
             }
 
             InventoryReservation reservation = InventoryReservation.create(
-                command.orderId(),
+                orderId,
                 item.productId(),
                 item.hubId(),
                 item.quantity(),
@@ -82,8 +76,6 @@ public class InventoryReservationService {
         }
 
         reservationRepository.saveAllInBatch(reservations);
-
-        return InventoryReservationResponse.success(command.orderId());
     }
 
     /**
@@ -136,5 +128,10 @@ public class InventoryReservationService {
 
         int released = reservationRepository.releaseAll(orderId);
         log.info("재고 선점 해제 완료. orderId={}, releasedCount={}", orderId, released);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByIdempotencyKey(String idempotencyKey) {
+        return reservationRepository.existsByIdempotencyKey(idempotencyKey);
     }
 }
