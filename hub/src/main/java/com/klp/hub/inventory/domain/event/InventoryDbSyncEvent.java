@@ -1,46 +1,36 @@
 package com.klp.hub.inventory.domain.event;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record InventoryDbSyncEvent(
     UUID eventId,
     UUID orderId,
-    UUID productId,
-    UUID hubId,
-    int quantity,
-    SyncType syncType,
+    List<SyncItem> items,
     LocalDateTime timestamp,
     String idempotencyKey
 ) {
 
-    public static InventoryDbSyncEvent reserve(
-        UUID orderId, UUID productId, UUID hubId, int quantity, String idempotencyKey
+    public record SyncItem(
+        UUID productId,
+        UUID hubId,
+        int quantity
     ) {
-        return new InventoryDbSyncEvent(
-            UUID.randomUUID(),
-            orderId,
-            productId,
-            hubId,
-            quantity,
-            SyncType.RESERVE,
-            LocalDateTime.now(),
-            idempotencyKey
-        );
+
     }
 
-    public static InventoryDbSyncEvent release(
-        UUID orderId, UUID productId, UUID hubId, int quantity
+    public static InventoryDbSyncEvent of(
+        UUID orderId,
+        List<SyncItem> items,
+        String idempotencyKey
     ) {
         return new InventoryDbSyncEvent(
             UUID.randomUUID(),
             orderId,
-            productId,
-            hubId,
-            quantity,
-            SyncType.RELEASE,
+            items,
             LocalDateTime.now(),
-            null
+            idempotencyKey
         );
     }
 }

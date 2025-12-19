@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.hub.inventory.domain.event.InventoryDbSyncEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
@@ -48,7 +49,6 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
         configProps.put(ProducerConfig.LINGER_MS_CONFIG, 10);
 
-        // ⭐ 추가된 부분 - 타입 정보 헤더 활성화
         configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         configProps.put(JsonSerializer.TYPE_MAPPINGS, buildTypeMappings());
 
@@ -59,13 +59,12 @@ public class KafkaProducerConfig {
         );
     }
 
-    // ⭐ 추가된 메서드 - 타입 매핑 설정
     private String buildTypeMappings() {
         return String.join(",",
             "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName(),
             "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName(),
-            "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName()
-
+            "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName(),
+            "InventoryDbSyncEvent:" + InventoryDbSyncEvent.class.getName()
         );
     }
 
