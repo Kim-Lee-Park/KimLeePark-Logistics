@@ -134,4 +134,9 @@ public class InventoryReservationService {
     public boolean existsByIdempotencyKey(String idempotencyKey) {
         return reservationRepository.existsByIdempotencyKey(idempotencyKey);
     }
+
+    @Transactional(readOnly = true)
+    public List<InventoryReservation> findReservationsByOrderId(UUID orderId) {
+        return reservationRepository.findAllByOrderId(orderId);
+    }
 }

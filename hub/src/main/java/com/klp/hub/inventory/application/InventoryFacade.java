@@ -7,6 +7,7 @@ import com.klp.hub.global.exception.BusinessException;
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand.ReservationItem;
+import com.klp.hub.inventory.domain.InventoryReservation;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
@@ -170,6 +171,21 @@ public class InventoryFacade {
      * 선점 해제 (결제, 쿠폰사용 실패 시 호출)
      */
     public void release(UUID orderId) {
+        List<InventoryReservation> reservations = inventoryReservationService.findReservationsByOrderId(orderId);
+
+        if (reservations.isEmpty()) {
+            log.info("선점 정보가 없거나 이미 해제됨. orderId={}", orderId);
+            return;
+        }
+
+        for (InventoryReservation reservation : reservations) {
+            if (cacheService.existsCache(reservation.getProductId(), reservation.getHubId())) {
+                cacheService.restoreInventory(
+                    reservation.getProductId(), reservation.getHubId(), reservation.getQuantity()
+                );
+            }
+        }
+
         String lockKey = "inventory:release:" + orderId;
 
         lock(lockKey);
