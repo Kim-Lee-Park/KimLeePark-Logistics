@@ -5,11 +5,13 @@ import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.application.dto.InventoryReservationCommand;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
+import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
-import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponseForEvent;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReservationResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +26,14 @@ public class InventoryFacade {
     private final InventoryReservationService inventoryReservationService;
     private final DistributedLockManager lockManager;
 
-    public InventoryDeductResponse deduct(CouponUsedEvent event) {
+    public InventoryDeductResponseForEvent deduct(CouponUsedEvent event) {
         String idempotencyKey = event.inventoryIdempotencyKey();
 
         lock(idempotencyKey);
         try {
-            return inventoryService.deduct(event);
+            List<InventoryDeduct> plans =
+                InventoryUpdatePlanner.planDeductFromCouponUsed(event.products());
+            return inventoryService.deductWithEventPublishing(event, plans);
         } finally {
             unLock(idempotencyKey);
         }

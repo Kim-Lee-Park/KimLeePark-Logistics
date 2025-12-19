@@ -76,13 +76,8 @@ public class InventoryService {
             return InventoryDeductResponse.already();
         }
 
-        List<InventoryDeduct> plans = event.products().stream()
-            .map(item -> new InventoryDeduct(
-                item.productId(),
-                item.hubId(),
-                item.quantity()
-            ))
-            .toList();
+        List<InventoryDeduct> plans = InventoryUpdatePlanner.planDeductFromCouponUsed(
+            event.products());
 
         int updated = inventoryRepository.deductAll(plans);
         if (updated != plans.size()) {
@@ -139,7 +134,7 @@ public class InventoryService {
             return;
         }
 
-        List<InventoryReplenish> plans = event.products().stream()  // items() -> products()
+        List<InventoryReplenish> plans = event.products().stream()
             .map(item -> new InventoryReplenish(item.productId(), item.hubId(), item.quantity()))
             .toList();
 
@@ -173,7 +168,10 @@ public class InventoryService {
     }
 
     @Transactional
-    public InventoryDeductResponseForEvent deductWithEventPublishing(CouponUsedEvent event) {
+    public InventoryDeductResponseForEvent deductWithEventPublishing(
+        CouponUsedEvent event,
+        List<InventoryDeduct> plans
+    ) {
         String idempotencyKey = event.inventoryIdempotencyKey();
 
         // 1. 멱등키 확인
@@ -186,19 +184,10 @@ public class InventoryService {
             return InventoryDeductResponseForEvent.already();
         }
 
-        // 2. 재고 차감 계획 생성
-        List<InventoryDeduct> plans = event.products().stream()
-            .map(item -> new InventoryDeduct(
-                item.productId(),
-                item.hubId(),
-                item.quantity()
-            ))
-            .toList();
-
-        // 3. 재고 차감 시도
+        // 2. 재고 차감 시도
         int updated = inventoryRepository.deductAll(plans);
 
-        // 4-A. 재고 부족 시 → Failed Event 발행 (예외 발생 안함!)
+        // 3-A. 재고 부족 시 → Failed Event 발행 (예외 발생 안함!)
         if (updated != plans.size()) {
             log.warn("재고 부족으로 차감 실패. orderId={}, requested={}, updated={}",
                 event.orderId(), plans.size(), updated);
@@ -214,7 +203,7 @@ public class InventoryService {
             return InventoryDeductResponseForEvent.failed("재고 부족");
         }
 
-        // 4-B. 성공 시 → Success Event 발행
+        // 3-B. 성공 시 → Success Event 발행
         inventoryRepository.idempotencySuccess(idempotencyKey);
 
         InventoryDeductedEvent deductedEvent = InventoryDeductedEvent.of(event);

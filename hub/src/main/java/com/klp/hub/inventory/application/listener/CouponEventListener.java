@@ -1,14 +1,12 @@
 package com.klp.hub.inventory.application.listener;
 
 import com.klp.hub.inventory.application.InventoryFacade;
-import com.klp.hub.inventory.application.InventoryService;
 import com.klp.hub.inventory.application.OutboxService;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
-import com.klp.hub.inventory.infrastructure.kafka.producer.InventoryEventProducer;
 import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponseForEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CouponEventListener {
 
     private final InventoryFacade inventoryFacade;
-    private final InventoryEventProducer inventoryEventProducer;
     private final OutboxService outboxService;
-    private final InventoryService inventoryService;
 
     @KafkaListener(
         topics = KafkaTopicConfig.COUPON_USED_TOPIC,
@@ -49,8 +45,7 @@ public class CouponEventListener {
         try {
             inventoryFacade.confirm(event.orderId());
 
-            InventoryDeductResponseForEvent response = inventoryService.deductWithEventPublishing(
-                event);
+            InventoryDeductResponseForEvent response = inventoryFacade.deduct(event);
 
             log.info("쿠폰 사용 이벤트 처리 완료: orderId={}, status={}",
                 event.orderId(), response.status());
