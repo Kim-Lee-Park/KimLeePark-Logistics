@@ -165,7 +165,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic inventoryDeductedTopic() {
         return TopicBuilder.name(INVENTORY_DEDUCTED_TOPIC)
-            .partitions(3)
+            .partitions(9)
             .replicas(1)
             .build();
     }
