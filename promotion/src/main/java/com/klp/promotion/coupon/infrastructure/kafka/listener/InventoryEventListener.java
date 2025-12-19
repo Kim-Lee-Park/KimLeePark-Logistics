@@ -16,33 +16,36 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = KafkaTopicConfig.INVENTORY_TOPIC,
-    groupId = "promotion-service-group",
-    containerFactory = "couponKafkaListenerContainerFactory"
-)
+
 public class InventoryEventListener {
 
     private final UserCouponService userCouponService;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_TOPIC,
+        groupId = "coupon-service-group",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
     @Transactional
-    public void handleInventoryFailed(@Payload InventoryDeductedFailedEvent event) {
+    public void handleInventoryDeductedFailed(@Payload InventoryDeductedFailedEvent event) {
         log.info("재고 차감 실패 이벤트 수신: orderId={}", event.orderId());
 
         userCouponService.cancelReserve(event.orderId());
         // 선점 해제는 해서 여기다가 쿠폰 복구 기능 넣으면 될거 같습니다.
     }
 
-    @KafkaHandler
-    @Transactional
-    public void handleInventoryDeducted(@Payload InventoryDeductedEvent event) {
-        log.info("재고 차감 완료");
-    }
-
-
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_DLT,
+        groupId = "coupon-service-group-dlt",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
+    public void handleInventoryDeductedFailedDlt(@Payload InventoryDeductedFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: InventoryDeductedFailedEvent");
+        log.error("⚠️ 3회 재시도 후에도 실패했습니다!");
+        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("========================================");
+        log.error("orderId={}, userId={}, amount={}",
+            event.orderId(), event.userId(), event.finalOrderPrice());
     }
 }

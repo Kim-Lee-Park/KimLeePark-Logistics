@@ -25,32 +25,26 @@ public record InventoryReplenishedEvent(
 
     }
 
-//    public static InventoryReplenishedEvent of(UUID orderId, List<ReplenishedItem> items) {
-//        return new InventoryReplenishedEvent(orderId, items, LocalDateTime.now());
-//    }
+    public static InventoryReplenishedEvent of(CouponCancelledEvent event) {
+        List<ProductInfo> products = event.products().stream()
+            .map(product -> new ProductInfo(
+                product.productId(),
+                product.hubId(),
+                product.quantity()
+            ))
+            .toList();
 
-    public static InventoryReplenishedEvent of(
-        UUID paymentId,
-        UUID orderId,
-        Long userId,
-        UUID userCouponId,
-        String inventoryIdempotencyKey,
-        String deliveryIdempotencyKey,
-        String reason,
-        List<ProductInfo> products,
-        LocalDateTime cancelledAt
-    ) {
         return new InventoryReplenishedEvent(
-            paymentId,
-            orderId,
-            userId,
-            userCouponId,
-            inventoryIdempotencyKey,
-            deliveryIdempotencyKey,
-            reason,
+            event.paymentId(),
+            event.orderId(),
+            event.userId(),
+            event.userCouponId(),
+            event.inventoryIdempotencyKey(),
+            event.deliveryIdempotencyKey(),
+            event.reason(),
             products,
-            cancelledAt,
-            LocalDateTime.now()  // occurredAt은 현재 시각
+            event.cancelledAt(),
+            LocalDateTime.now()
         );
     }
 }

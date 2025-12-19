@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.application;
 
 import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
+import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
@@ -28,11 +29,36 @@ public final class InventoryUpdatePlanner {
             .thenComparing(orderKey -> orderKey.hubId);
 
     public static List<InventoryDeduct> planDeduct(List<OrderCreatedEvent.OrderItem> items) {
-        Map<OrderKey, Integer> aggregatedQty = aggregate(
+        return planDeduct(
             items,
             OrderCreatedEvent.OrderItem::productId,
             OrderCreatedEvent.OrderItem::hubId,
             OrderCreatedEvent.OrderItem::quantity
+        );
+    }
+
+    public static List<InventoryDeduct> planDeductFromCouponUsed(
+        List<CouponUsedEvent.OrderItem> items
+    ) {
+        return planDeduct(
+            items,
+            CouponUsedEvent.OrderItem::productId,
+            CouponUsedEvent.OrderItem::hubId,
+            CouponUsedEvent.OrderItem::quantity
+        );
+    }
+
+    private static <T> List<InventoryDeduct> planDeduct(
+        List<T> items,
+        Function<T, UUID> productId,
+        Function<T, UUID> hubId,
+        Function<T, Integer> quantity
+    ) {
+        Map<OrderKey, Integer> aggregatedQty = aggregate(
+            items,
+            productId,
+            hubId,
+            quantity
         );
 
         return aggregatedQty.entrySet().stream()

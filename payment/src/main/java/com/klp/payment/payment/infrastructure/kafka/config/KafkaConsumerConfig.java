@@ -26,13 +26,14 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.util.backoff.ExponentialBackOff;
 
 @Slf4j
 @EnableKafka
@@ -97,9 +98,10 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}", record.topic(),
-                    exception.getMessage());
-                return new TopicPartition(KafkaTopicConfig.PAYMENT_DLT, record.partition());
+                String dltTopic = record.topic() + ".payment.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
             });
     }
 
@@ -107,18 +109,23 @@ public class KafkaConsumerConfig {
     public DefaultErrorHandler paymentErrorHandler(
         @Qualifier("paymentDeadLetterPublishingRecoverer") DeadLetterPublishingRecoverer recoverer
     ) {
-        FixedBackOff backOff = new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRY_ATTEMPTS);
+        ExponentialBackOff backOff = new ExponentialBackOff(
+            1000L,
+            2.0
+        );
+        backOff.setMaxInterval(4000L);
+        backOff.setMaxElapsedTime(10000L);
+
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
 
-        // ErrorHandlingDeserializer가 실패하면 DeserializationException이 발생할 수 있음
         errorHandler.addNotRetryableExceptions(
             DeserializationException.class,
             MessageConversionException.class
         );
 
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
-            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}", record.topic(), deliveryAttempt,
-                ex.getMessage());
+            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
+                record.topic(), deliveryAttempt, ex.getMessage());
         });
 
         return errorHandler;
@@ -135,6 +142,7 @@ public class KafkaConsumerConfig {
         factory.setConcurrency(3);
         factory.setCommonErrorHandler(errorHandler);
 
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setObservationEnabled(true);
 
         return factory;

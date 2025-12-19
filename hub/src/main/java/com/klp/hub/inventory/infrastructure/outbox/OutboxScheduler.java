@@ -51,15 +51,17 @@ public class OutboxScheduler {
             try {
                 Object event = deserializeEvent(outbox.getEventType(), outbox.getPayload());
 
+                String topic = getTopicByEventType(outbox.getEventType());
+
                 kafkaTemplate.send(
-                    KafkaTopicConfig.INVENTORY_EVENTS,
+                    topic,
                     outbox.getOrderId().toString(),
                     event
                 ).get();
 
                 outboxRepository.markAsPublished(outbox.getId());
-                log.info("Outbox 이벤트 발행 성공: outboxId={}, eventType={}",
-                    outbox.getId(), outbox.getEventType());
+                log.info("Outbox 이벤트 발행 성공: outboxId={}, eventType={}, topic={}",
+                    outbox.getId(), outbox.getEventType(), topic);
 
             } catch (Exception e) {
                 log.error("Outbox 이벤트 발행 실패: outboxId={}, error={}",
@@ -81,6 +83,16 @@ public class OutboxScheduler {
         log.info("발행 완료된 Outbox 이벤트 정리 완료");
     }
 
+    private String getTopicByEventType(String eventType) {
+        return switch (eventType) {
+            case DEDUCT_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_DEDUCTED_TOPIC;
+            case DEDUCT_FAILED_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_TOPIC;
+            case REPLENISH_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_REPLENISHED_TOPIC;
+            default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
+        };
+    }
+
+ 
     private Object deserializeEvent(String eventType, String payload) throws Exception {
         return switch (eventType) {
             case DEDUCT_EVENT_TYPE -> objectMapper.readValue(payload, InventoryDeductedEvent.class);

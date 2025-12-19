@@ -30,13 +30,15 @@ public class PaymentEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.PAYMENT_TOPIC, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.PAYMENT_APPROVED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("결제 승인 이벤트 발행 성공: orderId={}, paymentId={}", event.orderId(), event.paymentId());
+                log.info("결제 승인 이벤트 발행 성공: orderId={}, paymentId={}", event.orderId(),
+                    event.paymentId());
             } else {
-                log.error("결제 승인 이벤트 발행 실패: orderId={}, paymentId={}, error={}", event.orderId(), event.paymentId(),
+                log.error("결제 승인 이벤트 발행 실패: orderId={}, paymentId={}, error={}", event.orderId(),
+                    event.paymentId(),
                     ex.getMessage());
             }
         });
@@ -49,13 +51,15 @@ public class PaymentEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.PAYMENT_TOPIC, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.PAYMENT_CANCELLED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("결제 취소 이벤트 발행 성공: orderId={}, paymentId={}", event.orderId(), event.paymentId());
+                log.info("결제 취소 이벤트 발행 성공: orderId={}, paymentId={}", event.orderId(),
+                    event.paymentId());
             } else {
-                log.error("결제 취소 이벤트 발행 실패: orderId={}, paymentId={}, error={}", event.orderId(), event.paymentId(),
+                log.error("결제 취소 이벤트 발행 실패: orderId={}, paymentId={}, error={}", event.orderId(),
+                    event.paymentId(),
                     ex.getMessage());
             }
         });
@@ -68,13 +72,14 @@ public class PaymentEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.PAYMENT_TOPIC, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.PAYMENT_FAILED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
                 log.info("결제 실패 이벤트 발행 성공: orderId={}, reason={}", event.orderId(), event.reason());
             } else {
-                log.error("결제 실패 이벤트 발행 실패: orderId={}, error={}", event.orderId(), ex.getMessage());
+                log.error("결제 실패 이벤트 발행 실패: orderId={}, error={}", event.orderId(),
+                    ex.getMessage());
             }
         });
     }

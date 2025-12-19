@@ -5,6 +5,7 @@ import com.klp.hub.inventory.domain.event.OrderCancelledEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.event.OrderFailedEvent;
 import com.klp.hub.inventory.domain.event.WhichRollback;
+import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,16 +23,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = "order.topic",
-    groupId = "inventory-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
-)
+
 public class OrderEventListener {
 
     private final InventoryFacade inventoryFacade;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_FAILED_TOPIC,
+        groupId = "inventory-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleOrderFailed(
         @Payload OrderFailedEvent event,
@@ -66,41 +67,16 @@ public class OrderEventListener {
         }
     }
 
-    @KafkaHandler
-    @Transactional
-    public void handleOrderCreated(
-        @Payload OrderCreatedEvent event
-    ) {
-        log.info("주문이 생성되었으니 재고 차감 준비");
-    }
-
-    @KafkaHandler
-    @Transactional
-    public void handleOrderCancelled(
-        @Payload OrderCancelledEvent event
-    ) {
-        log.info("주문이 취소되었으니 재고 복구 준비");
-    }
-
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 Order 이벤트 타입 수신: {}", event.getClass().getSimpleName());
-    }
-
-    @DltHandler
-    public void handleOrderEventDlt(
-        @Payload Object event,
-        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage
-    ) {
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_FAILED_DLT,
+        groupId = "inventory-service-group-dlt",
+        containerFactory = "inventoryKafkaListenerContainerFactory"
+    )
+    public void handleOrderFailedDlt(@Payload OrderFailedEvent event) {
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Order Event");
-        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("⚠️ DLT 도착: OrderFailed");
+        log.error("⚠️ 주문 실패 처리 실패 - 수동 처리 필요!");
         log.error("========================================");
-        log.error("Topic: {}", topic);
-        log.error("EventType: {}", event.getClass().getSimpleName());
-        log.error("Error: {}", exceptionMessage);
-        log.error("Event Details: {}", event);
-
+        log.error("orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
     }
 }

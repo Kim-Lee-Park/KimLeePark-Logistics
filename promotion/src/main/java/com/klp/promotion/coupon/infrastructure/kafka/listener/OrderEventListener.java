@@ -18,16 +18,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = KafkaTopicConfig.ORDER_TOPIC,
-    groupId = "promotion-service-group",
-    containerFactory = "couponKafkaListenerContainerFactory"
-)
+
 public class OrderEventListener {
 
     private final UserCouponFacade userCouponFacade;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_FAILED_DLT,
+        groupId = "coupon-service-group",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleOrderFailed(@Payload OrderFailedEvent event) {
         log.info("=== 주문 실패 이벤트 수신: orderId={}, userCouponId={}, rollbackType={} ===",
@@ -52,21 +52,16 @@ public class OrderEventListener {
         }
     }
 
-    @KafkaHandler
-    @Transactional
-    public void handleOrderCreated(@Payload OrderCreatedEvent event) {
-        log.info("주문 생성 쿠폰 사용 준비 - orderId: {}", event.orderId());
-    }
-
-    @KafkaHandler
-    @Transactional
-    public void handleOrderCancelled(@Payload OrderCancelledEvent event) {
-        log.info("주문 취소 쿠폰 복구 준비 - orderId: {}", event.orderId());
-    }
-
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.debug("Promotion에서 처리하지 않는 Order 이벤트 (무시): {}",
-            event.getClass().getSimpleName());
+    @KafkaListener(
+        topics = KafkaTopicConfig.ORDER_FAILED_DLT,
+        groupId = "coupon-service-group-dlt",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
+    public void handleOrderFailedDlt(@Payload OrderFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: OrderFailed");
+        log.error("⚠️ 주문 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, userCouponId={}", event.orderId(), event.userCouponId());
     }
 }

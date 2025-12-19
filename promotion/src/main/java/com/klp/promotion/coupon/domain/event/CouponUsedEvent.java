@@ -13,26 +13,20 @@ public record CouponUsedEvent(
     String email,
     String username,
     String comment,
-
     int originalPrice,
     int couponDiscountPrice,
     int gradeDiscountPrice,
     int finalOrderPrice,
-
     UUID addressId,
     UUID userAddressHubId,
     String address,
     BigDecimal deliveryLatitude,
     BigDecimal deliveryLongitude,
-
     List<OrderItem> products,
-
     String inventoryIdempotencyKey,
     String deliveryIdempotencyKey,
-
     LocalDateTime createdAt,
     LocalDateTime occurredAt,
-
     UUID paymentId,
     int paidAmount,
     String paymentMethod,
@@ -50,5 +44,46 @@ public record CouponUsedEvent(
     ) {
 
     }
-}
 
+    public static CouponUsedEvent from(PaymentApprovedEvent event) {
+        List<OrderItem> orderItems = event.products().stream()
+            .map(product -> new OrderItem(
+                product.orderItemId(),
+                product.productId(),
+                product.productName(),
+                product.hubId(),
+                product.quantity(),
+                product.unitPrice(),
+                product.totalPrice()
+            ))
+            .toList();
+
+        return new CouponUsedEvent(
+            event.orderId(),
+            event.userId(),
+            event.supplierId(),
+            event.userCouponId(),
+            event.email(),
+            event.username(),
+            event.comment(),
+            event.originalPrice(),
+            event.couponDiscountPrice(),
+            event.gradeDiscountPrice(),
+            event.finalOrderPrice(),
+            event.addressId(),
+            event.userAddressHubId(),
+            event.address(),
+            event.deliveryLatitude(),
+            event.deliveryLongitude(),
+            orderItems,
+            event.inventoryIdempotencyKey(),
+            event.deliveryIdempotencyKey(),
+            event.createdAt(),
+            event.occurredAt(),
+            event.paymentId(),
+            event.paidAmount(),
+            event.paymentMethod(),
+            event.paidAt()
+        );
+    }
+}

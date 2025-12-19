@@ -2,12 +2,10 @@ package com.klp.payment.payment.application.listener;
 
 import com.klp.payment.payment.application.PaymentService;
 import com.klp.payment.payment.domain.entity.Payment;
-import com.klp.payment.payment.domain.event.InventoryDeductedEvent;
 import com.klp.payment.payment.domain.event.InventoryDeductedFailedEvent;
 import com.klp.payment.payment.infrastructure.kafka.config.KafkaTopicConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -16,16 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = KafkaTopicConfig.INVENTORY_TOPIC,
-    groupId = "payment-service-group",
-    containerFactory = "paymentKafkaListenerContainerFactory"
-)
 public class InventoryEventListener {
 
     private final PaymentService paymentService;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_TOPIC,
+        groupId = "payment-service-group",
+        containerFactory = "paymentKafkaListenerContainerFactory"
+    )
     @Transactional
     public void handleInventoryFailed(@Payload InventoryDeductedFailedEvent event) {
         log.info("재고 차감 실패 이벤트 수신: orderId={}", event.orderId());
@@ -36,15 +33,18 @@ public class InventoryEventListener {
             payment.getPaymentId(), payment.getReason());
     }
 
-    @KafkaHandler
-    @Transactional
-    public void handleInventoryDeducted(@Payload InventoryDeductedEvent event) {
-        log.info("재고 차감  이벤트 수신: orderId={}", event.orderId());
-    }
-
-
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    @KafkaListener(
+        topics = KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_DLT,
+        groupId = "payment-service-group-dlt",
+        containerFactory = "paymentKafkaListenerContainerFactory"
+    )
+    public void handleInventoryDeductedFailedDlt(@Payload InventoryDeductedFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: InventoryDeductedFailedEvent");
+        log.error("⚠️ 3회 재시도 후에도 실패했습니다!");
+        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("========================================");
+        log.error("orderId={}, userId={}, amount={}",
+            event.orderId(), event.userId(), event.finalOrderPrice());
     }
 }
