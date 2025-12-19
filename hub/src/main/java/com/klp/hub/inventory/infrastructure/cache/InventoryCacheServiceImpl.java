@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -120,15 +121,15 @@ public class InventoryCacheServiceImpl implements InventoryCacheService {
     }
 
     @Override
-    public void setInventory(UUID productId, UUID hubId, int quantity, long ttlMinutes) {
+    public void setInventory(UUID productId, UUID hubId, int quantity, long ttlSeconds) {
         try {
             redisTemplate.opsForValue().set(
                 buildKey(productId, hubId),
                 String.valueOf(quantity),
-                Duration.ofMinutes(ttlMinutes)
+                Duration.ofSeconds(ttlSeconds)
             );
-            log.info("Redis 재고 설정: productId={}, hubId={}, qty={}, ttl={}min",
-                productId, hubId, quantity, ttlMinutes);
+            log.info("Redis 재고 설정: productId={}, hubId={}, qty={}, ttl={}sec",
+                productId, hubId, quantity, ttlSeconds);
         } catch (Exception e) {
             log.error("Redis setInventory 실패: {}", e.getMessage());
             throw new BusinessException(InventoryErrorCode.CACHE_SET_FAILED);
@@ -142,6 +143,16 @@ public class InventoryCacheServiceImpl implements InventoryCacheService {
             log.info("Redis 캐시 삭제: productId={}, hubId={}", productId, hubId);
         } catch (Exception e) {
             log.warn("Redis deleteCache 실패: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public Long getTtl(UUID productId, UUID hubId) {
+        try {
+            return redisTemplate.getExpire(buildKey(productId, hubId), TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.warn("Redis getTtl 실패: {}", e.getMessage());
+            return null;
         }
     }
 }

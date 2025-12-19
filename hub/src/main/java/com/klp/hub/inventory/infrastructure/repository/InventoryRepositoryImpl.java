@@ -108,4 +108,9 @@ public class InventoryRepositoryImpl implements InventoryRepository {
         int[] updateCount = jdbcTemplate.batchUpdate(sql, batchArgs);
         return IntStream.of(updateCount).sum();
     }
+
+    @Override
+    public Optional<Object> findByProductIdAndHubId(UUID productId, UUID hubId) {
+        return inventoryJpaRepository.findByProductIdAndHubId(productId, hubId);
+    }
 }

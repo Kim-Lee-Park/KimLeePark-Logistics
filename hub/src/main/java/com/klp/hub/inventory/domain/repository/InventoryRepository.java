@@ -23,4 +23,6 @@ public interface InventoryRepository {
     int deductAll(List<InventoryDeduct> inventoryDeducts);
 
     int replenishAll(List<InventoryReplenish> inventoryReplenishes);
+
+    Optional<Inventory> findByProductIdAndHubId(UUID productId, UUID hubId);
 }

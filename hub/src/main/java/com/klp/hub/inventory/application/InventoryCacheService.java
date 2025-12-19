@@ -32,11 +32,16 @@ public interface InventoryCacheService {
     /**
      * 캐시 재고 설정
      */
-    void setInventory(UUID productId, UUID hubId, int quantity, long ttlMinutes);
+    void setInventory(UUID productId, UUID hubId, int quantity, long ttlSeconds);
 
     /**
      * 캐시 삭제
      */
     void deleteCache(UUID productId, UUID hubId);
+
+    /**
+     * 캐시 TTL 획득
+     */
+    Long getTtl(UUID productId, UUID hubId);
 
 }
