@@ -3,12 +3,11 @@ package com.klp.promotion.coupon.infrastructure.kafka.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedEvent;
 import com.klp.promotion.coupon.domain.event.InventoryDeductedFailedEvent;
-import com.klp.promotion.coupon.domain.event.OrderCancelledEvent;
-import com.klp.promotion.coupon.domain.event.OrderCreatedEvent;
 import com.klp.promotion.coupon.domain.event.OrderFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
 import com.klp.promotion.coupon.domain.event.PaymentFailedEvent;
+import com.klp.promotion.global.exception.BusinessException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -101,7 +100,8 @@ public class KafkaConsumerConfig {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
         errorHandler.addNotRetryableExceptions(
             DeserializationException.class,
-            MessageConversionException.class
+            MessageConversionException.class,
+            BusinessException.class
         );
 
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
