@@ -38,6 +38,7 @@ public class InventoryFacade {
      * 재고 선점
      */
     public InventoryReservationResponse reserve(InventoryReservationCommand command) {
+        log.info("재고 선점 시작. orderId={}, itemCount={}", command.orderId(), command.items().size());
 
         if (inventoryReservationService.existsByIdempotencyKey(command.idempotencyKey())) {
             return InventoryReservationResponse.already();
@@ -50,6 +51,10 @@ public class InventoryFacade {
 
         List<ReservationItem> hotItems = partitioned.get(true);
         List<ReservationItem> normalItems = partitioned.get(false);
+
+        log.info("아이템 분류 완료. orderId={}, hotItems={}, normalItems={}",
+            command.orderId(), hotItems.size(), normalItems.size());
+
         List<ReservationItem> reservedItems = new ArrayList<>();
         List<ReservationItem> fallbackItems = new ArrayList<>();
 
@@ -70,6 +75,7 @@ public class InventoryFacade {
                 reserveFromDatabase(command.orderId(), command.idempotencyKey(), dbItems);
             }
 
+            log.info("재고 선점 완료. orderId={}", command.orderId());
             return InventoryReservationResponse.success(command.orderId());
         } catch (Exception e) {
             rollbackCacheReservations(reservedItems);
@@ -95,10 +101,13 @@ public class InventoryFacade {
             }
         }
 
+        log.info("Redis 재고 선점 완료. reserved={}, fallback={}", reserved.size(), fallback.size());
         return Map.of(true, reserved, false, fallback);
     }
 
     private void reserveFromDatabase(UUID orderId, String idempotencyKey, List<ReservationItem> items) {
+        log.info("DB 재고 선점 시작. orderId={}, itemCount={}", orderId, items.size());
+
         String lockKey = "inventory:reserve:" + orderId.toString();
 
         lock(lockKey);
@@ -107,9 +116,13 @@ public class InventoryFacade {
         } finally {
             unLock(lockKey);
         }
+
+        log.info("DB 재고 선점 완료. orderId={}", orderId);
     }
 
     private void rollbackCacheReservations(List<ReservationItem> items) {
+        log.warn("Redis 재고 선점 롤백. itemCount={}", items.size());
+
         for (ReservationItem item : items) {
             cacheService.restoreInventory(item.productId(), item.hubId(), item.quantity());
         }
