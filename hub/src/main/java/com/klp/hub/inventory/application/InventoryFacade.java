@@ -10,6 +10,7 @@ import com.klp.hub.inventory.application.dto.InventoryReservationCommand.Reserva
 import com.klp.hub.inventory.domain.InventoryReservation;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDbSyncEvent;
 import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
 import com.klp.hub.inventory.infrastructure.lock.DistributedLockManager;
@@ -34,6 +35,7 @@ public class InventoryFacade {
     private final InventoryReservationService inventoryReservationService;
     private final InventoryCacheService cacheService;
     private final DistributedLockManager lockManager;
+    private final OutboxService outboxService;
 
     /**
      * 재고 선점
@@ -63,7 +65,9 @@ public class InventoryFacade {
             // Hot Product 처리 (락 없이)
             // Redis에서 처리한 아이템과 처리하지 못한 아이템을 구분해서 반환
             if (!hotItems.isEmpty()) {
-                Map<Boolean, List<ReservationItem>> cacheResult = reserveFromCache(hotItems);
+                Map<Boolean, List<ReservationItem>> cacheResult = reserveFromCache(
+                    command.orderId(), command.idempotencyKey(), hotItems
+                );
                 reservedItems = cacheResult.get(true);
                 fallbackItems = cacheResult.get(false);
             }
@@ -84,7 +88,9 @@ public class InventoryFacade {
         }
     }
 
-    private Map<Boolean, List<ReservationItem>> reserveFromCache(List<ReservationItem> items) {
+    private Map<Boolean, List<ReservationItem>> reserveFromCache(
+        UUID orderId, String idempotencyKey, List<ReservationItem> items
+    ) {
         List<ReservationItem> reserved = new ArrayList<>();
         List<ReservationItem> fallback = new ArrayList<>();
 
@@ -98,8 +104,18 @@ public class InventoryFacade {
                 throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
             } else {
                 reserved.add(item);
-                // 선점 레코드 저장 + DB 동기화 이벤트 발행?
             }
+        }
+
+        if (!reserved.isEmpty()) {
+            List<InventoryDbSyncEvent.SyncItem> syncItems = reserved.stream()
+                .map(item -> new InventoryDbSyncEvent.SyncItem(
+                    item.productId(), item.hubId(), item.quantity()
+                ))
+                .toList();
+
+            InventoryDbSyncEvent syncEvent = InventoryDbSyncEvent.of(orderId, syncItems, idempotencyKey);
+            outboxService.saveInventoryDbSyncEvent(syncEvent);
         }
 
         log.info("Redis 재고 선점 완료. reserved={}, fallback={}", reserved.size(), fallback.size());

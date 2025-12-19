@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.infrastructure.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.hub.inventory.domain.event.InventoryDbSyncEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
 import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
@@ -30,6 +31,7 @@ public class OutboxScheduler {
     private static final String DEDUCT_EVENT_TYPE = "InventoryDeductedEvent";
     private static final String DEDUCT_FAILED_EVENT_TYPE = "InventoryDeductedFailedEvent";
     private static final String REPLENISH_EVENT_TYPE = "InventoryReplenishedEvent";
+    private static final String DB_SYNC_EVENT_TYPE = "InventoryDbSyncEvent";
 
     public OutboxScheduler(
         InventoryOutboxRepository outboxRepository,
@@ -88,18 +90,18 @@ public class OutboxScheduler {
             case DEDUCT_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_DEDUCTED_TOPIC;
             case DEDUCT_FAILED_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_TOPIC;
             case REPLENISH_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_REPLENISHED_TOPIC;
+            case DB_SYNC_EVENT_TYPE -> KafkaTopicConfig.INVENTORY_DB_SYNC_TOPIC;
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         };
     }
 
- 
+
     private Object deserializeEvent(String eventType, String payload) throws Exception {
         return switch (eventType) {
             case DEDUCT_EVENT_TYPE -> objectMapper.readValue(payload, InventoryDeductedEvent.class);
-            case DEDUCT_FAILED_EVENT_TYPE ->
-                objectMapper.readValue(payload, InventoryDeductedFailedEvent.class);
-            case REPLENISH_EVENT_TYPE ->
-                objectMapper.readValue(payload, InventoryReplenishedEvent.class);
+            case DEDUCT_FAILED_EVENT_TYPE -> objectMapper.readValue(payload, InventoryDeductedFailedEvent.class);
+            case REPLENISH_EVENT_TYPE -> objectMapper.readValue(payload, InventoryReplenishedEvent.class);
+            case DB_SYNC_EVENT_TYPE -> objectMapper.readValue(payload, InventoryDbSyncEvent.class);
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         };
     }
