@@ -32,11 +32,11 @@ public class InventoryCacheServiceImpl implements InventoryCacheService {
     @PostConstruct
     public void init() {
         reserveScript = RedisScript.of(
-            new ClassPathResource("lua/reserve_inventory.lua"),
+            new ClassPathResource("lua/reserve.lua"),
             List.class
         );
         restoreScript = RedisScript.of(
-            new ClassPathResource("lua/restore_stock.lua"),
+            new ClassPathResource("lua/restore.lua"),
             List.class
         );
     }

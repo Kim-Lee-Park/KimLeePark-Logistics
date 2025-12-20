@@ -110,7 +110,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     }
 
     @Override
-    public Optional<Object> findByProductIdAndHubId(UUID productId, UUID hubId) {
+    public Optional<Inventory> findByProductIdAndHubId(UUID productId, UUID hubId) {
         return inventoryJpaRepository.findByProductIdAndHubId(productId, hubId);
     }
 }
