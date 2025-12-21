@@ -26,6 +26,7 @@ import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
 import com.klp.order.infrastructure.event.event.OrderFailedEvent;
 import com.klp.order.infrastructure.event.event.WhichRollback;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -203,7 +204,7 @@ public class OrderFacade {
     // 주문 취소 후 재고 증가 이벤트 발행
     // 이 또한 장애 발생 시 트랜잭션 롤백으로 메시지 소실 방지
     @Transactional
-    public Order cancelOrder(CancelOrderCommand command) {
+    public void cancelOrder(CancelOrderCommand command) {
         log.info("=== 주문 취소 시작: orderId={} ===", command.orderId());
 
         try {
@@ -230,7 +231,9 @@ public class OrderFacade {
                 order,
                 order.getUserCouponId(),
                 InventoryIdempotencyKey,
-                DeliveryIdempotencyKey
+                DeliveryIdempotencyKey,
+                command.cancelReason(),
+                LocalDateTime.now()
             );
 
             // Outbox 저장 실패 시 예외 발생 → 전체 롤백
@@ -238,7 +241,6 @@ public class OrderFacade {
                 "ORDER_CANCELLED", event);
 
             log.info("=== 주문 취소 완료: orderId={} ===", command.orderId());
-            return order;
 
         } catch (Exception e) {
             log.error("=== 주문 취소 실패 - 전체 롤백: orderId={}, error={} ===",

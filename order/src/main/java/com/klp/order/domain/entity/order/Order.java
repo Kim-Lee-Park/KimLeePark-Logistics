@@ -17,7 +17,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -78,9 +77,6 @@ public class Order extends BaseEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
-
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private OrderCancellation cancellation;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderOutboundRequest> outboundRequests = new ArrayList<>();
@@ -176,8 +172,7 @@ public class Order extends BaseEntity {
     ) {
         checkCanCancel();
         this.orderStatus = OrderStatus.CANCELLED;
-        this.cancellation = OrderCancellation.create(this, cancelReason, cancelledBy, cancelType);
-        return this.cancellation;
+        return OrderCancellation.create(this.orderId, cancelReason, cancelledBy, cancelType);
     }
 
     public void updateDiscountPrice(int couponDiscountPrice, int gradeDiscountPrice,
