@@ -63,8 +63,8 @@ public class KafkaConsumerConfig {
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
-        configProps.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1024);
-        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 500);
+        configProps.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 16384);
+        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 1000);
 
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
