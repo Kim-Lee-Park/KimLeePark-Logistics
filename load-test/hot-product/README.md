@@ -39,7 +39,7 @@ k6 run --out influxdb=http://localhost:8086/k6 reserve-load.js
 일반 상품 부하 테스트 (30 VUs, 30초) - DB 기반
 
 ```bash
-k6 run --out influxdb=http://localhost:8086/k6 load-test/hot-product/reserve-normal-load.js
+k6 run --out influxdb=http://localhost:8086/k6 reserve-normal-load.js
 ```
 
 ### 5. reserve-spike.js
@@ -47,7 +47,7 @@ k6 run --out influxdb=http://localhost:8086/k6 load-test/hot-product/reserve-nor
 스파이크 테스트 (0 → 500 VUs)
 
 ```bash
-k6 run --out influxdb=http://localhost:8086/k6 load-test/hot-product/reserve-spike.js
+k6 run --out influxdb=http://localhost:8086/k6 reserve-spike.js
 ```
 
 ## 환경변수
