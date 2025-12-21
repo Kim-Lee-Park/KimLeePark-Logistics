@@ -4,7 +4,6 @@ import com.klp.promotion.coupon.application.facade.UserCouponFacade;
 import com.klp.promotion.coupon.application.service.CouponOutboxEventService;
 import com.klp.promotion.coupon.application.service.UserCouponService;
 import com.klp.promotion.coupon.domain.entity.UserCoupon;
-import com.klp.promotion.coupon.domain.enums.UserCouponStatus;
 import com.klp.promotion.coupon.domain.event.CouponRestoredEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
@@ -12,6 +11,7 @@ import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
 import com.klp.promotion.coupon.domain.event.PaymentFailedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
+import com.klp.promotion.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,6 +20,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -63,19 +64,42 @@ public class PaymentEventListener {
                 acknowledgment.acknowledge();
             }
 
-        } catch (Exception e) {
-            log.error("결제 승인 처리 실패: orderId={}, cause={}", event.orderId(), e.getMessage(), e);
+        } catch (BusinessException e) {
+            log.warn("쿠폰 사용 비즈니스 검증 실패: orderId={}, reason={}",
+                event.orderId(), e.getMessage());
 
-            // 보상 트랜잭션 및 실패 이벤트 처리
-            rollbackCouponUsage(event);
-            couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
+            publishFailedEvent(event, e.getMessage());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+
+        } catch (Exception e) {
+
+            log.error("결제 승인 처리 중 시스템 오류: orderId={}, cause={}",
+                event.orderId(), e.getMessage(), e);
 
             throw e;
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishFailedEvent(PaymentApprovedEvent event, String reason) {
+        try {
+            couponOutboxEventService.failEvent(
+                event.orderId(),
+                CouponUsedFailedEvent.from(event)
+            );
+            log.info("쿠폰 사용 실패 이벤트 발행 완료: orderId={}, reason={}",
+                event.orderId(), reason);
+        } catch (Exception ex) {
+            log.error("쿠폰 사용 실패 이벤트 발행 실패: orderId={}, error={}",
+                event.orderId(), ex.getMessage(), ex);
+        }
+    }
+
     @KafkaListener(
-        topics = KafkaTopicConfig.PAYMENT_CANCELLED_DLT,
+        topics = KafkaTopicConfig.PAYMENT_CANCELLED_TOPIC,
         groupId = "coupon-service-group",
         containerFactory = "couponKafkaListenerContainerFactory"
     )
@@ -86,13 +110,14 @@ public class PaymentEventListener {
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment
     ) {
-        log.info("=== 결제 취소 수신: orderId={}, userCouponId={} ===", event.orderId(),
-            event.userCouponId());
+        log.info("=== 결제 취소 수신: orderId={}, userCouponId={} ===",
+            event.orderId(), event.userCouponId());
 
         try {
             if (event.userCouponId() != null) {
                 userCouponFacade.couponRestored(event.userCouponId());
             }
+
             couponOutboxEventService.cancelEvent(
                 event.orderId(),
                 CouponRestoredEvent.from(event)
@@ -104,10 +129,33 @@ public class PaymentEventListener {
                 acknowledgment.acknowledge();
             }
 
+        } catch (BusinessException e) {
+            log.warn("쿠폰 복구 비즈니스 검증 실패: orderId={}, reason={}",
+                event.orderId(), e.getMessage());
+
+            publishRestoredFailedEvent(event, e.getMessage());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
+
         } catch (Exception e) {
-            log.error("결제 취소 처리 실패: orderId={}, cause={}", event.orderId(), e.getMessage(), e);
-            rollbackCouponRestoration(event);
+            log.error("결제 취소 처리 중 시스템 오류: orderId={}, cause={}",
+                event.orderId(), e.getMessage(), e);
             throw e;
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishRestoredFailedEvent(PaymentCancelledEvent event, String reason) {
+        try {
+            // 쿠폰 복구가 실패했다고 해서 결제 취소랑 주문 취소를 롤백을 해야하는가?
+            // 아니면 그냥 수동으로 처리해야하는가에 대해 고민을 하게 되네요.
+            log.warn("쿠폰 복구 실패 - 별도 처리 필요: orderId={}, reason={}",
+                event.orderId(), reason);
+        } catch (Exception ex) {
+            log.error("쿠폰 복구 실패 이벤트 발행 실패: orderId={}, error={}",
+                event.orderId(), ex.getMessage(), ex);
         }
     }
 
@@ -123,10 +171,15 @@ public class PaymentEventListener {
             return;
         }
 
-        userCouponService.cancelReserve(event.orderId());
-        log.info("쿠폰 선점 취소 완료");
+        try {
+            userCouponService.cancelReserve(event.userCouponId());
+            log.info("쿠폰 선점 취소 완료: userCouponId={}", event.userCouponId());
+        } catch (Exception e) {
+            log.error("쿠폰 선점 취소 실패: userCouponId={}, error={}",
+                event.userCouponId(), e.getMessage(), e);
+            // 이 경우도 재시도가 필요하면 throw, 아니면 로그만
+        }
     }
-
 
     @KafkaListener(
         topics = KafkaTopicConfig.PAYMENT_APPROVED_DLT,
@@ -154,7 +207,6 @@ public class PaymentEventListener {
         log.error("orderId={}", event.orderId());
     }
 
-
     @KafkaListener(
         topics = KafkaTopicConfig.PAYMENT_FAILED_DLT,
         groupId = "coupon-service-group-dlt",
@@ -166,39 +218,5 @@ public class PaymentEventListener {
         log.error("⚠️ 결제 실패 처리 실패 - 수동 처리 필요!");
         log.error("========================================");
         log.error("orderId={}", event.orderId());
-    }
-
-    private void rollbackCouponUsage(PaymentApprovedEvent event) {
-        if (event.userCouponId() == null) {
-            return;
-        }
-
-        try {
-            UserCoupon userCoupon = userCouponService.findByUserCouponId(event.userCouponId());
-            if (userCoupon.getStatus() == UserCouponStatus.USED) {
-                userCouponFacade.couponRestored(event.userCouponId());
-                log.info("롤백 완료: 쿠폰 상태 원복 (USED -> READY), userCouponId={}", event.userCouponId());
-            }
-        } catch (Exception ex) {
-            log.error("롤백 실패: userCouponId={}", event.userCouponId(), ex);
-        }
-    }
-
-    private void rollbackCouponRestoration(PaymentCancelledEvent event) {
-        if (event.userCouponId() == null) {
-            return;
-        }
-
-        try {
-            UserCoupon userCoupon = userCouponService.findByUserCouponId(event.userCouponId());
-            // READY 상태라면 다시 선점(RESERVE) 상태로 되돌림
-            if (userCoupon.getStatus() == UserCouponStatus.READY) {
-                userCoupon.reserve();
-                log.info("롤백 완료: 쿠폰 재선점 (READY -> RESERVED), userCouponId={}",
-                    event.userCouponId());
-            }
-        } catch (Exception ex) {
-            log.error("롤백 실패: userCouponId={}", event.userCouponId(), ex);
-        }
     }
 }
