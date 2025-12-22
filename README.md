@@ -1,9 +1,15 @@
 # KimLeePark-Logistics
 
-![img.png](img.png)
+![img.png](assets/img.png)
 
 Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용해, 대규모 동시 주문 환경에서도 데이터 일관성을 유지하는 물류 시스템을 구현했습니다.
 주문 생성부터 배송까지의 전 과정을 안정적으로 관리합니다.
+
+
+## ERD
+[erd 상세](https://https://www.erdcloud.com/d/aoTEHW2tn5jEtJ538)
+![erd.png](assets/erd.png)
+
 
 ## 인프라 설계도
 
@@ -16,6 +22,88 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 ## 로그
 
 ![Observability.png](assets/Observability.png)
+
+## 주요 기술 스택
+
+<div align="center">
+
+### **애플리케이션**
+
+<img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white">
+<img src="https://img.shields.io/badge/springboot-%236DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white">
+<img src="https://img.shields.io/badge/JPA-59666C?style=for-the-badge&logo=Hibernate&logoColor=white">
+
+### **인증 및 보안**
+
+<img src="https://img.shields.io/badge/spring security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
+<img src="https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white">
+
+### **데이터베이스**
+
+<img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white">
+
+### **메시징 & 이벤트 스트리밍**
+
+<img src="https://img.shields.io/badge/apache%20kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white">
+
+### **빌드 도구**
+
+<img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
+
+### **CI/CD & 인프라**
+
+<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+<img src="https://img.shields.io/badge/githubactions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
+<img src="https://img.shields.io/badge/terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white">
+<img src="https://img.shields.io/badge/amazon%20aws-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white">
+
+### **모니터링 & 관찰성**
+
+<img src="https://img.shields.io/badge/prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white">
+<img src="https://img.shields.io/badge/grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white">
+<img src="https://img.shields.io/badge/opentelemetry-000000?style=for-the-badge&logo=opentelemetry&logoColor=white">
+
+### **기타**
+
+<img src="https://img.shields.io/badge/spring%20cloud%20gateway-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/eureka-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/spring%20cloud%20config-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/openfeign-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/querydsl-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+
+</div>
+
+## 패키지 구조
+
+```
+{service-name}/
+├── presentation/          # 프레젠테이션 레이어
+│   ├── controller/       # REST API 컨트롤러
+│   └── dto/              # 요청/응답 DTO
+├── application/          # 애플리케이션 레이어
+│   ├── facade/           # Facade 패턴 (복잡한 비즈니스 로직 조율)
+│   ├── service/          # 애플리케이션 서비스
+│   ├── command/          # 명령 객체 (CQRS)
+│   ├── query/            # 쿼리 서비스 (CQRS)
+│   ├── cache/            # 캐시 관리
+│   └── event/            # 이벤트 핸들러
+├── domain/               # 도메인 레이어
+│   ├── entity/           # 도메인 엔티티
+│   ├── repository/       # 리포지토리 인터페이스
+│   └── vo/               # 값 객체 (Value Object)
+└── infrastructure/       # 인프라스트럭처 레이어
+    ├── client/           # 외부 서비스 클라이언트 (Feign)
+    ├── event/             # 이벤트 발행/구독
+    └── repository/       # 리포지토리 구현체 (JPA)
+```
+
+### 레이어별 책임
+
+- **Presentation Layer**: HTTP 요청/응답 처리, 유효성 검증
+- **Application Layer**: 비즈니스 로직 조율, 트랜잭션 관리, 외부 서비스 호출
+- **Domain Layer**: 핵심 비즈니스 로직, 도메인 규칙, 엔티티
+- **Infrastructure Layer**: 외부 시스템 연동, 데이터 영속성, 기술적 세부사항
 
 ### 주요 기능
 
@@ -78,6 +166,7 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 - 외부 사용자가 HTTP 요청에 `X-User-Role: MASTER` 같은 헤더를 임의로 주입하면 권한을 우회할 수 있는 보안 취약점 존재
 
 **해결 방법**
+
 - `/v1/internal/` 경로를 내부 서비스 간 통신 전용 API로 분리
 - 내부 API는 Gateway를 거치지 않고 서비스 간 직접 호출(Feign Client 등)하여 헤더 강제 주입 공격 방지
 - 이를 통해 외부에서 임의의 헤더를 주입하더라도 내부 API에 접근할 수 없도록 보안 강화
@@ -146,9 +235,7 @@ docker-compose down
 - Kafka UI: http://{KAFKA_UI_HOST}:{KAFKA_UI_PORT}
 - Swagger: http://{SWAGGER_HOST}:{SWAGGER_PORT}/swagger-ui.html
 
-
 # 👥 Team Members
-
 
 
 | 이름 | 역할    |
