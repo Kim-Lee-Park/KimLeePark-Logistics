@@ -7,15 +7,15 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 ## 인프라 설계도
 
-![image.png](assets/infra.png)
+![Infra.png](assets/Infra.png)
 
 ## 배포 파이프라인
 
-![image.png](assets/Pipeline.png)
+![Pipeline.png](assets/Pipeline.png)
 
 ## 로그
 
-![img_1.png](img_1.png)
+![Observability.png](assets/Observability.png)
 
 ### 주요 기능
 
