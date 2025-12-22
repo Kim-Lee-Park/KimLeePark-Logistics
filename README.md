@@ -189,13 +189,7 @@ docker-compose.yml 파일에 아래 환경 변수를 설정해야 합니다.
 {POSTGRES_PASSWORD}
 {REDIS_PASSWORD}
 
-# AWS
-{AWS_ACCESSKEY}
-{AWS_SECRETKEY}
-{AWS_REGION}
-{AWS_S3_BUCKETNAME}
-
-# # Spring Cloud Config
+# Spring Cloud Config
 {CONFIG_REPO_URI}
 {GIT_USERNAME}
 {GIT_TOKEN}
