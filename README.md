@@ -172,6 +172,7 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 ### 박성민
 
+- Spring Gateway을 이용한 인증 및 회원 기능 구현
 - Spring Cloud Config을 통한 설정파일 중앙 관리 시스템 구축
 - RAG 기반 상품 추천 시스템 구현
 - 결제 모킹, 리뷰 기능 CRUD 작성 및 이벤트 처리
