@@ -2,14 +2,12 @@ package com.klp.order.presentation.dto.order.response.get;
 
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.presentation.dto.ordercancellation.response.OrderCancellationResponse;
 import com.klp.order.presentation.dto.orderitem.response.OrderItemResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Schema(description = "주문 상세 조회 응답")
 public record GetOneOrderResponse(
@@ -55,9 +53,6 @@ public record GetOneOrderResponse(
     @Schema(description = "주문 상품 목록")
     List<OrderItemResponse> orderItems,
 
-    @Schema(description = "취소 정보")
-    OrderCancellationResponse cancellation,
-
     @Schema(description = "생성일시", example = "2024-01-01T10:00:00")
     LocalDateTime createdAt,
 
@@ -74,7 +69,7 @@ public record GetOneOrderResponse(
     public static GetOneOrderResponse from(Order order) {
         List<OrderItemResponse> orderItemResponses = order.getOrderItems().stream()
             .map(OrderItemResponse::from)
-            .collect(Collectors.toList());
+            .toList();
 
         return new GetOneOrderResponse(
             order.getOrderId(),
@@ -91,7 +86,6 @@ public record GetOneOrderResponse(
             order.getDeliveryLatitude(),
             order.getDeliveryLongitude(),
             orderItemResponses,
-            OrderCancellationResponse.from(order.getCancellation()),
             order.getCreatedAt(),
             order.getCreatedBy(),
             order.getUpdatedAt(),
