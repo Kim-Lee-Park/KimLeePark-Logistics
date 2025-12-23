@@ -19,7 +19,7 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 ![Pipeline.png](assets/Pipeline.png)
 
-## 로그
+## Observability
 
 ![Observability.png](assets/Observability.png)
 
