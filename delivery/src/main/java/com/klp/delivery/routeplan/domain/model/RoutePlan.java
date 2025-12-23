@@ -98,16 +98,17 @@ public class RoutePlan extends BaseEntity {
         if (arrivalId == null) {
             throw new BusinessException(RoutePlanErrorCode.ARRIVAL_ID_REQUIRED);
         }
-        if (totalDurationMin <= 0) {
+        if (totalDurationMin < 0) {
             throw new BusinessException(RoutePlanErrorCode.DURATION_INVALID);
         }
-        if (totalDistanceKm <= 0) {
+        if (totalDistanceKm < 0) {
             throw new BusinessException(RoutePlanErrorCode.DISTANCE_INVALID);
         }
     }
 
     //경유 경로 계획
-    public static RoutePlan plan(UUID originId, String originName, UUID destinationId, String destinationName,
+    public static RoutePlan plan(UUID originId, String originName, UUID destinationId,
+        String destinationName,
         RouteInfoVo directRoute, List<RouteInfoVo> routeInfos, Map<UUID, String> hubNameMap) {
         validatePlanParam(originId, destinationId, routeInfos);
         /*
@@ -190,7 +191,8 @@ public class RoutePlan extends BaseEntity {
             RouteInfoVo info = planItemVos.get(i);
             String departureName = hubNameMap.get(info.departureId());
             String arrivalName = hubNameMap.get(info.arrivalId());
-            RoutePlanItem routePlanItem = RoutePlanItem.from(info, i + 1, routePlan, departureName, arrivalName);
+            RoutePlanItem routePlanItem = RoutePlanItem.from(info, i + 1, routePlan, departureName,
+                arrivalName);
             routePlan.routePlanItems.add(routePlanItem);
         }
 
