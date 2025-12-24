@@ -1,0 +1,85 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 400
+    spike_limit_mib: 150
+
+  filter/drop_noise:
+    traces:
+      span:
+        - attributes["http.target"] == "/actuator/health"
+        - attributes["http.target"] == "/actuator/prometheus"
+        - attributes["http.route"] == "/actuator/health"
+        - attributes["http.route"] == "/actuator/prometheus"
+    logs:
+      log_record:
+        - body == "GET /actuator/health"    # 헬스체크 로그 제거
+
+  batch:
+    timeout: 3s
+    send_batch_size: 256
+
+  tail_sampling:
+    decision_wait: 2s
+    num_traces: 25000
+    expected_new_traces_per_sec: 500
+    policies:
+      - name: error-traces
+        type: status_code
+        status_code:
+          status_codes: [ ERROR ]
+
+      # 느린 요청 저장 (2초 이상)
+      - name: slow-traces
+        type: latency
+        latency:
+          threshold_ms: 2000
+
+      - name: normal-traces
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+  attributes/drop_big_attrs:
+    actions:
+      - key: http.request.body
+        action: delete
+      - key: http.response.body
+        action: delete
+      - key: db.statement
+        action: delete
+
+  filter/drop_kafka_internal:
+    traces:
+      span:
+        - IsMatch(name, "kafka.*poll.*")
+        - IsMatch(name, "kafka.*commit.*")
+
+exporters:
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+    compression: gzip
+
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    compression: gzip
+
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ memory_limiter, filter/drop_noise, filter/drop_kafka_internal, attributes/drop_big_attrs, tail_sampling, batch ]
+      exporters: [ otlphttp/tempo ]
+
+    logs:
+      receivers: [ otlp ]
+      processors: [ memory_limiter, filter/drop_noise, batch ]
+      exporters: [ otlphttp/loki ]

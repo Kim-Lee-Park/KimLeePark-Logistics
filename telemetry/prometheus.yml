@@ -1,0 +1,51 @@
+scrape_configs:
+  - job_name: "user-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8010"
+
+  - job_name: "auth-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8000"
+
+  - job_name: "gateway-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8080"
+
+  - job_name: "delivery-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8040"
+
+  - job_name: "hub-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8030"
+
+  - job_name: "notification-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8050"
+
+  - job_name: "order-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+          - "192.168.219.100:8020"
+
+  - job_name: 'kafka-exporter'
+    static_configs:
+      - targets:
+          - 'kafka-exporter:9308'
+
+  - job_name: "kafka-broker-jmx"
+    static_configs:
+      - targets: [ "kafka:9404" ]

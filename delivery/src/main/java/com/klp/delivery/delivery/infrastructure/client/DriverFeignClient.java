@@ -1,0 +1,28 @@
+package com.klp.delivery.delivery.infrastructure.client;
+
+import com.klp.delivery.delivery.infrastructure.client.dto.DriverInfo;
+import com.klp.delivery.delivery.infrastructure.client.dto.HubDriverListResponse;
+import com.klp.delivery.delivery.infrastructure.client.dto.LogisticsDriverListResponse;
+import com.klp.delivery.global.config.DeliveryFeignClientConfig;
+import com.klp.delivery.global.config.FeignTracingConfig;
+import java.util.UUID;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@FeignClient(name = "user-service",
+    url = "${clients.user.url:}",
+    configuration = {DeliveryFeignClientConfig.class, FeignTracingConfig.class})
+public interface DriverFeignClient {
+
+    @GetMapping("/v1/internal/users/driver/{hubId}")
+    HubDriverListResponse findArrivalHubDrivers(@PathVariable("hubId") UUID hubId);
+
+    @GetMapping("/v1/internal/users/driver")
+    DriverInfo findDriverAtArrivalHub(@RequestParam("id") Long driverId);
+
+    @GetMapping("/v1/internal/users/driver/logistics")
+    LogisticsDriverListResponse findLogisticsDrivers();
+
+}

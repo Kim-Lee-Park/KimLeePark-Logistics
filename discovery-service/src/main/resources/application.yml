@@ -1,0 +1,18 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: discovery-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  cloud:
+    config:
+      fail-fast: ${CONFIG_FAIL_FAST:false}
+      retry:
+        initial-interval: ${CONFIG_RETRY_INITIAL_INTERVAL:1000}
+        max-attempts: ${CONFIG_RETRY_MAX_ATTEMPTS:3}
+        multiplier: ${CONFIG_RETRY_MULTIPLIER:1.1}
+        max-interval: ${CONFIG_RETRY_MAX_INTERVAL:2000}

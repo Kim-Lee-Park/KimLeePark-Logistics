@@ -1,0 +1,44 @@
+package com.klp.hub.hub.presentation.dto.response.hub;
+
+import com.klp.hub.common.dto.PageableDto;
+import com.klp.hub.hub.domain.model.Hub;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+
+public record GetHubListResponse(
+    List<HubSummaryResponse> hubs,
+    PageableDto pageable
+) {
+    public record HubSummaryResponse(
+        UUID hubId,
+        String name,
+        Double latitude,
+        Double longitude,
+        String address
+    ){}
+
+    public static GetHubListResponse from(Page<Hub> page) {
+        List<HubSummaryResponse> hubs = page.getContent().stream()
+            .map(hub -> new HubSummaryResponse(
+                hub.getHubId(),
+                hub.getName(),
+                hub.getLatitude(),
+                hub.getLongitude(),
+                hub.getAddress()
+            ))
+            .toList();
+
+        PageableDto pageableDto = new PageableDto(
+            page.getNumber(),
+            page.getSize(),
+            (int) page.getTotalElements(),
+            page.getTotalPages(),
+            page.hasNext(),
+            page.hasPrevious(),
+            page.isFirst(),
+            page.isLast()
+        );
+        return new GetHubListResponse(hubs, pageableDto);
+    }
+}

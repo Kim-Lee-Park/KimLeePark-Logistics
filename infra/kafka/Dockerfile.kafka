@@ -1,0 +1,24 @@
+FROM eclipse-temurin:17-jre-jammy
+
+ARG KAFKA_VERSION=3.7.0
+ARG SCALA_VERSION=2.13
+
+RUN set -eux \
+    && mkdir -p /opt/kafka /var/lib/kafka/data
+
+ADD kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz /opt/
+
+RUN set -eux \
+    && rm -rf /opt/kafka \
+    && mv /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} /opt/kafka \
+    && test -f /opt/kafka/config/kraft/server.properties
+
+ENV KAFKA_HOME=/opt/kafka
+ENV PATH="${KAFKA_HOME}/bin:${PATH}"
+
+COPY entrypoint-kafka.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /opt/kafka
+
+ENTRYPOINT ["/entrypoint.sh"]

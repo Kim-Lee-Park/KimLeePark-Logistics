@@ -1,0 +1,70 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+ingester:
+  trace_idle_period: 10s
+  max_block_bytes: 1_000_000
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 48h
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: "local-tempo"
+
+  traces_storage:
+    path: /var/tempo/traces-generator
+
+  processor:
+    # Span 기반 RED 메트릭
+    span_metrics:
+      dimensions:
+        - service.name
+        - http.method
+        - http.route
+        - http.status_code
+        - deployment.environment
+
+    # 서비스 그래프 메트릭
+    service_graphs:
+      wait: 10s
+      max_items: 10000
+
+    local_blocks:
+      # 서버 스팬만이 아니라 모든 스팬 대상으로 메트릭 생성
+      filter_server_spans: false
+
+  storage:
+    # 메트릭 WAL/데이터 저장 경로 (원래 쓰던 경로 그대로 써도 됨)
+    path: /var/tempo/metrics
+    # Prometheus remote_write (Prometheus가 remote-write receiver 켜져 있어야 함)
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: false
+
+# processor를 활성화할지 여기서 지정
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [ service-graphs, span-metrics, local-blocks ]
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal

@@ -1,0 +1,160 @@
+name: Deploy promotion
+
+on:
+  push:
+    branches: [ "stage", "main" ]
+    paths:
+      - "promotion/**"
+      - ".github/workflows/deploy-promotion.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  SERVICE_NAME: promotion
+  APP_PATH: promotion
+  CONTAINER_NAME: promotion
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set deployment context (stage/main)
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/stage" ]]; then
+            DEPLOY_ENV=stage
+            ROLE="${{ secrets.AWS_ROLE_TO_ASSUME_STAGE }}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            DEPLOY_ENV=prod
+            ROLE="${{ secrets.AWS_ROLE_TO_ASSUME_PROD }}"
+          else
+            echo "Unsupported branch: ${GITHUB_REF}" >&2
+            exit 1
+          fi
+
+          NAME_PREFIX="klp-logistics"
+          if [ "$DEPLOY_ENV" = "stage" ]; then
+            NAME_PREFIX="${NAME_PREFIX}-stage"
+          fi
+
+          cat <<EOF >> "$GITHUB_ENV"
+          DEPLOY_ENV=$DEPLOY_ENV
+          AWS_ROLE_TO_ASSUME=$ROLE
+          NAME_PREFIX=$NAME_PREFIX
+          ECR_REPOSITORY=${NAME_PREFIX}-${{ env.SERVICE_NAME }}
+          ECS_CLUSTER=${NAME_PREFIX}-ecs-cluster
+          ECS_SERVICE=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-svc
+          ECS_TASK_FAMILY=${NAME_PREFIX}-${{ env.SERVICE_NAME }}
+          CODEDEPLOY_APP=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-app
+          CODEDEPLOY_GROUP=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-dg
+          CODEDEPLOY_APPROVAL_HOOK=${NAME_PREFIX}-codedeploy-approval-request
+          EOF
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run tests
+        working-directory: ${{ env.APP_PATH }}
+        run: ./gradlew test
+
+      - name: Build application
+        working-directory: ${{ env.APP_PATH }}
+        run: ./gradlew clean build -x test
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: build-image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE_URI=${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}
+
+          docker build -t "${IMAGE_URI}" "./${{ env.APP_PATH }}"
+          docker push "${IMAGE_URI}"
+
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${ECS_TASK_FAMILY}" \
+            --query 'taskDefinition' \
+            --region "${AWS_REGION}" \
+            > taskdef-current.json
+
+      - name: Render new task definition
+        run: |
+          jq --arg IMAGE_URI "$IMAGE_URI" --arg CONTAINER "$CONTAINER_NAME" '
+            .
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+            | .containerDefinitions |=
+                map(if .name == $CONTAINER then .image = $IMAGE_URI else . end)
+          ' taskdef-current.json > taskdef-rendered.json
+
+      - name: Register new task definition
+        run: |
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://taskdef-rendered.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text \
+            --region "${AWS_REGION}")
+
+          echo "TASK_DEF_ARN=${TASK_DEF_ARN}" >> "$GITHUB_ENV"
+
+      - name: Render AppSpec
+        run: |
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP TASK_DEF_ARN CONTAINER_NAME CODEDEPLOY_APPROVAL_HOOK; do
+            if [ -z "${!var}" ]; then
+              echo "$var is required" >&2
+              exit 1
+            fi
+          done
+
+          cat > appspec-rendered.json <<EOF
+          {
+            "version": 0.0,
+            "Resources": [
+              {
+                "TargetService": {
+                  "Type": "AWS::ECS::Service",
+                  "Properties": {
+                    "TaskDefinition": "${TASK_DEF_ARN}",
+                    "LoadBalancerInfo": {
+                      "ContainerName": "${CONTAINER_NAME}",
+                      "ContainerPort": 8080
+                    }
+                  }
+                }
+              }
+            ],
+            "Hooks": [
+              { "BeforeAllowTraffic": "${CODEDEPLOY_APPROVAL_HOOK}" }
+            ]
+          }
+          EOF
+
+          jq . appspec-rendered.json >/dev/null
+
+      - name: Create deployment
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: taskdef-rendered.json
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          codedeploy-appspec: appspec-rendered.json
+          codedeploy-application: ${{ env.CODEDEPLOY_APP }}
+          codedeploy-deployment-group: ${{ env.CODEDEPLOY_GROUP }}

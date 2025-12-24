@@ -1,0 +1,28 @@
+server:
+  port: 9010
+
+spring:
+  application:
+    name: ai-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        initial-interval: 1000
+        max-attempts: 3
+
+springdoc:
+  server-url: ${SERVER_URL:http://localhost:8080}
+  api-docs:
+    path: /v1/api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+weather:
+  api:
+    service-key: 66d62a37259f7704ccd2e716cfc2a8f82c5d32e52a896cb321737699ef729e11
+    base-url: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0

@@ -1,0 +1,32 @@
+name: Auto-assign issue creator
+
+on:
+  issues:
+    types: [opened]   # 이슈가 생성될 때 트리거
+
+permissions:
+  issues: write       # 이슈 쓰기 권한 필요
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign issue to its creator
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const creator = issue.user.login;
+
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                assignees: [creator],
+              });
+              core.info(`Assigned #${issue.number} to @${creator}`);
+            } catch (e) {
+              // 주의: 비(非)협업자는 assignee로 지정할 수 없음
+              core.warning(`Could not assign @${creator}: ${e.message}`);
+            }

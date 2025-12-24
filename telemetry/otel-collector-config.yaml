@@ -1,0 +1,54 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  filter/drop_noise:
+    traces:
+      span:
+        - attributes["http.target"] == "/actuator/health"
+        - attributes["http.target"] == "/actuator/prometheus"
+        - attributes["http.route"] == "/actuator/health"
+        - attributes["http.route"] == "/actuator/prometheus"
+    logs:
+      log_record:
+        - body == "GET /actuator/health"    # 헬스체크 로그 제거
+
+  batch:
+    timeout: 5s          # 5초 동안 모았다가
+    send_batch_size: 512 # 512개 단위로 전송
+
+  filter/drop_kafka_internal:
+    traces:
+      span:
+        - IsMatch(name, "kafka.*poll.*")
+        - IsMatch(name, "kafka.*commit.*")
+
+exporters:
+  # 디버깅용 – Collector 로그에 span 찍기
+  debug:
+    verbosity: detailed  # basic / normal / detailed
+
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+    compression: gzip
+
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    compression: gzip
+
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ filter/drop_noise, batch, filter/drop_kafka_internal ]
+      exporters: [ otlphttp/tempo, debug ]
+
+    logs:
+      receivers: [ otlp ]
+      processors: [ filter/drop_noise, batch ]
+      exporters: [ otlphttp/loki, debug ]

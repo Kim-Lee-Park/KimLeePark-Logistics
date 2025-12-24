@@ -1,0 +1,5 @@
+# CODEOWNERS 파일 - Pull Request 자동 리뷰어 지정
+# 모든 변경사항에 대해 지정된 리뷰어들의 승인 필요
+# 전체 프로젝트에 대한 기본 리뷰어 지정
+* @dnjsals45 @kmr5326 @leeMK09 @maengjjin @p990805
+
