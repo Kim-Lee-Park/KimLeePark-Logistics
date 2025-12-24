@@ -137,40 +137,40 @@ SELECT ('bbbbbbbb-0000-0000-0000-' || LPAD(num::TEXT, 12, '0'))::UUID AS product
 FROM (SELECT num,
              -- 업체를 순환하며 할당 (34개 업체)
              CASE (num - 1) % 34
-                 WHEN 0 THEN 'cccccccc-0000-0000-0002-000000000001'::UUID -- 삼성전자
-                 WHEN 1 THEN 'cccccccc-0000-0000-0002-000000000002'::UUID -- 애플코리아
-                 WHEN 2 THEN 'cccccccc-0000-0000-0002-000000000003'::UUID -- LG전자
-                 WHEN 3 THEN 'cccccccc-0000-0000-0002-000000000004'::UUID -- 현대리바트
-                 WHEN 4 THEN 'cccccccc-0000-0000-0002-000000000005'::UUID -- 쿠쿠전자
-                 WHEN 5 THEN 'cccccccc-0000-0000-0002-000000000006'::UUID -- 코웨이
-                 WHEN 6 THEN 'cccccccc-0000-0000-0002-000000000007'::UUID -- 르노코리아
-                 WHEN 7 THEN 'cccccccc-0000-0000-0002-000000000008'::UUID -- 동원F&B
-                 WHEN 8 THEN 'cccccccc-0000-0000-0002-000000000009'::UUID -- 삼성SDI
-                 WHEN 9 THEN 'cccccccc-0000-0000-0002-000000000010'::UUID -- 코오롱인더스트리
-                 WHEN 10 THEN 'cccccccc-0000-0000-0002-000000000011'::UUID -- SK하이닉스
-                 WHEN 11 THEN 'cccccccc-0000-0000-0002-000000000012'::UUID -- 한진
-                 WHEN 12 THEN 'cccccccc-0000-0000-0002-000000000013'::UUID -- 기아자동차
-                 WHEN 13 THEN 'cccccccc-0000-0000-0002-000000000014'::UUID -- 금호타이어
-                 WHEN 14 THEN 'cccccccc-0000-0000-0002-000000000015'::UUID -- 한화에어로스페이스
-                 WHEN 15 THEN 'cccccccc-0000-0000-0002-000000000016'::UUID -- 로지텍코리아
-                 WHEN 16 THEN 'cccccccc-0000-0000-0002-000000000017'::UUID -- 현대자동차
-                 WHEN 17 THEN 'cccccccc-0000-0000-0002-000000000018'::UUID -- SK에너지
-                 WHEN 18 THEN 'cccccccc-0000-0000-0002-000000000019'::UUID -- 오뚜기
-                 WHEN 19 THEN 'cccccccc-0000-0000-0002-000000000020'::UUID -- 풀무원
-                 WHEN 20 THEN 'cccccccc-0000-0000-0002-000000000021'::UUID -- 하이트진로
-                 WHEN 21 THEN 'cccccccc-0000-0000-0002-000000000022'::UUID -- 농심
-                 WHEN 22 THEN 'cccccccc-0000-0000-0002-000000000023'::UUID -- SK바이오팜
-                 WHEN 23 THEN 'cccccccc-0000-0000-0002-000000000024'::UUID -- 한국타이어
-                 WHEN 24 THEN 'cccccccc-0000-0000-0002-000000000025'::UUID -- 삼성디스플레이
-                 WHEN 25 THEN 'cccccccc-0000-0000-0002-000000000026'::UUID -- 현대제철
-                 WHEN 26 THEN 'cccccccc-0000-0000-0002-000000000027'::UUID -- 현대모비스
-                 WHEN 27 THEN 'cccccccc-0000-0000-0002-000000000028'::UUID -- 삼양식품
-                 WHEN 28 THEN 'cccccccc-0000-0000-0002-000000000029'::UUID -- 포스코케미칼
-                 WHEN 29 THEN 'cccccccc-0000-0000-0002-000000000030'::UUID -- GS칼텍스
-                 WHEN 30 THEN 'cccccccc-0000-0000-0002-000000000031'::UUID -- 포스코
-                 WHEN 31 THEN 'cccccccc-0000-0000-0002-000000000032'::UUID -- 삼성전기
-                 WHEN 32 THEN 'cccccccc-0000-0000-0002-000000000033'::UUID -- 한국항공우주
-                 WHEN 33 THEN 'cccccccc-0000-0000-0002-000000000034'::UUID -- 두산중공업
+                 WHEN 0 THEN 'bbbbbbbb-0000-0000-0002-000000000001'::UUID -- 삼성전자
+                 WHEN 1 THEN 'bbbbbbbb-0000-0000-0002-000000000002'::UUID -- 애플코리아
+                 WHEN 2 THEN 'bbbbbbbb-0000-0000-0002-000000000003'::UUID -- LG전자
+                 WHEN 3 THEN 'bbbbbbbb-0000-0000-0002-000000000004'::UUID -- 현대리바트
+                 WHEN 4 THEN 'bbbbbbbb-0000-0000-0002-000000000005'::UUID -- 쿠쿠전자
+                 WHEN 5 THEN 'bbbbbbbb-0000-0000-0002-000000000006'::UUID -- 코웨이
+                 WHEN 6 THEN 'bbbbbbbb-0000-0000-0002-000000000007'::UUID -- 르노코리아
+                 WHEN 7 THEN 'bbbbbbbb-0000-0000-0002-000000000008'::UUID -- 동원F&B
+                 WHEN 8 THEN 'bbbbbbbb-0000-0000-0002-000000000009'::UUID -- 삼성SDI
+                 WHEN 9 THEN 'bbbbbbbb-0000-0000-0002-000000000010'::UUID -- 코오롱인더스트리
+                 WHEN 10 THEN 'bbbbbbbb-0000-0000-0002-000000000011'::UUID -- SK하이닉스
+                 WHEN 11 THEN 'bbbbbbbb-0000-0000-0002-000000000012'::UUID -- 한진
+                 WHEN 12 THEN 'bbbbbbbb-0000-0000-0002-000000000013'::UUID -- 기아자동차
+                 WHEN 13 THEN 'bbbbbbbb-0000-0000-0002-000000000014'::UUID -- 금호타이어
+                 WHEN 14 THEN 'bbbbbbbb-0000-0000-0002-000000000015'::UUID -- 한화에어로스페이스
+                 WHEN 15 THEN 'bbbbbbbb-0000-0000-0002-000000000016'::UUID -- 로지텍코리아
+                 WHEN 16 THEN 'bbbbbbbb-0000-0000-0002-000000000017'::UUID -- 현대자동차
+                 WHEN 17 THEN 'bbbbbbbb-0000-0000-0002-000000000018'::UUID -- SK에너지
+                 WHEN 18 THEN 'bbbbbbbb-0000-0000-0002-000000000019'::UUID -- 오뚜기
+                 WHEN 19 THEN 'bbbbbbbb-0000-0000-0002-000000000020'::UUID -- 풀무원
+                 WHEN 20 THEN 'bbbbbbbb-0000-0000-0002-000000000021'::UUID -- 하이트진로
+                 WHEN 21 THEN 'bbbbbbbb-0000-0000-0002-000000000022'::UUID -- 농심
+                 WHEN 22 THEN 'bbbbbbbb-0000-0000-0002-000000000023'::UUID -- SK바이오팜
+                 WHEN 23 THEN 'bbbbbbbb-0000-0000-0002-000000000024'::UUID -- 한국타이어
+                 WHEN 24 THEN 'bbbbbbbb-0000-0000-0002-000000000025'::UUID -- 삼성디스플레이
+                 WHEN 25 THEN 'bbbbbbbb-0000-0000-0002-000000000026'::UUID -- 현대제철
+                 WHEN 26 THEN 'bbbbbbbb-0000-0000-0002-000000000027'::UUID -- 현대모비스
+                 WHEN 27 THEN 'bbbbbbbb-0000-0000-0002-000000000028'::UUID -- 삼양식품
+                 WHEN 28 THEN 'bbbbbbbb-0000-0000-0002-000000000029'::UUID -- 포스코케미칼
+                 WHEN 29 THEN 'bbbbbbbb-0000-0000-0002-000000000030'::UUID -- GS칼텍스
+                 WHEN 30 THEN 'bbbbbbbb-0000-0000-0002-000000000031'::UUID -- 포스코
+                 WHEN 31 THEN 'bbbbbbbb-0000-0000-0002-000000000032'::UUID -- 삼성전기
+                 WHEN 32 THEN 'bbbbbbbb-0000-0000-0002-000000000033'::UUID -- 한국항공우주
+                 WHEN 33 THEN 'bbbbbbbb-0000-0000-0002-000000000034'::UUID -- 두산중공업
                  END AS company_id,
              -- 업체별 상품명 및 카테고리
              CASE (num - 1) % 34
