@@ -129,8 +129,8 @@ public class OrderController implements OrderControllerDoc {
         @Valid @RequestBody CancelOrderRequest request
     ) {
         CancelOrderCommand command = request.toCommand(orderId, cancelledBy);
-        Order order = orderFacade.cancelOrder(command);
-        CancelOrderResponse response = CancelOrderResponse.from(order);
+        orderFacade.cancelOrder(command);
+        CancelOrderResponse response = CancelOrderResponse.from(command);
 
         return ResponseEntity.ok(response);
     }

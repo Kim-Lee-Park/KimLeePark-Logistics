@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -21,7 +22,19 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_users")
+@Table(
+    name = "p_users",
+    indexes = {
+        @Index(
+            name = "idx_users_affilid_role_deletedat",
+            columnList = "affiliation_id, role, deleted_at"
+        ),
+        @Index(
+            name = "idx_users_affiltype_role_deletedat",
+            columnList = "affiliation_type, role, deleted_at"
+        )
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 

@@ -25,7 +25,7 @@ public class OrderCancellationService {
 
     @Transactional(readOnly = true)
     public OrderCancellation findByOrderId(UUID orderId) {
-        return orderCancellationRepository.findByOrder_OrderId(orderId)
+        return orderCancellationRepository.findByOrderId(orderId)
             .orElseThrow(() -> new BusinessException(
                 OrderCancellationErrorCode.CANCELLATION_BY_ORDER_NOT_FOUND));
     }
@@ -37,26 +37,18 @@ public class OrderCancellationService {
 
     @Transactional
     public OrderCancellation save(OrderCancellation cancellation) {
-        checkCancellationisNull(cancellation);
+        checkCancellationIsNull(cancellation);
         return orderCancellationRepository.save(cancellation);
     }
 
-    private void checkCancellationisNull(OrderCancellation cancellation) {
+    private void checkCancellationIsNull(OrderCancellation cancellation) {
         if (cancellation == null) {
             throw new BusinessException(OrderCancellationErrorCode.CANCELLATION_REQUIRED);
         }
     }
-
-//    @Transactional
-//    public void deleteById(UUID cancellationId) {
-//        // 삭제 전 존재 여부 확인
-//        findById(cancellationId);
-//        orderCancellationRepository.deleteById(cancellationId);
-//    }
-
-
+    
     public boolean isOrderCancelled(UUID orderId) {
-        return orderCancellationRepository.findByOrder_OrderId(orderId).isPresent();
+        return orderCancellationRepository.findByOrderId(orderId).isPresent();
     }
 
 }

@@ -1,23 +1,26 @@
 package com.klp.delivery.delivery.application.facade;
 
+import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.DeliveryRouteStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteCommand;
 import com.klp.delivery.delivery.application.command.DeliveryRoutePlanCommand;
-import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.delivery.application.command.DeliveryRouteStatusCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
 import com.klp.delivery.delivery.application.service.DeliveryOutboxEventService;
 import com.klp.delivery.delivery.application.service.DeliveryRouteService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.domain.entity.Delivery;
+import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.event.DeliveryArrivedEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryNotificationEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryShippingEvent;
-import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.presentation.dto.DeliveryRouteResponse;
+import com.klp.delivery.global.exception.BusinessException;
+import com.klp.delivery.routeplan.application.command.CreateRoutePlanCommand;
 import com.klp.delivery.routeplan.application.service.RoutePlanService;
+import com.klp.delivery.routeplan.exception.RoutePlanErrorCode;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.Comparator;
 import java.util.List;
@@ -45,9 +48,21 @@ public class DeliveryRouteFacade {
     public void CreateDeliveryRoute(DeliveryRouteCommand command,
         DeliveryRouteCreateEvent routeCreateEvent) {
 
-        // 허브 경로 계획 조회
-        GetRoutePlanDetailResponse response = routePlanService.getRoutePlan(command.departureId(),
-            command.arrivalId());
+        // 허브 경로 계획 조회 없으면 생성
+        GetRoutePlanDetailResponse response;
+        try {
+            response = routePlanService.getRoutePlan(command.departureId(), command.arrivalId());
+        } catch (BusinessException e) {
+            if (e.getErrorCode() != RoutePlanErrorCode.NO_ROUTE_PLAN_FOUND) {
+                throw e;
+            }
+
+            routePlanService.createRoutePlan(
+                new CreateRoutePlanCommand(command.departureId(), command.arrivalId())
+            );
+
+            response = routePlanService.getRoutePlan(command.departureId(), command.arrivalId());
+        }
 
         DeliveryRoutePlanCommand routePlancommand = DeliveryRoutePlanCommand.toDeliveryRoutePlanCommand(
             response);
@@ -123,7 +138,8 @@ public class DeliveryRouteFacade {
                 notificationEvent
             );
             log.info("배송 알림 이벤트 아웃박스 저장 완료: deliveryId={}, orderId={}, departureHubName={}",
-                routeCreateEvent.deliveryId(), routeCreateEvent.orderId(), routeCreateEvent.departureName());
+                routeCreateEvent.deliveryId(), routeCreateEvent.orderId(),
+                routeCreateEvent.departureName());
 
         } catch (Exception e) {
             log.error("배송 알림 이벤트 발행 실패: deliveryId={}, orderId={}",
@@ -183,8 +199,6 @@ public class DeliveryRouteFacade {
             log.info("배송 완료 이벤트 아웃박스 저장: deliveryId={}, orderId={}, status={}",
                 deliveryId, updatedDelivery.getOrderId(), statusCommand.status().name());
         }
-
-
 
         return new DeliveryRouteResponse(deliveryId, statusCommand.deliveryRouteId());
     }

@@ -1,0 +1,154 @@
+@baseUrl = http://localhost:8030
+@productId = bbbbbbbb-0000-0000-0000-000000000001
+@hubId = aaaaaaaa-0000-0000-0002-000000000001
+
+### 인기 상품 등록
+POST {{baseUrl}}/v1/inventories/hot
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "hubId": "{{hubId}}",
+  "ttlSeconds": 3600
+}
+
+### 인기 상품 재고 조회
+GET {{baseUrl}}/v1/inventories/hot/quantity?productId={{productId}}&hubId={{hubId}}
+
+### 인기 상품 재동기화
+POST {{baseUrl}}/v1/inventories/hot/resync
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "hubId": "{{hubId}}"
+}
+
+### 인기 상품 재고 수정
+PUT {{baseUrl}}/v1/inventories/hot/quantity
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "hubId": "{{hubId}}",
+  "quantity": 5000
+}
+
+### 인기 상품 해제
+DELETE {{baseUrl}}/v1/inventories/hot
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "hubId": "{{hubId}}"
+}
+
+
+###
+@testOrderId = 11111111-1111-1111-1111-111111111111
+
+### 재고 선점
+POST {{baseUrl}}/internal/v1/inventories/reserve
+Content-Type: application/json
+
+{
+  "orderId": "{{testOrderId}}",
+  "idempotencyKey": "test-reserve-001",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "hubId": "{{hubId}}",
+      "quantity": 10
+    }
+  ]
+}
+
+
+### 재고 선점 확정
+POST {{baseUrl}}/internal/v1/inventories/confirm/{{testOrderId}}
+
+### 재고 선점 해제
+POST {{baseUrl}}/internal/v1/inventories/release/{{testOrderId}}
+
+###
+@testOrderId2 = 22222222-2222-2222-2222-222222222222
+
+### Hot Product + 일반 상품 동시 선점
+POST {{baseUrl}}/internal/v1/inventories/reserve
+Content-Type: application/json
+
+{
+  "orderId": "{{testOrderId2}}",
+  "idempotencyKey": "test-reserve-002",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "hubId": "{{hubId}}",
+      "quantity": 5
+    },
+    {
+      "productId": "bbbbbbbb-0000-0000-0000-000000000005",
+      "hubId": "aaaaaaaa-0000-0000-0002-000000000003",
+      "quantity": 3
+    }
+  ]
+}
+
+### 복합 주문 해제
+POST {{baseUrl}}/internal/v1/inventories/release/{{testOrderId2}}
+
+###
+@testOrderId3 = 33333333-3333-3333-3333-333333333333
+
+### 재고보다 많은 수량 선점 시도
+POST {{baseUrl}}/internal/v1/inventories/reserve
+Content-Type: application/json
+
+{
+  "orderId": "{{testOrderId3}}",
+  "idempotencyKey": "test-reserve-003",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "hubId": "{{hubId}}",
+      "quantity": 999999
+    }
+  ]
+}
+
+###
+@testOrderId4 = 44444444-4444-4444-4444-444444444444
+
+### 첫 번째 선점 요청
+POST {{baseUrl}}/internal/v1/inventories/reserve
+Content-Type: application/json
+
+{
+  "orderId": "{{testOrderId4}}",
+  "idempotencyKey": "test-idempotency-001",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "hubId": "{{hubId}}",
+      "quantity": 5
+    }
+  ]
+}
+
+### 동일한 멱등키로 재요청 (중복 처리 방지)
+POST {{baseUrl}}/internal/v1/inventories/reserve
+Content-Type: application/json
+
+{
+  "orderId": "{{testOrderId4}}",
+  "idempotencyKey": "test-idempotency-001",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "hubId": "{{hubId}}",
+      "quantity": 5
+    }
+  ]
+}
+
+

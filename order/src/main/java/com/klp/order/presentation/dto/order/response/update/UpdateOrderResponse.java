@@ -2,7 +2,6 @@ package com.klp.order.presentation.dto.order.response.update;
 
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.presentation.dto.ordercancellation.response.OrderCancellationResponse;
 import com.klp.order.presentation.dto.orderitem.response.OrderItemResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
@@ -55,9 +54,6 @@ public record UpdateOrderResponse(
     @Schema(description = "주문 상품 목록")
     List<OrderItemResponse> orderItems,
 
-    @Schema(description = "취소 정보")
-    OrderCancellationResponse cancellation,
-
     @Schema(description = "생성일시", example = "2024-01-01T10:00:00")
     LocalDateTime createdAt,
 
@@ -91,7 +87,6 @@ public record UpdateOrderResponse(
             order.getDeliveryLatitude(),
             order.getDeliveryLongitude(),
             orderItemResponses,
-            OrderCancellationResponse.from(order.getCancellation()),
             order.getCreatedAt(),
             order.getCreatedBy(),
             order.getUpdatedAt(),

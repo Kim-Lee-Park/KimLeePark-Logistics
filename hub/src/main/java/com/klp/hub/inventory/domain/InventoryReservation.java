@@ -26,8 +26,8 @@ import lombok.NoArgsConstructor;
     },
     uniqueConstraints = {
         @UniqueConstraint(
-            name = "uk_inv_reservation_idempotency",
-            columnNames = "idempotency_key"
+            name = "uk_inv_reservation_idempotency_product_hub",
+            columnNames = {"idempotency_key", "product_id", "hub_id"}
         )
     }
 )

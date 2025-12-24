@@ -37,6 +37,9 @@ public class KafkaTopicConfig {
     public static final String INVENTORY_REPLENISHED_TOPIC = "inventory.replenished";
     public static final String INVENTORY_REPLENISHED_FAILED_TOPIC = "inventory.replenished.failed";
 
+    // 이벤트 상품 재고 DB 동기화 토픽
+    public static final String INVENTORY_DB_SYNC_TOPIC = "inventory.db.sync";
+
     // DLT 토픽
     public static final String INVENTORY_DLT = "inventory.dlt";
 
@@ -165,7 +168,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic inventoryDeductedTopic() {
         return TopicBuilder.name(INVENTORY_DEDUCTED_TOPIC)
-            .partitions(3)
+            .partitions(9)
             .replicas(1)
             .build();
     }
@@ -189,6 +192,14 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic inventoryReplenishedFailedTopic() {
         return TopicBuilder.name(INVENTORY_REPLENISHED_FAILED_TOPIC)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic inventoryDbSyncTopic() {
+        return TopicBuilder.name(INVENTORY_DB_SYNC_TOPIC)
             .partitions(3)
             .replicas(1)
             .build();

@@ -2,7 +2,6 @@ package com.klp.order.presentation.dto.order.response.get;
 
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
-import com.klp.order.presentation.dto.ordercancellation.response.OrderCancellationResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,9 +29,6 @@ public record GetOrdersResponse(
     @Schema(description = "최종 주문 금액", example = "2800000")
     int orderPrice,
 
-    @Schema(description = "취소 정보")
-    OrderCancellationResponse cancellation,
-
     @Schema(description = "생성자 ID", example = "1")
     Long createdBy,
 
@@ -49,7 +45,6 @@ public record GetOrdersResponse(
             order.getOrderStatus(),
             order.getOriginalPrice(),
             order.getOrderPrice(),
-            OrderCancellationResponse.from(order.getCancellation()),
             order.getCreatedBy(),
             order.getCreatedAt()
         );

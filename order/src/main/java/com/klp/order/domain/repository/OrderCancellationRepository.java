@@ -15,5 +15,5 @@ public interface OrderCancellationRepository {
 
     void deleteById(UUID orderCancellationId);
 
-    Optional<OrderCancellation> findByOrder_OrderId(UUID orderId);
+    Optional<OrderCancellation> findByOrderId(UUID orderId);
 }
