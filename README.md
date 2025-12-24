@@ -1,6 +1,6 @@
 # KimLeePark-Logistics
 
-![imag.png](assets/image.png)
+![image.png](assets/image.png)
 
 B2B 물류 흐름을 기반으로 허브 간 배송 시스템을 설계하고, B2C 영역까지 확장하여 고객이 원하는 상품을 신속하게 주문·배송할 수 있는 서비스입니다.
 
