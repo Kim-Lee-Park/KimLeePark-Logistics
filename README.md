@@ -1,9 +1,8 @@
 # KimLeePark-Logistics
 
-![img.png](assets/img.png)
+![imag.png](assets/image.png)
 
-Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용해, 대규모 동시 주문 환경에서도 데이터 일관성을 유지하는 물류 시스템을 구현했습니다.
-주문 생성부터 배송까지의 전 과정을 안정적으로 관리합니다.
+B2B 물류 흐름을 기반으로 허브 간 배송 시스템을 설계하고, B2C 영역까지 확장하여 고객이 원하는 상품을 신속하게 주문·배송할 수 있는 서비스입니다.
 
 ## ERD
 
@@ -24,54 +23,50 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 ## 주요 기술 스택
 
-<div align="center">
+### 언어 및 프레임워크
 
-### **애플리케이션**
-
-<img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white">
-<img src="https://img.shields.io/badge/springboot-%236DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white">
-<img src="https://img.shields.io/badge/JPA-59666C?style=for-the-badge&logo=Hibernate&logoColor=white">
-
-### **인증 및 보안**
-
-<img src="https://img.shields.io/badge/spring security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
-<img src="https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white">
-
-### **데이터베이스**
-
-<img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
-<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white">
-
-### **메시징 & 이벤트 스트리밍**
-
-<img src="https://img.shields.io/badge/apache%20kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white">
-
-### **빌드 도구**
-
-<img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
-
-### **CI/CD & 인프라**
-
-<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
-<img src="https://img.shields.io/badge/githubactions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
-<img src="https://img.shields.io/badge/terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white">
-<img src="https://img.shields.io/badge/amazon%20aws-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white">
-
-### **모니터링 & 관찰성**
-
-<img src="https://img.shields.io/badge/prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white">
-<img src="https://img.shields.io/badge/grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white">
-<img src="https://img.shields.io/badge/opentelemetry-000000?style=for-the-badge&logo=opentelemetry&logoColor=white">
-
-### **기타**
-
+<img src="https://img.shields.io/badge/java%2017-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white">
+<img src="https://img.shields.io/badge/spring%20boot%203.5.8-%236DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white">
+<img src="https://img.shields.io/badge/spring%20data%20jpa-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
 <img src="https://img.shields.io/badge/spring%20cloud%20gateway-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
-<img src="https://img.shields.io/badge/eureka-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
-<img src="https://img.shields.io/badge/spring%20cloud%20config-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
-<img src="https://img.shields.io/badge/openfeign-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/spring%20cloud%20openfeign-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/spring%20security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
 <img src="https://img.shields.io/badge/querydsl-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
 
-</div>
+### 모니터링 스택
+
+<img src="https://img.shields.io/badge/opentelemetry-000000?style=for-the-badge&logo=opentelemetry&logoColor=white">
+<img src="https://img.shields.io/badge/loki-F46800?style=for-the-badge&logo=grafana&logoColor=white">
+<img src="https://img.shields.io/badge/prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white">
+<img src="https://img.shields.io/badge/tempo-F46800?style=for-the-badge&logo=grafana&logoColor=white">
+<img src="https://img.shields.io/badge/grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white">
+
+### 인프라 및 배포
+
+<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+<img src="https://img.shields.io/badge/github%20actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
+<img src="https://img.shields.io/badge/terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white">
+<img src="https://img.shields.io/badge/aws%20codedeploy-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white">
+<img src="https://img.shields.io/badge/aws%20ecs-FF9900?style=for-the-badge&logo=amazon-ecs&logoColor=white">
+
+### 데이터 및 이벤트
+
+<img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+<img src="https://img.shields.io/badge/amazon%20rds-527FFF?style=for-the-badge&logo=amazon-rds&logoColor=white">
+<img src="https://img.shields.io/badge/redis-DC382D?style=for-the-badge&logo=redis&logoColor=white">
+<img src="https://img.shields.io/badge/aws%20elasticache-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white">
+<img src="https://img.shields.io/badge/flyway-CC0200?style=for-the-badge&logo=flyway&logoColor=white">
+<img src="https://img.shields.io/badge/apache%20kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white">
+
+### 테스트
+
+<img src="https://img.shields.io/badge/junit%205-25A162?style=for-the-badge&logo=junit5&logoColor=white">
+<img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=white">
+
+### 협업 툴 및 소스관리
+
+<img src="https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
+<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
 
 ## 패키지 구조
 
@@ -106,64 +101,66 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 ### 주요 기능
 
-#### 🔒 재고 및 주문 동시성 제어 흐름
+#### 🎁 상품 관리
 
-* 재고 수량 검증 및 차감은 **Redis Lua 스크립트**를 통해 원자적으로 처리
-* 결제 성공 시 선점된 재고를 **확정(Confirm)** 하고 실제 재고 차감 수행
-* 결제 결과에 따라 선점된 재고를 확정 또는 즉시 복구하도록 처리
-* 중복 요청이나 재시도 상황에서도 동일한 결과를 보장하기 위해 **멱등키 기반 요청 처리** 적용
+판매자는 판매할 상품을 등록하고, 상품 정보를 관리하며, 상품 정보 변경 사항은 주문 및 재고 관리와 연동되어 반영됩니다.
 
-#### 📦 Kafka 기반 비동기 주문 처리 흐름
+- 상품 조회 시 **멀티 레벨 캐시(L1/L2)** 를 활용하여 빠른 응답 속도 제공
+- **Negative Caching** 을 통해 존재하지 않는 상품에 대한 반복 조회 방지
+- **RAG 기반 AI 상품 추천** 시스템을 통해 주문 생성 이벤트 수신 시 추천 생성 파이프라인 트리거
+- 주문 상품명을 기준으로 **Vector Store 기반 유사 상품 검색** 수행
+- 사용자 허브 정보, 주문 이력, 시간대, 날씨 등 **컨텍스트 정보 수집** 후 LLM 기반 추천 결과 생성
 
-* 주문 요청은 동기 처리로 묶지 않고 **Kafka 기반 메시징 시스템**을 통해 비동기 처리
-* 주문 생성 이후의 재고 처리, 결제, 배송 생성은 **Choreography 방식의 이벤트 흐름**으로 처리
-* 각 단계는 이전 단계 이벤트를 구독해 처리 결과에 따라 **Success / Failed 이벤트**를 발행
-* 이벤트 소비 실패 시 **DLT(DLQ)** 로 메시지를 분리하여 후속 처리
+#### 🧾 주문 관리
 
-#### 🔁 Outbox & Saga 기반 분산 트랜잭션 관리
+고객은 원하는 상품을 선택하여 주문할 수 있으며, 주문 생성부터 결제 완료, 주문 상태 변경까지의 흐름을 관리합니다.
 
-* DB 트랜잭션과 이벤트 발행 간 불일치를 방지하기 위해 **Outbox 패턴** 적용
-* 스케줄러 기반 Outbox 퍼블리셔가 Kafka로 이벤트를 발행
-* 주문·재고·결제·배송 간 흐름은 **Saga 패턴**기반인 Choreography로 관리
-* 중간 단계 실패 시 이전 상태로 되돌리기 위한 **보상 트랜잭션** 수행
+- **Saga 패턴(Choreography 방식)** 을 적용하여 주문·재고·결제·배송 간 분산 트랜잭션 관리
+- 중간 단계 실패 시 **보상 트랜잭션**을 통해 이전 상태로 롤백
+- **Outbox 패턴** 을 통해 DB 트랜잭션과 Kafka 이벤트 발행의 원자성 보장
+- 스케줄러 기반으로 이벤트를 안정적으로 발행
+- 주문 생성 이후의 재고 처리, 결제, 배송 생성은 **Kafka 기반 비동기 이벤트 흐름**으로 처리
 
-#### 📢 알림 처리
+#### 🏢 재고 관리
 
-* 배송 생성 완료 시 배송 생성 이벤트 발행
-* AI 기반 메시지 생성 후 **Slack Webhook**을 통해 배송 담당자에게 전송
-* 알림 실패는 재시도 또는 별도 처리되며, **주문·배송 흐름에는 영향 없음**
+상품별 재고 수량을 관리하며, 주문 시 재고 수량을 동기화하여 조회할 수 있습니다.
 
-#### 🤖 RAG 기반 AI 상품 추천 처리 흐름
+- **재고 선점(Reservation) 패턴** 을 적용하여 결제 진행 중 재고가 소진되는 것을 방지
+- TTL 기반(15분)으로 선점 시간 관리 하며 **Redis 분산락** 을 활용하여 동시성 환경에서도 재고 차감의 일관성 보장
+- 재고 조회 시 **멀티 레벨 캐시** 를 활용하여 빠른 응답 제공
+- **Probabilistic Early Refresh(PER)** 를 통해 캐시 스탬피드 방지
 
-* 주문 생성 이벤트를 수신하여 추천 생성 파이프라인 트리거
-* 주문 상품명을 기준으로 **Vector Store 기반 유사 상품 검색** 수행
-* 사용자 허브 정보, 주문 이력, 시간대, 날씨 등 **컨텍스트 정보 수집**
-* 검색 결과와 컨텍스트를 결합하여 **LLM 기반 추천 결과 생성**
+#### 🚚 배송 관리
 
-#### 💾 멀티 레벨 캐시 기반 조회 최적화
+주문 완료된 상품은 허브를 기준으로 배송이 진행되며, 배송 상태를 추적하며, 허브 간 이동을 고려한 배송 구조를 통해 효율적인 물류 흐름을 관리합니다.
 
-* 자주 조회되는 데이터는 **L1(Local) + L2(Redis) 멀티 레벨 캐시** 구조로 관리
-* L1 Cache (Caffeine)는 애플리케이션 인스턴스 내에 존재하며 초저지연(sub-millisecond) 응답 제공
-* L2 Cache (Redis)는 분산 환경에서 다중 인스턴스 간 데이터 공유 및 일관성을 유지
-* **Probabilistic Early Refresh(PER)** 를 통해 캐시 만료 시점을 분산시켜 캐시 스탬피드(Cache Stampede) 방지 및 최신 데이터 제공
-* **Negative Caching** 으로 존재하지 않는 데이터(null)를 캐시하여 불필요한 DB 조회 방지
+- **다익스트라 알고리즘** 을 활용하여 최적의 배송 경로 생성
+- 배송 생성 시 도착 허브의 업체 배송 담당자를 **랜덤 선택 알고리즘** 으로 자동 할당
+- 트랜잭션을 활용한 멱등성 처리로 중복 배송 생성 방지
+- **AI 기반 메시지 생성** 후 **Slack Webhook**을 통해 배송 담당자에게 전송
 
-#### 📊 모니터링 및 운영 흐름
+#### 🎫 고객 쿠폰
 
-* **Prometheus**를 통해 각 서비스의 HTTP 메트릭(QPS, Latency, 에러율 등)을 수집
-* **Grafana**를 활용해 트래픽, 지연 시간, 에러율 등을 시각적으로 모니터링
-* 분산 환경의 요청 흐름 추적을 위해 **OpenTelemetry 기반 트레이싱** 적용하여 문제 발생 시 신속한 원인 분석
+선착순 쿠폰, 회원가입 시 쿠폰을 발급하여 할인된 가격의 원하는 상품을 주문할 수 있습니다.
+
+- 쿠폰 발급 시 **Redis Lua 스크립트** 를 활용한 원자적 재고 차감 로직으로 동시성 이슈 해결
+- DB와 Redis를 이중 관리하여 빠른 재고 확인과 최종 상태 관리 분리
+- 주문 생성 시 쿠폰 선점(Optimistic Lock) 및 할인 금액 계산 수행
+- 결제 승인 시 쿠폰 사용 확정, 주문 실패 시 쿠폰 선점 해제
+- Kafka 이벤트 기반으로 결제·주문·재고 서비스와 비동기 통신
 
 ## 팀원별 담당 기능
 
 ### 김명진
 
-- 본인 역할
+- 배송·쿠폰 기본 CRUD 설계·구현
+- 쿠폰 발급 시 동시성 이슈를 고려해 Redis Lua 스크립트 기반의 원자적 재고 차감 로직 적용
+- 중복 배송 요청 발생 가능성을 고려해 트랜잭션을 활용한 멱등성 처리 로직 구현
+- 마이크로서비스 간 비동기 통신을 위해 Kafka 기반 이벤트 흐름 구성
+- 서비스 내부 로직 분리를 위해 Spring Application Event를 활용한 도메인 이벤트 처리 적용
 
 ### 김한결
 
-- ERD 및 인프라 설계
-- 다익스트라 알고리즘을 통해 P2P + Hub to Hub Relay 경로 모델 구현
 - 멀티 레벨 캐시(L1/L2) 설계 및 구현
 - Observability 파이프라인 설계 및 구현
 - 모니터링 환경 구성 및 지표 설계
@@ -201,18 +198,19 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 **고려한 방안**
 
-| 방안  | 흐름                            | 적합한 상황           | 특징                  |
-  |-----|-------------------------------|------------------|---------------------|
-| 1   | 주문 생성 → 결제 진행 → 재고 차감         | 구독 서비스, 디지털 상품   | 단순한 흐름, 재고 경합 없음    |
-| 2 ⭐ | 주문 생성 → 재고 선점 → 결제 진행 → 재고 확정 | 기차 예매, 한정판 상품    | 결제 중 재고 보호, 공정한 선착순 |
-| 3   | 주문 생성 → 재고 차감 + 결제 진행         | 라이브 커머스, 대규모 이벤트 | 빠른 응답, 복잡한 보상 로직    |
+
+| 방안 | 흐름                                             | 적합한 상황                  | 특징                             |
+| ---- | ------------------------------------------------ | ---------------------------- | -------------------------------- |
+| 1    | 주문 생성 → 결제 진행 → 재고 차감              | 구독 서비스, 디지털 상품     | 단순한 흐름, 재고 경합 없음      |
+| 2 ⭐ | 주문 생성 → 재고 선점 → 결제 진행 → 재고 확정 | 기차 예매, 한정판 상품       | 결제 중 재고 보호, 공정한 선착순 |
+| 3    | 주문 생성 → 재고 차감 + 결제 진행               | 라이브 커머스, 대규모 이벤트 | 빠른 응답, 복잡한 보상 로직      |
 
 **선택 이유: 2번 (재고 선점 패턴)**
 
 - 물류 시스템 특성상 **한정된 재고에 대한 동시 접근 경합** 발생
 - 결제 진행 중 다른 사용자가 마지막 재고를 가져가는 상황 방지
 - **공정한 선착순 처리**와 **사용자 경험** 개선
-    - 결제 완료 직전 재고 부족으로 실패하는 최악의 UX 방지
+  - 결제 완료 직전 재고 부족으로 실패하는 최악의 UX 방지
 
 **구현 방식**
 
@@ -226,12 +224,13 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 #### Choreography 패턴 채택
 
-| 구분    | Orchestration     | Choreography           |
-  |-------|-------------------|------------------------|
+
+| 구분      | Orchestration                   | Choreography                            |
+| --------- | ------------------------------- | --------------------------------------- |
 | 제어 방식 | 중앙 오케스트레이터가 흐름 제어 | 각 서비스가 독립적으로 이벤트 구독/발행 |
-| 결합도   | 중앙 서비스 의존성 높음     | 느슨한 결합                 |
-| 확장성   | 오케스트레이터 병목 가능     | 서비스별 독립 확장             |
-| 장애 격리 | 중앙 서비스 장애 시 전체 영향 | 특정 서비스 장애 영향 최소화       |
+| 결합도    | 중앙 서비스 의존성 높음         | 느슨한 결합                             |
+| 확장성    | 오케스트레이터 병목 가능        | 서비스별 독립 확장                      |
+| 장애 격리 | 중앙 서비스 장애 시 전체 영향   | 특정 서비스 장애 영향 최소화            |
 
 **선택 이유**
 
@@ -241,10 +240,11 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 #### 다중 토픽-다중 이벤트 전략
 
-| 방식           | 장점                    | 단점                   |
-  |--------------|-----------------------|----------------------|
-| 단일 토픽-다중 이벤트 | 순서 보장 용이, 관리 포인트 단순   | 이벤트 필터링 오버헤드, 확장성 제한 |
-| 다중 토픽-다중 이벤트 | 도메인별 독립 확장, 명확한 책임 분리 | 토픽 관리 복잡도 증가         |
+
+| 방식                  | 장점                                 | 단점                                |
+| --------------------- | ------------------------------------ | ----------------------------------- |
+| 단일 토픽-다중 이벤트 | 순서 보장 용이, 관리 포인트 단순     | 이벤트 필터링 오버헤드, 확장성 제한 |
+| 다중 토픽-다중 이벤트 | 도메인별 독립 확장, 명확한 책임 분리 | 토픽 관리 복잡도 증가               |
 
 **선택 이유**
 
@@ -274,18 +274,19 @@ common-module (공통 유틸, DTO, 예외 등)
 **발견된 문제**
 
 1. **배포 파이프라인 병목**
-    - 공통 라이브러리 변경 시 의존하는 **모든 서비스 재빌드 필요**
-    - CI/CD 파이프라인 전체 실행으로 배포 시간 증가
-    - 한 줄 수정에도 10개 서비스 재배포 발생
 
+   - 공통 라이브러리 변경 시 의존하는 **모든 서비스 재빌드 필요**
+   - CI/CD 파이프라인 전체 실행으로 배포 시간 증가
+   - 한 줄 수정에도 10개 서비스 재배포 발생
 2. **확장성 제약**
-    - 한 서비스만 필요한 기능도 전체 모듈에 포함
-    - 서비스별 독립적 기술 스택 선택 제한
-    - 불필요한 의존성 증가 (jar 크기 증가)
 
+   - 한 서비스만 필요한 기능도 전체 모듈에 포함
+   - 서비스별 독립적 기술 스택 선택 제한
+   - 불필요한 의존성 증가 (jar 크기 증가)
 3. **버전 관리 복잡도**
-    - 모든 서비스에서 동일한 공통 라이브러리 버전을 사용해야 하는 문제점 존재
-    - 내용이 변경되어 서비스 간 통신이 호환되지 않을 시 서비스 전체적인 문제로 직결
+
+   - 모든 서비스에서 동일한 공통 라이브러리 버전을 사용해야 하는 문제점 존재
+   - 내용이 변경되어 서비스 간 통신이 호환되지 않을 시 서비스 전체적인 문제로 직결
 
 **해결 방안**
 
@@ -313,20 +314,22 @@ common-module (공통 유틸, DTO, 예외 등)
 
 **1. RED 메트릭 (Request-centric)**
 
-| 지표           | 측정 항목                 | 목표                    |
-  |--------------|-----------------------|-----------------------|
-| **Rate**     | 초당 요청 수 (QPS)         | 주문 API 1000 QPS 처리    |
-| **Errors**   | 에러율 (5xx, 4xx)        | < 0.1%                |
-| **Duration** | 응답 시간 (P50, P95, P99) | P95 < 500ms, P99 < 1s |
+
+| 지표         | 측정 항목                 | 목표                   |
+| ------------ | ------------------------- | ---------------------- |
+| **Rate**     | 초당 요청 수 (QPS)        | 주문 API 1000 QPS 처리 |
+| **Errors**   | 에러율 (5xx, 4xx)         | < 0.1%                 |
+| **Duration** | 응답 시간 (P50, P95, P99) | P95 < 500ms, P99 < 1s  |
 
 **2. USE 메트릭 (Resource-centric)**
 
-| 리소스                    | 측정 항목              | 임계치                          |
-  |------------------------|--------------------|------------------------------|
+
+| 리소스                 | 측정 항목                 | 임계치                       |
+| ---------------------- | ------------------------- | ---------------------------- |
 | **JVM**                | Heap 사용률, GC 빈도/시간 | Heap < 80%, GC Pause < 100ms |
-| **DB Connection Pool** | Active/Idle 커넥션    | Active < 80%                 |
-| **Redis**              | 커넥션 수, 메모리 사용률     | Memory < 80%                 |
-| **Kafka**              | Consumer Lag, 처리량  | Lag < 1000                   |
+| **DB Connection Pool** | Active/Idle 커넥션        | Active < 80%                 |
+| **Redis**              | 커넥션 수, 메모리 사용률  | Memory < 80%                 |
+| **Kafka**              | Consumer Lag, 처리량      | Lag < 1000                   |
 
 **3. 비즈니스 메트릭**
 
@@ -358,9 +361,6 @@ common-module (공통 유틸, DTO, 예외 등)
 - 내부 API는 Gateway를 거치지 않고 서비스 간 직접 호출(Feign Client 등)하여 헤더 강제 주입 공격 방지
 - 이를 통해 외부에서 임의의 헤더를 주입하더라도 내부 API에 접근할 수 없도록 보안 강화
 
-📌 트러블 슈팅 상세 문서
-[재고차감 관련 트러블슈팅 문서](https://www.notion.so/teamsparta/2cd?source=copy_link)
-
 ### 2. 재고 차감, 쿠폰 사용 시 Lost Update 문제
 
 **문제 상황**
@@ -372,8 +372,8 @@ common-module (공통 유틸, DTO, 예외 등)
 **해결 방법**
 
 - **Redis Lua 스크립트**를 활용한 원자적 연산 처리
-    - 단순 Redis 명령어(`INCR`, `DECR`)로는 복잡한 재고 차감 로직 처리 불가
-    - Lua 스크립트로 조건 검증 + 차감 연산을 하나의 원자적 작업으로 묶음
+  - 단순 Redis 명령어(`INCR`, `DECR`)로는 복잡한 재고 차감 로직 처리 불가
+  - Lua 스크립트로 조건 검증 + 차감 연산을 하나의 원자적 작업으로 묶음
 - **Fallback 전략**: Redis 장애 시 DB의 **원자적 쿼리**(`UPDATE ... SET stock = stock - ?`)로 2차 방어
 
 ### 3. 대용량 트래픽 환경의 Redis-DB 동기화
@@ -405,8 +405,8 @@ common-module (공통 유틸, DTO, 예외 등)
 **해결 방법**
 
 - 트랜잭션 범위 최소화 및 분리
-    - 외부 서비스 호출을 트랜잭션 밖으로 분리
-    - 주문 생성 트랜잭션은 필수 데이터 저장에만 집중
+  - 외부 서비스 호출을 트랜잭션 밖으로 분리
+  - 주문 생성 트랜잭션은 필수 데이터 저장에만 집중
 
 ## 🐋 Docker-compose 실행 방법
 
@@ -463,11 +463,3 @@ docker-compose down
 - Grafana: http://{GRAFANA_HOST}:{GRAFANA_PORT}
 - Kafka UI: http://{KAFKA_UI_HOST}:{KAFKA_UI_PORT}
 - Swagger: http://{SWAGGER_HOST}:{SWAGGER_PORT}/swagger-ui.html
-
-# 👥 Team Members
-
-| 이름  | 역할      |
-|-----|---------|
-| 김OO | Backend |
-| 이OO | Backend |
-| 박OO | Backend |
