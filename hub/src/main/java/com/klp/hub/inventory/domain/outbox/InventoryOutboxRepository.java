@@ -14,4 +14,6 @@ public interface InventoryOutboxRepository {
     void markAsFailed(UUID outboxId);
 
     void deletePublishedEvents();
+
+    void saveAllInBatch(List<InventoryOutbox> outboxes);
 }

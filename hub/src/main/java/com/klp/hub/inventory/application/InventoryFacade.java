@@ -36,6 +36,7 @@ public class InventoryFacade {
     private final InventoryCacheService cacheService;
     private final DistributedLockManager lockManager;
     private final OutboxService outboxService;
+    private final InventorySyncBuffer syncBuffer;
 
     /**
      * 재고 선점
@@ -115,7 +116,7 @@ public class InventoryFacade {
                 .toList();
 
             InventoryDbSyncEvent syncEvent = InventoryDbSyncEvent.of(orderId, syncItems, idempotencyKey);
-            outboxService.saveInventoryDbSyncEvent(syncEvent);
+            syncBuffer.enqueue(syncEvent);
         }
 
         log.info("Redis 재고 선점 완료. reserved={}, fallback={}", reserved.size(), fallback.size());
