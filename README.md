@@ -181,7 +181,11 @@ Redis 분산 락 기반 재고 선점과 Kafka 이벤트 스트리밍을 적용�
 
 ### 박주찬
 
-- 본인 역할
+- Event-Driven Architecture 기반의 주문 서비스 설계 및 구현
+- Kafka를 활용한 비동기 메시징 파이프라인 구축 (주문 → 결제 → 쿠폰 → 재고 → 배송 → 알림)
+- Saga 패턴을 적용한 분산 트랜잭션 및 보상 트랜잭션 로직 구현 (실패 시 롤백 처리)
+- Transactional Outbox Pattern 도입을 통한 이벤트 발행의 신뢰성 및 데이터 일관성 보장
+- OpenFeign을 활용한 마이크로서비스 간 동기 통신 구현
 
 ### 이명규
 
@@ -408,7 +412,8 @@ common-module (공통 유틸, DTO, 예외 등)
 
 ### 환경 변수 설정
 
-프로젝트는 Spring Cloud Config Server를 통해 config-repo에서 애플리케이션 설정을 관리하며, Docker Compose를 통해 인프라 서비스를 구성합니다.
+프로젝트는 Spring Cloud Config Server를 통해 config-repo에서 애플리케이션 설정을 관리하며, Docker Compose를 통해 인프라 서비스를
+구성합니다.
 docker-compose.yml 파일에 아래 환경 변수를 설정해야 합니다.
 
 #### Infra & Server 환경 변수
