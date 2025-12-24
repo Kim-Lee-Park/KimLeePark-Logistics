@@ -53,6 +53,7 @@ jobs:
           ECS_TASK_FAMILY=${NAME_PREFIX}-${{ env.SERVICE_NAME }}
           CODEDEPLOY_APP=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-app
           CODEDEPLOY_GROUP=${NAME_PREFIX}-${{ env.SERVICE_NAME }}-dg
+          CODEDEPLOY_APPROVAL_HOOK=${NAME_PREFIX}-codedeploy-approval-request
           EOF
 
       - name: Configure AWS credentials
@@ -115,7 +116,7 @@ jobs:
 
       - name: Render AppSpec
         run: |
-          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP TASK_DEF_ARN CONTAINER_NAME; do
+          for var in CODEDEPLOY_APP CODEDEPLOY_GROUP TASK_DEF_ARN CONTAINER_NAME CODEDEPLOY_APPROVAL_HOOK; do
             if [ -z "${!var}" ]; then
               echo "$var is required" >&2
               exit 1
@@ -138,6 +139,9 @@ jobs:
                   }
                 }
               }
+            ],
+            "Hooks": [
+              { "BeforeAllowTraffic": "${CODEDEPLOY_APPROVAL_HOOK}" }
             ]
           }
           EOF

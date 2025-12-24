@@ -5,45 +5,32 @@ import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
-import com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
+import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.DltHandler;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.RetryableTopic;
-import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RetryableTopic(
-    attempts = "3",
-    backoff = @Backoff(delay = 1000L, multiplier = 2.0, maxDelay = 4000L),
-    autoCreateTopics = "true",
-    include = Exception.class,
-    topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
-)
-@KafkaListener(
-    topics = "payment.topic",
-    groupId = "order-service-group",
-    containerFactory = "kafkaListenerContainerFactory"
-)
 public class PaymentEventListener {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "payment.approved",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handlePaymentApproved(
         @Payload PaymentApprovedEvent event,
@@ -82,10 +69,14 @@ public class PaymentEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "payment.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
-    public void handlePaymentApprovedFailed(
-        @Payload PaymentApprovedFailedEvent event,
+    public void handlePaymentFailed(
+        @Payload PaymentFailedEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
         Acknowledgment acknowledgment) {
@@ -122,7 +113,11 @@ public class PaymentEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "payment.cancelled",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handlePaymentCancelled(
         @Payload PaymentCancelledEvent event,
@@ -151,7 +146,11 @@ public class PaymentEventListener {
         }
     }
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = "payment.cancelled.failed",
+        groupId = "order-service-group",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
     @Transactional
     public void handlePaymentCancelledFailed(
         @Payload PaymentCancelledFailedEvent event,
@@ -179,21 +178,55 @@ public class PaymentEventListener {
     }
 
 
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    @KafkaListener(
+        topics = "payment.approved.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handlePaymentApprovedDlt(PaymentApprovedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: PaymentApproved");
+        log.error("⚠️ 결제 완료 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, paymentId={}", event.orderId(), event.paymentId());
     }
 
-    @DltHandler
-    public void handlePaymentDlt(
-        @Payload Object event,
-        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-        @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
+    @KafkaListener(
+        topics = "payment.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handlePaymentFailedDlt(PaymentFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: PaymentFailed");
+        log.error("⚠️ 결제 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}, reason={}", event.orderId(), event.reason());
+    }
 
+    @KafkaListener(
+        topics = "payment.cancelled.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handlePaymentCancelledDlt(PaymentCancelledEvent event) {
         log.error("========================================");
-        log.error("⚠️ DLT 도착: Payment Event");
-        log.error("⚠️ 수동 처리가 필요합니다!");
+        log.error("⚠️ DLT 도착: PaymentCancelled");
+        log.error("⚠️ 결제 취소 확인 실패 - 수동 처리 필요!");
         log.error("========================================");
-        log.error("eventType={}, error={}", event.getClass().getSimpleName(), exceptionMessage);
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = "payment.cancelled.failed.order.dlt",
+        groupId = "order-service-group-dlt",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void handlePaymentCancelledFailedDlt(PaymentCancelledFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: PaymentCancelledFailed");
+        log.error("⚠️ 결제 취소 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
     }
 }

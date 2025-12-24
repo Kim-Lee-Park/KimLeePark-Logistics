@@ -4,16 +4,16 @@ resource "aws_security_group" "alb" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -28,16 +28,16 @@ resource "aws_security_group" "internal_alb" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 8000
-    to_port   = 9020
-    protocol  = "tcp"
+    from_port   = 8000
+    to_port     = 9020
+    protocol    = "tcp"
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -52,16 +52,16 @@ resource "aws_security_group" "ecs_service" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
 
   ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
     security_groups = [aws_security_group.internal_alb.id]
   }
 
@@ -73,9 +73,9 @@ resource "aws_security_group" "ecs_service" {
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -90,23 +90,23 @@ resource "aws_security_group" "db" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   ingress {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -121,16 +121,16 @@ resource "aws_security_group" "redis" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 6379
-    to_port   = 6379
-    protocol  = "tcp"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -145,16 +145,16 @@ resource "aws_security_group" "bastion" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = [var.allowed_ssh_cidr]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -169,9 +169,9 @@ resource "aws_security_group" "kafka" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port = 9092
-    to_port   = 9092
-    protocol  = "tcp"
+    from_port       = 9092
+    to_port         = 9092
+    protocol        = "tcp"
     security_groups = [aws_security_group.ecs_service.id]
   }
 
@@ -183,23 +183,23 @@ resource "aws_security_group" "kafka" {
   }
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   ingress {
-    from_port = 2181
-    to_port   = 2181
+    from_port = 9093
+    to_port   = 9093
     protocol  = "tcp"
     self      = true
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -208,73 +208,126 @@ resource "aws_security_group" "kafka" {
   }
 }
 
-resource "aws_security_group" "observability_stack" {
-  name        = "${local.project}-obs-sg"
-  description = "Observability Stack Security Group"
+resource "aws_security_group" "observability_metrics" {
+  name        = "${local.project}-obs-metrics-sg"
+  description = "Observability (Grafana + Prometheus) Security Group"
   vpc_id      = aws_vpc.main.id
 
-  # Grafana
+  # Grafana (admin/debug) via Bastion
   ingress {
-    from_port = 3000
-    to_port   = 3000
-    protocol  = "tcp"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   # Grafana via ALB
   ingress {
-    from_port = 3000
-    to_port   = 3000
-    protocol  = "tcp"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
 
-  # Allow OTLP (Tempo) and Loki from ECS tasks
+  # Prometheus UI (optional) via Bastion
   ingress {
-    from_port = 4317
-    to_port   = 4317
-    protocol  = "tcp"
-    security_groups = [aws_security_group.ecs_service.id]
+    from_port       = 9090
+    to_port         = 9090
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
   }
 
   ingress {
-    from_port = 4318
-    to_port   = 4318
-    protocol  = "tcp"
-    security_groups = [aws_security_group.ecs_service.id]
-  }
-
-  ingress {
-    from_port = 3100
-    to_port   = 3100
-    protocol  = "tcp"
-    security_groups = [aws_security_group.ecs_service.id]
-  }
-
-  ingress {
-    from_port = 3200
-    to_port   = 3200
-    protocol  = "tcp"
-    security_groups = [aws_security_group.ecs_service.id]
-  }
-
-  ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
-    Name = "${local.project}-obs-sg"
+    Name = "${local.project}-obs-metrics-sg"
   }
+}
+
+resource "aws_security_group" "observability_telemetry" {
+  name        = "${local.project}-obs-telemetry-sg"
+  description = "Observability (Loki + Tempo + OTel Collector) Security Group"
+  vpc_id      = aws_vpc.main.id
+
+  # Tempo ingest from ECS OTel sidecars
+  ingress {
+    from_port       = 4317
+    to_port         = 4317
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  ingress {
+    from_port       = 4318
+    to_port         = 4318
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  # Loki ingest/query from ECS OTel sidecars
+  ingress {
+    from_port       = 3100
+    to_port         = 3100
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.project}-obs-telemetry-sg"
+  }
+}
+
+resource "aws_security_group_rule" "prometheus_remote_write_from_telemetry" {
+  type                     = "ingress"
+  from_port                = 9090
+  to_port                  = 9090
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.observability_metrics.id
+  source_security_group_id = aws_security_group.observability_telemetry.id
+}
+
+resource "aws_security_group_rule" "tempo_query_from_metrics" {
+  type                     = "ingress"
+  from_port                = 3200
+  to_port                  = 3200
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.observability_telemetry.id
+  source_security_group_id = aws_security_group.observability_metrics.id
+}
+
+resource "aws_security_group_rule" "loki_query_from_metrics" {
+  type                     = "ingress"
+  from_port                = 3100
+  to_port                  = 3100
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.observability_telemetry.id
+  source_security_group_id = aws_security_group.observability_metrics.id
 }
 
 resource "aws_security_group_rule" "kafka_exporter_from_obs" {
@@ -283,7 +336,7 @@ resource "aws_security_group_rule" "kafka_exporter_from_obs" {
   to_port                  = 9308
   protocol                 = "tcp"
   security_group_id        = aws_security_group.kafka.id
-  source_security_group_id = aws_security_group.observability_stack.id
+  source_security_group_id = aws_security_group.observability_metrics.id
 }
 
 # Allow Prometheus in the observability stack to scrape ECS OTEL sidecars on 9464
@@ -293,5 +346,5 @@ resource "aws_security_group_rule" "ecs_otel_scrape_from_obs" {
   to_port                  = 9464
   protocol                 = "tcp"
   security_group_id        = aws_security_group.ecs_service.id
-  source_security_group_id = aws_security_group.observability_stack.id
+  source_security_group_id = aws_security_group.observability_metrics.id
 }

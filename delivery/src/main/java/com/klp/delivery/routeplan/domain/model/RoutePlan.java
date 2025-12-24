@@ -98,17 +98,18 @@ public class RoutePlan extends BaseEntity {
         if (arrivalId == null) {
             throw new BusinessException(RoutePlanErrorCode.ARRIVAL_ID_REQUIRED);
         }
-        if (totalDurationMin <= 0) {
+        if (totalDurationMin < 0) {
             throw new BusinessException(RoutePlanErrorCode.DURATION_INVALID);
         }
-        if (totalDistanceKm <= 0) {
+        if (totalDistanceKm < 0) {
             throw new BusinessException(RoutePlanErrorCode.DISTANCE_INVALID);
         }
     }
 
     //경유 경로 계획
-    public static RoutePlan plan(UUID originId, UUID destinationId, RouteInfoVo directRoute,
-        List<RouteInfoVo> routeInfos) {
+    public static RoutePlan plan(UUID originId, String originName, UUID destinationId,
+        String destinationName,
+        RouteInfoVo directRoute, List<RouteInfoVo> routeInfos, Map<UUID, String> hubNameMap) {
         validatePlanParam(originId, destinationId, routeInfos);
         /*
             키: 출발허브ID, 값: 출발 허브ID인 이동 정보
@@ -177,7 +178,9 @@ public class RoutePlan extends BaseEntity {
 
         RoutePlan routePlan = new RoutePlan();
         routePlan.departureId = originId;
+        routePlan.departureName = originName;
         routePlan.arrivalId = destinationId;
+        routePlan.arrvalName = destinationName;
         routePlan.totalDurationMin = bestPlan.totalDurationMin();
         routePlan.totalDistanceKm = bestPlan.totalDistanceKm();
         routePlan.status = RoutePlanStatus.ACTIVE;
@@ -186,7 +189,10 @@ public class RoutePlan extends BaseEntity {
         List<RouteInfoVo> planItemVos = bestPlan.planItems();
         for (int i = 0; i < planItemVos.size(); i++) {
             RouteInfoVo info = planItemVos.get(i);
-            RoutePlanItem routePlanItem = RoutePlanItem.from(info, i + 1, routePlan);
+            String departureName = hubNameMap.get(info.departureId());
+            String arrivalName = hubNameMap.get(info.arrivalId());
+            RoutePlanItem routePlanItem = RoutePlanItem.from(info, i + 1, routePlan, departureName,
+                arrivalName);
             routePlan.routePlanItems.add(routePlanItem);
         }
 

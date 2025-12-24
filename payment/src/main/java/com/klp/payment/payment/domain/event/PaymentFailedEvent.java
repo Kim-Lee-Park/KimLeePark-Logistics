@@ -4,13 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * 결제 실패 이벤트 (발행용 → Inventory 재고 복구)
- */
+
 public record PaymentFailedEvent(
     UUID paymentId,
     UUID orderId,
     Long userId,
+    UUID userCouponId,
     String reason,
     List<ProductInfo> products,
     LocalDateTime occurredAt
@@ -28,6 +27,7 @@ public record PaymentFailedEvent(
         UUID paymentId,
         UUID orderId,
         Long userId,
+        UUID userCouponId,
         String reason,
         OrderCreatedEvent orderEvent
     ) {
@@ -43,6 +43,7 @@ public record PaymentFailedEvent(
             paymentId,
             orderId,
             userId,
+            userCouponId,
             reason,
             products,
             LocalDateTime.now()
@@ -53,6 +54,7 @@ public record PaymentFailedEvent(
         UUID paymentId,
         UUID orderId,
         Long userId,
+        UUID userCouponId,
         String reason,
         CouponUsedFailedEvent couponEvent
     ) {
@@ -68,6 +70,7 @@ public record PaymentFailedEvent(
             paymentId,
             orderId,
             userId,
+            userCouponId,
             reason,
             products,
             LocalDateTime.now()

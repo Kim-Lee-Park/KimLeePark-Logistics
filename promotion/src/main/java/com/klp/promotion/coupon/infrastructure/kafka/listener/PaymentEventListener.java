@@ -9,200 +9,214 @@ import com.klp.promotion.coupon.domain.event.CouponUsedEvent;
 import com.klp.promotion.coupon.domain.event.CouponUsedFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
+import com.klp.promotion.coupon.domain.event.PaymentFailedEvent;
 import com.klp.promotion.coupon.infrastructure.kafka.config.KafkaTopicConfig;
-import java.util.List;
-import java.util.UUID;
+import com.klp.promotion.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-    topics = KafkaTopicConfig.PAYMENT_TOPIC,
-    groupId = "coupon-service-group",
-    containerFactory = "couponKafkaListenerContainerFactory"
-)
 public class PaymentEventListener {
 
     private final UserCouponFacade userCouponFacade;
     private final UserCouponService userCouponService;
     private final CouponOutboxEventService couponOutboxEventService;
 
-    @KafkaHandler
+    @KafkaListener(
+        topics = KafkaTopicConfig.PAYMENT_APPROVED_TOPIC,
+        groupId = "coupon-service-group",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
     @Transactional
     public void handlePaymentApproved(
         @Payload PaymentApprovedEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
-        Acknowledgment acknowledgment) {
-
-        log.info("=== 결제 승인 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
+        Acknowledgment acknowledgment
+    ) {
+        log.info("=== 결제 승인 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
             event.orderId(), event.userCouponId(), partition, offset);
 
         try {
-            // userCouponId가 null이면 쿠폰을 사용하지 않은 주문
-            if (event.userCouponId() == null) {
-                log.info("쿠폰 미사용 주문: orderId={}", event.orderId());
-                if (acknowledgment != null) {
-                    acknowledgment.acknowledge();
-                }
-                return;
+            if (event.userCouponId() != null) {
+                UserCoupon userCoupon = userCouponService.findByUserCouponId(event.userCouponId());
+                userCouponFacade.useUserCoupon(userCoupon.getCouponId(), event.userId());
             }
 
-            // 쿠폰 사용 확정
-            UUID userCouponId = event.userCouponId();
-            Long userId = event.userId();
-
-            // UserCoupon 조회하여 couponId 가져오기
-            UserCoupon userCoupon =
-                userCouponService.findByUserCouponId(userCouponId);
-
-            if (userCoupon == null) {
-                log.warn("UserCoupon을 찾을 수 없음: userCouponId={}, orderId={}", userCouponId,
-                    event.orderId());
-                if (acknowledgment != null) {
-                    acknowledgment.acknowledge();
-                }
-                return;
-            }
-
-            // 쿠폰 사용 확정
-            userCouponFacade.useUserCoupon(userCoupon.getCouponId(), userId);
-
-            // CouponUsedEvent 생성 (InventoryDeductedFailedEvent 기본 구조 + PaymentApprovedEvent 추가 필드)
-            List<CouponUsedEvent.OrderItem> orderItems = event.products().stream()
-                .map(product -> new CouponUsedEvent.OrderItem(
-                    product.orderItemId(),
-                    product.productId(),
-                    product.productName(),
-                    product.hubId(),
-                    product.quantity(),
-                    product.unitPrice(),
-                    product.totalPrice()
-                ))
-                .toList();
-
-            // PaymentApprovedEvent에서 InventoryDeductedFailedEvent 기본 필드들 추출
-            // TODO: PaymentApprovedEvent에 다음 필드들이 추가되어야 함: email, addressId, userAddressHubId, address, finalOrderPrice, inventoryIdempotencyKey, createdAt
-            // 현재는 PaymentApprovedEvent에 없는 필드들은 null 또는 기본값으로 처리
-            CouponUsedEvent couponUsedEvent = new CouponUsedEvent(
-                // InventoryDeductedFailedEvent 기본 구조
-                event.orderId(),
-                event.userId(),
-                event.supplierId(),
-                event.userCouponId(),
-                event.email(),
-                event.username(),
-                event.comment(),
-                event.originalPrice(),
-                event.couponDiscountPrice(),
-                event.gradeDiscountPrice(),
-                event.finalOrderPrice(),
-
-                event.addressId(),
-                event.userAddressHubId(),
-                event.address(),
-                event.deliveryLatitude(),
-                event.deliveryLongitude(),
-
-                orderItems,
-                event.inventoryIdempotencyKey(),
-                event.deliveryIdempotencyKey(),
-                event.createdAt(),
-                event.occurredAt(),
-                // PaymentApprovedEvent 추가 필드
-                event.paymentId(),
-                event.paidAmount(),
-                event.paymentMethod(),
-                event.paidAt()
-            );
-
-            // CouponUsedEvent를 아웃박스에 저장 (트랜잭션 내에서 저장)
             couponOutboxEventService.saveEvent(
                 event.orderId(),
-                couponUsedEvent
+                CouponUsedEvent.from(event)
             );
-            log.info("쿠폰 사용 확정 및 아웃박스 이벤트 저장 완료: orderId={}, userCouponId={}", event.orderId(),
-                userCouponId);
+
+            log.info("쿠폰 사용 확정 및 아웃박스 저장 완료: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+
+        } catch (BusinessException e) {
+            log.warn("쿠폰 사용 비즈니스 검증 실패: orderId={}, reason={}",
+                event.orderId(), e.getMessage());
+
+            publishFailedEvent(event, e.getMessage());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
             }
 
         } catch (Exception e) {
-            log.error("결제 승인 이벤트 처리 실패: orderId={}, partition={}, offset={}",
-                event.orderId(), partition, offset, e);
-            // 쿠폰 선점 해제
-            userCouponService.cancelReserve(event.userCouponId());
-            couponOutboxEventService.failEvent(event.orderId(), CouponUsedFailedEvent.from(event));
+
+            log.error("결제 승인 처리 중 시스템 오류: orderId={}, cause={}",
+                event.orderId(), e.getMessage(), e);
+
             throw e;
         }
     }
 
-    @KafkaHandler
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishFailedEvent(PaymentApprovedEvent event, String reason) {
+        try {
+            couponOutboxEventService.failEvent(
+                event.orderId(),
+                CouponUsedFailedEvent.from(event)
+            );
+            log.info("쿠폰 사용 실패 이벤트 발행 완료: orderId={}, reason={}",
+                event.orderId(), reason);
+        } catch (Exception ex) {
+            log.error("쿠폰 사용 실패 이벤트 발행 실패: orderId={}, error={}",
+                event.orderId(), ex.getMessage(), ex);
+        }
+    }
+
+    @KafkaListener(
+        topics = KafkaTopicConfig.PAYMENT_CANCELLED_TOPIC,
+        groupId = "coupon-service-group",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
     @Transactional
     public void handlePaymentCancelled(
         @Payload PaymentCancelledEvent event,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
-        Acknowledgment acknowledgment) {
-        log.info("=== 결제 취소 이벤트 수신: orderId={}, userCouponId={}, partition={}, offset={} ===",
-            event.orderId(), event.userCouponId(), partition, offset);
-        try{
-            UUID userCouponId = event.userCouponId();
-            userCouponFacade.couponRestored(userCouponId);
+        Acknowledgment acknowledgment
+    ) {
+        log.info("=== 결제 취소 수신: orderId={}, userCouponId={} ===",
+            event.orderId(), event.userCouponId());
 
-            List<CouponRestoredEvent.CancelledItemDto> orderItems = event.products().stream()
-                .map(product -> new CouponRestoredEvent.CancelledItemDto(
-                    product.productId(),
-                    product.hubId(),
-                    product.quantity()
-                ))
-                .toList();
-
-            CouponRestoredEvent restoredEvent = new CouponRestoredEvent(
-                event.paymentId(),
-                event.orderId(),
-                event.userId(),
-                event.userCouponId(),
-                event.inventoryIdempotencyKey(),
-                event.deliveryIdempotencyKey(),
-                event.reason(),
-                orderItems,
-                event.cancelledAt(),
-                event.occurredAt()
-            );
+        try {
+            if (event.userCouponId() != null) {
+                userCouponFacade.couponRestored(event.userCouponId());
+            }
 
             couponOutboxEventService.cancelEvent(
                 event.orderId(),
-                restoredEvent
+                CouponRestoredEvent.from(event)
             );
+
+            log.info("쿠폰 복구 및 아웃박스 저장 완료: orderId={}", event.orderId());
 
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
-                log.info("오프셋 커밋 완료: orderId={}, offset={}", event.orderId(), offset);
+            }
+
+        } catch (BusinessException e) {
+            log.warn("쿠폰 복구 비즈니스 검증 실패: orderId={}, reason={}",
+                event.orderId(), e.getMessage());
+
+            publishRestoredFailedEvent(event, e.getMessage());
+
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
             }
 
         } catch (Exception e) {
-            log.error("결제 취소 이벤트 처리 실패: orderId={}, partition={}, offset={}",
-                event.orderId(), partition, offset, e);
+            log.error("결제 취소 처리 중 시스템 오류: orderId={}, cause={}",
+                event.orderId(), e.getMessage(), e);
             throw e;
         }
     }
 
-    @KafkaHandler(isDefault = true)
-    public void handleUnknown(Object event) {
-        log.warn("알 수 없는 이벤트 타입 수신: {}", event.getClass().getSimpleName());
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishRestoredFailedEvent(PaymentCancelledEvent event, String reason) {
+        try {
+            // 쿠폰 복구가 실패했다고 해서 결제 취소랑 주문 취소를 롤백을 해야하는가?
+            // 아니면 그냥 수동으로 처리해야하는가에 대해 고민을 하게 되네요.
+            log.warn("쿠폰 복구 실패 - 별도 처리 필요: orderId={}, reason={}",
+                event.orderId(), reason);
+        } catch (Exception ex) {
+            log.error("쿠폰 복구 실패 이벤트 발행 실패: orderId={}, error={}",
+                event.orderId(), ex.getMessage(), ex);
+        }
+    }
+
+    @KafkaListener(
+        topics = KafkaTopicConfig.PAYMENT_FAILED_TOPIC,
+        groupId = "coupon-service-group",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
+    public void handlePaymentFailed(@Payload PaymentFailedEvent event) {
+        log.info("결제 실패 수신: orderId={}, reason={}", event.orderId(), event.reason());
+
+        if (event.userCouponId() == null) {
+            return;
+        }
+
+        try {
+            userCouponService.cancelReserve(event.userCouponId());
+            log.info("쿠폰 선점 취소 완료: userCouponId={}", event.userCouponId());
+        } catch (Exception e) {
+            log.error("쿠폰 선점 취소 실패: userCouponId={}, error={}",
+                event.userCouponId(), e.getMessage(), e);
+            // 이 경우도 재시도가 필요하면 throw, 아니면 로그만
+        }
+    }
+
+    @KafkaListener(
+        topics = KafkaTopicConfig.PAYMENT_APPROVED_DLT,
+        groupId = "coupon-service-group-dlt",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
+    public void handlePaymentApprovedDlt(@Payload PaymentApprovedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: PaymentApproved");
+        log.error("⚠️ 결제 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = KafkaTopicConfig.PAYMENT_CANCELLED_DLT,
+        groupId = "coupon-service-group-dlt",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
+    public void handlePaymentCancelledDlt(@Payload PaymentCancelledEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: PaymentCancelled");
+        log.error("⚠️ 결제 취소 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
+    }
+
+    @KafkaListener(
+        topics = KafkaTopicConfig.PAYMENT_FAILED_DLT,
+        groupId = "coupon-service-group-dlt",
+        containerFactory = "couponKafkaListenerContainerFactory"
+    )
+    public void handlePaymentFailedDlt(@Payload PaymentFailedEvent event) {
+        log.error("========================================");
+        log.error("⚠️ DLT 도착: PaymentFailed");
+        log.error("⚠️ 결제 실패 처리 실패 - 수동 처리 필요!");
+        log.error("========================================");
+        log.error("orderId={}", event.orderId());
     }
 }
-

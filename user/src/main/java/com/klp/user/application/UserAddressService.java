@@ -2,6 +2,7 @@ package com.klp.user.application;
 
 import com.klp.global.exception.BusinessException;
 import com.klp.user.application.command.UserAddressCreateCommand;
+import com.klp.user.application.event.UserAddressChangedEvent;
 import com.klp.user.domain.entity.User;
 import com.klp.user.domain.entity.UserAddress;
 import com.klp.user.domain.exception.UserErrorCode;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserAddressService {
 
     private final UserAddressRepository userAddressRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public void createUserAddress(User user, UserAddressCreateCommand command) {
@@ -33,6 +36,9 @@ public class UserAddressService {
         );
 
         userAddressRepository.save(userAddress);
+
+        applicationEventPublisher.publishEvent(
+            new UserAddressChangedEvent(userAddress.getUserAddressId()));
     }
 
     @Transactional(readOnly = true)

@@ -35,7 +35,7 @@ public class OrderCancellationRepositoryImpl implements OrderCancellationReposit
     }
 
     @Override
-    public Optional<OrderCancellation> findByOrder_OrderId(UUID orderId) {
-        return orderCancellationJpaRepository.findByOrder_OrderId(orderId);
+    public Optional<OrderCancellation> findByOrderId(UUID orderId) {
+        return orderCancellationJpaRepository.findByOrderId(orderId);
     }
 }

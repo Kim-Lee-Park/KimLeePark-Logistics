@@ -1,11 +1,11 @@
 resource "aws_ecs_task_definition" "config" {
-  family             = "${local.project}-config"
-  network_mode       = "awsvpc"
+  family                   = "${local.project}-config"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                = local.ecs_services.config.cpu
-  memory             = local.ecs_services.config.memory
-  execution_role_arn = aws_iam_role.ecs_task_execution.arn
-  task_role_arn      = aws_iam_role.ecs_task_role.arn
+  cpu                      = local.ecs_services.config.cpu
+  memory                   = local.ecs_services.config.memory
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -20,21 +20,13 @@ resource "aws_ecs_task_definition" "config" {
         }
       ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "config"
-        }
-      }
-
       environment = [
         { name = "SPRING_PROFILES_ACTIVE", value = var.environment },
         { name = "SPRING_CLOUD_CONFIG_ENABLED", value = "false" },
         { name = "SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL", value = "main" },
         { name = "KAFKA_BOOTSTRAP_SERVERS", value = local.kafka_bootstrap },
-        { name = "LOG_LEVEL", value = "ERROR" }
+        { name = "LOG_LEVEL", value = "ERROR" },
+        { name = "OTEL_INSTRUMENTATION_HTTP_SERVER_EXCLUDE_PATTERNS", value = "/actuator/.*,/swagger-ui/.*,/v3/api-docs/.*,/v1/api-docs/.*" }
       ]
 
       secrets = [

@@ -13,7 +13,7 @@ import com.klp.delivery.delivery.application.util.DriverSelector;
 import com.klp.delivery.delivery.domain.entity.DeliveryRoute;
 import com.klp.delivery.delivery.domain.repository.DeliveryRouteRepository;
 import com.klp.delivery.delivery.exception.DeliveryErrorCode;
-import com.klp.delivery.delivery.infrastructure.client.dto.DriverResponse;
+import com.klp.delivery.delivery.infrastructure.client.dto.DriverInfo;
 import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import java.util.List;
@@ -82,8 +82,9 @@ public class DeliveryRouteService {
                         .orElseThrow(() -> new BusinessException(NO_ROUTE_PLAN_FOUND));
 
                 // 물류배송담당자 조회
-                List<DriverResponse> driverList = driverClientService.findLogisticsDrivers();
+                List<DriverInfo> driverList = driverClientService.findLogisticsDrivers().drivers();
 
+                log.info("물류 배송담당자 ={}", driverList);
                 DriverCommand driver = DriverSelector.pickRandomDriver(
                     DriverCommand.from(driverList));
 
@@ -231,7 +232,7 @@ public class DeliveryRouteService {
         }
 
         // 그 외에는 물류 배송 담당자 선택
-        List<DriverResponse> driverList = driverClientService.findLogisticsDrivers();
+        List<DriverInfo> driverList = driverClientService.findLogisticsDrivers().drivers();
         DriverCommand driver = DriverSelector.pickRandomDriver(DriverCommand.from(driverList));
         log.info("물류 배송 담당자 선택: driverId={}, currentStatus={}, newStatus={}",
             driver.userId(), currentStatus, newStatus);

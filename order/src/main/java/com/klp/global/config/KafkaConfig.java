@@ -3,8 +3,7 @@ package com.klp.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
 import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
-import io.micrometer.observation.ObservationRegistry;
-import com.klp.order.infrastructure.event.dto.ProductInfoChangedMessage;
+import com.klp.order.infrastructure.event.dto.UserAddressChangedMessage;
 import com.klp.order.infrastructure.event.dto.UserProfileChangedMessage;
 import com.klp.order.infrastructure.event.event.CouponCancelledEvent;
 import com.klp.order.infrastructure.event.event.CouponCancelledFailedEvent;
@@ -22,15 +21,20 @@ import com.klp.order.infrastructure.event.event.InventoryReplenishedEvent;
 import com.klp.order.infrastructure.event.event.InventoryReplenishedFailedEvent;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
 import com.klp.order.infrastructure.event.event.OrderPaidEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
 import com.klp.order.infrastructure.event.event.PaymentApprovedEvent;
-import com.klp.order.infrastructure.event.event.PaymentApprovedFailedEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledEvent;
 import com.klp.order.infrastructure.event.event.PaymentCancelledFailedEvent;
+import io.micrometer.observation.ObservationRegistry;
+import com.klp.order.infrastructure.event.event.PaymentFailedEvent;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,12 +48,16 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.messaging.converter.MessageConversionException;
+import org.springframework.util.backoff.ExponentialBackOff;
 
+@Slf4j
 @EnableKafka
 @Configuration
 public class KafkaConfig {
@@ -83,7 +91,7 @@ public class KafkaConfig {
         configProps.put(JsonSerializer.TYPE_MAPPINGS,
             "OrderCreatedEvent:" + OrderCreatedEvent.class.getName() + "," +
                 "OrderCancelledEvent:" + OrderCancelledEvent.class.getName() + "," +
-                "OrderPaidEvent:" + OrderPaidEvent.class.getName());
+                "OrderFailedEvent:" + OrderFailedEvent.class.getName());
 
         return new DefaultKafkaProducerFactory<>(configProps,
             new StringSerializer(),
@@ -95,15 +103,13 @@ public class KafkaConfig {
         KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory());
         kafkaTemplate.setObservationEnabled(true);
         kafkaTemplate.setObservationRegistry(observationRegistry);
-        return new KafkaTemplate<>(producerFactory());
+        return kafkaTemplate;
     }
 
-    // consumer 설정
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
 
-        // 기본 설정
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "order-service-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
@@ -118,7 +124,7 @@ public class KafkaConfig {
         props.put(JsonDeserializer.TYPE_MAPPINGS,
             "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName() + "," +
                 "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName() + "," +
-                "PaymentApprovedFailedEvent:" + PaymentApprovedFailedEvent.class.getName() + "," +
+                "PaymentFailedEvent:" + PaymentFailedEvent.class.getName() + "," +
                 "PaymentCancelledFailedEvent:" + PaymentCancelledFailedEvent.class.getName() + "," +
                 "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
                 "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + ","
@@ -139,7 +145,6 @@ public class KafkaConfig {
                 "UserProfileChangedMessage:" + UserProfileChangedMessage.class.getName() + "," +
                 "ProductInfoChangedMessage:" + ProductInfoChangedMessage.class.getName());
 
-        // 수동 커밋 설정
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         return new DefaultKafkaConsumerFactory<>(props,
@@ -148,25 +153,57 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(
+        KafkaTemplate<String, Object> kafkaTemplate
+    ) {
+        return new DeadLetterPublishingRecoverer(kafkaTemplate,
+            (record, exception) -> {
+                String dltTopic = record.topic() + ".order.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
+            });
+    }
+
+    @Bean
+    public DefaultErrorHandler errorHandler(DeadLetterPublishingRecoverer recoverer) {
+        // ExponentialBackOff: 1초 -> 2초 -> 4초
+        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
+        backOff.setMaxInterval(4000L);
+        backOff.setMaxElapsedTime(10000L);
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        // 재시도하지 않을 예외들
+        errorHandler.addNotRetryableExceptions(
+            DeserializationException.class,
+            MessageConversionException.class
+        );
+
+        // 재시도 로그
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
+            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
+                record.topic(), deliveryAttempt, ex.getMessage());
+        });
+
+        return errorHandler;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
+        DefaultErrorHandler errorHandler
+    ) {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(consumerFactory());
         factory.setConcurrency(3);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
-        factory.setCommonErrorHandler(errorHandler());
+        factory.setCommonErrorHandler(errorHandler);
 
         factory.getContainerProperties().setObservationEnabled(true);
 
         return factory;
-    }
-
-    @Bean
-    public DefaultErrorHandler errorHandler() {
-        // 최대 3번 재시도, 초기 1초 간격
-        FixedBackOff fixedBackOff = new FixedBackOff(1000L, 3L);
-        return new DefaultErrorHandler(fixedBackOff);
     }
 
     @Bean
@@ -181,7 +218,6 @@ public class KafkaConfig {
             org.springframework.kafka.support.serializer.JsonDeserializer.class);
 
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.klp.order.infrastructure.event.dto.*");
-//        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         return props;
@@ -199,11 +235,9 @@ public class KafkaConfig {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, UserProfileChangedMessage>
     userProfileChangedKafkaListenerContainerFactory() {
-
         ConcurrentKafkaListenerContainerFactory<String, UserProfileChangedMessage> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(userProfileChangedConsumerFactory());
-
         factory.getContainerProperties().setObservationEnabled(true);
         return factory;
     }
@@ -218,10 +252,30 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> productInfoChangedKafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage>
+    productInfoChangedKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, ProductInfoChangedMessage> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(productInfoChangedConsumerFactory());
+
+        factory.getContainerProperties().setObservationEnabled(true);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserAddressChangedMessage> userAddressChangedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+            commonConsumerConfigs(),
+            new org.apache.kafka.common.serialization.StringDeserializer(),
+            new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserAddressChangedMessage.class))
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserAddressChangedMessage> userAddressChangedKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserAddressChangedMessage> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userAddressChangedConsumerFactory());
 
         factory.getContainerProperties().setObservationEnabled(true);
         return factory;

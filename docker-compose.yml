@@ -1,6 +1,6 @@
 services:
   postgres-auth:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-auth-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -9,14 +9,13 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_auth_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5432:5432"
     networks:
       - db-net
 
   postgres-user:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-user-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -25,14 +24,13 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_user_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5433:5432"
     networks:
       - db-net
 
   postgres-hub:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-hub-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -41,14 +39,25 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_hub_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5434:5432"
     networks:
       - db-net
 
+  postgres-exporter-hub:
+    image: prometheuscommunity/postgres-exporter:v0.18.0
+    container_name: postgres-exporter-hub
+    environment:
+      DATA_SOURCE_NAME: "postgresql://kimleepark:kimleepark@postgres-hub:5432/hub?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - db-net
+    depends_on:
+      - postgres-hub
+
   postgres-delivery:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-delivery-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -57,14 +66,13 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_delivery_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5435:5432"
     networks:
       - db-net
 
   postgres-order:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-order-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -73,14 +81,13 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_order_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5436:5432"
     networks:
       - db-net
 
   postgres-notification:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-notification-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -89,14 +96,13 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_notification_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5437:5432"
     networks:
       - db-net
 
   postgres-promotion:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-promotion-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -105,14 +111,13 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_promotion_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5438:5432"
     networks:
       - db-net
 
   postgres-payment:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: postgres:18
     container_name: postgres-payment-klp
     environment:
       POSTGRES_USER: kimleepark
@@ -121,7 +126,6 @@ services:
       TZ: Asia/Seoul
     volumes:
       - klp_postgres_payment_data:/var/lib/postgresql
-      - ./init-sql/extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
     ports:
       - "5439:5432"
     networks:
@@ -153,42 +157,39 @@ services:
     networks:
       - db-net
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.9.4
-    container_name: zookeeper-klp
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    volumes:
-      - klp-zookeeper-data:/var/lib/zookeeper/data
-      - klp-zookeeper-logs:/var/lib/zookeeper/log
-    networks:
-      - db-net
-
   kafka:
-    image: confluentinc/cp-kafka:7.9.4
+    image: confluentinc/cp-kafka:8.1.1
     container_name: kafka-klp
-    depends_on:
-      - zookeeper
     ports:
       - "9092:9092"
       - "29092:29092"
+      - "9093:9093"
+      - "9404:9404"
+      - "9999:9999"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:9093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'ugP2VOBGQ-CRY1OrnCY7fg'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_MIN_INSYNC_REPLICAS: 1
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_OPTS: >-
+        -javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent-0.20.0.jar=9404:/opt/jmx-exporter/kafka-jmx.yml
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: kafka
     volumes:
       - klp-kafka-data:/var/lib/kafka/data
+      - ./telemetry/jmx:/opt/jmx-exporter:ro
     networks:
       - db-net
 
@@ -197,7 +198,6 @@ services:
     container_name: kafka-ui-klp
     depends_on:
       - kafka
-      - zookeeper
     ports:
       - "8989:8080"
     environment:
@@ -223,6 +223,4 @@ volumes:
   klp_postgres_payment_data:
   klp_postgres_ai_data:
   klp_redis_data:
-  klp-zookeeper-data:
-  klp-zookeeper-logs:
   klp-kafka-data:

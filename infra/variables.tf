@@ -91,3 +91,9 @@ variable "github_repository" {
   type        = string
   default     = "Kim-Lee-Park/KimLeePark-Logistics"
 }
+
+variable "kafka_kraft_cluster_id" {
+  description = "Kafka KRaft cluster.id (do not change unless rebuilding the cluster)."
+  type        = string
+  default     = "MkU3OEVBNTcwNTJENDM2Qk"
+}

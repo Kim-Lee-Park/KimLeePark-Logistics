@@ -29,7 +29,9 @@ public record OrderCancelledEvent(
         Order order,
         UUID userCouponId,
         String inventoryIdempotencyKey,
-        String deliveryIdempotencyKey
+        String deliveryIdempotencyKey,
+        String cancelReason,
+        LocalDateTime cancelledAt
     ) {
         List<ProductReplenishment> products = order.getOrderItems().stream()
             .map(item -> new ProductReplenishment(
@@ -45,9 +47,9 @@ public record OrderCancelledEvent(
             userCouponId,
             inventoryIdempotencyKey,
             deliveryIdempotencyKey,
-            order.getCancellation().getCancelReason(),
+            cancelReason,
             products,
-            order.getCancellation().getCancelledAt(),
+            cancelledAt,
             LocalDateTime.now()
         );
     }

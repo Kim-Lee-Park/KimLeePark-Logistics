@@ -6,8 +6,10 @@ import com.klp.delivery.delivery.domain.event.InventoryReplenishedEvent;
 import io.micrometer.observation.ObservationRegistry;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,12 +23,16 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.messaging.converter.MessageConversionException;
+import org.springframework.util.backoff.ExponentialBackOff;
 
+@Slf4j
 @EnableKafka
 @Configuration
 public class KafkaConfig {
@@ -104,7 +110,7 @@ public class KafkaConfig {
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
             "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
-            "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName());
+                "InventoryReplenishedEvent:" + InventoryReplenishedEvent.class.getName());
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
@@ -114,14 +120,16 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
+        DefaultErrorHandler errorHandler
+    ) {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(consumerFactory());
-        factory.setConcurrency(3);
+        factory.setConcurrency(9);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
-        factory.setCommonErrorHandler(errorHandler());
+        factory.setCommonErrorHandler(errorHandler);
 
         factory.getContainerProperties().setObservationEnabled(true);
 
@@ -129,8 +137,39 @@ public class KafkaConfig {
     }
 
     @Bean
-    public DefaultErrorHandler errorHandler() {
-        FixedBackOff fixedBackOff = new FixedBackOff(1000L, 3L);
-        return new DefaultErrorHandler(fixedBackOff);
+    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(
+        KafkaTemplate<String, Object> kafkaTemplate
+    ) {
+        return new DeadLetterPublishingRecoverer(kafkaTemplate,
+            (record, exception) -> {
+                String dltTopic = record.topic() + ".delivery.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
+            });
+    }
+
+    @Bean
+    public DefaultErrorHandler errorHandler(DeadLetterPublishingRecoverer recoverer) {
+        // ExponentialBackOff: 1초 -> 2초 -> 4초
+        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
+        backOff.setMaxInterval(4000L);
+        backOff.setMaxElapsedTime(10000L);
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        // 재시도하지 않을 예외들
+        errorHandler.addNotRetryableExceptions(
+            DeserializationException.class,
+            MessageConversionException.class
+        );
+
+        // 재시도 로그
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
+            log.warn("메시지 처리 재시도: topic={}, attempt={}, error={}",
+                record.topic(), deliveryAttempt, ex.getMessage());
+        });
+
+        return errorHandler;
     }
 }

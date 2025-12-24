@@ -5,11 +5,17 @@ import com.klp.hub.inventory.application.dto.InventoryReplenishCommand;
 import com.klp.hub.inventory.domain.Inventory;
 import com.klp.hub.inventory.domain.InventoryIdempotencyStatus;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
+import com.klp.hub.inventory.domain.event.CouponUsedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.domain.repository.InventoryRepository;
+import com.klp.hub.inventory.domain.repository.dto.InventoryDeduct;
 import com.klp.hub.inventory.domain.repository.dto.InventoryReplenish;
 import com.klp.hub.inventory.domain.repository.exception.UniqueConstraintException;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
+import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponse;
+import com.klp.hub.inventory.presentation.dto.response.InventoryDeductResponseForEvent;
 import com.klp.hub.inventory.presentation.dto.response.InventoryReplenishResponse;
 import com.klp.hub.inventory.presentation.dto.response.InventoryResponse;
 import java.util.List;
@@ -58,43 +64,33 @@ public class InventoryService {
     /**
      * 상품의 재고를 일괄 차감시킨다
      */
-//    @Transactional
-//    public InventoryDeductResponse deduct(CouponUsedEvent event) {
-//        String idempotencyKey = event.InventoruIdempotencyKey();
-//        InventoryIdempotencyStatus status = inventoryRepository.acquireIdempotencyKey(
-//            idempotencyKey
-//        );
-//
-//        if (status.isUsed()) {
-//            log.info("이미 성공 처리된 멱등키 입니다. idempotencyKey = {}", idempotencyKey);
-//            return InventoryDeductResponse.already();
-//        }
-//
-//        List<InventoryDeduct> plans = InventoryUpdatePlanner.planDeduct(
-//            event.Or()
-//        );
-//
-//        int updated = inventoryRepository.deductAll(plans);
-//        if (updated != plans.size()) {
-//            log.error("재고가 부족합니다.");
-//            throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
-//        }
-//        inventoryRepository.idempotencySuccess(idempotencyKey);
-//
-//        InventoryDeductedEvent deductedEvent = InventoryDeductedEvent.of(
-//            event.orderId(),
-//            event.items().stream()
-//                .map(item -> new InventoryDeductedEvent.DeductedItem(
-//                    item.productId(),
-//                    item.hubId(),
-//                    item.quantity()
-//                ))
-//                .toList()
-//        );
-//        outboxService.saveInventoryDeductedEvent(deductedEvent);
-//
-//        return InventoryDeductResponse.success();
-//    }
+    @Transactional
+    public InventoryDeductResponse deduct(CouponUsedEvent event) {
+        String idempotencyKey = event.inventoryIdempotencyKey();
+        InventoryIdempotencyStatus status = inventoryRepository.acquireIdempotencyKey(
+            idempotencyKey
+        );
+
+        if (status.isUsed()) {
+            log.info("이미 성공 처리된 멱등키 입니다. idempotencyKey = {}", idempotencyKey);
+            return InventoryDeductResponse.already();
+        }
+
+        List<InventoryDeduct> plans = InventoryUpdatePlanner.planDeductFromCouponUsed(
+            event.products());
+
+        int updated = inventoryRepository.deductAll(plans);
+        if (updated != plans.size()) {
+            log.error("재고가 부족합니다.");
+            throw new BusinessException(InventoryErrorCode.INSUFFICIENT_STOCK);
+        }
+        inventoryRepository.idempotencySuccess(idempotencyKey);
+
+        InventoryDeductedEvent deductedEvent = InventoryDeductedEvent.of(event);
+        outboxService.saveInventoryDeductedEvent(deductedEvent);
+
+        return InventoryDeductResponse.success();
+    }
 
     /**
      * 상품의 재고를 일괄 증가시킨다
@@ -138,7 +134,7 @@ public class InventoryService {
             return;
         }
 
-        List<InventoryReplenish> plans = event.products().stream()  // items() -> products()
+        List<InventoryReplenish> plans = event.products().stream()
             .map(item -> new InventoryReplenish(item.productId(), item.hubId(), item.quantity()))
             .toList();
 
@@ -149,23 +145,7 @@ public class InventoryService {
         }
         inventoryRepository.idempotencySuccess(idempotencyKey);
 
-        InventoryReplenishedEvent replenishedEvent = InventoryReplenishedEvent.of(
-            event.paymentId(),
-            event.orderId(),
-            event.userId(),
-            event.userCouponId(),
-            event.inventoryIdempotencyKey(),
-            event.deliveryIdempotencyKey(),
-            event.reason(),
-            event.products().stream()  // items() -> products()
-                .map(item -> new InventoryReplenishedEvent.ProductInfo(
-                    item.productId(),
-                    item.hubId(),
-                    item.quantity()
-                ))
-                .toList(),
-            event.cancelledAt()
-        );
+        InventoryReplenishedEvent replenishedEvent = InventoryReplenishedEvent.of(event);
         outboxService.saveInventoryReplenishedEvent(replenishedEvent);
 
         log.info("결제 취소로 인한 재고 복원 완료. orderId={}", event.orderId());
@@ -186,4 +166,51 @@ public class InventoryService {
             return new BusinessException(InventoryErrorCode.NOT_FOUND_INVENTORY);
         });
     }
+
+    @Transactional
+    public InventoryDeductResponseForEvent deductWithEventPublishing(
+        CouponUsedEvent event,
+        List<InventoryDeduct> plans
+    ) {
+        String idempotencyKey = event.inventoryIdempotencyKey();
+
+        // 1. 멱등키 확인
+        InventoryIdempotencyStatus status = inventoryRepository.acquireIdempotencyKey(
+            idempotencyKey
+        );
+
+        if (status.isUsed()) {
+            log.info("이미 성공 처리된 멱등키입니다. idempotencyKey = {}", idempotencyKey);
+            return InventoryDeductResponseForEvent.already();
+        }
+
+        // 2. 재고 차감 시도
+        int updated = inventoryRepository.deductAll(plans);
+
+        // 3-A. 재고 부족 시 → Failed Event 발행 (예외 발생 안함!)
+        if (updated != plans.size()) {
+            log.warn("재고 부족으로 차감 실패. orderId={}, requested={}, updated={}",
+                event.orderId(), plans.size(), updated);
+
+            // Failed Event를 Outbox에 저장
+            InventoryDeductedFailedEvent failedEvent = InventoryDeductedFailedEvent.of(event);
+            outboxService.saveInventoryDeductedFailedEvent(failedEvent);
+
+            // 실패도 처리 완료로 간주
+            inventoryRepository.idempotencySuccess(idempotencyKey);
+
+            log.info("재고 부족 Failed Event 발행 완료: orderId={}", event.orderId());
+            return InventoryDeductResponseForEvent.failed("재고 부족");
+        }
+
+        // 3-B. 성공 시 → Success Event 발행
+        inventoryRepository.idempotencySuccess(idempotencyKey);
+
+        InventoryDeductedEvent deductedEvent = InventoryDeductedEvent.of(event);
+        outboxService.saveInventoryDeductedEvent(deductedEvent);
+
+        log.info("재고 차감 Success Event 발행 완료: orderId={}", event.orderId());
+        return InventoryDeductResponseForEvent.success();
+    }
+
 }

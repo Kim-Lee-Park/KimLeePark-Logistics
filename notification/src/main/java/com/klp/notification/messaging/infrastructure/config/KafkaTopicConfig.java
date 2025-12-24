@@ -8,8 +8,17 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    public static final String DELIVERY_CREATED_TOPIC = "delivery.topic";
+    public static final String DELIVERY_CREATED_TOPIC = "delivery.notification";
+    public static final String DELIVERY_CREATED_DLT = "delivery.notification.notification.dlt";
     public static final String NOTIFICATION_DLT = "notification.dlt";
+
+    @Bean
+    public NewTopic deliveryCreatedTopic() {
+        return TopicBuilder.name(DELIVERY_CREATED_TOPIC)
+            .partitions(1)
+            .replicas(1)
+            .build();
+    }
 
     @Bean
     public NewTopic notificationDltTopic() {

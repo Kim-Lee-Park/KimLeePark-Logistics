@@ -26,6 +26,12 @@ public class GatewayObservationExcludeConfig {
                     && (path.contains("/actuator/prometheus"))) {
                     return false;
                 }
+                if (path.contains("/actuator")) {
+                    return false;
+                }
+                if (path.contains("/health") || path.contains("/metrics")) {
+                    return false;
+                }
             }
             return true;
         };

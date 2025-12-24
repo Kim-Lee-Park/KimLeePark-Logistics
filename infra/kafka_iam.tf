@@ -20,6 +20,25 @@ resource "aws_iam_role_policy_attachment" "kafka_ecr_readonly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+resource "aws_iam_role_policy" "kafka_ec2_discovery" {
+  name = "${local.project}-kafka-ec2-discovery"
+  role = aws_iam_role.kafka_instance.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeTags"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_instance_profile" "kafka" {
   name = "${local.project}-kafka-instance-profile"
   role = aws_iam_role.kafka_instance.name

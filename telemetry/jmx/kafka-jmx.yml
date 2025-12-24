@@ -1,0 +1,27 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+
+rules:
+  - pattern: 'kafka\.server<type=KafkaServer,\s*name=BrokerState><>Value'
+    name: kafka_server_broker_state
+    type: GAUGE
+
+  - pattern: 'kafka\.server<type=ReplicaManager,\s*name=UnderReplicatedPartitions><>Value'
+    name: kafka_under_replicated_partitions
+    type: GAUGE
+
+  - pattern: 'kafka\.controller<type=KafkaController,\s*name=ActiveControllerCount><>Value'
+    name: kafka_controller_active_controller_count
+    type: GAUGE
+
+  - pattern: 'kafka\.server<type=KafkaRequestHandlerPool,\s*name=RequestHandlerAvgIdlePercent><>Value'
+    name: kafka_request_handler_avg_idle_percent
+    type: GAUGE
+
+  - pattern: 'kafka\.network<type=SocketServer,\s*name=NetworkProcessorAvgIdlePercent><>Value'
+    name: kafka_network_processor_avg_idle_percent
+    type: GAUGE
+
+  - pattern: 'java\.lang<type=Memory><HeapMemoryUsage>used'
+    name: jvm_memory_heap_used_bytes
+    type: GAUGE

@@ -1,6 +1,7 @@
 package com.klp.hub.inventory.infrastructure.kafka.producer;
 
 import com.klp.hub.inventory.domain.event.InventoryDeductedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDeductedFailedEvent;
 import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +27,7 @@ public class InventoryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_DEDUCTED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
@@ -41,13 +42,28 @@ public class InventoryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_REPLENISHED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
                 log.info("재고 복구 이벤트 발행 성공: orderId={}", event.orderId());
             } else {
                 log.error("재고 복구 이벤트 발행 실패: orderId={}", event.orderId());
+            }
+        });
+    }
+
+    public void publishInventoryDeductedFailedEvent(InventoryDeductedFailedEvent event) {
+        String key = event.orderId().toString();
+
+        CompletableFuture<SendResult<String, Object>> future =
+            kafkaTemplate.send(KafkaTopicConfig.INVENTORY_DEDUCTED_FAILED_TOPIC, key, event);
+
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                log.info("재고 차감 실패 이벤트 발행 성공: orderId={}", event.orderId());
+            } else {
+                log.error("재고 차감 실패 이벤트 발행 실패: orderId={}", event.orderId());
             }
         });
     }

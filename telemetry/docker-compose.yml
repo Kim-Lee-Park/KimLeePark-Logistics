@@ -27,6 +27,16 @@ services:
     networks:
       - telemetry
 
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=k6
+      - INFLUXDB_HTTP_AUTH_ENABLED=false
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
   # Grafana
   grafana:
     image: grafana/grafana:main-ubuntu
@@ -72,6 +82,7 @@ services:
       - "9090:9090"
     networks:
       - telemetry
+      - db-net
 
   kafka-exporter:
     image: danielqsj/kafka-exporter:latest
@@ -95,3 +106,4 @@ networks:
 volumes:
   tempo-data:
   grafana-data:
+  influxdb-data:

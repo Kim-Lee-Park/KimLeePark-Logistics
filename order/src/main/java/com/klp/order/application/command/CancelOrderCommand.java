@@ -10,7 +10,7 @@ public record CancelOrderCommand(
     String cancelReason,
     Long cancelledBy,
     CancelType cancelType,
-    List<OrderItemCommand> items
+    List<OrderItemCommand> orderIitems
 ) {
 
 }

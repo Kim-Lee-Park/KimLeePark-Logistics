@@ -7,6 +7,7 @@ import com.klp.global.exception.OrderErrorCode;
 import com.klp.order.application.command.CancelOrderCommand;
 import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.UpdateOrderCommand;
+import com.klp.order.domain.entity.cancel.OrderCancellation;
 import com.klp.order.domain.entity.order.Order;
 import com.klp.order.domain.entity.order.OrderStatus;
 import com.klp.order.domain.repository.OrderRepository;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderCancellationService orderCancellationRepository;
 
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
@@ -38,7 +40,7 @@ public class OrderService {
             command.addressId(),
             command.deliveryLatitude(),
             command.deliveryLongitude(),
-            command.items()
+            command.orderItems()
         );
 
         return orderRepository.save(order);
@@ -61,11 +63,12 @@ public class OrderService {
     @Transactional
     public Order cancelOrder(CancelOrderCommand command) {
         Order order = findById(command.orderId());
-        order.cancel(
+        OrderCancellation cancellation = order.cancel(
             command.cancelReason(),
             command.cancelledBy(),
             command.cancelType()
         );
+        orderCancellationRepository.save(cancellation);
         return orderRepository.save(order);
     }
 

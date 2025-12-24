@@ -2,15 +2,12 @@ package com.klp.delivery.delivery.application.facade;
 
 import static com.klp.delivery.delivery.exception.DeliveryErrorCode.DELIVERY_CREATION_FAILED;
 
-import com.klp.delivery.common.enums.CustomerDeliveryStatus;
 import com.klp.delivery.common.enums.IdempotencyStatus;
 import com.klp.delivery.delivery.application.command.DeliveryCommand;
 import com.klp.delivery.delivery.application.command.DriverCommand;
 import com.klp.delivery.delivery.application.command.IdempotencyCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand;
 import com.klp.delivery.delivery.application.command.OrderToDeliveryCommand.OrderItemCommand;
-import com.klp.delivery.delivery.application.event.DeliveryEventPublisher;
-import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DeliveryService;
 import com.klp.delivery.delivery.application.service.DeliveryOutboxEventService;
 import com.klp.delivery.delivery.application.service.DriverService;
@@ -20,7 +17,6 @@ import com.klp.delivery.delivery.domain.entity.Delivery;
 import com.klp.delivery.delivery.domain.entity.DeliveryItem;
 import com.klp.delivery.delivery.domain.event.DeliveryRouteCreateEvent;
 import com.klp.delivery.delivery.domain.event.DeliveryCreatedEvent;
-import com.klp.delivery.delivery.domain.event.OrderDeliveryEvent;
 import com.klp.delivery.delivery.presentation.dto.DeliveryResponse;
 import com.klp.delivery.global.exception.BusinessException;
 import com.klp.delivery.routeplan.application.command.HubInfo;
@@ -65,6 +61,7 @@ public class DeliveryFacade {
             List<DriverCommand> driverList = driverService.findArrivalHubDrivers(
                 UUID.fromString(arrivalHubInfo.hubId().toString()));
 
+            log.info("업체 배송 담당자 조회 ={}", driverList);
             // 업체 배송 담당자 지정
             DriverCommand driverCommand = DriverSelector.pickRandomDriver(driverList);
 
@@ -139,8 +136,15 @@ public class DeliveryFacade {
             List<DeliveryCreatedEvent.OrderItem> allEventItems = new ArrayList<>();
             for (Delivery delivery : createdDeliveries) {
                 for (DeliveryItem item : delivery.getDeliveryItems()) {
+                    OrderItemCommand orderItemCommand = productMap.get(item.getOrderItemId());
                     allEventItems.add(new DeliveryCreatedEvent.OrderItem(
                         item.getOrderItemId(),
+                        orderItemCommand.productId(),
+                        orderItemCommand.productName(),
+                        orderItemCommand.hubId(),
+                        orderItemCommand.quantity(),
+                        orderItemCommand.unitPrice(),
+                        orderItemCommand.totalPrice(),
                         delivery.getDeliveryId()
                     ));
                 }

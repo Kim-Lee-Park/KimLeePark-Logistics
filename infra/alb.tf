@@ -2,8 +2,8 @@ resource "aws_lb" "public_alb" {
   name               = "${local.project}-alb"
   internal           = false
   load_balancer_type = "application"
-  subnets = [aws_subnet.public_az1.id, aws_subnet.public_az2.id]
-  security_groups = [aws_security_group.alb.id]
+  subnets            = [aws_subnet.public_az1.id, aws_subnet.public_az2.id]
+  security_groups    = [aws_security_group.alb.id]
 }
 
 resource "aws_lb_target_group" "gateway_tg" {
@@ -89,6 +89,6 @@ resource "aws_lb_listener_rule" "grafana" {
 
 resource "aws_lb_target_group_attachment" "grafana_obs" {
   target_group_arn = aws_lb_target_group.grafana_tg.arn
-  target_id        = aws_instance.observability_stack.private_ip
+  target_id        = aws_instance.observability_metrics.private_ip
   port             = 3000
 }

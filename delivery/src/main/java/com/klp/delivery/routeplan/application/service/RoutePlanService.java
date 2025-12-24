@@ -15,7 +15,9 @@ import com.klp.delivery.routeplan.presentation.dto.response.CreateRoutePlanRespo
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanDetailResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanItemDetailResponse;
 import com.klp.delivery.routeplan.presentation.dto.response.GetRoutePlanListResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,9 +89,9 @@ public class RoutePlanService {
         if (routePlanPolicy.isDirectAllowed(hubRouteInfo.distanceKm())) {
             routePlan = RoutePlan.create(
                 command.departureId(),
-                hubRouteInfo.departureName(),
+                departureHub.name(),
                 command.arrivalId(),
-                hubRouteInfo.arrivalName(),
+                arrivalHub.name(),
                 hubRouteInfo.durationMin(),
                 hubRouteInfo.distanceKm()
             );
@@ -97,9 +99,19 @@ public class RoutePlanService {
         //경유 경로 계획
         else {
             List<HubRouteInfo> routeInfos = routeInfoClientService.getHubRouteInfos();
-            routePlan = RoutePlan.plan(command.departureId(), command.arrivalId(),
-                hubRouteInfo.toVo(), routeInfos.stream().map(HubRouteInfo::toVo).toList());
+            Map<UUID, String> hubNameMap = buildHubNameMap(departureHub, arrivalHub, routeInfos);
+
+            routePlan = RoutePlan.plan(
+                command.departureId(),
+                departureHub.name(),
+                command.arrivalId(),
+                arrivalHub.name(),
+                hubRouteInfo.toVo(),
+                routeInfos.stream().map(HubRouteInfo::toVo).toList(),
+                hubNameMap
+            );
         }
+        
         return new CreateRoutePlanResponse(routePlanRepository.save(routePlan).getRoutePlanId());
     }
 
@@ -148,6 +160,41 @@ public class RoutePlanService {
         List<RoutePlan> plans = routePlanRepository.findByHubId(hubId);
 
         plans.forEach(plan -> plan.pendingDelete(userDetails.getUserId()));
+    }
+
+    /**
+     * 허브 이름 맵 생성
+     * routeInfos에서 이름이 없는 경우 허브를 조회하여 이름을 설정
+     */
+    private Map<UUID, String> buildHubNameMap(HubInfo departureHub, HubInfo arrivalHub, List<HubRouteInfo> routeInfos) {
+        Map<UUID, String> hubNameMap = new HashMap<>();
+
+        // 출발/도착 허브 이름 추가
+        hubNameMap.put(departureHub.hubId(), departureHub.name());
+        hubNameMap.put(arrivalHub.hubId(), arrivalHub.name());
+
+        // routeInfos에서 허브 이름 추가 (이름이 없으면 허브 조회)
+        for (HubRouteInfo routeInfo : routeInfos) {
+            // 출발 허브 이름
+            if (!hubNameMap.containsKey(routeInfo.departureId())) {
+                String departureName = routeInfo.departureName();
+                if (departureName == null || departureName.isBlank()) {
+                    departureName = hubClientService.getHubById(routeInfo.departureId()).name();
+                }
+                hubNameMap.put(routeInfo.departureId(), departureName);
+            }
+
+            // 도착 허브 이름
+            if (!hubNameMap.containsKey(routeInfo.arrivalId())) {
+                String arrivalName = routeInfo.arrivalName();
+                if (arrivalName == null || arrivalName.isBlank()) {
+                    arrivalName = hubClientService.getHubById(routeInfo.arrivalId()).name();
+                }
+                hubNameMap.put(routeInfo.arrivalId(), arrivalName);
+            }
+        }
+
+        return hubNameMap;
     }
 
     //경로 계획 ID로 조회 서비스 내부용

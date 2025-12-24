@@ -7,21 +7,26 @@ import com.klp.order.application.command.CreateOrderCommand;
 import com.klp.order.application.command.OrderItemCommand;
 import com.klp.order.application.query.ProductQueryService;
 import com.klp.order.application.query.UserQueryService;
+import com.klp.order.application.service.InventoryClient;
 import com.klp.order.application.service.OrderOutboundRequestService;
 import com.klp.order.application.service.OrderOutboxEventService;
 import com.klp.order.application.service.OrderService;
+import com.klp.order.application.service.PromotionClient;
 import com.klp.order.application.service.UserClient;
 import com.klp.order.domain.entity.idempotencykey.OperationType;
 import com.klp.order.domain.entity.idempotencykey.Target;
 import com.klp.order.domain.entity.order.Order;
-import com.klp.order.domain.vo.UserAddressHubId;
+import com.klp.order.domain.vo.UserAddress;
 import com.klp.order.domain.vo.UserProfile;
 import com.klp.order.infrastructure.client.dto.inventory.request.InventoryReservationRequest;
 import com.klp.order.infrastructure.client.dto.inventory.response.InventoryReservationResponse;
-import com.klp.order.infrastructure.client.service.InventoryIntegrationService;
-import com.klp.order.infrastructure.client.service.PromotionDiscountService;
+import com.klp.order.infrastructure.client.dto.promotion.request.PromotionCalculateRequest;
+import com.klp.order.infrastructure.client.dto.promotion.response.PromotionResponse;
 import com.klp.order.infrastructure.event.event.OrderCancelledEvent;
 import com.klp.order.infrastructure.event.event.OrderCreatedEvent;
+import com.klp.order.infrastructure.event.event.OrderFailedEvent;
+import com.klp.order.infrastructure.event.event.WhichRollback;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,23 +45,25 @@ public class OrderFacade {
     private final OrderOutboxEventService orderOutboxEventService;
     private final UserQueryService userQueryService;
     private final ProductQueryService productQueryService;
-    private final PromotionDiscountService promotionService;
-    private final InventoryIntegrationService inventoryService;
+    private final PromotionClient promotionClient;
+    private final InventoryClient inventoryClient;
     private final UserClient userClient;
 
     @Transactional
     public Order createOrder(CreateOrderCommand command) {
+        Order order = null;
+        boolean inventoryReserved = false;
+        boolean promotionApplied = false;
 
         try {
             // 1. 유저 조회_ 정보 얻기
             //grade , email, username 뽑아오기
             UserProfile userProfile = userQueryService.getUserProfile(command.userId());
             //2. userAddressHubId, address  받아오기
-            UserAddressHubId userAddressHubId = userClient.getUserAddressHubIdByAddressId(
-                command.addressId());
+            UserAddress userAddress = userQueryService.getUserAddress(command.addressId());
 
             // 3. 주문 생성
-            Order order = orderService.createOrder(command);
+            order = orderService.createOrder(command);
             log.info("주문 생성 완료 - orderId: {}", order.getOrderId());
 
             String InventoryIdempotencyKey = orderOutboundRequestService.generateIdempotencyKey(
@@ -73,7 +80,7 @@ public class OrderFacade {
             log.info("멱등키 생성 완료 - orderId: {}", order.getOrderId());
 
             // 4. 상품 존재 확인
-            List<OrderItemCommand> orderItems = command.items();
+            List<OrderItemCommand> orderItems = command.orderItems();
             int originalPriceTotal = 0;
             List<InventoryReservationRequest.ReservationItemRequest> reservationItems = new ArrayList<>();
 
@@ -96,7 +103,7 @@ public class OrderFacade {
                 InventoryIdempotencyKey,
                 reservationItems
             );
-            InventoryReservationResponse inventoryResponse = inventoryService.reserveProduct(
+            InventoryReservationResponse inventoryResponse = inventoryClient.reserveProduct(
                 reservationRequest);
 
             validateInventoryReservation(
@@ -104,25 +111,31 @@ public class OrderFacade {
                 order.getOrderId(),
                 reservationItems.size()
             );
+            if (inventoryResponse.reserved()) {
+                inventoryReserved = true;
+            }
 
             // 5. 할인 금액 조회 // 추후 사용 예정
-//            PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
-//                userProfile.grade(), originalPriceTotal, command.userCouponId());
-//            PromotionResponse promotionResponse = promotionService.promotionInfo(calculateRequest);
+            PromotionCalculateRequest calculateRequest = new PromotionCalculateRequest(
+                command.userCouponId(), userProfile.grade(), originalPriceTotal);
+            PromotionResponse promotionResponse = promotionClient.getPromotionInfo(
+                calculateRequest);
+
+            promotionApplied = true;
 
             // 추후에 PromotionResponse 값을 사용할 예정
             orderService.updateDiscountPrice(
                 order,
-                0,
-                1,
-                originalPriceTotal - 1
+                promotionResponse.couponDiscountPrice(),
+                promotionResponse.gradeDiscountPrice(),
+                promotionResponse.orderPrice()
             );
 
             //6. 이벤트 생성
             OrderCreatedEvent event = OrderCreatedEvent.from(order, userProfile.email(),
-                userProfile.username(), userAddressHubId.address(),
+                userProfile.username(), userAddress.address(),
                 InventoryIdempotencyKey,
-                DeliveryIdempotencyKey, userAddressHubId.userAddressHubId());
+                DeliveryIdempotencyKey, userAddress.userAddressHubId());
 
             // Outbox에 이벤트 저장 시도  실패 시 전체 롤백으로 데이터 일관성을 지키도록 구현
             orderOutboxEventService.saveEvent(order.getOrderId(),
@@ -134,7 +147,38 @@ public class OrderFacade {
 
         } catch (Exception e) {
             log.error("=== 주문 생성 실패 - 전체 롤백: {} ===", e.getMessage(), e);
-            // 여기에다가 재고 선점 취소 기능 추가해야 할거 같습니다.
+
+            if (order != null && order.getOrderId() != null) {
+                WhichRollback rollbackType = determineRollbackType(
+                    inventoryReserved,
+                    promotionApplied
+                );
+
+                log.info("보상 트랜잭션 타입 결정: {}", rollbackType);
+
+                if (rollbackType != WhichRollback.NONE) {
+                    try {
+                        OrderFailedEvent failedEvent = new OrderFailedEvent(
+                            order.getOrderId(),
+                            command.userCouponId(),
+                            rollbackType
+                        );
+
+                        orderOutboxEventService.saveFailedEvent(
+                            order.getOrderId(),
+                            "ORDER_FAILED",
+                            failedEvent
+                        );
+                        log.info("주문 실패 이벤트 발행 완료 - orderId: {}, type: {}",
+                            order.getOrderId(), rollbackType);
+                    } catch (Exception eventException) {
+                        log.error("주문 실패 이벤트 발행 실패 (무시): {}", eventException.getMessage());
+                    }
+                } else {
+                    log.info("선점된 리소스 없음 - 보상 트랜잭션 불필요");
+                }
+            }
+
             throw new BusinessException(
                 OrderErrorCode.ORDER_CREATION_FAILED,
                 "주문 생성 중 오류 발생: " + e.getMessage()
@@ -142,10 +186,25 @@ public class OrderFacade {
         }
     }
 
+    private WhichRollback determineRollbackType(
+        boolean inventoryReserved,
+        boolean promotionApplied
+    ) {
+        if (inventoryReserved && promotionApplied) {
+            return WhichRollback.ALL;
+        } else if (inventoryReserved) {
+            return WhichRollback.INVENTORY;
+        } else if (promotionApplied) {
+            return WhichRollback.PROMOTION;
+        } else {
+            return WhichRollback.NONE;
+        }
+    }
+
     // 주문 취소 후 재고 증가 이벤트 발행
     // 이 또한 장애 발생 시 트랜잭션 롤백으로 메시지 소실 방지
     @Transactional
-    public Order cancelOrder(CancelOrderCommand command) {
+    public void cancelOrder(CancelOrderCommand command) {
         log.info("=== 주문 취소 시작: orderId={} ===", command.orderId());
 
         try {
@@ -172,7 +231,9 @@ public class OrderFacade {
                 order,
                 order.getUserCouponId(),
                 InventoryIdempotencyKey,
-                DeliveryIdempotencyKey
+                DeliveryIdempotencyKey,
+                command.cancelReason(),
+                LocalDateTime.now()
             );
 
             // Outbox 저장 실패 시 예외 발생 → 전체 롤백
@@ -180,7 +241,6 @@ public class OrderFacade {
                 "ORDER_CANCELLED", event);
 
             log.info("=== 주문 취소 완료: orderId={} ===", command.orderId());
-            return order;
 
         } catch (Exception e) {
             log.error("=== 주문 취소 실패 - 전체 롤백: orderId={}, error={} ===",

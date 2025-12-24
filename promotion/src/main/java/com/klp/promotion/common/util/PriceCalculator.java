@@ -41,8 +41,8 @@ public class PriceCalculator {
 
     // 최종 주문금액 계산
     public static DiscountResult calculateFinalPrice(Grade grade, Coupon coupon, int orderPrice) {
-        // 쿠폰 할인 금액 계산
-        Long couponDiscount = calculateCouponDiscount(coupon, orderPrice);
+        // 쿠폰 할인 금액 계산 (쿠폰 사용하지 않으면 0L)
+        long couponDiscount = coupon != null ? calculateCouponDiscount(coupon, orderPrice) : 0L;
         
         // 쿠폰 할인 후 금액
         Long amountAfterCoupon = Math.max(orderPrice - couponDiscount, 0L);

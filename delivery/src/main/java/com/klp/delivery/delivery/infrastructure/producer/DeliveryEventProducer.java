@@ -28,7 +28,7 @@ public class DeliveryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_CREATED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
@@ -47,7 +47,7 @@ public class DeliveryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_SHIPPING_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
@@ -66,7 +66,7 @@ public class DeliveryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_ARRIVED_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
@@ -83,7 +83,7 @@ public class DeliveryEventProducer {
         String key = event.orderId().toString();
 
         CompletableFuture<SendResult<String, Object>> future =
-            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_EVENTS, key, event);
+            kafkaTemplate.send(KafkaTopicConfig.DELIVERY_NOTIFICATION_TOPIC, key, event);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {

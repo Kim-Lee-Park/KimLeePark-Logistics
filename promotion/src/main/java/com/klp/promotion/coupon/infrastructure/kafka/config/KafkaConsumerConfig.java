@@ -1,8 +1,13 @@
 package com.klp.promotion.coupon.infrastructure.kafka.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klp.promotion.coupon.domain.event.InventoryDeductedEvent;
+import com.klp.promotion.coupon.domain.event.InventoryDeductedFailedEvent;
+import com.klp.promotion.coupon.domain.event.OrderFailedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentApprovedEvent;
 import com.klp.promotion.coupon.domain.event.PaymentCancelledEvent;
+import com.klp.promotion.coupon.domain.event.PaymentFailedEvent;
+import com.klp.promotion.global.exception.BusinessException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -60,8 +65,13 @@ public class KafkaConsumerConfig {
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class);
         props.put(JsonDeserializer.TYPE_MAPPINGS,
-            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName()+ "," +
-            "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName()
+            "PaymentApprovedEvent:" + PaymentApprovedEvent.class.getName() + "," +
+                "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName() + "," +
+                "PaymentFailedEvent:" + PaymentFailedEvent.class.getName() + "," +
+                "InventoryDeductedFailedEvent:" + InventoryDeductedFailedEvent.class.getName() + ","
+                +
+                "InventoryDeductedEvent:" + InventoryDeductedEvent.class.getName() + "," +
+                "OrderFailedEvent:" + OrderFailedEvent.class.getName()
         );
 
         return new DefaultKafkaConsumerFactory<>(props,
@@ -75,10 +85,10 @@ public class KafkaConsumerConfig {
     ) {
         return new DeadLetterPublishingRecoverer(kafkaTemplate,
             (record, exception) -> {
-                log.error("메시지 처리 실패, DLT로 이동: topic={}, error={}", record.topic(),
-                    exception.getMessage());
-                return new TopicPartition(KafkaTopicConfig.COUPON_TOPIC + ".dlt",
-                    record.partition());
+                String dltTopic = record.topic() + ".coupon.dlt";
+                log.error("메시지 처리 실패, DLT로 이동: topic={} -> {}, error={}",
+                    record.topic(), dltTopic, exception.getMessage());
+                return new TopicPartition(dltTopic, record.partition());
             });
     }
 
@@ -90,7 +100,8 @@ public class KafkaConsumerConfig {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
         errorHandler.addNotRetryableExceptions(
             DeserializationException.class,
-            MessageConversionException.class
+            MessageConversionException.class,
+            BusinessException.class
         );
 
         errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
