@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klp.hub.inventory.domain.event.CouponCancelledEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedEvent;
 import com.klp.hub.inventory.domain.event.CouponUsedFailedEvent;
+import com.klp.hub.inventory.domain.event.InventoryDbSyncEvent;
 import com.klp.hub.inventory.domain.event.OrderCancelledEvent;
 import com.klp.hub.inventory.domain.event.OrderCreatedEvent;
 import com.klp.hub.inventory.domain.event.OrderFailedEvent;
@@ -47,9 +48,6 @@ public class KafkaConsumerConfig {
         this.objectMapper = objectMapper;
     }
 
-    private static final int MAX_RETRY_ATTEMPTS = 3;
-    private static final long RETRY_INTERVAL_MS = 1000L;
-
     @Bean
     public ConsumerFactory<String, Object> inventoryConsumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -65,6 +63,8 @@ public class KafkaConsumerConfig {
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+        configProps.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 16384);
+        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 1000);
 
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
@@ -87,7 +87,8 @@ public class KafkaConsumerConfig {
             "CouponCancelledEvent:" + CouponCancelledEvent.class.getName(),
             "PaymentFailedEvent:" + PaymentFailedEvent.class.getName(),
             "PaymentCancelledEvent:" + PaymentCancelledEvent.class.getName(),
-            "CouponUsedFailedEvent:" + CouponUsedFailedEvent.class.getName()
+            "CouponUsedFailedEvent:" + CouponUsedFailedEvent.class.getName(),
+            "InventoryDbSyncEvent:" + InventoryDbSyncEvent.class.getName()
         );
     }
 
@@ -139,8 +140,9 @@ public class KafkaConsumerConfig {
 
         factory.setConsumerFactory(inventoryConsumerFactory());
         factory.setConcurrency(3);
+        factory.setBatchListener(true);
 
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         factory.setCommonErrorHandler(errorHandler);
 

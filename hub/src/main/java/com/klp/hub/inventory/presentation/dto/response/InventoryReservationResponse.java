@@ -15,8 +15,4 @@ public record InventoryReservationResponse(
     public static InventoryReservationResponse already() {
         return new InventoryReservationResponse(true, null, "이미 처리된 요청");
     }
-
-    public static InventoryReservationResponse failed(String reason) {
-        return new InventoryReservationResponse(false, null, reason);
-    }
 }

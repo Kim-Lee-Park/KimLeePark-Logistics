@@ -44,6 +44,18 @@ services:
     networks:
       - db-net
 
+  postgres-exporter-hub:
+    image: prometheuscommunity/postgres-exporter:v0.18.0
+    container_name: postgres-exporter-hub
+    environment:
+      DATA_SOURCE_NAME: "postgresql://kimleepark:kimleepark@postgres-hub:5432/hub?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - db-net
+    depends_on:
+      - postgres-hub
+
   postgres-delivery:
     image: postgres:18
     container_name: postgres-delivery-klp
