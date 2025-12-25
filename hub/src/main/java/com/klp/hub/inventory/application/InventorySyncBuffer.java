@@ -4,6 +4,7 @@ import com.klp.hub.inventory.domain.event.InventoryDbSyncEvent;
 import jakarta.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,25 @@ public class InventorySyncBuffer {
 
         totalProcessed.addAndGet(batch.size());
         return batch;
+    }
+
+    public int removeByOrderId(UUID orderId) {
+        List<InventoryDbSyncEvent> removeEvents = buffer.stream()
+            .filter(event -> event.orderId().equals(orderId))
+            .toList();
+
+        int removed = 0;
+        for (InventoryDbSyncEvent event : removeEvents) {
+            if (buffer.remove(event)) {
+                removed++;
+            }
+        }
+
+        if (removed > 0) {
+            log.info("Buffer에서 이벤트 제거: orderId={}, removedCount={}", orderId, removed);
+        }
+
+        return removed;
     }
 
     @PreDestroy

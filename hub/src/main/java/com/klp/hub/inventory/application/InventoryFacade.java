@@ -188,6 +188,11 @@ public class InventoryFacade {
      * 선점 해제 (결제, 쿠폰사용 실패 시 호출)
      */
     public void release(UUID orderId) {
+        int removedFromBuffer = syncBuffer.removeByOrderId(orderId);
+        if (removedFromBuffer > 0) {
+            log.info("Buffer에서 미처리 이벤트 제거: orderId={}, count={}", orderId, removedFromBuffer);
+        }
+
         List<InventoryReservation> reservations = inventoryReservationService.findReservationsByOrderId(orderId);
 
         if (reservations.isEmpty()) {
