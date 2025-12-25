@@ -27,7 +27,7 @@ public class InventorySyncScheduler {
             return;
         }
 
-        log.info("Sync Worker 처리: count={}, remaining={}", events.size(), syncBuffer.size());
+        log.info("Outbox Worker 처리: count={}, remaining={}", events.size(), syncBuffer.size());
 
         List<InventoryDbSyncEvent> failed = outboxService.saveInventoryDbSyncEventBatch(events);
 

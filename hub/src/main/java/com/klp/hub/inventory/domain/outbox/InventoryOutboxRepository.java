@@ -9,9 +9,15 @@ public interface InventoryOutboxRepository {
 
     List<InventoryOutbox> findPendingEvents(int limit);
 
+    List<InventoryOutbox> findPendingDbSyncEvents();
+
     void markAsPublished(UUID outboxId);
 
+    void markAsPublishedBatch(List<UUID> outboxIds);
+
     void markAsFailed(UUID outboxId);
+
+    void markAsFailedBatch(List<UUID> outboxIds);
 
     void deletePublishedEvents();
 

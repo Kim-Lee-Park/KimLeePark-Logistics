@@ -29,13 +29,34 @@ public class InventoryOutboxRepositoryImpl implements InventoryOutboxRepository 
     }
 
     @Override
+    public List<InventoryOutbox> findPendingDbSyncEvents() {
+        return jpaRepository.findPendingDbSyncEvents();
+    }
+
+    @Override
     public void markAsPublished(UUID outboxId) {
         jpaRepository.markAsPublished(outboxId);
     }
 
     @Override
+    public void markAsPublishedBatch(List<UUID> outboxIds) {
+        if (outboxIds.isEmpty()) {
+            return;
+        }
+        jpaRepository.markAsPublishedBatch(outboxIds);
+    }
+
+    @Override
     public void markAsFailed(UUID outboxId) {
         jpaRepository.markAsFailed(outboxId);
+    }
+
+    @Override
+    public void markAsFailedBatch(List<UUID> outboxIds) {
+        if (outboxIds.isEmpty()) {
+            return;
+        }
+        jpaRepository.markAsFailedBatch(outboxIds);
     }
 
     @Override
