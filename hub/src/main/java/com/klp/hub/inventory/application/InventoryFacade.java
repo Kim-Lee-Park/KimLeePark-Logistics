@@ -36,6 +36,7 @@ public class InventoryFacade {
     private final InventoryCacheService cacheService;
     private final DistributedLockManager lockManager;
     private final OutboxService outboxService;
+    private final InventorySyncBuffer syncBuffer;
 
     /**
      * 재고 선점
@@ -115,7 +116,7 @@ public class InventoryFacade {
                 .toList();
 
             InventoryDbSyncEvent syncEvent = InventoryDbSyncEvent.of(orderId, syncItems, idempotencyKey);
-            outboxService.saveInventoryDbSyncEvent(syncEvent);
+            syncBuffer.enqueue(syncEvent);
         }
 
         log.info("Redis 재고 선점 완료. reserved={}, fallback={}", reserved.size(), fallback.size());
@@ -187,6 +188,11 @@ public class InventoryFacade {
      * 선점 해제 (결제, 쿠폰사용 실패 시 호출)
      */
     public void release(UUID orderId) {
+        int removedFromBuffer = syncBuffer.removeByOrderId(orderId);
+        if (removedFromBuffer > 0) {
+            log.info("Buffer에서 미처리 이벤트 제거: orderId={}, count={}", orderId, removedFromBuffer);
+        }
+
         List<InventoryReservation> reservations = inventoryReservationService.findReservationsByOrderId(orderId);
 
         if (reservations.isEmpty()) {

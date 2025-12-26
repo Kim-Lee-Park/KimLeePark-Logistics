@@ -8,7 +8,9 @@ import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.domain.outbox.InventoryOutbox;
 import com.klp.hub.inventory.domain.outbox.InventoryOutboxRepository;
 import com.klp.hub.inventory.infrastructure.kafka.config.KafkaTopicConfig;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,6 +51,13 @@ public class OutboxScheduler {
     public void publishPendingEvents() {
         List<InventoryOutbox> pendingEvents = outboxRepository.findPendingEvents(BATCH_SIZE);
 
+        if (pendingEvents.isEmpty()) {
+            return;
+        }
+
+        List<UUID> publishedIds = new ArrayList<>();
+        List<UUID> failedIds = new ArrayList<>();
+
         for (InventoryOutbox outbox : pendingEvents) {
             try {
                 Object event = deserializeEvent(outbox.getEventType(), outbox.getPayload());
@@ -61,19 +70,25 @@ public class OutboxScheduler {
                     event
                 );
 
-                outboxRepository.markAsPublished(outbox.getId());
-                log.info("Outbox 이벤트 발행 성공: outboxId={}, eventType={}, topic={}",
-                    outbox.getId(), outbox.getEventType(), topic);
+                publishedIds.add(outbox.getId());
 
             } catch (Exception e) {
                 log.error("Outbox 이벤트 발행 실패: outboxId={}, error={}",
                     outbox.getId(), e.getMessage());
 
                 if (!outbox.isRetryable(MAX_RETRY)) {
-                    outboxRepository.markAsFailed(outbox.getId());
+                    failedIds.add(outbox.getId());
                     log.warn("Outbox 이벤트 최대 재시도 초과: outboxId={}", outbox.getId());
                 }
             }
+        }
+
+        if (!publishedIds.isEmpty()) {
+            outboxRepository.markAsPublishedBatch(publishedIds);
+            log.info("Outbox 이벤트 발행 완료: count={}", publishedIds.size());
+        }
+        if (!failedIds.isEmpty()) {
+            outboxRepository.markAsFailedBatch(failedIds);
         }
     }
 

@@ -10,6 +10,8 @@ import com.klp.hub.inventory.domain.event.InventoryReplenishedEvent;
 import com.klp.hub.inventory.domain.outbox.InventoryOutbox;
 import com.klp.hub.inventory.domain.outbox.InventoryOutboxRepository;
 import com.klp.hub.inventory.exception.InventoryErrorCode;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -97,5 +99,31 @@ public class OutboxService {
             log.error("Outbox 직렬화 실패: orderId={}", event.orderId(), e);
             throw new BusinessException(InventoryErrorCode.OUTBOX_SERIALIZATION_FAILED);
         }
+    }
+
+    @Transactional
+    public List<InventoryDbSyncEvent> saveInventoryDbSyncEventBatch(List<InventoryDbSyncEvent> events) {
+        List<InventoryDbSyncEvent> failed = new ArrayList<>();
+        List<InventoryOutbox> successList = new ArrayList<>();
+
+        for (InventoryDbSyncEvent event : events) {
+            try {
+                String payload = objectMapper.writeValueAsString(event);
+                InventoryOutbox outbox = InventoryOutbox.create(
+                    event.orderId(), DB_SYNC_EVENT_TYPE, payload
+                );
+                successList.add(outbox);
+            } catch (JsonProcessingException e) {
+                log.error("직렬화 실패: orderId={}", event.orderId(), e);
+                failed.add(event);
+            }
+        }
+
+        if (!successList.isEmpty()) {
+            outboxRepository.saveAllInBatch(successList);
+            log.info("Outbox 배치 저장 완료: success={}, failed={}", successList.size(), failed.size());
+        }
+
+        return failed;
     }
 }
